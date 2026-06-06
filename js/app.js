@@ -197,9 +197,7 @@ function closeBlogPost() {
 function renderShareBar(p) {
   document.getElementById('share-bar').innerHTML = `
     <span>Podijeli:</span>
-    <button class="share-btn" onclick="copyPostLink('${p.id}', this)">🔗 Kopiraj link</button>
-    <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="share-btn">Instagram</a>
-    <a href="https://www.tiktok.com/@alkemijana"   target="_blank" rel="noopener" class="share-btn">TikTok</a>`;
+    <button class="share-btn" onclick="copyPostLink('${p.id}', this)">🔗 Kopiraj link</button>`;
 }
 
 function copyPostLink(id, btn) {

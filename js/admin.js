@@ -702,7 +702,7 @@ function saveTexts() {
    PREUZIMANJE AŽURIRANOG data.js
    ============================================================ */
 
-function downloadSite() {
+async function downloadSite() {
   const postsJson    = JSON.stringify(BLOG_POSTS,    null, 2);
   const svcJson      = JSON.stringify(SERVICES,      null, 2);
   const prJson       = JSON.stringify(PRICING,       null, 2);
@@ -744,13 +744,35 @@ let SITE_SETTINGS = ${settingsJson};
 // ===ALKEMIJANA:SETTINGS:END===
 `;
 
-  const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = 'data.js';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  alert('Preuzeto! Zamijenite datoteku js/data.js na vašem hostingu.');
+  // Spremi na server (auto-deploy)
+  const saveBtn = document.querySelector('[onclick="downloadSite()"]');
+  if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }
+
+  try {
+    const res = await fetch('/.netlify/functions/save-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pass: ADMIN_CREDS.pass, content })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert('✅ Spremljeno! Stranica se automatski ažurira za ~30 sekundi.');
+    } else {
+      alert('❌ Greška: ' + (data.error || 'Nepoznata greška'));
+    }
+  } catch(e) {
+    // Fallback na download ako serverless ne radi (lokalni razvoj)
+    const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'data.js';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    alert('Preuzeto! Zamijenite datoteku js/data.js na vašem hostingu.');
+  }
+
+  if (saveBtn) { saveBtn.textContent = '↓ Spremi'; saveBtn.disabled = false; }
 }

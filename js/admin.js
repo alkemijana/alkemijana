@@ -5,7 +5,7 @@
    Lozinka        : alkemijana2026
    ============================================================ */
 
-const ADMIN_CREDS = { user: 'jana', pass: 'alkemijana2026' };
+const ADMIN_CREDS = { user: 'jana', pass: 'morasmora2026' };
 const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
 let isAdmin       = false;

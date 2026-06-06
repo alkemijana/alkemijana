@@ -21,7 +21,7 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  if (body.pass !== 'alkemijana2026') {
+  if (body.pass !== 'morasmora2026') {
     return { statusCode: 403, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 

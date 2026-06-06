@@ -671,43 +671,128 @@ function deleteReview(id) {
 
 async function loadStats() {
   const el = document.getElementById('stats-display');
-  el.innerHTML = '<p style="color:var(--text-muted);font-style:italic">Učitavam statistiku...</p>';
+  el.innerHTML = '<p style="color:var(--text-muted);font-style:italic;text-align:center;padding:2rem">Učitavam statistiku...</p>';
 
   const GC = 'https://alkemijana.goatcounter.com';
-  let html = '';
-  let hasData = false;
 
   try {
-    // Dohvati ukupan broj posjeta
+    // === HERO statistika (TOTAL) ===
     const totalRes = await fetch(GC + '/counter/TOTAL.json');
-    if (totalRes.ok) {
-      const totalData = await totalRes.json();
-      hasData = true;
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:2rem">';
-      html += statCard('Ukupno posjeta', totalData.count || '0');
+    if (!totalRes.ok) throw new Error('No data');
+    const total = await totalRes.json();
 
-      // Dohvati brojeve za pojedine stranice
-      const pages = ['/', '#blog', '#kontakt', '#o-meni'];
-      const labels = ['Početna', 'Blog', 'Kontakt', 'O meni'];
-      for (let i = 0; i < pages.length; i++) {
-        try {
-          const r = await fetch(GC + '/counter/' + encodeURIComponent(pages[i]) + '.json');
-          if (r.ok) {
-            const d = await r.json();
-            html += statCard(labels[i], d.count || '0');
-          }
-        } catch {}
-      }
-      html += '</div>';
+    // Dohvati i pojedinačne stranice (paralelno)
+    const pages = [
+      { path: '/',        label: 'Početna',  icon: '☾' },
+      { path: '#blog',    label: 'Blog',     icon: '✦' },
+      { path: '#o-meni',  label: 'O meni',   icon: '✧' },
+      { path: '#kontakt', label: 'Kontakt',  icon: '✉' }
+    ];
+
+    const pageResults = await Promise.all(pages.map(p =>
+      fetch(GC + '/counter/' + encodeURIComponent(p.path) + '.json')
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    ));
+
+    let html = '';
+
+    // === BLOK 1: Glavni brojevi ===
+    html += `<div style="margin-bottom:2.5rem">
+      <h4 style="font-family:'Quicksand',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem">Pregled</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem">
+        ${bigStatCard('Ukupno posjeta', total.count || '0', '👁️')}
+        ${bigStatCard('Jedinstveni posjetitelji', total.count_unique || '0', '👤')}
+      </div>
+    </div>`;
+
+    // === BLOK 2: Po stranicama ===
+    html += `<div style="margin-bottom:2.5rem">
+      <h4 style="font-family:'Quicksand',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem">Posjet po stranicama</h4>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0.8rem">`;
+
+    pages.forEach((p, i) => {
+      const d = pageResults[i] || {};
+      html += pageStatCard(p.icon, p.label, d.count || '0', d.count_unique || '0');
+    });
+    html += `</div></div>`;
+
+    // === BLOK 3: SVG graf trenda (iz GoatCounter) ===
+    html += `<div style="margin-bottom:2rem">
+      <h4 style="font-family:'Quicksand',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem">Trend posjeta (zadnjih 30 dana)</h4>
+      <div style="background:rgba(6,8,15,0.4);border:1px solid var(--border);padding:1rem;text-align:center">
+        <img src="${GC}/counter/TOTAL.svg?style=line"
+          alt="Trend posjeta"
+          style="max-width:100%;height:auto;filter:invert(0.85) hue-rotate(220deg)">
+      </div>
+    </div>`;
+
+    // === BLOK 4: Najpopularniji blog članci ===
+    const activePosts = BLOG_POSTS.filter(p => !p.archived).slice(0, 5);
+    if (activePosts.length) {
+      const blogResults = await Promise.all(activePosts.map(p =>
+        fetch(GC + '/counter/' + encodeURIComponent('#post/' + p.id) + '.json')
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => null)
+      ));
+
+      html += `<div style="margin-bottom:2rem">
+        <h4 style="font-family:'Quicksand',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem">Posjet po blog člancima</h4>
+        <div style="border:1px solid var(--border)">`;
+
+      const sortedBlog = activePosts.map((p, i) => ({
+        post: p,
+        count: parseInt((blogResults[i] || {}).count || '0', 10),
+        unique: parseInt((blogResults[i] || {}).count_unique || '0', 10)
+      })).sort((a, b) => b.count - a.count);
+
+      sortedBlog.forEach(({ post, count, unique }, idx) => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.9rem 1.1rem;${idx < sortedBlog.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
+          <div style="display:flex;align-items:center;gap:0.8rem;min-width:0;flex:1">
+            <span style="font-size:1.3rem;flex-shrink:0">${post.icon}</span>
+            <span style="color:var(--silver-light);font-family:'Cormorant Garamond',serif;font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${post.title}</span>
+          </div>
+          <div style="display:flex;gap:1.5rem;flex-shrink:0">
+            <span style="color:var(--lavender);font-family:'Playfair Display',serif;font-size:1.1rem">${count}</span>
+            <span style="color:var(--text-muted);font-family:'Quicksand',sans-serif;font-size:0.78rem;align-self:center">${unique} jed.</span>
+          </div>
+        </div>`;
+      });
+
+      html += `</div></div>`;
     }
-  } catch {}
 
-  if (!hasData) {
-    html = `<p style="color:var(--text);font-size:1.05rem;margin-bottom:0.5rem">Još nema dovoljno podataka za prikaz.</p>
-      <p style="color:var(--text-muted);font-size:0.95rem">Posjeti se bilježe automatski. Statistika će se popuniti nakon prvih posjeta.</p>`;
+    // === BLOK 5: Info kartica ===
+    html += `<div style="background:rgba(168,144,208,0.05);border:1px solid var(--border);padding:1.2rem;font-family:'Cormorant Garamond',serif;color:var(--text-muted);font-size:0.95rem;line-height:1.6;font-style:italic">
+      💡 Posjete se bilježe automatski preko GoatCounter analitike (bez kolačića). Brojevi se ažuriraju jednom dnevno. Za detaljniji pregled — geografska lokacija posjetitelja, izvori prometa, uređaji — koristi gumb ispod.
+    </div>`;
+
+    el.innerHTML = html;
+
+  } catch(e) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:2rem">
+        <p style="color:var(--text);font-size:1.05rem;margin-bottom:0.5rem">Još nema dovoljno podataka za prikaz.</p>
+        <p style="color:var(--text-muted);font-size:0.95rem">Posjeti se bilježe automatski. Vrati se ovamo nakon što stranicu posjeti nekoliko ljudi.</p>
+      </div>`;
   }
+}
 
-  el.innerHTML = html;
+function bigStatCard(label, value, icon) {
+  return `<div style="background:linear-gradient(135deg,rgba(28,24,64,0.6),rgba(14,12,36,0.8));border:1px solid var(--border);padding:1.5rem 1.2rem;text-align:center;position:relative;overflow:hidden">
+    <div style="position:absolute;top:0.5rem;right:0.7rem;font-size:1.2rem;opacity:0.4">${icon}</div>
+    <div style="font-family:'Playfair Display',serif;font-size:2.6rem;color:var(--lavender);line-height:1;margin-bottom:0.5rem">${value}</div>
+    <div style="font-family:'Quicksand',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted)">${label}</div>
+  </div>`;
+}
+
+function pageStatCard(icon, label, count, unique) {
+  return `<div style="background:rgba(6,8,15,0.5);border:1px solid var(--border);padding:1.1rem;text-align:center">
+    <div style="font-size:1.6rem;color:var(--sage);margin-bottom:0.4rem">${icon}</div>
+    <div style="font-family:'Quicksand',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--silver);margin-bottom:0.6rem">${label}</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--lavender);line-height:1">${count}</div>
+    <div style="font-family:'Cormorant Infant',serif;font-size:0.82rem;color:var(--text-muted);font-style:italic;margin-top:0.2rem">${unique} jedinstvenih</div>
+  </div>`;
 }
 
 function statCard(label, value) {

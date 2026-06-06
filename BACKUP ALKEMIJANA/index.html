@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlkemiJana — Tarot & Astrologija</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Quicksand:wght@400;500;600;700&family=Cormorant+Infant:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+  <!-- Stilovi -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     KONSTELACIJE — 12 horoskopskih zviježđa (statični SVG)
+     ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"
+  style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.42">
+  <defs>
+    <filter id="sg"> <feGaussianBlur stdDeviation="2"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="sgb"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Linije zviježđa -->
+  <g fill="none" stroke="#a890d0" stroke-width="0.55" opacity="0.32">
+    <!-- OVAN -->   <polyline points="92,138 125,152 148,168 162,185"/>
+    <!-- BIK -->    <line x1="262" y1="408" x2="238" y2="368"/><line x1="318" y1="398" x2="348" y2="362"/><polyline points="238,368 262,408 292,422 318,398 348,362"/><line x1="292" y1="422" x2="295" y2="478"/>
+    <!-- BLIZANCI --><line x1="538" y1="68" x2="590" y2="82"/><polyline points="538,68 525,142 512,222 518,305"/><polyline points="590,82 582,158 575,238 582,318"/><line x1="518" y1="305" x2="582" y2="318"/>
+    <!-- RAK -->    <polyline points="808,158 838,188 825,228 798,255 862,255"/><line x1="838" y1="188" x2="862" y2="158"/>
+    <!-- LAV -->    <polyline points="978,352 955,298 932,252 912,218 948,195 992,212 1012,242"/><polyline points="978,352 1062,278 1148,218"/>
+    <!-- DJEVICA --><line x1="1282" y1="528" x2="1245" y2="412"/><polyline points="1245,412 1295,372 1192,342"/><line x1="1295" y1="372" x2="1335" y2="378"/><line x1="1335" y1="378" x2="1282" y2="528"/>
+    <!-- VAGA -->   <polyline points="1575,452 1628,392 1665,448 1652,518 1605,535 1575,452"/><line x1="1575" y1="452" x2="1665" y2="448"/>
+    <!-- ŠKORPION --><polyline points="1695,418 1718,398 1742,392 1758,408"/><line x1="1742" y1="392" x2="1735" y2="488"/><polyline points="1735,488 1750,538 1762,592 1772,648 1778,702 1768,752 1745,788 1718,808 1708,825 1728,838"/>
+    <!-- STRIJELAC --><polyline points="1425,775 1445,802 1465,822 1495,808 1525,818 1548,855 1542,882 1515,862 1488,875 1458,892 1445,802"/><line x1="1465" y1="822" x2="1445" y2="802"/><line x1="1542" y1="882" x2="1562" y2="855"/><line x1="1562" y1="855" x2="1565" y2="828"/>
+    <!-- JARAC -->  <polyline points="1162,848 1192,828 1235,832 1268,842 1298,858 1312,888 1278,918 1235,928 1192,918 1168,902 1162,848"/>
+    <!-- VODENJAK --><polyline points="935,768 968,792 1005,782 975,842 1005,872 972,898"/><polyline points="908,805 938,828 972,818 1005,782"/>
+    <!-- RIBE -->   <polyline points="555,842 585,818 615,828 622,855 605,875 575,878 555,862 555,842"/><polyline points="448,908 475,888 502,895 512,922 495,945 462,948 442,928 448,908"/><polyline points="555,842 532,862 515,882 502,895"/>
+  </g>
+
+  <!-- Zvijezde -->
+  <g filter="url(#sg)">
+    <!-- Ovan -->
+    <circle cx="92"  cy="138" r="2.2" fill="#d8d4ec"/>
+    <circle cx="125" cy="152" r="3"   fill="#e4e0f4" filter="url(#sgb)"/>
+    <circle cx="148" cy="168" r="1.8" fill="#c4c0d8"/>
+    <circle cx="162" cy="185" r="1.5" fill="#c4c0d8"/>
+    <!-- Bik -->
+    <circle cx="238" cy="368" r="1.8" fill="#c4c0d8"/>
+    <circle cx="262" cy="408" r="1.8" fill="#c4c0d8"/>
+    <circle cx="292" cy="422" r="3.8" fill="#ffe8d8" filter="url(#sgb)"/>
+    <circle cx="318" cy="398" r="1.8" fill="#c4c0d8"/>
+    <circle cx="348" cy="362" r="1.8" fill="#c4c0d8"/>
+    <circle cx="295" cy="478" r="1.5" fill="#b8b4cc"/>
+    <!-- Blizanci -->
+    <circle cx="538" cy="68"  r="2.8" fill="#d8d4ec"/>
+    <circle cx="590" cy="82"  r="3.2" fill="#e4e0f4" filter="url(#sgb)"/>
+    <circle cx="525" cy="142" r="1.5" fill="#b8b4cc"/>
+    <circle cx="512" cy="222" r="1.5" fill="#b8b4cc"/>
+    <circle cx="518" cy="305" r="1.8" fill="#c4c0d8"/>
+    <circle cx="582" cy="158" r="1.5" fill="#b8b4cc"/>
+    <circle cx="575" cy="238" r="1.5" fill="#b8b4cc"/>
+    <circle cx="582" cy="318" r="1.8" fill="#c4c0d8"/>
+    <!-- Rak -->
+    <circle cx="808" cy="158" r="1.8" fill="#c4c0d8"/>
+    <circle cx="838" cy="188" r="1.5" fill="#b8b4cc"/>
+    <circle cx="862" cy="158" r="1.5" fill="#b8b4cc"/>
+    <circle cx="825" cy="228" r="1.5" fill="#b8b4cc"/>
+    <circle cx="798" cy="255" r="2"   fill="#c4c0d8"/>
+    <circle cx="862" cy="255" r="2"   fill="#c4c0d8"/>
+    <!-- Lav -->
+    <circle cx="978"  cy="352" r="3.8" fill="#e8e4ff" filter="url(#sgb)"/>
+    <circle cx="955"  cy="298" r="2"   fill="#c4c0d8"/>
+    <circle cx="932"  cy="252" r="2.5" fill="#d8d4ec"/>
+    <circle cx="912"  cy="218" r="1.8" fill="#c4c0d8"/>
+    <circle cx="948"  cy="195" r="1.8" fill="#c4c0d8"/>
+    <circle cx="992"  cy="212" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1012" cy="242" r="2"   fill="#c4c0d8"/>
+    <circle cx="1062" cy="278" r="2.2" fill="#c4c0d8"/>
+    <circle cx="1148" cy="218" r="2.8" fill="#d8d4ec"/>
+    <!-- Djevica -->
+    <circle cx="1282" cy="528" r="4"   fill="#e8e4ff" filter="url(#sgb)"/>
+    <circle cx="1245" cy="412" r="2.2" fill="#c4c0d8"/>
+    <circle cx="1295" cy="372" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1192" cy="342" r="2"   fill="#c4c0d8"/>
+    <circle cx="1335" cy="378" r="2"   fill="#c4c0d8"/>
+    <!-- Vaga -->
+    <circle cx="1575" cy="452" r="2.8" fill="#d8d4ec"/>
+    <circle cx="1628" cy="392" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1665" cy="448" r="2"   fill="#c4c0d8"/>
+    <circle cx="1652" cy="518" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1605" cy="535" r="1.8" fill="#c4c0d8"/>
+    <!-- Škorpion -->
+    <circle cx="1695" cy="418" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1718" cy="398" r="2"   fill="#c4c0d8"/>
+    <circle cx="1742" cy="392" r="2"   fill="#c4c0d8"/>
+    <circle cx="1758" cy="408" r="2.2" fill="#c4c0d8"/>
+    <circle cx="1735" cy="488" r="4.2" fill="#ffe0d8" filter="url(#sgb)"/>
+    <circle cx="1750" cy="538" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1762" cy="592" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1772" cy="648" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1778" cy="702" r="2"   fill="#c4c0d8"/>
+    <circle cx="1768" cy="752" r="2"   fill="#c4c0d8"/>
+    <circle cx="1745" cy="788" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1718" cy="808" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1708" cy="825" r="2"   fill="#c4c0d8"/>
+    <circle cx="1728" cy="838" r="1.8" fill="#c4c0d8"/>
+    <!-- Strijelac -->
+    <circle cx="1425" cy="775" r="2"   fill="#c4c0d8"/>
+    <circle cx="1445" cy="802" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1465" cy="822" r="2.2" fill="#c4c0d8"/>
+    <circle cx="1495" cy="808" r="2"   fill="#c4c0d8"/>
+    <circle cx="1525" cy="818" r="2"   fill="#c4c0d8"/>
+    <circle cx="1548" cy="855" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1542" cy="882" r="3.5" fill="#e4e0f4" filter="url(#sgb)"/>
+    <circle cx="1515" cy="862" r="2"   fill="#c4c0d8"/>
+    <circle cx="1488" cy="875" r="2"   fill="#c4c0d8"/>
+    <circle cx="1458" cy="892" r="2.2" fill="#c4c0d8"/>
+    <circle cx="1562" cy="855" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1565" cy="828" r="1.8" fill="#c4c0d8"/>
+    <!-- Jarac -->
+    <circle cx="1162" cy="848" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1192" cy="828" r="2"   fill="#c4c0d8"/>
+    <circle cx="1235" cy="832" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1268" cy="842" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1298" cy="858" r="2.5" fill="#d8d4ec"/>
+    <circle cx="1312" cy="888" r="3"   fill="#e4e0f4" filter="url(#sgb)"/>
+    <circle cx="1278" cy="918" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1235" cy="928" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1192" cy="918" r="2"   fill="#c4c0d8"/>
+    <circle cx="1168" cy="902" r="1.8" fill="#c4c0d8"/>
+    <!-- Vodenjak -->
+    <circle cx="935"  cy="768" r="1.8" fill="#c4c0d8"/>
+    <circle cx="968"  cy="792" r="3"   fill="#e4e0f4" filter="url(#sgb)"/>
+    <circle cx="1005" cy="782" r="2"   fill="#c4c0d8"/>
+    <circle cx="975"  cy="842" r="1.8" fill="#c4c0d8"/>
+    <circle cx="1005" cy="872" r="1.8" fill="#c4c0d8"/>
+    <circle cx="972"  cy="898" r="1.8" fill="#c4c0d8"/>
+    <circle cx="908"  cy="805" r="1.8" fill="#c4c0d8"/>
+    <circle cx="938"  cy="828" r="1.5" fill="#b8b4cc"/>
+    <!-- Ribe -->
+    <circle cx="555" cy="842" r="2.5" fill="#d8d4ec"/>
+    <circle cx="585" cy="818" r="1.8" fill="#c4c0d8"/>
+    <circle cx="615" cy="828" r="1.8" fill="#c4c0d8"/>
+    <circle cx="622" cy="855" r="1.5" fill="#b8b4cc"/>
+    <circle cx="605" cy="875" r="1.5" fill="#b8b4cc"/>
+    <circle cx="575" cy="878" r="1.5" fill="#b8b4cc"/>
+    <circle cx="555" cy="862" r="1.5" fill="#b8b4cc"/>
+    <circle cx="448" cy="908" r="2.2" fill="#c4c0d8"/>
+    <circle cx="475" cy="888" r="1.8" fill="#c4c0d8"/>
+    <circle cx="502" cy="895" r="1.5" fill="#b8b4cc"/>
+    <circle cx="512" cy="922" r="1.5" fill="#b8b4cc"/>
+    <circle cx="495" cy="945" r="1.5" fill="#b8b4cc"/>
+    <circle cx="462" cy="948" r="1.5" fill="#b8b4cc"/>
+    <circle cx="442" cy="928" r="1.8" fill="#c4c0d8"/>
+    <circle cx="515" cy="882" r="2.5" fill="#d8d4ec" filter="url(#sgb)"/>
+    <!-- Razbacane zvijezde -->
+    <circle cx="680"  cy="185" r="1.5" fill="#8880a8" opacity="0.7"/>
+    <circle cx="1380" cy="142" r="1.8" fill="#b8b4cc"  opacity="0.65"/>
+    <circle cx="850"  cy="68"  r="1.5" fill="#8880a8" opacity="0.7"/>
+    <circle cx="1100" cy="128" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="720"  cy="448" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="1450" cy="568" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="65"   cy="568" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="188"  cy="698" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="1855" cy="328" r="1.8" fill="#b8b4cc"  opacity="0.65"/>
+    <circle cx="368"  cy="658" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="1200" cy="658" r="1.5" fill="#8880a8" opacity="0.6"/>
+    <circle cx="748"  cy="658" r="1.5" fill="#8880a8" opacity="0.6"/>
+  </g>
+
+  <!-- Oznake zviježđa -->
+  <g font-family="sans-serif" font-size="9" fill="#7860b0" opacity="0.55" letter-spacing="1.5">
+    <text x="80"  y="118">OVAN</text>
+    <text x="248" y="352">BIK</text>
+    <text x="510" y="52">BLIZANCI</text>
+    <text x="800" y="142">RAK</text>
+    <text x="900" y="178">LAV</text>
+    <text x="1178" y="330">DJEVICA</text>
+    <text x="1558" y="378">VAGA</text>
+    <text x="1682" y="382">ŠKORPION</text>
+    <text x="1408" y="758">STRIJELAC</text>
+    <text x="1148" y="832">JARAC</text>
+    <text x="888"  y="752">VODENJAK</text>
+    <text x="435"  y="798">RIBE</text>
+  </g>
+</svg>
+
+<!-- ============================================================
+     ADMIN BAR (vidljiv samo kad je administrator prijavljen)
+     ============================================================ -->
+<div id="admin-bar">
+  <span class="admin-badge">⚙ Administrator</span>
+  <div class="admin-btns">
+    <button class="abt"       onclick="openAdmin('blog')">Blog</button>
+    <button class="abt"       onclick="openAdmin('services')">Usluge</button>
+    <button class="abt"       onclick="openAdmin('pricing')">Cjenik</button>
+    <button class="abt abt-green" onclick="downloadSite()">↓ Spremi & preuzmi</button>
+    <button class="abt abt-red"   onclick="adminLogout()">Odjava</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     SADRŽAJ STRANICE
+     ============================================================ -->
+<div class="content">
+
+  <nav id="main-nav">
+    <div class="logo" onclick="showPage('home')">Alkemi<span>Jana</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a onclick="showPage('home')"    data-page="home"   class="active">Početna</a></li>
+      <li><a onclick="showPage('usluge')"  data-page="usluge">Usluge</a></li>
+      <li><a onclick="showPage('o-meni')"  data-page="o-meni">O meni</a></li>
+      <li><a onclick="showPage('blog')"    data-page="blog">Blog</a></li>
+      <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
+    </ul>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+  </nav>
+
+  <!-- POČETNA -->
+  <section class="page active" id="home">
+    <div class="hero">
+      <div>
+        <h1>Alkem<span class="star-i">ı</span>Jana</h1>
+        <div class="hero-sub">Tarot · Astrologija</div>
+        <p class="hero-desc">Otkrijte poruke zvijezda i karata. Vodstvo kroz duhovne staze, intuitivna čitanja i astrološka tumačenja koja osvjetljavaju put pred vama.</p>
+        <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+        <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+      </div>
+    </div>
+    <div class="section container">
+      <h2 class="section-title">Moje Usluge</h2>
+      <p class="section-subtitle">Putovi do unutarnje istine</p>
+      <div class="services-grid" id="home-services-grid"></div>
+    </div>
+    <div class="cta-section">
+      <h2>Karte čekaju vaše pitanje</h2>
+      <p>Zakažite svoj prvi susret i otvorite vrata novim spoznajama</p>
+      <a class="btn btn-primary" onclick="showPage('kontakt')">Zakaži susret</a>
+    </div>
+    <div class="section container">
+      <h2 class="section-title">Riječi Klijenata</h2>
+      <p class="section-subtitle">Iskustva onih koji su prošli kroz vrata</p>
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-stars">★ ★ ★ ★ ★</div>
+          <p class="review-text">Jana ima izuzetnu sposobnost čitanja energije. Njezina interpretacija karata bila je toliko precizna da sam ostala bez riječi. Preporučujem od srca.</p>
+          <div class="review-author">MARIJA K.<span>Zagreb</span></div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★ ★ ★ ★ ★</div>
+          <p class="review-text">Natalna karta koju mi je izradila otvorila mi je oči o aspektima mene samog kojih nisam bio svjestan. Profesionalno, toplo i duboko.</p>
+          <div class="review-author">IVAN M.<span>Split</span></div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★ ★ ★ ★ ★</div>
+          <p class="review-text">Dolazila sam u teškom razdoblju života. Janina mudrost i intuicija pomogle su mi pronaći jasnoću i smirenost. Hvala od srca.</p>
+          <div class="review-author">ANA P.<span>Rijeka</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USLUGE -->
+  <section class="page" id="usluge">
+    <div class="container">
+      <h2 class="section-title">Usluge i Cjenik</h2>
+      <p class="section-subtitle">Svaka usluga je putovanje</p>
+      <div class="services-grid" id="all-services-grid"></div>
+
+      <h3 style="font-family:'Playfair Display',serif;font-size:2.1rem;color:var(--lavender);text-align:center;margin-top:5rem;margin-bottom:1rem">Detaljni Cjenik</h3>
+      <p class="section-subtitle" style="margin-bottom:2rem">Sve usluge u jednoj tablici</p>
+      <div class="pricing-table" id="pricing-table-wrap"></div>
+
+      <div class="cta-section">
+        <h2>Spremni za vaše putovanje?</h2>
+        <p>Odaberite uslugu i rezervirajte svoj termin</p>
+        <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- O MENI -->
+  <section class="page" id="o-meni">
+    <div class="container">
+      <h2 class="section-title">O meni</h2>
+      <p class="section-subtitle">Mistična priča iza imena</p>
+      <div class="about-grid">
+        <div class="about-image"></div>
+        <div class="about-text">
+          <h3>Jana</h3>
+          <p>Već više od petnaest godina hodam putem tarota i astrologije. Ono što je započelo kao osobna potraga za smislom, prerasla je u poziv — pomoći drugima da pronađu vlastiti put kroz mudrost karata i zvijezda.</p>
+          <p>Studirala sam klasičnu astrologiju, hermetičku tradiciju tarota te dubinsku psihologiju. Svaka konzultacija za mene je sveti prostor — mjesto gdje se susreću logika i intuicija, znanost i duhovnost.</p>
+          <div class="quote">"Karte ne predviđaju budućnost — one vam pokazuju vašu unutarnju istinu, kako biste mogli oblikovati put pred sobom."</div>
+          <p>Vjerujem da svaki čovjek nosi vlastiti odgovor u sebi. Moja je uloga biti tihi tumač, vodič koji osvjetljava ono što već znate, ali još niste imenovali.</p>
+        </div>
+      </div>
+      <div class="section">
+        <h2 class="section-title" style="font-size:2.6rem">Moja Filozofija</h2>
+        <div class="services-grid" style="margin-top:2rem">
+          <div class="service-card"><span class="service-icon">✧</span><h3>Diskrecija</h3><p>Sve što se dijeli ostaje između nas. Povjerenje je temelj svakog susreta.</p></div>
+          <div class="service-card"><span class="service-icon">☾</span><h3>Iskrenost</h3><p>Karte govore i ugodne i izazovne istine. Prenosim ih s poštovanjem i jasnoćom.</p></div>
+          <div class="service-card"><span class="service-icon">✦</span><h3>Sloboda Izbora</h3><p>Vi ste autor svoje sudbine. Karte su samo karta, vi ste putnik.</p></div>
+        </div>
+      </div>
+      <div style="max-width:900px;margin:0 auto">
+        <h2 class="section-title" style="font-size:2.1rem;margin-top:4rem">Riječi onih koji su putovali sa mnom</h2>
+        <div class="reviews-grid">
+          <div class="review-card"><div class="review-stars">★ ★ ★ ★ ★</div><p class="review-text">Susret s Janom nije obična konzultacija — to je iskustvo koje vas mijenja. Njena toplina i znanje su rijetka kombinacija.</p><div class="review-author">LANA T.<span>Pula</span></div></div>
+          <div class="review-card"><div class="review-stars">★ ★ ★ ★ ★</div><p class="review-text">Vraćam se već treću godinu. Svaki put me iznova zadivi dubinom svojih tumačenja.</p><div class="review-author">PETRA S.<span>Osijek</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="page" id="blog">
+    <div class="container" id="blog-list-view">
+      <h2 class="section-title">Blog & Članci</h2>
+      <p class="section-subtitle">Mudrost koja se dijeli</p>
+      <div class="blog-grid" id="blog-grid"></div>
+    </div>
+    <div id="blog-post-view">
+      <div class="container" style="padding-top:2rem">
+        <button class="back-btn" onclick="closeBlogPost()">← Povratak na blog</button>
+      </div>
+      <div class="post-header">
+        <div class="blog-meta" id="post-meta"></div>
+        <h1 id="post-title"></h1>
+        <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+      </div>
+      <div class="post-feature-img" id="post-feature-img" style="display:none">
+        <img id="post-img" src="" alt="">
+      </div>
+      <div class="post-body"  id="post-body"></div>
+      <div class="share-bar" id="share-bar"></div>
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section class="page" id="kontakt">
+    <div class="container">
+      <h2 class="section-title">Rezervacija & Kontakt</h2>
+      <p class="section-subtitle">Putovanje počinje jednom porukom</p>
+      <div class="contact-grid">
+        <div>
+          <div class="contact-info-item">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Telefon</div>
+            <div class="value"><a href="tel:+385976126893">+385 97 6126 893</a></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Lokacija</div>
+            <div class="value">Zagreb, Hrvatska<br><small style="color:var(--text-muted);font-size:1rem">+ online konzultacije</small></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Radno Vrijeme</div>
+            <ul class="hours-list">
+              <li><span>Ponedjeljak — Petak</span><span>10:00 — 20:00</span></li>
+              <li><span>Subota</span><span>10:00 — 16:00</span></li>
+              <li><span>Nedjelja</span><span>Zatvoreno</span></li>
+            </ul>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Pratite me</div>
+            <div class="social-links">
+              <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+                Instagram
+              </a>
+              <a href="https://www.tiktok.com/@alkemijana" target="_blank" rel="noopener" class="social-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.53V6.77a4.85 4.85 0 01-1.01-.08z"/></svg>
+                TikTok
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin:0;padding:3rem">
+          <form id="bookingForm" onsubmit="submitForm(event)">
+            <div class="form-row">
+              <div class="form-group"><label>Ime i prezime</label><input type="text" required></div>
+              <div class="form-group"><label>Email</label><input type="email" required></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Telefon</label><input type="tel"></div>
+              <div class="form-group">
+                <label>Usluga</label>
+                <select required id="booking-service-select">
+                  <option value="">Odaberi uslugu</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Vaša poruka</label>
+              <textarea placeholder="Napišite par riječi o tome što vas zanima ili koje termine vam odgovaraju..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Pošalji upit</button>
+          </form>
+          <div class="form-success" id="formSuccess">
+            <span class="icon">✦</span>
+            <h3>Hvala vam</h3>
+            <p>Vaša poruka je poslana. Javit ću Vam se u najkraćem mogućem roku sa slobodnim terminima.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">AlkemiJana</div>
+    <div class="footer-tagline">Tarot · Astrologija · Zvijezde</div>
+    <div class="footer-social">
+      <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+        @alkemijana
+      </a>
+      <a href="https://www.tiktok.com/@alkemijana" target="_blank" rel="noopener" class="social-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.53V6.77a4.85 4.85 0 01-1.01-.08z"/></svg>
+        @alkemijana
+      </a>
+    </div>
+    <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+    <div class="footer-copy">© 2026 AlkemiJana. Sva prava pridržana.</div>
+  </footer>
+
+</div><!-- /.content -->
+
+<!-- ============================================================
+     ADMIN: Login modal
+     ============================================================ -->
+<div id="admin-login-overlay">
+  <div id="admin-login-box">
+    <button class="al-close" onclick="closeAdminLogin()">×</button>
+    <h2>Administrator</h2>
+    <div class="sub">Prijava za uređivanje sadržaja</div>
+    <input id="aj-user" type="text"     placeholder="Korisničko ime" autocomplete="username">
+    <input id="aj-pass" type="password" placeholder="Lozinka"        autocomplete="current-password">
+    <div id="admin-error">Pogrešno korisničko ime ili lozinka.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="handleAdminLogin()">Prijava</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADMIN: Panel za uređivanje
+     ============================================================ -->
+<div id="admin-panel-overlay">
+  <div id="admin-panel">
+    <div class="ap-header">
+      <div class="ap-tabs">
+        <button class="ap-tab-btn active" id="tab-blog"     onclick="switchTab('blog')">Blog</button>
+        <button class="ap-tab-btn"        id="tab-services" onclick="switchTab('services')">Usluge</button>
+        <button class="ap-tab-btn"        id="tab-pricing"  onclick="switchTab('pricing')">Cjenik</button>
+      </div>
+      <button class="ap-close" onclick="closeAdminPanel()">×</button>
+    </div>
+
+    <div class="ap-body">
+      <!-- TAB: Blog -->
+      <div class="ap-tab-content active" id="ap-blog">
+        <div class="blog-list-col">
+          <div class="blh">
+            <p>Članci</p>
+            <button class="ap-btn ap-btn-save" style="width:100%;font-size:0.72rem" onclick="newPost()">+ Novi članak</button>
+          </div>
+          <div id="blog-admin-list"></div>
+        </div>
+        <div class="blog-editor-col" id="blog-editor-col">
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">
+            Odaberite članak za uređivanje ili dodajte novi.
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB: Usluge -->
+      <div class="ap-tab-content" id="ap-services">
+        <div class="services-admin-wrap">
+          <h3>Upravljanje Uslugama</h3>
+          <div class="svc-admin-grid" id="svc-admin-grid"></div>
+        </div>
+      </div>
+
+      <!-- TAB: Cjenik -->
+      <div class="ap-tab-content" id="ap-pricing">
+        <div class="pricing-admin-wrap">
+          <h3>Upravljanje Cjenikom</h3>
+          <div id="pricing-admin-list"></div>
+          <button class="ap-btn ap-btn-save" style="margin-top:1rem" onclick="addPricingRow()">+ Dodaj stavku</button>
+          <div class="ap-actions">
+            <button class="ap-btn ap-btn-save" onclick="savePricing()">Spremi cjenik</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JavaScript — redoslijed učitavanja je važan:
+     1. data.js   — podaci (blog, usluge, cjenik)
+     2. app.js    — navigacija i renderiranje
+     3. admin.js  — admin panel
+     ============================================================ -->
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>

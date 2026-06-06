@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlkemiJana — Tarot & Astrologija</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Playfair+Display:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Cormorant+Infant:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#06080f;
+    --bg-mid:#0e0c24;
+    --bg-light:#1c1840;
+    --purple-accent:#3d2878;
+    --navy:#0a1228;
+    --lavender:#a890d0;
+    --silver-bright:#e4e0f4;
+    --lavender-soft:#7860b0;
+    --silver:#c4c0d8;
+    --silver-light:#d8d4ec;
+    --sage:#6a9478;
+    --forest:#2a5040;
+    --text:#b8b4cc;
+    --text-muted:#5e587a;
+    --border:rgba(168,144,208,0.18);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg-deep);
+    color:var(--text);
+    font-family:'Cormorant Infant',serif;
+    font-size:18px;
+    line-height:1.7;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(61,40,120,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(14,12,36,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(106,148,120,0.07) 0%, transparent 60%);
+    background-attachment:fixed;
+  }
+  /* zvjezdana pozadina */
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      radial-gradient(1px 1px at 12% 23%, var(--silver) 50%, transparent 100%),
+      radial-gradient(1px 1px at 67% 15%, var(--silver-light) 50%, transparent 100%),
+      radial-gradient(1px 1px at 33% 78%, var(--lavender) 50%, transparent 100%),
+      radial-gradient(2px 2px at 88% 42%, var(--silver) 50%, transparent 100%),
+      radial-gradient(1px 1px at 45% 55%, var(--silver-light) 50%, transparent 100%),
+      radial-gradient(1px 1px at 18% 88%, var(--lavender) 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 72% 91%, var(--silver-bright) 50%, transparent 100%),
+      radial-gradient(1px 1px at 92% 12%, var(--silver-light) 50%, transparent 100%),
+      radial-gradient(1px 1px at 5% 50%, var(--sage) 50%, transparent 100%),
+      radial-gradient(1px 1px at 55% 30%, var(--silver) 50%, transparent 100%);
+    background-size:100% 100%;
+    pointer-events:none;
+    z-index:0;
+    opacity:0.6;
+    animation:twinkle 8s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:0.35}
+    50%{opacity:0.75}
+  }
+  /* film zrnatosti */
+  body::after{
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    pointer-events:none;
+    z-index:1;
+    opacity:0.07;
+    mix-blend-mode:overlay;
+  }
+  .content{position:relative;z-index:2}
+
+  /* NAVIGACIJA */
+  nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:100;
+    padding:1.5rem 3rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(6,8,15,0.75);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo{
+    font-family:'Italiana',serif;
+    font-size:1.8rem;
+    color:var(--lavender);
+    letter-spacing:0.15em;
+    cursor:pointer;
+    text-shadow:0 0 20px rgba(168,144,208,0.3);
+  }
+  .logo span{color:var(--silver-light);font-style:italic}
+  .nav-links{display:flex;gap:2.5rem;list-style:none}
+  .nav-links a{
+    color:var(--text);
+    text-decoration:none;
+    font-family:'Quicksand',sans-serif;
+    font-size:0.85rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:color 0.3s;
+    position:relative;
+  }
+  .nav-links a::after{
+    content:'';
+    position:absolute;
+    bottom:-6px;left:50%;
+    width:0;height:1px;
+    background:var(--lavender);
+    transition:all 0.3s;
+    transform:translateX(-50%);
+  }
+  .nav-links a:hover,.nav-links a.active{color:var(--lavender)}
+  .nav-links a:hover::after,.nav-links a.active::after{width:100%}
+  .menu-toggle{display:none;background:none;border:none;color:var(--lavender);font-size:1.5rem;cursor:pointer}
+
+  /* PAGE WRAPPER */
+  .page{display:none;min-height:100vh;padding-top:6rem}
+  .page.active{display:block;animation:fadeIn 0.8s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  .container{max-width:1200px;margin:0 auto;padding:0 2rem}
+
+  /* HERO */
+  .hero{
+    min-height:90vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    position:relative;
+    padding:4rem 2rem;
+  }
+  .hero-ornament{
+    font-size:3rem;
+    color:var(--lavender);
+    margin-bottom:1.5rem;
+    animation:rotate 60s linear infinite;
+    display:inline-block;
+    text-shadow:0 0 30px rgba(168,144,208,0.5);
+  }
+  @keyframes rotate{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .hero h1{
+    font-family:'Italiana',serif;
+    font-size:clamp(3rem,8vw,6.5rem);
+    color:var(--lavender);
+    letter-spacing:0.05em;
+    line-height:1;
+    margin-bottom:1rem;
+    text-shadow:0 0 40px rgba(168,144,208,0.3);
+  }
+  .hero h1 .amp{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    color:var(--silver-light);
+    font-size:0.7em;
+  }
+  .hero-sub{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.4rem;
+    color:var(--text-muted);
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    margin-bottom:2.5rem;
+  }
+  .hero-desc{
+    font-size:1.2rem;
+    max-width:600px;
+    margin:0 auto 3rem;
+    color:var(--text);
+    line-height:1.8;
+  }
+  .divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:1rem;
+    margin:2rem auto;
+    max-width:300px;
+  }
+  .divider .line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--lavender),transparent)}
+  .divider .star{color:var(--lavender);font-size:1.2rem}
+
+  /* GUMBI */
+  .btn{
+    display:inline-block;
+    padding:1rem 2.5rem;
+    background:transparent;
+    border:1px solid var(--lavender);
+    color:var(--lavender);
+    font-family:'Cinzel',serif;
+    font-size:0.85rem;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    text-decoration:none;
+    cursor:pointer;
+    transition:all 0.4s;
+    position:relative;
+    overflow:hidden;
+  }
+  .btn::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:var(--lavender);
+    transform:translateY(100%);
+    transition:transform 0.4s;
+    z-index:-1;
+  }
+  .btn:hover{color:var(--bg-deep)}
+  .btn:hover::before{transform:translateY(0)}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--lavender-soft),var(--lavender));
+    color:var(--bg-deep);
+    border-color:transparent;
+  }
+  .btn-primary::before{background:var(--silver-bright)}
+
+  /* NASLOVI SEKCIJA */
+  .section{padding:6rem 0;position:relative}
+  .section-title{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(2.5rem,5vw,4rem);
+    color:var(--lavender);
+    text-align:center;
+    margin-bottom:1rem;
+    letter-spacing:0.05em;
+  }
+  .section-subtitle{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    text-align:center;
+    color:var(--text-muted);
+    font-size:1.2rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    margin-bottom:4rem;
+  }
+
+  /* USLUGE GRID */
+  .services-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:2rem;
+    margin-top:3rem;
+  }
+  .service-card{
+    background:linear-gradient(135deg,rgba(28,24,64,0.5),rgba(14,12,36,0.7));
+    border:1px solid var(--border);
+    padding:3rem 2rem;
+    text-align:center;
+    transition:all 0.4s;
+    position:relative;
+    overflow:hidden;
+  }
+  .service-card::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:1px;
+    background:linear-gradient(90deg,transparent,var(--lavender),transparent);
+    opacity:0;
+    transition:opacity 0.4s;
+  }
+  .service-card:hover{
+    transform:translateY(-8px);
+    border-color:rgba(168,144,208,0.5);
+    box-shadow:0 20px 40px rgba(106,148,120,0.07),0 10px 20px rgba(168,144,208,0.08);
+  }
+  .service-card:hover::before{opacity:1}
+  .service-icon{
+    font-size:3rem;
+    color:var(--sage);
+    margin-bottom:1.5rem;
+    display:block;
+  }
+  .service-card h3{
+    font-family:'Cinzel',serif;
+    font-size:1.3rem;
+    color:var(--silver-light);
+    letter-spacing:0.1em;
+    margin-bottom:1rem;
+  }
+  .service-card p{
+    color:var(--text-muted);
+    font-size:0.95rem;
+    margin-bottom:1.5rem;
+  }
+  .service-price{
+    font-family:'Italiana',serif;
+    font-size:1.8rem;
+    color:var(--lavender);
+  }
+  .service-price small{
+    font-family:'EB Garamond',serif;
+    font-size:0.9rem;
+    color:var(--text-muted);
+    font-style:italic;
+  }
+
+  /* CIJENIK TABLICA */
+  .pricing-table{
+    margin-top:4rem;
+    border:1px solid var(--border);
+    background:rgba(14,12,36,0.5);
+  }
+  .pricing-row{
+    display:grid;
+    grid-template-columns:2fr 3fr 1fr;
+    padding:1.5rem 2rem;
+    border-bottom:1px solid var(--border);
+    align-items:center;
+  }
+  .pricing-row:last-child{border-bottom:none}
+  .pricing-row.header{
+    background:rgba(61,40,120,0.25);
+    font-family:'Cinzel',serif;
+    font-size:0.85rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--lavender);
+  }
+  .pricing-row .name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--silver-light)}
+  .pricing-row .desc{color:var(--text-muted);font-size:0.95rem}
+  .pricing-row .price{font-family:'Italiana',serif;font-size:1.4rem;color:var(--lavender);text-align:right}
+
+  /* O MENI */
+  .about-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:5rem;
+    align-items:center;
+    margin-top:3rem;
+  }
+  .about-image{
+    aspect-ratio:3/4;
+    background:
+      radial-gradient(circle at center, rgba(168,144,208,0.15), transparent 60%),
+      linear-gradient(135deg, var(--bg-light), var(--bg-mid));
+    border:1px solid rgba(168,144,208,0.3);
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .about-image::before{
+    content:'☾';
+    font-size:12rem;
+    color:var(--lavender);
+    opacity:0.2;
+    text-shadow:0 0 60px rgba(168,144,208,0.4);
+  }
+  .about-image::after{
+    content:'';
+    position:absolute;
+    inset:1rem;
+    border:1px solid rgba(168,144,208,0.2);
+  }
+  .about-text h3{
+    font-family:'Italiana',serif;
+    font-size:2.5rem;
+    color:var(--lavender);
+    margin-bottom:1.5rem;
+  }
+  .about-text p{
+    margin-bottom:1.2rem;
+    font-size:1.05rem;
+    line-height:1.9;
+  }
+  .about-text .quote{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.3rem;
+    color:var(--silver-light);
+    border-left:2px solid var(--sage);
+    padding-left:1.5rem;
+    margin:2rem 0;
+  }
+
+  /* REZERVACIJA / KONTAKT FORMA */
+  .form-section{
+    background:linear-gradient(135deg, rgba(28,24,64,0.4), rgba(14,12,36,0.6));
+    border:1px solid var(--border);
+    padding:4rem;
+    max-width:800px;
+    margin:3rem auto 0;
+  }
+  .form-group{margin-bottom:1.5rem}
+  .form-group label{
+    display:block;
+    font-family:'Cinzel',serif;
+    font-size:0.75rem;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:var(--lavender);
+    margin-bottom:0.6rem;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea{
+    width:100%;
+    background:rgba(6,8,15,0.7);
+    border:1px solid var(--border);
+    padding:1rem;
+    color:var(--text);
+    font-family:'EB Garamond',serif;
+    font-size:1rem;
+    transition:all 0.3s;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus{
+    outline:none;
+    border-color:var(--lavender);
+    background:rgba(6,8,15,0.95);
+  }
+  .form-group select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a890d0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 1rem center;
+    padding-right:2.5rem;
+    cursor:pointer;
+  }
+  .form-group select option{
+    background:var(--bg-mid);
+    color:var(--text);
+  }
+  .form-group textarea{resize:vertical;min-height:140px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+  .form-success{
+    display:none;
+    text-align:center;
+    padding:3rem 2rem;
+  }
+  .form-success.show{display:block;animation:fadeIn 0.6s ease}
+  .form-success .icon{
+    font-size:4rem;
+    color:var(--lavender);
+    margin-bottom:1.5rem;
+    display:block;
+  }
+  .form-success h3{
+    font-family:'Italiana',serif;
+    font-size:2rem;
+    color:var(--lavender);
+    margin-bottom:1rem;
+  }
+  .form-success p{
+    color:var(--text);
+    font-size:1.1rem;
+    max-width:500px;
+    margin:0 auto;
+  }
+
+  /* RECENZIJE */
+  .reviews-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:2rem;
+    margin-top:3rem;
+  }
+  .review-card{
+    background:rgba(14,12,36,0.5);
+    border:1px solid var(--border);
+    padding:2.5rem;
+    position:relative;
+  }
+  .review-card::before{
+    content:'"';
+    position:absolute;
+    top:-10px;left:1.5rem;
+    font-family:'Italiana',serif;
+    font-size:5rem;
+    color:var(--lavender);
+    line-height:1;
+    opacity:0.6;
+  }
+  .review-stars{
+    color:var(--sage);
+    margin-bottom:1rem;
+    font-size:1.1rem;
+    letter-spacing:0.2em;
+  }
+  .review-text{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.1rem;
+    color:var(--text);
+    margin-bottom:1.5rem;
+    line-height:1.7;
+  }
+  .review-author{
+    font-family:'Cinzel',serif;
+    font-size:0.85rem;
+    letter-spacing:0.15em;
+    color:var(--silver);
+  }
+  .review-author span{
+    display:block;
+    font-family:'EB Garamond',serif;
+    font-size:0.85rem;
+    color:var(--text-muted);
+    letter-spacing:0.05em;
+    font-style:italic;
+    margin-top:0.3rem;
+    text-transform:none;
+  }
+
+  /* BLOG */
+  .blog-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:2.5rem;
+    margin-top:3rem;
+  }
+  .blog-card{
+    background:rgba(14,12,36,0.5);
+    border:1px solid var(--border);
+    overflow:hidden;
+    cursor:pointer;
+    transition:all 0.4s;
+  }
+  .blog-card:hover{
+    transform:translateY(-6px);
+    border-color:rgba(168,144,208,0.4);
+    box-shadow:0 16px 32px rgba(42,80,64,0.1);
+  }
+  .blog-image{
+    aspect-ratio:16/10;
+    background:linear-gradient(135deg, var(--bg-light), var(--navy));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:4rem;
+    color:var(--sage);
+    position:relative;
+  }
+  .blog-image::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at center, transparent 30%, rgba(6,8,15,0.6));
+  }
+  .blog-content{padding:2rem}
+  .blog-meta{
+    font-family:'Cinzel',serif;
+    font-size:0.7rem;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--lavender);
+    margin-bottom:1rem;
+  }
+  .blog-content h3{
+    font-family:'Italiana',serif;
+    font-size:1.5rem;
+    color:var(--silver-light);
+    margin-bottom:1rem;
+    line-height:1.3;
+  }
+  .blog-content p{
+    color:var(--text-muted);
+    font-size:0.95rem;
+    margin-bottom:1.5rem;
+  }
+  .blog-link{
+    font-family:'Cinzel',serif;
+    font-size:0.75rem;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--sage);
+  }
+
+  /* KONTAKT INFO */
+  .contact-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:5rem;
+    margin-top:3rem;
+  }
+  .contact-info-item{
+    margin-bottom:2rem;
+    padding-bottom:2rem;
+    border-bottom:1px solid var(--border);
+  }
+  .contact-info-item:last-child{border-bottom:none}
+  .contact-info-item .label{
+    font-family:'Cinzel',serif;
+    font-size:0.75rem;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--lavender);
+    margin-bottom:0.5rem;
+  }
+  .contact-info-item .value{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.3rem;
+    color:var(--silver-light);
+  }
+  .hours-list{list-style:none;margin-top:0.5rem}
+  .hours-list li{
+    display:flex;
+    justify-content:space-between;
+    padding:0.4rem 0;
+    color:var(--text);
+  }
+  .hours-list li span:first-child{color:var(--text-muted)}
+
+  /* FOOTER */
+  footer{
+    border-top:1px solid var(--border);
+    padding:3rem 2rem 2rem;
+    text-align:center;
+    margin-top:6rem;
+    background:rgba(6,8,15,0.7);
+  }
+  .footer-logo{
+    font-family:'Italiana',serif;
+    font-size:2rem;
+    color:var(--lavender);
+    letter-spacing:0.2em;
+    margin-bottom:1rem;
+  }
+  .footer-tagline{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    color:var(--text-muted);
+    margin-bottom:2rem;
+    letter-spacing:0.15em;
+  }
+  .footer-copy{
+    color:var(--text-muted);
+    font-size:0.85rem;
+    margin-top:2rem;
+    padding-top:2rem;
+    border-top:1px solid var(--border);
+  }
+
+  /* CTA SEKCIJA */
+  .cta-section{
+    text-align:center;
+    padding:6rem 2rem;
+    background:
+      radial-gradient(ellipse at center, rgba(61,40,120,0.25), transparent 70%),
+      linear-gradient(180deg, transparent, rgba(42,80,64,0.06), transparent);
+    margin:4rem 0;
+  }
+  .cta-section h2{
+    font-family:'Italiana',serif;
+    font-size:clamp(2rem,4vw,3.5rem);
+    color:var(--lavender);
+    margin-bottom:1rem;
+  }
+  .cta-section p{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.3rem;
+    color:var(--text);
+    max-width:600px;
+    margin:0 auto 2.5rem;
+  }
+
+  /* MOBILE */
+  @media (max-width:768px){
+    nav{padding:1rem 1.5rem}
+    .nav-links{
+      position:fixed;
+      top:70px;left:0;right:0;
+      flex-direction:column;
+      background:rgba(6,8,15,0.98);
+      padding:2rem;
+      gap:1.5rem;
+      transform:translateY(-150%);
+      transition:transform 0.4s;
+      border-bottom:1px solid var(--border);
+    }
+    .nav-links.open{transform:translateY(0)}
+    .menu-toggle{display:block}
+    .about-grid,.contact-grid{grid-template-columns:1fr;gap:3rem}
+    .form-section{padding:2rem}
+    .form-row{grid-template-columns:1fr}
+    .pricing-row{grid-template-columns:1fr;gap:0.5rem;text-align:left}
+    .pricing-row .price{text-align:left}
+    .pricing-row.header{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="content">
+
+<nav>
+  <div class="logo" onclick="showPage('home')">Alkemi<span>Jana</span></div>
+  <ul class="nav-links" id="navLinks">
+    <li><a onclick="showPage('home')" data-page="home" class="active">Početna</a></li>
+    <li><a onclick="showPage('usluge')" data-page="usluge">Usluge</a></li>
+    <li><a onclick="showPage('o-meni')" data-page="o-meni">O meni</a></li>
+    <li><a onclick="showPage('blog')" data-page="blog">Blog</a></li>
+    <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
+  </ul>
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+</nav>
+
+<!-- HOME -->
+<section class="page active" id="home">
+  <div class="hero">
+    <div>
+      <div class="hero-ornament">✦</div>
+      <h1>Alkemi<span class="amp">·</span>Jana</h1>
+      <div class="hero-sub">Tarot · Astrologija · Mudrost</div>
+      <p class="hero-desc">Otkrijte poruke zvijezda i karata. Vodstvo kroz duhovne staze, intuitivna čitanja i astrološka tumačenja koja osvjetljavaju put pred vama.</p>
+      <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+      <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+    </div>
+  </div>
+
+  <div class="section container">
+    <h2 class="section-title">Moje Usluge</h2>
+    <p class="section-subtitle">Putovi do unutarnje istine</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <span class="service-icon">☽</span>
+        <h3>Tarot Čitanje</h3>
+        <p>Otkrijte poruke koje karte nose o vašoj prošlosti, sadašnjosti i budućnosti.</p>
+        <div class="service-price">40 €<small> / 60 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">☉</span>
+        <h3>Natalna Karta</h3>
+        <p>Detaljna analiza vaše astrološke karte rođenja i životnog puta.</p>
+        <div class="service-price">60 €<small> / 90 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">✦</span>
+        <h3>Duhovno Savjetovanje</h3>
+        <p>Vodstvo kroz životne prijelaze, odluke i osobni razvoj.</p>
+        <div class="service-price">50 €<small> / 60 min</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <h2>Karte čekaju vaše pitanje</h2>
+    <p>Zakažite svoj prvi susret i otvorite vrata novim spoznajama</p>
+    <a class="btn btn-primary" onclick="showPage('kontakt')">Zakaži susret</a>
+  </div>
+
+  <div class="section container">
+    <h2 class="section-title">Riječi Klijenata</h2>
+    <p class="section-subtitle">Iskustva onih koji su prošli kroz vrata</p>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★ ★ ★ ★ ★</div>
+        <p class="review-text">Jana ima izuzetnu sposobnost čitanja energije. Njezina interpretacija karata bila je toliko precizna da sam ostala bez riječi. Preporučujem od srca.</p>
+        <div class="review-author">MARIJA K.<span>Zagreb</span></div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★ ★ ★ ★ ★</div>
+        <p class="review-text">Natalna karta koju mi je izradila otvorila mi je oči o aspektima mene samog kojih nisam bio svjestan. Profesionalno, toplo i duboko.</p>
+        <div class="review-author">IVAN M.<span>Split</span></div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★ ★ ★ ★ ★</div>
+        <p class="review-text">Dolazila sam u teškom razdoblju života. Janina mudrost i intuicija pomogle su mi pronaći jasnoću i smirenost. Hvala od srca.</p>
+        <div class="review-author">ANA P.<span>Rijeka</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USLUGE -->
+<section class="page" id="usluge">
+  <div class="container">
+    <h2 class="section-title">Usluge i Cjenik</h2>
+    <p class="section-subtitle">Svaka usluga je putovanje</p>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <span class="service-icon">☽</span>
+        <h3>Tarot Čitanje</h3>
+        <p>Klasično čitanje karata Velike i Male Arkane uz dubinsku interpretaciju vašeg pitanja.</p>
+        <div class="service-price">40 €<small> / 60 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">☉</span>
+        <h3>Natalna Karta</h3>
+        <p>Detaljna izrada i tumačenje karte rođenja s pisanim izvještajem.</p>
+        <div class="service-price">60 €<small> / 90 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">♆</span>
+        <h3>Tranziti & Predviđanja</h3>
+        <p>Astrološka analiza nadolazećeg razdoblja i ključnih tranzita.</p>
+        <div class="service-price">55 €<small> / 75 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">♥</span>
+        <h3>Ljubavna Sinastrija</h3>
+        <p>Usporedba dvije natalne karte i analiza odnosa.</p>
+        <div class="service-price">75 €<small> / 90 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">✦</span>
+        <h3>Duhovno Savjetovanje</h3>
+        <p>Vodstvo kroz životne prijelaze i osobni razvoj.</p>
+        <div class="service-price">50 €<small> / 60 min</small></div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">☿</span>
+        <h3>Online Konzultacija</h3>
+        <p>Sve usluge dostupne putem video poziva, bilo gdje u svijetu.</p>
+        <div class="service-price">35 €<small> / 60 min</small></div>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Italiana',serif;font-size:2rem;color:var(--lavender);text-align:center;margin-top:5rem;margin-bottom:1rem">Detaljni Cjenik</h3>
+    <p class="section-subtitle" style="margin-bottom:2rem">Sve usluge u jednoj tablici</p>
+
+    <div class="pricing-table">
+      <div class="pricing-row header">
+        <div>Usluga</div>
+        <div>Opis</div>
+        <div style="text-align:right">Cijena</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Brzo Čitanje</div>
+        <div class="desc">Jedno pitanje, 3 karte, 20 minuta</div>
+        <div class="price">20 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Tarot Čitanje</div>
+        <div class="desc">Klasično čitanje, 60 minuta</div>
+        <div class="price">40 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Duhovno Savjetovanje</div>
+        <div class="desc">Razgovor uz karte, 60 minuta</div>
+        <div class="price">50 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Tranziti</div>
+        <div class="desc">Astrološka analiza razdoblja, 75 minuta</div>
+        <div class="price">55 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Natalna Karta</div>
+        <div class="desc">Karta rođenja + pisani izvještaj, 90 minuta</div>
+        <div class="price">60 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Ljubavna Sinastrija</div>
+        <div class="desc">Analiza odnosa dvije karte, 90 minuta</div>
+        <div class="price">75 €</div>
+      </div>
+      <div class="pricing-row">
+        <div class="name">Solarni Povratak</div>
+        <div class="desc">Godišnja prognoza, 60 minuta</div>
+        <div class="price">45 €</div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>Spremni za vaše putovanje?</h2>
+      <p>Odaberite uslugu i rezervirajte svoj termin</p>
+      <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+    </div>
+  </div>
+</section>
+
+<!-- O MENI -->
+<section class="page" id="o-meni">
+  <div class="container">
+    <h2 class="section-title">O meni</h2>
+    <p class="section-subtitle">Mistična priča iza imena</p>
+
+    <div class="about-grid">
+      <div class="about-image"></div>
+      <div class="about-text">
+        <h3>Jana</h3>
+        <p>Već više od petnaest godina hodam putem tarota i astrologije. Ono što je započelo kao osobna potraga za smislom, prerasla je u poziv — pomoći drugima da pronađu vlastiti put kroz mudrost karata i zvijezda.</p>
+        <p>Studirala sam klasičnu astrologiju, hermetičku tradiciju tarota te dubinsku psihologiju. Svaka konzultacija za mene je sveti prostor — mjesto gdje se susreću logika i intuicija, znanost i duhovnost.</p>
+        <div class="quote">"Karte ne predviđaju budućnost — one vam pokazuju vašu unutarnju istinu, kako biste mogli oblikovati put pred sobom."</div>
+        <p>Vjerujem da svaki čovjek nosi vlastiti odgovor u sebi. Moja je uloga biti tihi tumač, vodič koji osvjetljava ono što već znate, ali još niste imenovali.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title" style="font-size:2.5rem">Moja Filozofija</h2>
+      <div class="services-grid" style="margin-top:2rem">
+        <div class="service-card">
+          <span class="service-icon">✧</span>
+          <h3>Diskrecija</h3>
+          <p>Sve što se dijeli ostaje između nas. Povjerenje je temelj svakog susreta.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">☾</span>
+          <h3>Iskrenost</h3>
+          <p>Karte govore i ugodne i izazovne istine. Prenosim ih s poštovanjem i jasnoćom.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">✦</span>
+          <h3>Sloboda Izbora</h3>
+          <p>Vi ste autor svoje sudbine. Karte su samo karta, vi ste putnik.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" style="max-width:900px">
+      <h2 class="section-title" style="font-size:2rem;margin-top:4rem">Riječi onih koji su putovali sa mnom</h2>
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-stars">★ ★ ★ ★ ★</div>
+          <p class="review-text">Susret s Janom nije obična konzultacija — to je iskustvo koje vas mijenja. Njena toplina i znanje su rijetka kombinacija.</p>
+          <div class="review-author">LANA T.<span>Pula</span></div>
+        </div>
+        <div class="review-card">
+          <div class="review-stars">★ ★ ★ ★ ★</div>
+          <p class="review-text">Vraćam se već treću godinu. Svaki put me iznova zadivi dubinom svojih tumačenja.</p>
+          <div class="review-author">PETRA S.<span>Osijek</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="page" id="blog">
+  <div class="container">
+    <h2 class="section-title">Blog & Članci</h2>
+    <p class="section-subtitle">Mudrost koja se dijeli</p>
+
+    <div class="blog-grid">
+      <div class="blog-card">
+        <div class="blog-image">☽</div>
+        <div class="blog-content">
+          <div class="blog-meta">15. Svibnja 2026 · Astrologija</div>
+          <h3>Značenje Mjeseca u natalnoj karti</h3>
+          <p>Mjesec je vladar naših emocija, podsvijesti i intuicije. Otkrijte kako njegov položaj u vašoj karti rođenja utječe na vaš emocionalni svijet...</p>
+          <div class="blog-link">Pročitaj više →</div>
+        </div>
+      </div>
+
+      <div class="blog-card">
+        <div class="blog-image">✦</div>
+        <div class="blog-content">
+          <div class="blog-meta">02. Svibnja 2026 · Tarot</div>
+          <h3>Kako čitati Veliku Arkanu</h3>
+          <p>Dvadeset i dvije karte Velike Arkane predstavljaju arhetipove duhovnog putovanja. Vodič kroz njihova značenja i međusobne veze...</p>
+          <div class="blog-link">Pročitaj više →</div>
+        </div>
+      </div>
+
+      <div class="blog-card">
+        <div class="blog-image">☿</div>
+        <div class="blog-content">
+          <div class="blog-meta">18. Travnja 2026 · Astrologija</div>
+          <h3>Retrogradni Merkur — što očekivati</h3>
+          <p>Tri puta godišnje Merkur kreće unatrag. Što to znači za našu komunikaciju, putovanja i tehnologiju, i kako se nositi s tim razdobljem...</p>
+          <div class="blog-link">Pročitaj više →</div>
+        </div>
+      </div>
+
+      <div class="blog-card">
+        <div class="blog-image">☾</div>
+        <div class="blog-content">
+          <div class="blog-meta">05. Travnja 2026 · Ritual</div>
+          <h3>Tarot i mjesečeve mijene</h3>
+          <p>Mlad mjesec, pun mjesec, svaka faza nosi svoju energiju. Naučite kako uskladiti svoja tarot čitanja s ciklusima Mjeseca...</p>
+          <div class="blog-link">Pročitaj više →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KONTAKT -->
+<section class="page" id="kontakt">
+  <div class="container">
+    <h2 class="section-title">Rezervacija & Kontakt</h2>
+    <p class="section-subtitle">Putovanje počinje jednom porukom</p>
+
+    <div class="contact-grid">
+      <div>
+        <div class="contact-info-item">
+          <div class="label">Email</div>
+          <div class="value">info@alkemijana.hr</div>
+        </div>
+        <div class="contact-info-item">
+          <div class="label">Telefon</div>
+          <div class="value">+385 91 234 5678</div>
+        </div>
+        <div class="contact-info-item">
+          <div class="label">Lokacija</div>
+          <div class="value">Zagreb, Hrvatska<br><small style="color:var(--text-muted);font-size:0.95rem">+ online konzultacije</small></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="label">Radno Vrijeme</div>
+          <ul class="hours-list">
+            <li><span>Ponedjeljak — Petak</span><span>10:00 — 20:00</span></li>
+            <li><span>Subota</span><span>10:00 — 16:00</span></li>
+            <li><span>Nedjelja</span><span>Zatvoreno</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-section" style="margin:0;padding:3rem">
+        <form id="bookingForm" onsubmit="submitForm(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ime i prezime</label>
+              <input type="text" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Telefon</label>
+              <input type="tel">
+            </div>
+            <div class="form-group">
+              <label>Usluga</label>
+              <select required>
+                <option value="">Odaberi uslugu</option>
+                <option>Brzo Čitanje (20 €)</option>
+                <option>Tarot Čitanje (40 €)</option>
+                <option>Natalna Karta (60 €)</option>
+                <option>Duhovno Savjetovanje (50 €)</option>
+                <option>Tranziti (55 €)</option>
+                <option>Ljubavna Sinastrija (75 €)</option>
+                <option>Online Konzultacija (35 €)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Vaša poruka</label>
+            <textarea placeholder="Napišite par riječi o tome što vas zanima ili koje termine vam odgovaraju..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Pošalji upit</button>
+        </form>
+
+        <div class="form-success" id="formSuccess">
+          <span class="icon">✦</span>
+          <h3>Hvala vam</h3>
+          <p>Vaša poruka je poslana. Javit ću Vam se u najkraćem mogućem roku sa slobodnim terminima.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">AlkemiJana</div>
+  <div class="footer-tagline">Tarot · Astrologija · Mudrost zvijezda</div>
+  <div class="divider" style="max-width:200px"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+  <div class="footer-copy">© 2026 AlkemiJana. Sva prava pridržana.</div>
+</footer>
+
+</div>
+
+<script>
+function showPage(pageId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>{
+    a.classList.toggle('active', a.dataset.page===pageId);
+  });
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMenu(){
+  document.getElementById('navLinks').classList.toggle('open');
+}
+function submitForm(e){
+  e.preventDefault();
+  document.getElementById('bookingForm').style.display='none';
+  document.getElementById('formSuccess').classList.add('show');
+}
+</script>
+</body>
+</html>

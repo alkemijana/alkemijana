@@ -6,7 +6,6 @@
    ============================================================ */
 
 const ADMIN_CREDS = { user: 'jana', pass: 'alkemijana2026' };
-const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
 let isAdmin       = false;
 let editingPostId = null;
@@ -62,29 +61,24 @@ document.getElementById('aj-pass').addEventListener('keydown', e => {
    VIDLJIVOST RECENZIJA (toggle u admin baru)
    ============================================================ */
 
-async function uploadToImgBB(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-  const res  = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: formData });
-  const data = await res.json();
-  if (data.success) return data.data.url;
-  throw new Error('Upload neuspješan');
-}
-
-async function handleAboutImageUpload(input) {
+function handleAboutImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  try {
-    input.parentElement.textContent = '⏳ Uploadam...';
-    const url = await uploadToImgBB(file);
-    SITE_SETTINGS.aboutImageUrl = url;
+  const canvas = document.createElement('canvas');
+  const img    = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    const MAX = 600;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    SITE_SETTINGS.aboutImageUrl = canvas.toDataURL('image/jpeg', 0.85);
     applySettings();
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
-    alert('Slika je postavljena!');
-  } catch(e) {
-    alert('Greška pri uploadu slike. Pokušaj ponovo.');
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
-  }
+    URL.revokeObjectURL(img.src);
+    alert('Slika je postavljena! Klikni "Spremi & preuzmi" da sačuvaš.');
+  };
+  img.src = URL.createObjectURL(file);
 }
 
 function toggleServices() {
@@ -283,20 +277,26 @@ function selectBlogEmoji(emoji, el) {
   el.classList.add('active');
 }
 
-async function handleBlogImageUpload(input) {
+function handleBlogImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  document.getElementById('img-filename').textContent = '⏳ Uploadam...';
+  document.getElementById('img-filename').textContent = file.name;
 
-  try {
-    const url = await uploadToImgBB(file);
-    document.getElementById('ed-img').value           = url;
-    document.getElementById('img-prev').src           = url;
+  const canvas = document.createElement('canvas');
+  const img    = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    const MAX = 1000;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    const b64 = canvas.toDataURL('image/jpeg', 0.82);
+    document.getElementById('ed-img').value        = b64;
+    document.getElementById('img-prev').src        = b64;
     document.getElementById('img-prev').style.display = 'block';
-    document.getElementById('img-filename').textContent = '✅ ' + file.name;
-  } catch(e) {
-    document.getElementById('img-filename').textContent = '❌ Greška — pokušaj ponovo';
-  }
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
 }
 
 function clearBlogImage() {

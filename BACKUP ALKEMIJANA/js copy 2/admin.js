@@ -6,7 +6,6 @@
    ============================================================ */
 
 const ADMIN_CREDS = { user: 'jana', pass: 'alkemijana2026' };
-const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
 let isAdmin       = false;
 let editingPostId = null;
@@ -62,37 +61,6 @@ document.getElementById('aj-pass').addEventListener('keydown', e => {
    VIDLJIVOST RECENZIJA (toggle u admin baru)
    ============================================================ */
 
-async function uploadToImgBB(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-  const res  = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: formData });
-  const data = await res.json();
-  if (data.success) return data.data.url;
-  throw new Error('Upload neuspješan');
-}
-
-async function handleAboutImageUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  try {
-    input.parentElement.textContent = '⏳ Uploadam...';
-    const url = await uploadToImgBB(file);
-    SITE_SETTINGS.aboutImageUrl = url;
-    applySettings();
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
-    alert('Slika je postavljena!');
-  } catch(e) {
-    alert('Greška pri uploadu slike. Pokušaj ponovo.');
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
-  }
-}
-
-function toggleServices() {
-  SITE_SETTINGS.showServices = !SITE_SETTINGS.showServices;
-  applySettings();
-  syncToggleBtns();
-}
-
 function toggleReviews() {
   SITE_SETTINGS.showReviews = !SITE_SETTINGS.showReviews;
   applySettings();
@@ -106,12 +74,6 @@ function toggleAboutReviews() {
 }
 
 function syncToggleBtns() {
-  const b0 = document.getElementById('toggle-services-btn');
-  if (b0) {
-    b0.textContent     = SITE_SETTINGS.showServices ? 'Usluge: On' : 'Usluge: Off';
-    b0.style.color     = SITE_SETTINGS.showServices ? 'var(--sage)' : '';
-    b0.style.borderColor = SITE_SETTINGS.showServices ? 'var(--sage)' : '';
-  }
   const b1 = document.getElementById('toggle-reviews-btn');
   const b2 = document.getElementById('toggle-about-reviews-btn');
   if (b1) {
@@ -149,7 +111,6 @@ function switchTab(t) {
   if (t === 'services') renderSvcAdmin();
   if (t === 'pricing')  renderPricingAdmin();
   if (t === 'reviews')  renderReviewsAdmin();
-  if (t === 'texts')    renderTextsAdmin();
 }
 
 /* ============================================================
@@ -283,20 +244,26 @@ function selectBlogEmoji(emoji, el) {
   el.classList.add('active');
 }
 
-async function handleBlogImageUpload(input) {
+function handleBlogImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  document.getElementById('img-filename').textContent = '⏳ Uploadam...';
+  document.getElementById('img-filename').textContent = file.name;
 
-  try {
-    const url = await uploadToImgBB(file);
-    document.getElementById('ed-img').value           = url;
-    document.getElementById('img-prev').src           = url;
+  const canvas = document.createElement('canvas');
+  const img    = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    const MAX = 1000;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    const b64 = canvas.toDataURL('image/jpeg', 0.82);
+    document.getElementById('ed-img').value        = b64;
+    document.getElementById('img-prev').src        = b64;
     document.getElementById('img-prev').style.display = 'block';
-    document.getElementById('img-filename').textContent = '✅ ' + file.name;
-  } catch(e) {
-    document.getElementById('img-filename').textContent = '❌ Greška — pokušaj ponovo';
-  }
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
 }
 
 function clearBlogImage() {
@@ -382,7 +349,7 @@ function renderSvcAdmin() {
         <div class="spi-icon">${s.icon}</div>
         <div class="spi-info">
           <div class="spi-name">${s.archived ? '🗄 ' : ''}${s.name}</div>
-          <div class="spi-price">${s.showPrice !== false ? s.price + ' €' : ''}${s.showPrice !== false && s.showDuration !== false ? ' · ' : ''}${s.showDuration !== false ? s.duration + ' min' : ''}${s.showPrice === false && s.showDuration === false ? '(skriveno)' : ''}${s.home ? ' · početna' : ''}</div>
+          <div class="spi-price">${s.price} € · ${s.duration} min${s.home ? ' · početna' : ''}</div>
         </div>
       </div>`
     ).join('');
@@ -429,22 +396,10 @@ function showServiceEditor(s) {
       <textarea id="svc-desc" rows="3">${s ? esc(s.desc) : ''}</textarea>
     </div>
     <div class="af-2">
-      <div class="af">
-        <label>Cijena (€)</label>
-        <input id="svc-price" type="number" min="0" value="${s ? s.price : ''}">
-        <label class="home-toggle" style="margin-top:0.5rem">
-          <input type="checkbox" id="svc-showprice" ${!s || s.showPrice !== false ? 'checked' : ''}>
-          <span>Prikaži cijenu</span>
-        </label>
-      </div>
-      <div class="af">
-        <label>Trajanje (min)</label>
-        <input id="svc-dur" type="number" min="0" value="${s ? s.duration : '60'}">
-        <label class="home-toggle" style="margin-top:0.5rem">
-          <input type="checkbox" id="svc-showdur" ${!s || s.showDuration !== false ? 'checked' : ''}>
-          <span>Prikaži trajanje</span>
-        </label>
-      </div>
+      <div class="af"><label>Cijena (€)</label>
+        <input id="svc-price" type="number" min="0" value="${s ? s.price : ''}"></div>
+      <div class="af"><label>Trajanje (min)</label>
+        <input id="svc-dur" type="number" min="0" value="${s ? s.duration : '60'}"></div>
     </div>
     <div class="af">
       <label>Ikona — odabrana: <span id="svc-icon-preview" style="font-size:1.4rem;vertical-align:middle">${icon}</span></label>
@@ -482,10 +437,8 @@ function saveService() {
     desc:     (document.getElementById('svc-desc').value  || '').trim(),
     price:    (document.getElementById('svc-price').value || '0').trim(),
     duration: (document.getElementById('svc-dur').value   || '60').trim(),
-    home:         document.getElementById('svc-home').checked,
-    showPrice:    document.getElementById('svc-showprice').checked,
-    showDuration: document.getElementById('svc-showdur').checked,
-    archived:     document.getElementById('svc-archived').checked,
+    home:     document.getElementById('svc-home').checked,
+    archived: document.getElementById('svc-archived').checked,
   };
 
   if (editingSvcId === '__new__') SERVICES.push(svcData);
@@ -654,51 +607,6 @@ function deleteReview(id) {
 }
 
 /* ============================================================
-   TEKSTOVI
-   ============================================================ */
-
-const TEXT_LABELS = {
-  heroSub:          'Podnaslov (početna)',
-  heroDesc:         'Opis (početna)',
-  servicesTitle:    'Naslov usluga',
-  servicesSub:      'Podnaslov usluga',
-  ctaTitle:         'CTA naslov',
-  ctaText:          'CTA tekst',
-  ctaBtn:           'CTA gumb',
-  reviewsTitle:     'Naslov recenzija',
-  reviewsSub:       'Podnaslov recenzija',
-  blogPreviewTitle: 'Naslov blog pregleda',
-  blogPreviewSub:   'Podnaslov blog pregleda',
-  blogPreviewBtn:   'Gumb za blog',
-  contactTitle:     'Naslov kontakta',
-  contactSub:       'Podnaslov kontakta',
-  footerTagline:    'Footer tagline',
-  aboutQuote:       'Citat (O meni)'
-};
-
-function renderTextsAdmin() {
-  const wrap = document.getElementById('texts-fields');
-  wrap.innerHTML = Object.keys(TEXT_LABELS).map(key => `
-    <div class="af">
-      <label>${TEXT_LABELS[key]}</label>
-      ${TEXTS[key].length > 60
-        ? `<textarea id="txt-${key}" rows="2">${esc(TEXTS[key])}</textarea>`
-        : `<input id="txt-${key}" value="${esc(TEXTS[key])}">`
-      }
-    </div>`
-  ).join('');
-}
-
-function saveTexts() {
-  Object.keys(TEXT_LABELS).forEach(key => {
-    const el = document.getElementById('txt-' + key);
-    if (el) TEXTS[key] = el.value;
-  });
-  applySettings();
-  alert('Tekstovi su spremljeni!');
-}
-
-/* ============================================================
    PREUZIMANJE AŽURIRANOG data.js
    ============================================================ */
 
@@ -707,7 +615,6 @@ function downloadSite() {
   const svcJson      = JSON.stringify(SERVICES,      null, 2);
   const prJson       = JSON.stringify(PRICING,       null, 2);
   const revJson      = JSON.stringify(REVIEWS,       null, 2);
-  const textsJson    = JSON.stringify(TEXTS,         null, 2);
   const settingsJson = JSON.stringify(SITE_SETTINGS, null, 2);
 
   const content = `/* ============================================================
@@ -732,11 +639,6 @@ let PRICING = ${prJson};
 // ===ALKEMIJANA:REVIEWS:START===
 let REVIEWS = ${revJson};
 // ===ALKEMIJANA:REVIEWS:END===
-
-
-// ===ALKEMIJANA:TEXTS:START===
-let TEXTS = ${textsJson};
-// ===ALKEMIJANA:TEXTS:END===
 
 
 // ===ALKEMIJANA:SETTINGS:START===

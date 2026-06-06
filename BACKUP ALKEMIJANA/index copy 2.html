@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlkemiJana — Tarot & Astrologija</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Quicksand:wght@400;500;600;700&family=Cormorant+Infant:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+  <!-- Stilovi -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     12 HOROSKOPSKIH ZVIJEŽĐA — stvarne koordinate zvijezda
+     Preslikavanje: x = (RA_sati/24)*1920, y = ((35−Dec)/80)*1080
+     Bez linija, bez natpisa — samo zvijezde.
+     ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"
+  style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.45">
+  <defs>
+    <filter id="sg"> <feGaussianBlur stdDeviation="2"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="sgb"><feGaussianBlur stdDeviation="3.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!--
+    Zvijezde 12 zodijačkih zviježđa — stvarne koordinate
+    Formula: x = (RA_sati/24)*1920,  y = ((35−Dec°)/80)*1080
+    Veličina kruga = prividna magnituda zvijezde
+  -->
+  <g filter="url(#sg)">
+
+    <!-- ── ARIES (Ovan) ── -->
+    <circle cx="170" cy="156" r="3.0" fill="#e4e0f4" filter="url(#sgb)"/><!-- Hamal α 2.01 -->
+    <circle cx="153" cy="192" r="2.2" fill="#d8d4ec"/><!-- Sheratan β 2.64 -->
+    <circle cx="152" cy="213" r="1.6" fill="#c4c0d8"/><!-- Mesarthim γ 3.88 -->
+    <circle cx="227" cy="105" r="1.4" fill="#b8b4cc"/><!-- 41 Ari 3.63 -->
+
+    <!-- ── TAURUS (Bik) ── -->
+    <circle cx="368" cy="250" r="4.2" fill="#ffe4c8" filter="url(#sgb)"/><!-- Aldebaran α 0.87 narančasta -->
+    <circle cx="435" cy="88"  r="2.8" fill="#e4e0f4" filter="url(#sgb)"/><!-- Elnath β 1.65 -->
+    <circle cx="358" cy="213" r="1.8" fill="#c4c0d8"/><!-- Ain ε 3.53 -->
+    <circle cx="350" cy="234" r="1.6" fill="#c4c0d8"/><!-- Hyadum II δ 3.76 -->
+    <circle cx="347" cy="261" r="1.6" fill="#c4c0d8"/><!-- Hyadum I γ 3.65 -->
+    <circle cx="358" cy="257" r="1.4" fill="#b8b4cc"/><!-- θ¹ Tau 3.84 -->
+    <!-- Pleijadi — grozd zvijezda -->
+    <circle cx="303" cy="147" r="2.0" fill="#d8d4ec"/><!-- Alcyone η 2.87 -->
+    <circle cx="306" cy="149" r="1.5" fill="#c4c0d8"/><!-- Atlas 3.63 -->
+    <circle cx="302" cy="143" r="1.5" fill="#c4c0d8"/><!-- Maia 3.87 -->
+    <circle cx="300" cy="149" r="1.3" fill="#b8b4cc"/><!-- Merope 4.18 -->
+    <circle cx="300" cy="142" r="1.3" fill="#b8b4cc"/><!-- Taygeta 4.30 -->
+    <circle cx="296" cy="148" r="1.3" fill="#b8b4cc"/><!-- Electra 3.70 -->
+    <circle cx="305" cy="147" r="1.2" fill="#b8b4cc"/><!-- Pleione 5.09 -->
+
+    <!-- ── GEMINI (Blizanci) ── -->
+    <circle cx="607" cy="42"  r="2.8" fill="#e4e0f4" filter="url(#sgb)"/><!-- Castor α 1.58 -->
+    <circle cx="620" cy="94"  r="3.5" fill="#e4e0f4" filter="url(#sgb)"/><!-- Pollux β 1.14 — najsjajniji -->
+    <circle cx="530" cy="250" r="2.8" fill="#d8d4ec"/><!-- Alhena γ 1.93 -->
+    <circle cx="539" cy="130" r="1.8" fill="#c4c0d8"/><!-- Mebsuda ε 3.06 -->
+    <circle cx="511" cy="166" r="1.8" fill="#c4c0d8"/><!-- Tejat μ 3.16 -->
+    <circle cx="500" cy="166" r="1.6" fill="#c4c0d8"/><!-- Propus η 3.28 -->
+    <circle cx="587" cy="173" r="1.6" fill="#c4c0d8"/><!-- Wasat δ 3.53 -->
+    <circle cx="540" cy="298" r="1.6" fill="#c4c0d8"/><!-- Alzirr ξ 3.36 -->
+    <circle cx="519" cy="197" r="1.4" fill="#b8b4cc"/><!-- ν Gem 4.15 -->
+
+    <!-- ── CANCER (Rak) ── -->
+    <circle cx="663" cy="348" r="2.2" fill="#d8d4ec"/><!-- Al Tarf β 3.53 -->
+    <circle cx="699" cy="227" r="1.8" fill="#c4c0d8"/><!-- Asellus Australis δ 3.94 -->
+    <circle cx="697" cy="181" r="1.8" fill="#c4c0d8"/><!-- Asellus Borealis γ 4.66 -->
+    <circle cx="718" cy="311" r="1.6" fill="#c4c0d8"/><!-- Acubens α 4.25 -->
+    <circle cx="702" cy="86"  r="1.4" fill="#b8b4cc"/><!-- ι Cnc 4.02 -->
+
+    <!-- ── LEO (Lav) ── -->
+    <circle cx="812" cy="311" r="4.2" fill="#e4e0f4" filter="url(#sgb)"/><!-- Regulus α 1.35 -->
+    <circle cx="945" cy="274" r="2.8" fill="#d8d4ec"/><!-- Denebola β 2.14 -->
+    <circle cx="827" cy="206" r="2.8" fill="#d8d4ec"/><!-- Algieba γ 2.01 -->
+    <circle cx="898" cy="196" r="2.2" fill="#d8d4ec"/><!-- Zosma δ 2.56 -->
+    <circle cx="781" cy="152" r="2.0" fill="#c4c0d8"/><!-- Ras Elased ε 2.98 -->
+    <circle cx="791" cy="122" r="1.8" fill="#c4c0d8"/><!-- Rasalas μ 3.88 -->
+    <circle cx="823" cy="157" r="1.8" fill="#c4c0d8"/><!-- Adhafera ζ 3.44 -->
+    <circle cx="810" cy="247" r="1.6" fill="#c4c0d8"/><!-- η Leo 3.49 -->
+    <circle cx="774" cy="326" r="1.4" fill="#b8b4cc"/><!-- Subra ο 3.52 -->
+
+    <!-- ── VIRGO (Djevica) ── -->
+    <circle cx="1074" cy="623" r="4.2" fill="#e8e8ff" filter="url(#sgb)"/><!-- Spica α 0.97 -->
+    <circle cx="1016" cy="493" r="2.8" fill="#d8d4ec"/><!-- Porrima γ 2.74 -->
+    <circle cx="947"  cy="452" r="2.2" fill="#d8d4ec"/><!-- Zavijava β 3.61 -->
+    <circle cx="1043" cy="322" r="2.2" fill="#d8d4ec"/><!-- Vindemiatrix ε 2.83 -->
+    <circle cx="1034" cy="427" r="2.0" fill="#c4c0d8"/><!-- Auva δ 3.38 -->
+    <circle cx="1086" cy="482" r="1.8" fill="#c4c0d8"/><!-- Heze ζ 3.38 -->
+    <circle cx="987"  cy="483" r="1.6" fill="#c4c0d8"/><!-- η Vir 3.89 -->
+    <circle cx="1053" cy="560" r="1.4" fill="#b8b4cc"/><!-- θ Vir 4.38 -->
+
+    <!-- ── LIBRA (Vaga) ── -->
+    <circle cx="1188" cy="689" r="2.8" fill="#d8d4ec"/><!-- Zubenelgenubi α 2.75 -->
+    <circle cx="1223" cy="599" r="2.8" fill="#d8d4ec"/><!-- Zubeneschamali β 2.60 -->
+    <circle cx="1248" cy="671" r="1.8" fill="#c4c0d8"/><!-- Zubenelhakrabi γ 3.91 -->
+    <circle cx="1205" cy="812" r="1.4" fill="#b8b4cc"/><!-- Brachium σ 3.29 -->
+
+    <!-- ── SCORPIUS (Škorpion) ── -->
+    <circle cx="1287" cy="738" r="2.8" fill="#d8d4ec"/><!-- Graffias β 2.56 -->
+    <circle cx="1280" cy="776" r="2.8" fill="#d8d4ec"/><!-- Dschubba δ 2.29 -->
+    <circle cx="1278" cy="824" r="1.8" fill="#c4c0d8"/><!-- π Sco 2.89 -->
+    <circle cx="1308" cy="817" r="2.2" fill="#d8d4ec"/><!-- σ Sco 2.89 -->
+    <circle cx="1319" cy="829" r="4.5" fill="#ffcfbf" filter="url(#sgb)"/><!-- Antares α 1.09 — crvena -->
+    <circle cx="1328" cy="853" r="2.2" fill="#c4c0d8"/><!-- τ Sco 2.82 -->
+    <circle cx="1347" cy="935" r="2.5" fill="#d8d4ec"/><!-- ε Sco 2.29 -->
+    <circle cx="1349" cy="981" r="1.8" fill="#c4c0d8"/><!-- μ¹ Sco 3.00 -->
+    <circle cx="1405" cy="973" r="3.2" fill="#d8d4ec" filter="url(#sgb)"/><!-- Shaula λ 1.63 -->
+    <circle cx="1402" cy="976" r="2.5" fill="#d8d4ec"/><!-- Lesath υ 2.70 -->
+    <circle cx="1417" cy="999" r="2.5" fill="#d8d4ec"/><!-- κ Sco 2.39 -->
+    <circle cx="1410" cy="1055" r="1.6" fill="#c4c0d8"/><!-- θ Sco 1.87 -->
+    <circle cx="1423" cy="1014" r="1.6" fill="#c4c0d8"/><!-- ι Sco 3.03 -->
+
+    <!-- ── SAGITTARIUS (Strijelac) — čajnik ── -->
+    <circle cx="1472" cy="936" r="3.5" fill="#e4e0f4" filter="url(#sgb)"/><!-- Kaus Australis ε 1.85 -->
+    <circle cx="1477" cy="814" r="2.5" fill="#d8d4ec"/><!-- Kaus Borealis λ 2.82 -->
+    <circle cx="1468" cy="874" r="2.2" fill="#d8d4ec"/><!-- Kaus Media δ 2.70 -->
+    <circle cx="1514" cy="826" r="2.8" fill="#d8d4ec"/><!-- Nunki σ 2.02 -->
+    <circle cx="1524" cy="875" r="2.2" fill="#d8d4ec"/><!-- Ascella ζ 2.60 -->
+    <circle cx="1477" cy="844" r="1.8" fill="#c4c0d8"/><!-- φ Sgr 3.17 -->
+    <circle cx="1533" cy="756" r="2.2" fill="#d8d4ec"/><!-- Albaldah π 2.88 -->
+    <circle cx="1448" cy="882" r="2.2" fill="#d8d4ec"/><!-- Nash γ 2.98 -->
+    <circle cx="1529" cy="844" r="1.6" fill="#c4c0d8"/><!-- τ Sgr 3.32 -->
+    <circle cx="1484" cy="908" r="1.5" fill="#b8b4cc"/><!-- η Sgr 3.11 -->
+
+    <!-- ── CAPRICORNUS (Jarac) ── -->
+    <circle cx="1624" cy="641" r="2.0" fill="#d8d4ec"/><!-- Algedi α 3.57 -->
+    <circle cx="1628" cy="672" r="2.2" fill="#d8d4ec"/><!-- Dabih β 3.05 -->
+    <circle cx="1743" cy="690" r="2.5" fill="#d8d4ec"/><!-- Deneb Algedi δ 2.85 -->
+    <circle cx="1733" cy="697" r="1.8" fill="#c4c0d8"/><!-- Nashira γ 3.68 -->
+    <circle cx="1688" cy="705" r="1.6" fill="#c4c0d8"/><!-- θ Cap 4.07 -->
+    <circle cx="1715" cy="775" r="1.5" fill="#b8b4cc"/><!-- ζ Cap 3.74 -->
+    <circle cx="1662" cy="815" r="1.5" fill="#b8b4cc"/><!-- ψ Cap 4.14 -->
+    <circle cx="1669" cy="838" r="1.5" fill="#b8b4cc"/><!-- ω Cap 4.12 -->
+
+    <!-- ── AQUARIUS (Vodenjak) ── -->
+    <circle cx="1722" cy="543" r="2.8" fill="#d8d4ec"/><!-- Sadalsuud β 2.91 -->
+    <circle cx="1768" cy="476" r="2.8" fill="#d8d4ec"/><!-- Sadalmelik α 2.95 -->
+    <circle cx="1789" cy="490" r="2.0" fill="#c4c0d8"/><!-- Sadachbia γ 3.84 -->
+    <circle cx="1664" cy="596" r="2.0" fill="#c4c0d8"/><!-- ε Aqr 3.77 -->
+    <circle cx="1807" cy="474" r="1.8" fill="#c4c0d8"/><!-- η Aqr 4.02 -->
+    <circle cx="1798" cy="473" r="1.6" fill="#c4c0d8"/><!-- ζ Aqr 3.65 (dvostruka) -->
+    <circle cx="1833" cy="685" r="2.0" fill="#c4c0d8"/><!-- Skat δ 3.27 -->
+    <circle cx="1857" cy="627" r="1.6" fill="#b8b4cc"/><!-- λ Aqr 3.74 -->
+
+    <!-- ── PISCES (Ribe) — proteže se s obje strane RA=0h ── -->
+    <!-- Zapadna riba (oko RA≈1h) -->
+    <circle cx="122" cy="267" r="2.2" fill="#d8d4ec"/><!-- η Psc 3.62 — najsjajnija -->
+    <circle cx="163" cy="437" r="2.0" fill="#d8d4ec"/><!-- Alrescha α 3.82 — čvor -->
+    <circle cx="138" cy="323" r="1.6" fill="#c4c0d8"/><!-- π Psc 5.57 -->
+    <circle cx="141" cy="350" r="1.6" fill="#c4c0d8"/><!-- ο Psc 4.26 -->
+    <circle cx="148" cy="213" r="1.5" fill="#b8b4cc"/><!-- ρ Psc 5.38 -->
+    <circle cx="119" cy="390" r="1.5" fill="#b8b4cc"/><!-- μ Psc 4.84 -->
+    <circle cx="135" cy="399" r="1.5" fill="#b8b4cc"/><!-- ν Psc 4.44 -->
+    <circle cx="151" cy="430" r="1.6" fill="#c4c0d8"/><!-- ξ Psc 4.61 -->
+    <circle cx="84"  cy="366" r="1.6" fill="#c4c0d8"/><!-- ε Psc 4.28 -->
+    <circle cx="97"  cy="370" r="1.6" fill="#c4c0d8"/><!-- ζ Psc 5.24 -->
+    <circle cx="39"  cy="370" r="1.5" fill="#b8b4cc"/><!-- δ Psc 4.44 -->
+    <!-- Istočna riba (oko RA≈23h) -->
+    <circle cx="1863" cy="430" r="1.8" fill="#c4c0d8"/><!-- γ Psc 3.69 -->
+    <circle cx="1877" cy="386" r="1.6" fill="#c4c0d8"/><!-- θ Psc 4.27 -->
+    <circle cx="1893" cy="397" r="1.6" fill="#c4c0d8"/><!-- ι Psc 4.13 -->
+    <circle cx="1876" cy="456" r="1.5" fill="#b8b4cc"/><!-- κ Psc 4.94 -->
+    <circle cx="1895" cy="449" r="1.5" fill="#b8b4cc"/><!-- λ Psc 4.50 -->
+    <circle cx="1919" cy="380" r="1.6" fill="#c4c0d8"/><!-- ω Psc 4.01 -->
+
+  </g>
+</svg>
+
+<!-- ============================================================
+     ADMIN BAR (vidljiv samo kad je administrator prijavljen)
+     ============================================================ -->
+<div id="admin-bar">
+  <span class="admin-badge">⚙ Administrator</span>
+  <div class="admin-btns">
+    <button class="abt"       onclick="openAdmin('blog')">Blog</button>
+    <button class="abt"       onclick="openAdmin('services')">Usluge</button>
+    <button class="abt"       onclick="openAdmin('pricing')">Cjenik</button>
+    <button class="abt" id="toggle-reviews-btn"       onclick="toggleReviews()">Rec. Početna: Off</button>
+    <button class="abt" id="toggle-about-reviews-btn" onclick="toggleAboutReviews()">Rec. O meni: Off</button>
+    <button class="abt abt-green" onclick="downloadSite()">↓ Spremi & preuzmi</button>
+    <button class="abt abt-red"   onclick="adminLogout()">Odjava</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     SADRŽAJ STRANICE
+     ============================================================ -->
+<div class="content">
+
+  <nav id="main-nav">
+    <div class="logo" onclick="showPage('home')">Alkemi<span>Jana</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a onclick="showPage('home')"    data-page="home"   class="active">Početna</a></li>
+      <li><a onclick="showPage('usluge')"  data-page="usluge">Usluge</a></li>
+      <li><a onclick="showPage('o-meni')"  data-page="o-meni">O meni</a></li>
+      <li><a onclick="showPage('blog')"    data-page="blog">Blog</a></li>
+      <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
+    </ul>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+  </nav>
+
+  <!-- POČETNA -->
+  <section class="page active" id="home">
+    <div class="hero">
+      <div>
+        <h1>AlkemiJana</h1>
+        <div class="hero-sub">Već znaš. Karte samo pokazuju put.</div>
+        <p class="hero-desc">Ovo nije mjesto gdje ćeš dobiti odgovore. Ovo je mjesto gdje ćeš početi postavljati prava pitanja.</p>
+        <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+      </div>
+    </div>
+    <div class="section container">
+      <h2 class="section-title">Moje Usluge</h2>
+      <p class="section-subtitle">Putovi do unutarnje istine</p>
+      <div class="services-grid" id="home-services-grid"></div>
+    </div>
+    <div class="cta-section">
+      <h2>Karte čekaju vaše pitanje</h2>
+      <p>Zakažite svoj prvi susret i otvorite vrata novim spoznajama</p>
+      <a class="btn btn-primary" onclick="showPage('kontakt')">Zakaži susret</a>
+    </div>
+    <div class="section container">
+      <h2 class="section-title">Najnoviji Članci</h2>
+      <p class="section-subtitle">Iz bloga</p>
+      <div class="blog-grid" id="home-blog-preview-grid"></div>
+      <div style="text-align:center;margin-top:2.5rem">
+        <a class="btn" onclick="showPage('blog')">Pročitaj sve članke →</a>
+      </div>
+    </div>
+
+    <div class="section container" id="home-reviews-section" style="display:none">
+      <h2 class="section-title">Riječi Klijenata</h2>
+      <p class="section-subtitle">Iskustva onih koji su prošli kroz vrata</p>
+      <div class="reviews-grid" id="home-reviews-grid"></div>
+    </div>
+  </section>
+
+  <!-- USLUGE -->
+  <section class="page" id="usluge">
+    <div class="container">
+      <h2 class="section-title">Usluge i Cjenik</h2>
+      <p class="section-subtitle">Svaka usluga je putovanje</p>
+      <div class="services-grid" id="all-services-grid"></div>
+
+      <h3 style="font-family:'Playfair Display',serif;font-size:2.1rem;color:var(--lavender);text-align:center;margin-top:5rem;margin-bottom:1rem">Detaljni Cjenik</h3>
+      <p class="section-subtitle" style="margin-bottom:2rem">Sve usluge u jednoj tablici</p>
+      <div class="pricing-table" id="pricing-table-wrap"></div>
+
+      <div class="cta-section">
+        <h2>Spremni za vaše putovanje?</h2>
+        <p>Odaberite uslugu i rezervirajte svoj termin</p>
+        <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- O MENI -->
+  <section class="page" id="o-meni">
+    <div class="container">
+      <h2 class="section-title">O meni</h2>
+      <p class="section-subtitle">Mistična priča iza imena</p>
+      <div class="about-grid">
+        <div class="about-image"></div>
+        <div class="about-text">
+          <h3>Jana</h3>
+          <p>Već više od petnaest godina hodam putem tarota i astrologije. Ono što je započelo kao osobna potraga za smislom, prerasla je u poziv — pomoći drugima da pronađu vlastiti put kroz mudrost karata i zvijezda.</p>
+          <p>Studirala sam klasičnu astrologiju, hermetičku tradiciju tarota te dubinsku psihologiju. Svaka konzultacija za mene je sveti prostor — mjesto gdje se susreću logika i intuicija, znanost i duhovnost.</p>
+          <div class="quote">"Karte ne predviđaju budućnost — one vam pokazuju vašu unutarnju istinu, kako biste mogli oblikovati put pred sobom."</div>
+          <p>Vjerujem da svaki čovjek nosi vlastiti odgovor u sebi. Moja je uloga biti tihi tumač, vodič koji osvjetljava ono što već znate, ali još niste imenovali.</p>
+        </div>
+      </div>
+      <div class="section">
+        <h2 class="section-title" style="font-size:2.6rem">Moja Filozofija</h2>
+        <div class="services-grid" style="margin-top:2rem">
+          <div class="service-card"><span class="service-icon">✧</span><h3>Diskrecija</h3><p>Sve što se dijeli ostaje između nas. Povjerenje je temelj svakog susreta.</p></div>
+          <div class="service-card"><span class="service-icon">☾</span><h3>Iskrenost</h3><p>Karte govore i ugodne i izazovne istine. Prenosim ih s poštovanjem i jasnoćom.</p></div>
+          <div class="service-card"><span class="service-icon">✦</span><h3>Sloboda Izbora</h3><p>Vi ste autor svoje sudbine. Karte su samo karta, vi ste putnik.</p></div>
+        </div>
+      </div>
+      <div id="about-reviews-section" style="display:none;max-width:900px;margin:0 auto">
+        <h2 class="section-title" style="font-size:2.1rem;margin-top:4rem">Riječi onih koji su putovali sa mnom</h2>
+        <div class="reviews-grid" id="about-reviews-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="page" id="blog">
+    <div class="container" id="blog-list-view">
+      <h2 class="section-title">Blog & Članci</h2>
+      <p class="section-subtitle">Mudrost koja se dijeli</p>
+      <div class="blog-grid" id="blog-grid"></div>
+    </div>
+    <div id="blog-post-view">
+      <div class="container" style="padding-top:2rem">
+        <button class="back-btn" onclick="closeBlogPost()">← Povratak na blog</button>
+      </div>
+      <div class="post-header">
+        <div class="blog-meta" id="post-meta"></div>
+        <h1 id="post-title"></h1>
+        <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+      </div>
+      <div class="post-feature-img" id="post-feature-img" style="display:none">
+        <img id="post-img" src="" alt="">
+      </div>
+      <div class="post-body"  id="post-body"></div>
+      <div class="share-bar" id="share-bar"></div>
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section class="page" id="kontakt">
+    <div class="container">
+      <h2 class="section-title">Rezervacija & Kontakt</h2>
+      <p class="section-subtitle">Putovanje počinje jednom porukom</p>
+      <div class="contact-grid">
+        <div>
+          <div class="contact-info-item">
+            <div class="label">Email</div>
+            <div class="value"><a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Telefon</div>
+            <div class="value"><a href="tel:+385976126893">+385 97 6126 893</a></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Lokacija</div>
+            <div class="value">Zagreb, Hrvatska<br><small style="color:var(--text-muted);font-size:1rem">+ online konzultacije</small></div>
+          </div>
+          <div class="contact-info-item">
+            <div class="label">Pratite me</div>
+            <div class="social-links">
+              <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+                Instagram
+              </a>
+              <a href="https://www.tiktok.com/@alkemijana" target="_blank" rel="noopener" class="social-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.53V6.77a4.85 4.85 0 01-1.01-.08z"/></svg>
+                TikTok
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section" style="margin:0;padding:3rem">
+          <form id="bookingForm" onsubmit="submitForm(event)">
+            <!-- Web3Forms — upute: idite na web3forms.com, unesite jana@alkemijana.com i zamijenite ključ ispod -->
+            <input type="hidden" name="access_key" value="4143652a-1c70-49ac-b085-76c4571ab507">
+            <input type="hidden" name="subject"    value="Novi upit — AlkemiJana">
+            <input type="hidden" name="from_name"  value="AlkemiJana">
+            <input type="hidden" name="redirect"   value="false">
+
+            <div class="form-row">
+              <div class="form-group"><label>Ime i prezime</label><input type="text"  name="ime"    required></div>
+              <div class="form-group"><label>Email</label>        <input type="email" name="email"  required></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Telefon</label><input type="tel" name="telefon"></div>
+              <div class="form-group">
+                <label>Usluga</label>
+                <select name="usluga" required id="booking-service-select">
+                  <option value="">Odaberi uslugu</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Vaša poruka</label>
+              <textarea name="poruka" placeholder="Napišite par riječi o tome što vas zanima ili koje termine vam odgovaraju..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%" id="form-submit-btn">Pošalji upit</button>
+          </form>
+          <div class="form-success" id="formSuccess">
+            <span class="icon">✦</span>
+            <h3>Hvala vam</h3>
+            <p>Vaša poruka je poslana. Javit ću Vam se u najkraćem mogućem roku sa slobodnim terminima.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">AlkemiJana</div>
+    <div class="footer-tagline">Već znaš. Karte samo pokazuju put.</div>
+    <div class="footer-social">
+      <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
+        @alkemijana
+      </a>
+      <a href="https://www.tiktok.com/@alkemijana" target="_blank" rel="noopener" class="social-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.53V6.77a4.85 4.85 0 01-1.01-.08z"/></svg>
+        @alkemijana
+      </a>
+    </div>
+    <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+    <div class="footer-copy">© 2026 AlkemiJana. Sva prava pridržana.</div>
+  </footer>
+
+</div><!-- /.content -->
+
+<!-- ============================================================
+     ADMIN: Login modal
+     ============================================================ -->
+<div id="admin-login-overlay">
+  <div id="admin-login-box">
+    <button class="al-close" onclick="closeAdminLogin()">×</button>
+    <h2>Administrator</h2>
+    <div class="sub">Prijava za uređivanje sadržaja</div>
+    <input id="aj-user" type="text"     placeholder="Korisničko ime" autocomplete="username">
+    <input id="aj-pass" type="password" placeholder="Lozinka"        autocomplete="current-password">
+    <div id="admin-error">Pogrešno korisničko ime ili lozinka.</div>
+    <button class="btn btn-primary" style="width:100%" onclick="handleAdminLogin()">Prijava</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     ADMIN: Panel za uređivanje
+     ============================================================ -->
+<div id="admin-panel-overlay">
+  <div id="admin-panel">
+    <div class="ap-header">
+      <div class="ap-tabs">
+        <button class="ap-tab-btn active" id="tab-blog"     onclick="switchTab('blog')">Blog</button>
+        <button class="ap-tab-btn"        id="tab-services" onclick="switchTab('services')">Usluge</button>
+        <button class="ap-tab-btn"        id="tab-pricing"  onclick="switchTab('pricing')">Cjenik</button>
+        <button class="ap-tab-btn"        id="tab-reviews"  onclick="switchTab('reviews')">Recenzije</button>
+      </div>
+      <button class="ap-close" onclick="closeAdminPanel()">×</button>
+    </div>
+
+    <div class="ap-body">
+      <!-- TAB: Blog -->
+      <div class="ap-tab-content active" id="ap-blog">
+        <div class="blog-list-col">
+          <div class="blh">
+            <p>Članci</p>
+            <button class="ap-btn ap-btn-save" style="width:100%;font-size:0.72rem" onclick="newPost()">+ Novi članak</button>
+          </div>
+          <div id="blog-admin-list"></div>
+        </div>
+        <div class="blog-editor-col" id="blog-editor-col">
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">
+            Odaberite članak za uređivanje ili dodajte novi.
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB: Usluge -->
+      <div class="ap-tab-content" id="ap-services">
+        <div class="svc-list-col">
+          <div class="blh">
+            <p>Usluge</p>
+            <button class="ap-btn ap-btn-save" style="width:100%;font-size:0.72rem" onclick="newService()">+ Nova usluga</button>
+          </div>
+          <div id="svc-admin-list"></div>
+        </div>
+        <div class="svc-editor-col" id="svc-editor-col">
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberite uslugu za uređivanje ili dodajte novu.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Recenzije -->
+      <div class="ap-tab-content" id="ap-reviews">
+        <div class="blog-list-col">
+          <div class="blh">
+            <p>Recenzije</p>
+            <button class="ap-btn ap-btn-save" style="width:100%;font-size:0.72rem" onclick="newReview()">+ Nova recenzija</button>
+          </div>
+          <div id="rev-admin-list"></div>
+        </div>
+        <div class="blog-editor-col" id="rev-editor-col">
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberite recenziju za uređivanje ili dodajte novu.</p>
+        </div>
+      </div>
+
+      <!-- TAB: Cjenik -->
+      <div class="ap-tab-content" id="ap-pricing">
+        <div class="pricing-admin-wrap">
+          <h3>Upravljanje Cjenikom</h3>
+          <div id="pricing-admin-list"></div>
+          <button class="ap-btn ap-btn-save" style="margin-top:1rem" onclick="addPricingRow()">+ Dodaj stavku</button>
+          <div class="ap-actions">
+            <button class="ap-btn ap-btn-save" onclick="savePricing()">Spremi cjenik</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JavaScript — redoslijed učitavanja je važan:
+     1. data.js   — podaci (blog, usluge, cjenik)
+     2. app.js    — navigacija i renderiranje
+     3. admin.js  — admin panel
+     ============================================================ -->
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>

@@ -161,6 +161,7 @@ function switchTab(t) {
   if (t === 'pricing')  renderPricingAdmin();
   if (t === 'reviews')  renderReviewsAdmin();
   if (t === 'texts')    renderTextsAdmin();
+  // stats tab ne treba renderiranje — iframe se sam učitava
 }
 
 /* ============================================================

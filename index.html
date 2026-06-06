@@ -535,6 +535,7 @@
         <button class="ap-tab-btn"        id="tab-pricing"  onclick="switchTab('pricing')">Cjenik</button>
         <button class="ap-tab-btn"        id="tab-reviews"  onclick="switchTab('reviews')">Recenzije</button>
         <button class="ap-tab-btn"        id="tab-texts"    onclick="switchTab('texts')">Tekstovi</button>
+        <button class="ap-tab-btn"        id="tab-stats"    onclick="switchTab('stats')">Statistika</button>
       </div>
       <button class="ap-close" onclick="closeAdminPanel()">×</button>
     </div>
@@ -584,6 +585,16 @@
         </div>
       </div>
 
+      <!-- TAB: Statistika -->
+      <div class="ap-tab-content" id="ap-stats">
+        <div class="pricing-admin-wrap">
+          <h3>Posjećenost stranice</h3>
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.95rem;margin-bottom:1.5rem">Podaci iz GoatCounter analytics-a</p>
+          <iframe src="https://alkemijana.goatcounter.com" style="width:100%;height:calc(100vh - 200px);border:1px solid var(--border);background:#fff;border-radius:2px"></iframe>
+          <p style="margin-top:1rem"><a href="https://alkemijana.goatcounter.com" target="_blank" rel="noopener" class="share-btn">Otvori puni dashboard ↗</a></p>
+        </div>
+      </div>
+
       <!-- TAB: Tekstovi -->
       <div class="ap-tab-content" id="ap-texts">
         <div class="pricing-admin-wrap" id="texts-editor-wrap">
@@ -617,6 +628,9 @@
      2. app.js    — navigacija i renderiranje
      3. admin.js  — admin panel
      ============================================================ -->
+<!-- GoatCounter analytics -->
+<script data-goatcounter="https://alkemijana.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/admin.js"></script>

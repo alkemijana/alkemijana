@@ -259,6 +259,6 @@ let SITE_SETTINGS = {
   "showReviews": false,
   "showAboutReviews": false,
   "showServices": false,
-  "aboutImageUrl": ""
+  "aboutImageUrl": "https://i.ibb.co/S7xGJ5Qh/profilna-za-mail.png"
 };
 // ===ALKEMIJANA:SETTINGS:END===

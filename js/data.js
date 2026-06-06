@@ -5,6 +5,17 @@
 // ===ALKEMIJANA:BLOG_POSTS:START===
 let BLOG_POSTS = [
   {
+    "id": "test",
+    "title": "test",
+    "date": "06.06.2026.",
+    "category": "astrologija",
+    "icon": "🕯️",
+    "imageUrl": "https://i.ibb.co/S7xGJ5Qh/profilna-za-mail.png",
+    "excerpt": "test test test",
+    "content": "\n        <p>Počni pisati ovdje... hfhsefhthlwethčwhwhirzh&nbsp;&nbsp;</p><h3>Tekstitzoihoih</h3><h2>Tekstwrkhtlhzaekg</h2><blockquote>Tekstrhtahrzlerjarjhsjtsiouz</blockquote><blockquote>rihtoqihrgaejej</blockquote>\n      ",
+    "archived": false
+  },
+  {
     "id": "znacenje-mjeseca",
     "title": "Značenje Mjeseca u natalnoj karti",
     "date": "15. svibnja 2026",

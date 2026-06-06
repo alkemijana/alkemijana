@@ -117,25 +117,28 @@ function toggleAboutReviews() {
 }
 
 function syncToggleBtns() {
-  const b0 = document.getElementById('toggle-services-btn');
-  if (b0) {
-    b0.textContent     = SITE_SETTINGS.showServices ? 'Usluge: On' : 'Usluge: Off';
-    b0.style.color     = SITE_SETTINGS.showServices ? 'var(--sage)' : '';
-    b0.style.borderColor = SITE_SETTINGS.showServices ? 'var(--sage)' : '';
-  }
-  const b1 = document.getElementById('toggle-reviews-btn');
-  const b2 = document.getElementById('toggle-about-reviews-btn');
-  if (b1) {
-    b1.textContent     = SITE_SETTINGS.showReviews ? 'Rec. Početna: On' : 'Rec. Početna: Off';
-    b1.style.color     = SITE_SETTINGS.showReviews ? 'var(--sage)' : '';
-    b1.style.borderColor = SITE_SETTINGS.showReviews ? 'var(--sage)' : '';
-  }
-  if (b2) {
-    b2.textContent     = SITE_SETTINGS.showAboutReviews ? 'Rec. O meni: On' : 'Rec. O meni: Off';
-    b2.style.color     = SITE_SETTINGS.showAboutReviews ? 'var(--sage)' : '';
-    b2.style.borderColor = SITE_SETTINGS.showAboutReviews ? 'var(--sage)' : '';
-  }
+  const setItem = (id, on, label) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = (on ? '● ' : '○ ') + label;
+    el.classList.toggle('is-on', on);
+  };
+  setItem('toggle-services-btn',      SITE_SETTINGS.showServices,     'Usluge');
+  setItem('toggle-reviews-btn',       SITE_SETTINGS.showReviews,      'Recenzije — Početna');
+  setItem('toggle-about-reviews-btn', SITE_SETTINGS.showAboutReviews, 'Recenzije — O meni');
 }
+
+function toggleAdminMenu() {
+  document.getElementById('abt-toggles-menu').classList.toggle('open');
+}
+
+// Zatvori dropdown na klik vani
+document.addEventListener('click', e => {
+  const dd = document.querySelector('.abt-dropdown');
+  if (dd && !dd.contains(e.target)) {
+    document.getElementById('abt-toggles-menu')?.classList.remove('open');
+  }
+});
 
 /* ============================================================
    ADMIN PANEL — otvaranje / zatvaranje / tabovi

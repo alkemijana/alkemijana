@@ -275,18 +275,20 @@
      ADMIN BAR (vidljiv samo kad je administrator prijavljen)
      ============================================================ -->
 <div id="admin-bar">
-  <span class="admin-badge">⚙ Administrator</span>
-  <div class="admin-btns">
-    <button class="abt"       onclick="openAdmin('blog')">Blog</button>
-    <button class="abt"       onclick="openAdmin('services')">Usluge</button>
-    <button class="abt"       onclick="openAdmin('pricing')">Cjenik</button>
-    <label class="abt" style="cursor:pointer">📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)"></label>
-    <button class="abt" id="toggle-services-btn"      onclick="toggleServices()">Usluge: Off</button>
-    <button class="abt" id="toggle-reviews-btn"       onclick="toggleReviews()">Rec. Početna: Off</button>
-    <button class="abt" id="toggle-about-reviews-btn" onclick="toggleAboutReviews()">Rec. O meni: Off</button>
-    <button class="abt abt-green" onclick="downloadSite()">↓ Spremi</button>
-    <button class="abt abt-red"   onclick="adminLogout()">Odjava</button>
+  <span class="admin-badge">⚙ Admin</span>
+  <button class="abt abt-main" onclick="openAdmin('blog')">✦ Uredi sadržaj</button>
+  <div class="abt-spacer"></div>
+  <div class="abt-dropdown">
+    <button class="abt" onclick="toggleAdminMenu()">Prikaz ▾</button>
+    <div class="abt-menu" id="abt-toggles-menu">
+      <button class="abt-menu-item" id="toggle-services-btn"       onclick="toggleServices()">○ Usluge</button>
+      <button class="abt-menu-item" id="toggle-reviews-btn"        onclick="toggleReviews()">○ Recenzije — Početna</button>
+      <button class="abt-menu-item" id="toggle-about-reviews-btn"  onclick="toggleAboutReviews()">○ Recenzije — O meni</button>
+    </div>
   </div>
+  <label class="abt" style="cursor:pointer" title="Promijeni svoju sliku za O meni">📷 Slika<input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)"></label>
+  <button class="abt abt-green" onclick="downloadSite()">↓ Spremi</button>
+  <button class="abt abt-red"   onclick="adminLogout()" title="Odjava">⏻</button>
 </div>
 
 <!-- ============================================================

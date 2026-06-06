@@ -563,26 +563,119 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 #admin-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 46px;
-  background: linear-gradient(90deg, #0a0620, #14104a);
-  border-bottom: 1px solid var(--lavender);
+  height: 50px;
+  background: linear-gradient(90deg, rgba(10,6,32,0.96), rgba(20,16,74,0.96));
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(168,144,208,0.4);
   display: none;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
+  gap: 0.6rem;
+  padding: 0 1.4rem;
   z-index: 500;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 #admin-bar.show { display: flex; }
 
-.admin-badge { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lavender); }
-.admin-btns  { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.admin-badge {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--lavender);
+  padding: 0.35rem 0.9rem;
+  background: rgba(168,144,208,0.1);
+  border: 1px solid rgba(168,144,208,0.3);
+  border-radius: 3px;
+}
 
-.abt { padding: 0.28rem 0.9rem; background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
-.abt:hover { border-color: var(--lavender); color: var(--lavender); }
-.abt-green  { border-color: rgba(106, 148, 120, 0.5); color: var(--sage); }
-.abt-green:hover { background: var(--sage); color: var(--bg-deep); }
-.abt-red    { border-color: rgba(200, 100, 100, 0.4); color: #d08080; }
-.abt-red:hover { background: rgba(200, 100, 100, 0.15); }
+.abt-spacer { flex: 1; }
+
+.abt {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.42rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(168,144,208,0.2);
+  color: var(--text);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.25s;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.abt:hover {
+  border-color: var(--lavender);
+  color: var(--lavender);
+  background: rgba(168,144,208,0.08);
+}
+.abt-main {
+  background: linear-gradient(135deg, rgba(168,144,208,0.18), rgba(168,144,208,0.08));
+  border-color: var(--lavender);
+  color: var(--lavender);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.abt-main:hover {
+  background: linear-gradient(135deg, rgba(168,144,208,0.3), rgba(168,144,208,0.15));
+}
+.abt-green {
+  border-color: rgba(106,148,120,0.5);
+  color: var(--sage);
+  font-weight: 700;
+}
+.abt-green:hover {
+  background: var(--sage);
+  color: var(--bg-deep);
+  border-color: var(--sage);
+}
+.abt-red {
+  border-color: rgba(200,100,100,0.35);
+  color: #d08080;
+  padding: 0.42rem 0.7rem;
+  font-size: 0.95rem;
+}
+.abt-red:hover { background: rgba(200,100,100,0.15); }
+
+/* Dropdown menu */
+.abt-dropdown { position: relative; }
+.abt-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 220px;
+  background: linear-gradient(160deg, #1c1840, #0e0c24);
+  border: 1px solid rgba(168,144,208,0.4);
+  border-radius: 3px;
+  padding: 0.4rem 0;
+  z-index: 510;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.abt-menu.open { display: block; }
+.abt-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1rem;
+  color: var(--text);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.abt-menu-item:hover {
+  background: rgba(168,144,208,0.1);
+  color: var(--lavender);
+}
+.abt-menu-item.is-on {
+  color: var(--sage);
+}
+.abt-menu-item.is-on::first-letter {
+  color: var(--sage);
+}
 
 /* Login modal */
 #admin-login-overlay { display: none; position: fixed; inset: 0; background: rgba(6, 8, 15, 0.94); z-index: 600; align-items: center; justify-content: center; }

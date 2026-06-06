@@ -63,12 +63,23 @@ document.getElementById('aj-pass').addEventListener('keydown', e => {
    ============================================================ */
 
 async function uploadToImgBB(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-  const res  = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: formData });
-  const data = await res.json();
-  if (data.success) return data.data.url;
-  throw new Error('Upload neuspješan');
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result.split(',')[1];
+        const formData = new FormData();
+        formData.append('key', IMGBB_KEY);
+        formData.append('image', base64);
+        const res  = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) resolve(data.data.url);
+        else reject(new Error(data.error ? data.error.message : 'Upload neuspješan'));
+      } catch(e) { reject(e); }
+    };
+    reader.onerror = () => reject(new Error('Čitanje datoteke neuspješno'));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function handleAboutImageUpload(input) {

@@ -673,60 +673,41 @@ async function loadStats() {
   const el = document.getElementById('stats-display');
   el.innerHTML = '<p style="color:var(--text-muted);font-style:italic">Učitavam statistiku...</p>';
 
+  const GC = 'https://alkemijana.goatcounter.com';
+  let html = '';
+  let hasData = false;
+
   try {
-    const GC = 'https://alkemijana.goatcounter.com';
+    // Dohvati ukupan broj posjeta
+    const totalRes = await fetch(GC + '/counter/TOTAL.json');
+    if (totalRes.ok) {
+      const totalData = await totalRes.json();
+      hasData = true;
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:2rem">';
+      html += statCard('Ukupno posjeta', totalData.count || '0');
 
-    // Dohvati ukupne brojeve preko javnog API-ja
-    const [totalRes, pagesRes] = await Promise.all([
-      fetch(GC + '/counter/TOTAL.json'),
-      fetch(GC + '/api/v0/stats/total?period=week&start=' + getDateStr(-7) + '&end=' + getDateStr(0))
-    ]);
-
-    let totalData = null;
-    let pagesData = null;
-
-    if (totalRes.ok) totalData = await totalRes.json();
-    if (pagesRes.ok) pagesData = await pagesRes.json();
-
-    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:2rem">';
-
-    if (totalData && totalData.count !== undefined) {
-      html += statCard('Ukupno posjeta', totalData.count);
-    }
-
-    html += '</div>';
-
-    // Dohvati i posjete po stranicama
-    const pathsRes = await fetch(GC + '/api/v0/stats/hits?period=week&start=' + getDateStr(-7) + '&end=' + getDateStr(0));
-    if (pathsRes.ok) {
-      const pathsData = await pathsRes.json();
-      if (pathsData.hits && pathsData.hits.length > 0) {
-        html += '<h3 style="font-family:\'Playfair Display\',serif;color:var(--lavender);font-size:1.1rem;margin-bottom:1rem">Posjet po stranicama (zadnjih 7 dana)</h3>';
-        html += '<div style="border:1px solid var(--border)">';
-        pathsData.hits.slice(0, 10).forEach(h => {
-          const name = h.path === '/' ? 'Početna' : h.path;
-          html += `<div style="display:flex;justify-content:space-between;padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
-            <span style="color:var(--silver-light);font-family:'Cormorant Garamond',serif;font-size:1.05rem">${name}</span>
-            <span style="color:var(--lavender);font-family:'Playfair Display',serif;font-size:1.1rem">${h.count}</span>
-          </div>`;
-        });
-        html += '</div>';
+      // Dohvati brojeve za pojedine stranice
+      const pages = ['/', '#blog', '#kontakt', '#o-meni'];
+      const labels = ['Početna', 'Blog', 'Kontakt', 'O meni'];
+      for (let i = 0; i < pages.length; i++) {
+        try {
+          const r = await fetch(GC + '/counter/' + encodeURIComponent(pages[i]) + '.json');
+          if (r.ok) {
+            const d = await r.json();
+            html += statCard(labels[i], d.count || '0');
+          }
+        } catch {}
       }
+      html += '</div>';
     }
+  } catch {}
 
-    // Ako ništa nije uspjelo, prikaži osnovnu poruku
-    if (!totalData && !pagesData) {
-      html = `<p style="color:var(--text);font-size:1.05rem">Statistika je još prazna — posjeti se počinju bilježiti čim netko posjeti stranicu.</p>
-        <p style="color:var(--text-muted);margin-top:0.5rem">Za detaljni pregled klikni gumb ispod.</p>`;
-    }
-
-    el.innerHTML = html;
-
-  } catch(e) {
-    el.innerHTML = `
-      <p style="color:var(--text);font-size:1.05rem;margin-bottom:1rem">Nije moguće učitati statistiku direktno.</p>
-      <a href="https://alkemijana.goatcounter.com" target="_blank" rel="noopener" class="btn" style="font-size:0.8rem">Otvori GoatCounter dashboard ↗</a>`;
+  if (!hasData) {
+    html = `<p style="color:var(--text);font-size:1.05rem;margin-bottom:0.5rem">Još nema dovoljno podataka za prikaz.</p>
+      <p style="color:var(--text-muted);font-size:0.95rem">Posjeti se bilježe automatski. Statistika će se popuniti nakon prvih posjeta.</p>`;
   }
+
+  el.innerHTML = html;
 }
 
 function statCard(label, value) {

@@ -161,7 +161,7 @@ function switchTab(t) {
   if (t === 'pricing')  renderPricingAdmin();
   if (t === 'reviews')  renderReviewsAdmin();
   if (t === 'texts')    renderTextsAdmin();
-  // stats tab ne treba renderiranje — iframe se sam učitava
+  if (t === 'stats')    loadStats();
 }
 
 /* ============================================================
@@ -663,6 +663,83 @@ function deleteReview(id) {
   renderReviews('home',  'home-reviews-grid');
   renderReviews('omeni', 'about-reviews-grid');
   cancelReviewEdit();
+}
+
+/* ============================================================
+   STATISTIKA
+   ============================================================ */
+
+async function loadStats() {
+  const el = document.getElementById('stats-display');
+  el.innerHTML = '<p style="color:var(--text-muted);font-style:italic">Učitavam statistiku...</p>';
+
+  try {
+    const GC = 'https://alkemijana.goatcounter.com';
+
+    // Dohvati ukupne brojeve preko javnog API-ja
+    const [totalRes, pagesRes] = await Promise.all([
+      fetch(GC + '/counter/TOTAL.json'),
+      fetch(GC + '/api/v0/stats/total?period=week&start=' + getDateStr(-7) + '&end=' + getDateStr(0))
+    ]);
+
+    let totalData = null;
+    let pagesData = null;
+
+    if (totalRes.ok) totalData = await totalRes.json();
+    if (pagesRes.ok) pagesData = await pagesRes.json();
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:2rem">';
+
+    if (totalData && totalData.count !== undefined) {
+      html += statCard('Ukupno posjeta', totalData.count);
+    }
+
+    html += '</div>';
+
+    // Dohvati i posjete po stranicama
+    const pathsRes = await fetch(GC + '/api/v0/stats/hits?period=week&start=' + getDateStr(-7) + '&end=' + getDateStr(0));
+    if (pathsRes.ok) {
+      const pathsData = await pathsRes.json();
+      if (pathsData.hits && pathsData.hits.length > 0) {
+        html += '<h3 style="font-family:\'Playfair Display\',serif;color:var(--lavender);font-size:1.1rem;margin-bottom:1rem">Posjet po stranicama (zadnjih 7 dana)</h3>';
+        html += '<div style="border:1px solid var(--border)">';
+        pathsData.hits.slice(0, 10).forEach(h => {
+          const name = h.path === '/' ? 'Početna' : h.path;
+          html += `<div style="display:flex;justify-content:space-between;padding:0.8rem 1rem;border-bottom:1px solid var(--border)">
+            <span style="color:var(--silver-light);font-family:'Cormorant Garamond',serif;font-size:1.05rem">${name}</span>
+            <span style="color:var(--lavender);font-family:'Playfair Display',serif;font-size:1.1rem">${h.count}</span>
+          </div>`;
+        });
+        html += '</div>';
+      }
+    }
+
+    // Ako ništa nije uspjelo, prikaži osnovnu poruku
+    if (!totalData && !pagesData) {
+      html = `<p style="color:var(--text);font-size:1.05rem">Statistika je još prazna — posjeti se počinju bilježiti čim netko posjeti stranicu.</p>
+        <p style="color:var(--text-muted);margin-top:0.5rem">Za detaljni pregled klikni gumb ispod.</p>`;
+    }
+
+    el.innerHTML = html;
+
+  } catch(e) {
+    el.innerHTML = `
+      <p style="color:var(--text);font-size:1.05rem;margin-bottom:1rem">Nije moguće učitati statistiku direktno.</p>
+      <a href="https://alkemijana.goatcounter.com" target="_blank" rel="noopener" class="btn" style="font-size:0.8rem">Otvori GoatCounter dashboard ↗</a>`;
+  }
+}
+
+function statCard(label, value) {
+  return `<div style="background:rgba(6,8,15,0.5);border:1px solid var(--border);padding:1.5rem;text-align:center">
+    <div style="font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--lavender);margin-bottom:0.4rem">${value}</div>
+    <div style="font-family:'Quicksand',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted)">${label}</div>
+  </div>`;
+}
+
+function getDateStr(daysOffset) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  return d.toISOString().split('T')[0];
 }
 
 /* ============================================================

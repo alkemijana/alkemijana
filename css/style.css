@@ -882,6 +882,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 
   .svc-list-col { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 180px; }
   .blog-editor-col, .svc-editor-col, .pricing-admin-wrap { padding: 1rem; }
+  .ap-tab-content.active { min-height: 0; }
+  .pricing-admin-wrap { height: 100%; min-height: 0; -webkit-overflow-scrolling: touch; }
   .af-2, .af-3 { grid-template-columns: 1fr; gap: 0.7rem; }
   .af input, .af select, .af textarea { font-size: 0.95rem; padding: 0.65rem 0.8rem; }
   .editor-toolbar { gap: 0.25rem; }

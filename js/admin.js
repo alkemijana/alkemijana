@@ -1033,6 +1033,42 @@ function saveTexts() {
    ============================================================ */
 
 async function downloadSite() {
+  const saveBtn = document.querySelector('[onclick="downloadSite()"]');
+
+  // Auto-generiraj naslovne slike iz emoji ikona za sve aktivne članke koji ih
+  // nemaju. Tako WhatsApp / Facebook / Instagram dijeljenje uvijek ima pravi PNG
+  // thumbnail bez ručnog rada po članku.
+  const needCover = BLOG_POSTS.filter(p => !p.archived && !p.imageUrl && p.icon);
+  if (needCover.length > 0) {
+    if (saveBtn) saveBtn.disabled = true;
+    if (document.fonts && document.fonts.load) {
+      try {
+        await Promise.all([
+          document.fonts.load('600 56px "Playfair Display"'),
+          document.fonts.load('58px "Tangerine"'),
+          document.fonts.load('600 22px "Quicksand"')
+        ]);
+      } catch (e) {}
+    }
+    for (let i = 0; i < needCover.length; i++) {
+      const p = needCover[i];
+      if (saveBtn) saveBtn.textContent = `✨ Slika ${i + 1}/${needCover.length}...`;
+      try {
+        const blob = await renderCoverCanvas({
+          icon: p.icon, title: p.title, date: p.date, category: p.category
+        });
+        const file = new File([blob], `cover-${p.id}-${Date.now()}.png`, { type: 'image/png' });
+        p.imageUrl = await uploadToImgBB(file);
+      } catch (e) {
+        console.warn('Cover gen failed for', p.id, e);
+      }
+    }
+    if (editingPostId && editingPostId !== '__new__') {
+      const ep = BLOG_POSTS.find(x => x.id === editingPostId);
+      if (ep) showPostEditor(ep);
+    }
+  }
+
   const postsJson    = JSON.stringify(BLOG_POSTS,    null, 2);
   const svcJson      = JSON.stringify(SERVICES,      null, 2);
   const prJson       = JSON.stringify(PRICING,       null, 2);
@@ -1074,8 +1110,6 @@ let SITE_SETTINGS = ${settingsJson};
 // ===ALKEMIJANA:SETTINGS:END===
 `;
 
-  // Spremi na server (auto-deploy)
-  const saveBtn = document.querySelector('[onclick="downloadSite()"]');
   if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }
 
   try {

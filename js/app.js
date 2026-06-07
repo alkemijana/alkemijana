@@ -293,11 +293,43 @@ function openPost(id) {
   if (p.imageUrl) { pi.src = p.imageUrl; fi.style.display = 'block'; }
   else            { fi.style.display = 'none'; }
 
+  const rt = document.getElementById('post-read-time');
+  if (rt) {
+    const words = (p.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).length;
+    const mins  = Math.max(1, Math.round(words / 200));
+    rt.textContent = `⏳ Vrijeme čitanja: ${mins} min`;
+  }
+
+  renderPostSources(p.sources);
+
   document.getElementById('blog-list-view').classList.add('hidden');
   document.getElementById('blog-post-view').classList.add('active');
   window.location.hash = 'post/' + id;
   renderShareBar(p);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPostSources(raw) {
+  const wrap = document.getElementById('post-sources');
+  const list = document.getElementById('post-sources-list');
+  if (!wrap || !list) return;
+
+  const text = (raw || '').trim();
+  if (!text) { wrap.style.display = 'none'; list.innerHTML = ''; return; }
+
+  const items = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (!items.length) { wrap.style.display = 'none'; list.innerHTML = ''; return; }
+
+  const urlRe = /(https?:\/\/[^\s<>"']+)/g;
+  list.innerHTML = items.map(item => {
+    const safe = esc(item);
+    const linked = safe.replace(urlRe, u => {
+      const display = u.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      return `<a href="${u}" target="_blank" rel="noopener noreferrer">${display}</a>`;
+    });
+    return `<li>${linked}</li>`;
+  }).join('');
+  wrap.style.display = 'block';
 }
 
 function closeBlogPost() {

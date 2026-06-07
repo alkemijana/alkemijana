@@ -286,10 +286,22 @@ function showPostEditor(p) {
         <button onclick="wSel('<blockquote>','</blockquote>')">❝ Citat</button>
         <button onclick="wSel('<strong>','</strong>')">Masno</button>
         <button onclick="eCmd('insertParagraph')">¶</button>
+        <label class="ed-img-upload" title="Ubaci sliku u tekst">
+          🖼 Slika
+          <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this)">
+        </label>
       </div>
       <div id="blog-content-ed" contenteditable="true">
         ${p ? p.content : '<p>Počni pisati ovdje...</p>'}
       </div>
+    </div>
+
+    <div class="af">
+      <label>Izvori (opcionalno — pojavljuje se ispod članka samo ako napišeš)</label>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
+        Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
+      </p>
+      <textarea id="ed-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora — &quot;Naslov rada&quot;, Časopis, 2024.">${p && p.sources ? esc(p.sources) : ''}</textarea>
     </div>
 
     <div class="af" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(6,8,15,0.3);border:1px solid var(--border)">
@@ -333,6 +345,31 @@ function clearBlogImage() {
   document.getElementById('ed-img').value            = '';
   document.getElementById('img-prev').style.display  = 'none';
   document.getElementById('img-filename').textContent = 'Nema odabrane slike';
+}
+
+/* Ubaci sliku u tijelo članka — uploada na ImgBB i umetne <img> na mjestu kursora. */
+async function insertImageInContent(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const ed = document.getElementById('blog-content-ed');
+  ed.focus();
+
+  const placeholderId = 'img-ph-' + Date.now();
+  document.execCommand('insertHTML', false,
+    `<p id="${placeholderId}" style="color:var(--text-muted);font-style:italic">⏳ Uploadam sliku...</p>`);
+
+  try {
+    const url = await uploadToImgBB(file);
+    const ph  = document.getElementById(placeholderId);
+    if (ph) {
+      ph.outerHTML = `<figure class="post-inline-img"><img src="${url}" alt=""></figure><p>&nbsp;</p>`;
+    }
+  } catch (e) {
+    const ph = document.getElementById(placeholderId);
+    if (ph) ph.outerHTML = '<p style="color:#e07070">❌ Slika nije uploadana, pokušaj ponovo.</p>';
+  } finally {
+    input.value = '';
+  }
 }
 
 /* Generira mističnu PNG naslovnu sliku iz odabrane ikone + naslova članka.
@@ -531,6 +568,7 @@ function savePost() {
     imageUrl: document.getElementById('ed-img').value || '',
     excerpt:  (document.getElementById('ed-exc').value  || '').trim(),
     content:  document.getElementById('blog-content-ed').innerHTML,
+    sources:  (document.getElementById('ed-sources').value || '').trim(),
     archived: document.getElementById('ed-archived').checked,
   };
 

@@ -102,10 +102,6 @@ function renderSvg({ icon, title, category, date }) {
   <text x="600" y="${470 + titleLines.length * 62 + 30}" text-anchor="middle"
     font-family="'Quicksand', 'Helvetica Neue', sans-serif" font-size="22" font-weight="600"
     fill="#a890d0" letter-spacing="6">${escapeXml(metaLine)}</text>
-
-  <text x="600" y="80" text-anchor="middle"
-    font-family="'Tangerine', 'Brush Script MT', cursive" font-size="58" fill="#a890d0"
-    opacity="0.95">Alkemijana</text>
 </svg>`;
 }
 

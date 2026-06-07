@@ -431,7 +431,6 @@ async function generateCoverFromIcon() {
     if (document.fonts && document.fonts.load) {
       await Promise.all([
         document.fonts.load('600 56px "Playfair Display"'),
-        document.fonts.load('58px "Tangerine"'),
         document.fonts.load('600 22px "Quicksand"')
       ]);
     }
@@ -493,21 +492,17 @@ function renderCoverCanvas({ icon, title, date, category }) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.font = '64px "Tangerine", "Brush Script MT", cursive';
-  ctx.fillStyle = '#a890d0';
-  ctx.fillText('Alkemijana', W/2, 75);
-
-  const cx = W/2, cy = 230;
-  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 220);
+  const cx = W/2, cy = 205;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 230);
   glow.addColorStop(0, 'rgba(168,144,208,0.55)');
   glow.addColorStop(0.6, 'rgba(168,144,208,0.12)');
   glow.addColorStop(1, 'rgba(168,144,208,0)');
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(cx, cy, 220, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 230, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '190px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Symbola", sans-serif';
+  ctx.font = '200px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Symbola", sans-serif';
   ctx.fillStyle = '#e4e0f4';
   ctx.fillText(icon, cx, cy);
 
@@ -518,15 +513,15 @@ function renderCoverCanvas({ icon, title, date, category }) {
   ctx.strokeStyle = grad;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(W*0.22, 380);
-  ctx.lineTo(W*0.78, 380);
+  ctx.moveTo(W*0.22, 370);
+  ctx.lineTo(W*0.78, 370);
   ctx.stroke();
 
-  ctx.font = '600 54px "Playfair Display", Georgia, serif';
+  ctx.font = '600 56px "Playfair Display", Georgia, serif';
   ctx.fillStyle = '#e4e0f4';
   const lines = wrapCanvasText(ctx, title, W * 0.82, 2);
-  const titleTop = lines.length === 1 ? 470 : 450;
-  const lineH = 64;
+  const titleTop = lines.length === 1 ? 460 : 440;
+  const lineH = 66;
   lines.forEach((line, i) => {
     ctx.fillText(line, cx, titleTop + i * lineH);
   });
@@ -535,7 +530,7 @@ function renderCoverCanvas({ icon, title, date, category }) {
   if (meta) {
     ctx.font = '600 22px "Quicksand", "Helvetica Neue", sans-serif';
     ctx.fillStyle = '#a890d0';
-    ctx.fillText(meta, cx, H - 42);
+    ctx.fillText(meta, cx, H - 50);
   }
 
   return new Promise((resolve, reject) => {
@@ -1187,7 +1182,6 @@ async function downloadSite() {
       try {
         await Promise.all([
           document.fonts.load('600 56px "Playfair Display"'),
-          document.fonts.load('58px "Tangerine"'),
           document.fonts.load('600 22px "Quicksand"')
         ]);
       } catch (e) {}

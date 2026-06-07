@@ -492,17 +492,17 @@ function renderCoverCanvas({ icon, title, date, category }) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  const cx = W/2, cy = 230;
-  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 220);
+  const cx = W/2, cy = 240;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 240);
   glow.addColorStop(0, 'rgba(168,144,208,0.55)');
   glow.addColorStop(0.6, 'rgba(168,144,208,0.12)');
   glow.addColorStop(1, 'rgba(168,144,208,0)');
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(cx, cy, 220, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 240, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '190px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Symbola", sans-serif';
+  ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
   ctx.fillStyle = '#e4e0f4';
   ctx.fillText(icon, cx, cy);
 

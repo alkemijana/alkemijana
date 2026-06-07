@@ -248,6 +248,47 @@ nav {
   margin-bottom: 1rem;
   letter-spacing: 0.04em;
 }
+.blog-filters {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 700px;
+  margin: 0 auto 2.5rem;
+}
+.blog-search-input,
+.blog-category-select {
+  font-family: 'Cormorant Infant', serif;
+  font-size: 1.05rem;
+  color: var(--silver-light);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.7rem 1.4rem;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.blog-search-input {
+  flex: 1 1 280px;
+}
+.blog-search-input::placeholder { color: var(--text-muted); }
+.blog-search-input:focus,
+.blog-category-select:focus {
+  border-color: var(--lavender);
+  box-shadow: 0 0 14px rgba(168,144,208,0.25);
+}
+.blog-category-select {
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+.blog-category-select option { background: #1c1840; color: var(--silver-light); }
+
+@media (max-width: 768px) {
+  .blog-filters { flex-direction: column; align-items: stretch; }
+  .blog-search-input, .blog-category-select { width: 100%; }
+}
+
 .section-subtitle {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;

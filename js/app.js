@@ -131,10 +131,46 @@ function renderReviews(section, containerId) {
 function renderBlogList() {
   const grid = document.getElementById('blog-grid');
   if (!grid) return;
-  const active = BLOG_POSTS.filter(p => !p.archived);
-  grid.innerHTML = active.length
-    ? active.map(blogCard).join('')
-    : '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;text-align:center;padding:3rem">Još nema objavljenih članaka.</p>';
+
+  const select = document.getElementById('blog-category-filter');
+  if (select) {
+    const cats = [...new Set(BLOG_POSTS.filter(p => !p.archived).map(p => p.category).filter(Boolean))].sort();
+    const current = select.value;
+    select.innerHTML = '<option value="">Sve kategorije</option>' +
+      cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    select.value = cats.includes(current) ? current : '';
+  }
+
+  filterBlogPosts();
+}
+
+function filterBlogPosts() {
+  const grid = document.getElementById('blog-grid');
+  if (!grid) return;
+
+  const searchEl = document.getElementById('blog-search');
+  const catEl    = document.getElementById('blog-category-filter');
+  const query    = (searchEl ? searchEl.value : '').trim().toLowerCase();
+  const category = catEl ? catEl.value : '';
+
+  let filtered = BLOG_POSTS.filter(p => !p.archived);
+
+  if (category) filtered = filtered.filter(p => p.category === category);
+
+  if (query) {
+    filtered = filtered.filter(p => {
+      const haystack = [p.title, p.excerpt, p.content, p.category]
+        .filter(Boolean)
+        .join(' ')
+        .replace(/<[^>]*>/g, ' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
+  grid.innerHTML = filtered.length
+    ? filtered.map(blogCard).join('')
+    : '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;text-align:center;padding:3rem">Nema članaka koji odgovaraju pretrazi.</p>';
 }
 
 function renderHomeBlogPreview() {

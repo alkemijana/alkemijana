@@ -400,6 +400,12 @@
     <div class="container" id="blog-list-view">
       <h2 class="section-title">Blog & Članci</h2>
       <p class="section-subtitle">Mudrost koja se dijeli</p>
+      <div class="blog-filters">
+        <input type="text" id="blog-search" class="blog-search-input" placeholder="✦ Pretraži članke po naslovu, sadržaju..." oninput="filterBlogPosts()">
+        <select id="blog-category-filter" class="blog-category-select" onchange="filterBlogPosts()">
+          <option value="">Sve kategorije</option>
+        </select>
+      </div>
       <div class="blog-grid" id="blog-grid"></div>
     </div>
     <div id="blog-post-view">

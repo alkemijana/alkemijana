@@ -449,7 +449,19 @@ async function generateCoverFromIcon() {
   }
 }
 
-function renderCoverCanvas({ icon, title, date, category }) {
+/* Dohvati Apple-stil emoji sliku s emojicdn.elk.sh — radi za sve emoji unicode.
+   Vraća HTMLImageElement koji se može nacrtati na canvas. */
+function loadAppleEmojiImage(emoji) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(new Error('emoji image load failed'));
+    img.src = `https://emojicdn.elk.sh/${encodeURIComponent(emoji)}?style=apple`;
+  });
+}
+
+async function renderCoverCanvas({ icon, title, date, category }) {
   const W = 1200, H = 630;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -502,9 +514,19 @@ function renderCoverCanvas({ icon, title, date, category }) {
   ctx.arc(cx, cy, 240, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
-  ctx.fillStyle = '#e4e0f4';
-  ctx.fillText(icon, cx, cy);
+  // Emoji se na različitim OS-ovima renderira drugačije (Windows je flat/crveniji,
+   // Apple je glossy/ružičast). Dohvatimo Apple-stil sliku s CDN-a da rezultat
+   // bude konzistentan bez obzira s kojeg uređaja admin generira cover.
+  const emojiSize = 240;
+  try {
+    const emojiImg = await loadAppleEmojiImage(icon);
+    ctx.drawImage(emojiImg, cx - emojiSize/2, cy - emojiSize/2, emojiSize, emojiSize);
+  } catch (e) {
+    // Fallback: nativni canvas rendering ako CDN ne radi
+    ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
+    ctx.fillStyle = '#e4e0f4';
+    ctx.fillText(icon, cx, cy);
+  }
 
   const grad = ctx.createLinearGradient(W*0.22, 0, W*0.78, 0);
   grad.addColorStop(0, 'rgba(168,144,208,0)');

@@ -56,8 +56,12 @@ ${post && post.category ? `<meta property="article:section" content="${escapeHtm
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${escapeHtml(image)}">
 
-<meta http-equiv="refresh" content="0; url=${escapeHtml(redirect)}">
-<script>window.location.replace(${JSON.stringify(redirect)});</script>
+<script>
+  // Samo pravi posjetitelji (s JS-om) idu na SPA. Social media crawleri
+  // (Facebook, WhatsApp, Twitter, LinkedIn) ne izvršavaju JS, ostaju na
+  // ovoj stranici i čitaju OG meta tagove ovdje — to je ono što želimo.
+  window.location.replace(${JSON.stringify(redirect)});
+</script>
 <style>body{font-family:sans-serif;background:#06080f;color:#c0bcce;padding:2rem;text-align:center}a{color:#a890d0}</style>
 </head>
 <body>

@@ -468,17 +468,33 @@ nav {
   margin-top: 3rem;
 }
 .blog-card {
-  background: rgba(14, 12, 36, 0.5);
+  background: linear-gradient(160deg, rgba(28, 24, 64, 0.55), rgba(14, 12, 36, 0.6));
   border: 1px solid var(--border);
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.4s;
+  position: relative;
+  transition: all 0.45s ease;
+}
+.blog-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(168, 144, 208, 0.5), transparent 35%, transparent 65%, rgba(216, 212, 236, 0.35)) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+  z-index: 2;
 }
 .blog-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(168, 144, 208, 0.4);
-  box-shadow: 0 16px 32px rgba(42, 80, 64, 0.1);
+  border-color: rgba(168, 144, 208, 0.45);
+  box-shadow: 0 18px 40px rgba(20, 10, 40, 0.45), 0 0 50px rgba(168, 144, 208, 0.12);
 }
+.blog-card:hover::before { opacity: 1; }
 .blog-image {
   aspect-ratio: 16/10;
   background: linear-gradient(135deg, var(--bg-light), var(--navy));
@@ -486,15 +502,37 @@ nav {
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  color: var(--sage);
+  color: var(--lavender);
+  text-shadow: 0 0 30px rgba(168, 144, 208, 0.5);
   position: relative;
   overflow: hidden;
+  transition: text-shadow 0.45s ease;
 }
-.blog-image img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+.blog-card:hover .blog-image {
+  text-shadow: 0 0 45px rgba(168, 144, 208, 0.85), 0 0 90px rgba(168, 144, 208, 0.3);
+}
+.blog-image img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform 0.6s ease; }
+.blog-card:hover .blog-image img { transform: scale(1.06); }
 .blog-image::after {
   content: '';
   position: absolute; inset: 0;
   background: radial-gradient(circle at center, transparent 30%, rgba(6, 8, 15, 0.55));
+}
+.blog-image::before {
+  content: '✦';
+  position: absolute;
+  top: 0.8rem; right: 1rem;
+  font-size: 1.1rem;
+  color: var(--silver-light);
+  opacity: 0;
+  text-shadow: 0 0 12px rgba(216, 212, 236, 0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: scale(0.4) rotate(-30deg);
+  z-index: 1;
+}
+.blog-card:hover .blog-image::before {
+  opacity: 0.85;
+  transform: scale(1) rotate(0deg);
 }
 .blog-content { padding: 2rem; }
 .blog-meta    { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lavender); margin-bottom: 1rem; }

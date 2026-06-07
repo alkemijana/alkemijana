@@ -314,7 +314,7 @@ function renderShareBar(p) {
 }
 
 function copyPostLink(id, btn) {
-  const url = window.location.href.split('#')[0] + '#post/' + id;
+  const url = window.location.origin + '/post/' + id;
   navigator.clipboard.writeText(url).then(() => {
     btn.textContent = '✓ Kopirano!';
     btn.classList.add('copied');

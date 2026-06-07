@@ -377,7 +377,7 @@ function renderCoverCanvas({ icon, title, date, category }) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  const bg = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 750);
+  const bg = ctx.createRadialGradient(W/2, H*0.35, 0, W/2, H*0.35, 750);
   bg.addColorStop(0, '#1c1840');
   bg.addColorStop(0.55, '#0e0c24');
   bg.addColorStop(1, '#06080f');
@@ -388,7 +388,8 @@ function renderCoverCanvas({ icon, title, date, category }) {
   let rng = seed;
   const rand = () => { rng = (rng * 9301 + 49297) % 233280; return rng / 233280; };
 
-  for (let i = 0; i < 80; i++) {
+  ctx.textBaseline = 'alphabetic';
+  for (let i = 0; i < 90; i++) {
     const x = rand() * W;
     const y = rand() * H;
     const r = 0.5 + rand() * 1.8;
@@ -398,6 +399,7 @@ function renderCoverCanvas({ icon, title, date, category }) {
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.textAlign = 'left';
   for (let i = 0; i < 7; i++) {
     const x = rand() * W;
     const y = rand() * H;
@@ -405,61 +407,60 @@ function renderCoverCanvas({ icon, title, date, category }) {
     ctx.globalAlpha = 0.2 + rand() * 0.3;
     ctx.fillStyle = '#a890d0';
     ctx.font = `${size}px serif`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
     ctx.fillText('✦', x, y);
   }
   ctx.globalAlpha = 1;
 
-  const cx = W/2, cy = 240;
-  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 240);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  ctx.font = '64px "Tangerine", "Brush Script MT", cursive';
+  ctx.fillStyle = '#a890d0';
+  ctx.fillText('Alkemijana', W/2, 75);
+
+  const cx = W/2, cy = 230;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 220);
   glow.addColorStop(0, 'rgba(168,144,208,0.55)');
   glow.addColorStop(0.6, 'rgba(168,144,208,0.12)');
   glow.addColorStop(1, 'rgba(168,144,208,0)');
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(cx, cy, 240, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 220, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.font = '190px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Symbola", sans-serif';
   ctx.fillStyle = '#e4e0f4';
   ctx.fillText(icon, cx, cy);
 
-  ctx.font = '58px "Tangerine", cursive';
-  ctx.fillStyle = '#a890d0';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('Alkemijana', cx, 80);
-
-  const grad = ctx.createLinearGradient(W*0.25, 0, W*0.75, 0);
+  const grad = ctx.createLinearGradient(W*0.22, 0, W*0.78, 0);
   grad.addColorStop(0, 'rgba(168,144,208,0)');
   grad.addColorStop(0.5, 'rgba(168,144,208,0.7)');
   grad.addColorStop(1, 'rgba(168,144,208,0)');
   ctx.strokeStyle = grad;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(W*0.25, 400);
-  ctx.lineTo(W*0.75, 400);
+  ctx.moveTo(W*0.22, 380);
+  ctx.lineTo(W*0.78, 380);
   ctx.stroke();
 
-  ctx.font = '600 56px "Playfair Display", Georgia, serif';
+  ctx.font = '600 54px "Playfair Display", Georgia, serif';
   ctx.fillStyle = '#e4e0f4';
-  const lines = wrapCanvasText(ctx, title, W * 0.78, 3);
+  const lines = wrapCanvasText(ctx, title, W * 0.82, 2);
+  const titleTop = lines.length === 1 ? 470 : 450;
+  const lineH = 64;
   lines.forEach((line, i) => {
-    ctx.fillText(line, cx, 470 + i * 64);
+    ctx.fillText(line, cx, titleTop + i * lineH);
   });
 
-  const meta = [date, category].filter(Boolean).join('   ·   ').toUpperCase();
+  const meta = [date, category].filter(Boolean).join('   •   ').toUpperCase();
   if (meta) {
     ctx.font = '600 22px "Quicksand", "Helvetica Neue", sans-serif';
     ctx.fillStyle = '#a890d0';
-    const metaY = 470 + lines.length * 64 + 26;
-    ctx.fillText(spaceLetters(meta, 4), cx, Math.min(metaY, H - 40));
+    ctx.fillText(meta, cx, H - 42);
   }
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/png', 0.92);
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/jpeg', 0.88);
   });
 }
 

@@ -773,6 +773,23 @@ nav {
 .post-body h3        { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); margin: 2rem 0 0.8rem; }
 .post-body p         { margin-bottom: 1.4rem; }
 .post-body blockquote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.35rem; color: var(--silver-light); border-left: 2px solid var(--sage); padding-left: 1.5rem; margin: 2rem 0; }
+/* Inline elementi (bold, italic, span) UVIJEK nasljeđuju veličinu, font i boju
+   od okolnog paragrafa/naslova — sprječava lijepljene inline stilove iz Worda
+   ili lijepljenje iz prethodno boldanog dijela da poremete prikaz. */
+.post-body strong,
+.post-body b,
+.post-body em,
+.post-body i,
+.post-body u,
+.post-body span {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+}
+.post-body strong, .post-body b { font-weight: 700; }
+.post-body em, .post-body i { font-style: italic; }
 .post-body figure.post-inline-img,
 .post-body img { margin: 2rem auto; display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 .post-body figure.post-inline-img { padding: 0; }
@@ -1055,6 +1072,20 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 #blog-content-ed h2 { color: var(--lavender); font-family: 'Playfair Display', serif; margin: 1rem 0 0.5rem; }
 #blog-content-ed h3 { color: var(--silver-light); font-family: 'Playfair Display', serif; margin: 0.8rem 0 0.4rem; }
 #blog-content-ed blockquote { border-left: 2px solid var(--sage); padding-left: 1rem; color: var(--silver-light); font-style: italic; margin: 1rem 0; }
+#blog-content-ed strong,
+#blog-content-ed b,
+#blog-content-ed em,
+#blog-content-ed i,
+#blog-content-ed u,
+#blog-content-ed span {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+}
+#blog-content-ed strong, #blog-content-ed b { font-weight: 700; }
+#blog-content-ed em, #blog-content-ed i { font-style: italic; }
 #blog-content-ed img,
 #blog-content-ed figure.post-inline-img img {
   max-width: 220px;

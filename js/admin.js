@@ -291,7 +291,7 @@ function showPostEditor(p) {
           <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this)">
         </label>
       </div>
-      <div id="blog-content-ed" contenteditable="true">
+      <div id="blog-content-ed" contenteditable="true" onpaste="handleEditorPaste(event)">
         ${p ? p.content : '<p>Počni pisati ovdje...</p>'}
       </div>
     </div>
@@ -594,6 +594,67 @@ function wSel(open, close) {
   }
 }
 
+/* Strip svih inline stilova (font-size, font-family, color iz Worda/Docsa)
+   i drugih tagova koji nam ne trebaju. Zadržava strukturu (p, h2, h3, strong,
+   b, em, i, u, blockquote, figure, img, a, ul, ol, li, br). */
+function sanitizeContentHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+
+  const allowedTags = new Set(['P','H2','H3','H4','STRONG','B','EM','I','U','BR','BLOCKQUOTE','FIGURE','IMG','A','UL','OL','LI','DIV','SPAN']);
+  const stripStyleProps = ['font-size','font-family','line-height','color','background','background-color','font-weight','font-style'];
+
+  const walk = (node) => {
+    const children = [...node.childNodes];
+    children.forEach(child => {
+      if (child.nodeType !== 1) return; // not element
+      if (!allowedTags.has(child.tagName)) {
+        // zamijeni s child contentom (unwrap)
+        while (child.firstChild) child.parentNode.insertBefore(child.firstChild, child);
+        child.parentNode.removeChild(child);
+        return;
+      }
+      // očisti inline style
+      if (child.hasAttribute('style')) {
+        stripStyleProps.forEach(p => {
+          if (child.style[p.replace(/-([a-z])/g, (_, c) => c.toUpperCase())]) {
+            child.style.removeProperty(p);
+          }
+        });
+        if (!child.getAttribute('style').trim()) child.removeAttribute('style');
+      }
+      // makni class iz Worda/Docsa
+      if (child.hasAttribute('class')) child.removeAttribute('class');
+      // SPAN bez stila je suvišan — unwrap
+      if (child.tagName === 'SPAN' && !child.hasAttribute('style')) {
+        while (child.firstChild) child.parentNode.insertBefore(child.firstChild, child);
+        child.parentNode.removeChild(child);
+        return;
+      }
+      walk(child);
+    });
+  };
+  walk(tmp);
+  return tmp.innerHTML;
+}
+
+/* Paste handler — ubaci samo plain text (ili minimalno očišćen HTML),
+   bez Word/Docs inline stilova. */
+function handleEditorPaste(e) {
+  e.preventDefault();
+  const cd = e.clipboardData || window.clipboardData;
+  if (!cd) return;
+  // Probaj HTML, ako postoji sanitiziraj; inače plain text
+  const html = cd.getData('text/html');
+  if (html) {
+    const clean = sanitizeContentHtml(html);
+    document.execCommand('insertHTML', false, clean);
+  } else {
+    const text = cd.getData('text/plain') || '';
+    document.execCommand('insertText', false, text);
+  }
+}
+
 function savePost() {
   const title = (document.getElementById('ed-title').value || '').trim();
   if (!title) { alert('Naslov je obavezan.'); return; }
@@ -609,7 +670,7 @@ function savePost() {
     icon:     (document.getElementById('ed-icon').value || '✦').trim(),
     imageUrl: document.getElementById('ed-img').value || '',
     excerpt:  (document.getElementById('ed-exc').value  || '').trim(),
-    content:  document.getElementById('blog-content-ed').innerHTML,
+    content:  sanitizeContentHtml(document.getElementById('blog-content-ed').innerHTML),
     sources:  (document.getElementById('ed-sources').value || '').trim(),
     archived: document.getElementById('ed-archived').checked,
   };

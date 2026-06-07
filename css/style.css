@@ -893,16 +893,18 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   .pr-item { grid-template-columns: 1fr; gap: 0.4rem; padding: 0.9rem 0.6rem; }
   .pr-item input { font-size: 1rem; padding: 0.6rem 0.7rem; }
 
-  /* Admin traka (gornji bar) na mobitelu — horizontalni scroll umjesto sažimanja */
+  /* Admin traka (gornji bar) na mobitelu — prelomi u redove, sve vidljivo odjednom */
   #admin-bar {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
+    height: auto;
+    position: fixed;
     gap: 0.4rem;
-    padding: 0 0.7rem;
+    padding: 0.6rem 0.7rem;
+    justify-content: center;
   }
-  #admin-bar::-webkit-scrollbar { display: none; }
+  .page { padding-top: 7.5rem; }
+  #admin-bar.show ~ #main-nav { top: 96px !important; }
   .abt-spacer { display: none; }
-  .admin-badge { padding: 0.3rem 0.6rem; font-size: 0.62rem; flex-shrink: 0; }
-  .abt { padding: 0.4rem 0.7rem; font-size: 0.66rem; flex-shrink: 0; }
-  .abt-main { flex-shrink: 0; }
+  .admin-badge { padding: 0.3rem 0.6rem; font-size: 0.62rem; }
+  .abt { padding: 0.4rem 0.7rem; font-size: 0.66rem; }
 }

@@ -9,10 +9,10 @@ Otvori ga ili daj ga Claudeu kao kontekst pri novom razgovoru.
 
 **Alkemijana** je web stranica za tarot/astrologiju (vlasnica: Jana, Rab).
 Statična web aplikacija — HTML + CSS + vanilla JS, bez framework-a.
-Hostana na Netlify-ju, repozitorij na GitHubu, automatski deploy.
+Hostana na Cloudflare Pages, repozitorij na GitHubu, automatski deploy.
 
 **Domena:** alkemijana.com
-**Netlify URL:** taupe-pastelito-b6d6bb.netlify.app
+**Cloudflare Pages URL:** alkemijana.pages.dev
 **GitHub repo:** https://github.com/alkemijana/alkemijana
 
 ---
@@ -27,8 +27,8 @@ ALKEMIJANA WEBSITE/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke)
 │   ├── app.js                      ← Navigacija, renderiranje, blog, animacije
 │   └── admin.js                    ← Admin panel logika
-├── netlify/functions/
-│   └── save-data.js                ← Serverless funkcija za auto-save preko GitHub API
+├── functions/
+│   └── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 ├── .gitignore
 └── CLAUDE.md                       ← ovaj fajl
 ```
@@ -67,13 +67,13 @@ ALKEMIJANA WEBSITE/
 6. **Statistika** — GoatCounter analytics (ukupno posjeta, jedinstveni, po stranicama, blog članci, 30-dnevni graf)
 7. **Toggle gumbi (dropdown "Prikaz"):** Usluge On/Off, Rec. Početna, Rec. O meni
 8. **📷 Slika** — upload vlastite slike za O meni
-9. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Netlify funkcije → auto-deploy na Netlify-ju za ~30 sek
+9. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Cloudflare Pages funkcije → auto-deploy na Cloudflareu za ~30 sek
 10. **Arhiviranje** — svaki blog/usluga/cjenik/recenzija ima checkbox "Arhivirano" → skriva od posjetitelja, ali ostaje u adminu da se može vratiti
 
 ### Kako auto-save radi
-Admin "Spremi" gumb šalje POST na `/.netlify/functions/save-data` s podacima i lozinkom.
-Serverless funkcija provjeri lozinku i koristi GitHub API token (Netlify env var `GITHUB_TOKEN`) za commit na repo.
-GitHub trigerira Netlify deploy → stranica se osvježi za 30 sek.
+Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.
+Cloudflare Pages funkcija provjeri lozinku i koristi GitHub API token (Cloudflare env var `GITHUB_TOKEN`) za commit na repo.
+GitHub trigerira Cloudflare Pages deploy → stranica se osvježi za 30 sek.
 
 ---
 
@@ -84,7 +84,7 @@ GitHub trigerira Netlify deploy → stranica se osvježi za 30 sek.
 | **ImgBB** | Upload slika (`uploadToImgBB` u admin.js) | Hard-coded u `IMGBB_KEY` |
 | **Web3Forms** | Kontakt forma | Hard-coded `value` u `<input name="access_key">` u index.html |
 | **GoatCounter** | Analytics | Site `alkemijana.goatcounter.com`, javni counter API |
-| **GitHub API** | Auto-save iz admina | Token u Netlify env var `GITHUB_TOKEN` |
+| **GitHub API** | Auto-save iz admina | Token u Cloudflare env var `GITHUB_TOKEN` |
 
 ---
 
@@ -98,7 +98,7 @@ git pull --rebase                    # uvijek prvo pull (jer auto-save piše na 
 # ... uredi datoteke ...
 git add -A
 git commit -m "Opis promjene"
-git push                             # Netlify automatski deploya
+git push                             # Cloudflare Pages automatski deploya
 ```
 
 **VAŽNO:** uvijek `git pull --rebase` prije push-a jer admin može u međuvremenu spremati promjene preko serverless funkcije.
@@ -155,14 +155,14 @@ U `admin.js` `switchTab()` poziva odgovarajuću render funkciju.
 
 ### Lokalni razvoj (testing prije deploya)
 Otvori `index.html` u browseru — sve radi osim auto-save (koristi fallback download).
-Za testiranje serverless funkcije lokalno: `npx netlify dev` (ako instalirano).
+Za testiranje serverless funkcije lokalno: `npx wrangler pages dev` (ako instalirano).
 
 ---
 
 ## Sigurnost
 
-- Lozinka admin je hard-coded u dva mjesta: `admin.js` (`ADMIN_CREDS.pass`) i `netlify/functions/save-data.js`. **Mora se sinkronizirati!**
-- GitHub token je u Netlify env varu — NIJE u kodu.
+- Lozinka admin je hard-coded u dva mjesta: `admin.js` (`ADMIN_CREDS.pass`) i `functions/save-data.js`. **Mora se sinkronizirati!**
+- GitHub token je u Cloudflare Pages env varu — NIJE u kodu.
 - ImgBB i Web3Forms ključevi su u kodu — to je OK, oni su client-side ključevi s rate limit-om.
 
 ---
@@ -183,7 +183,7 @@ Za testiranje serverless funkcije lokalno: `npx netlify dev` (ako instalirano).
 Radim na web stranici Alkemijana.com (tarot/astrologija).
 Projekt je u D:\Programiranje\ALKEMIJANA WEBSITE.
 Pročitaj CLAUDE.md za sve detalje o projektu, dizajnu, admin sustavu i workflow-u.
-Sve promjene committaj i pushaj na git — Netlify automatski deploya.
+Sve promjene committaj i pushaj na git — Cloudflare Pages automatski deploya.
 Prvo napravi git pull --rebase.
 ```
 

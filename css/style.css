@@ -134,13 +134,13 @@ nav {
 .hero h1 {
   font-family: 'Tangerine', cursive;
   font-weight: 400;
-  font-size: clamp(4.5rem, 12vw, 9rem);
+  font-size: clamp(6rem, 22vw, 11rem);
   animation: heroGlow 10s ease-in-out infinite;
   color: var(--lavender);
   letter-spacing: 0.05em;
   line-height: 1;
   margin-bottom: 1.2rem;
-  text-shadow: 0 0 40px rgba(168, 144, 208, 0.3);
+  text-shadow: 0 0 50px rgba(168, 144, 208, 0.45);
 }
 .hero h1 .amp {
   font-family: 'Cormorant Garamond', serif;
@@ -158,8 +158,18 @@ nav {
 }
 
 @keyframes heroGlow {
-  0%, 100% { text-shadow: 0 0 40px rgba(168, 144, 208, 0.3), 0 0 80px rgba(168, 144, 208, 0.12); }
-  50%       { text-shadow: 0 0 80px rgba(168, 144, 208, 0.85), 0 0 160px rgba(168, 144, 208, 0.4), 0 0 240px rgba(168, 144, 208, 0.15); }
+  0%, 100% { text-shadow: 0 0 50px rgba(168, 144, 208, 0.45), 0 0 100px rgba(168, 144, 208, 0.2); }
+  50%       { text-shadow: 0 0 90px rgba(168, 144, 208, 1), 0 0 180px rgba(168, 144, 208, 0.6), 0 0 280px rgba(168, 144, 208, 0.25); }
+}
+
+@media (max-width: 768px) {
+  .hero h1 {
+    text-shadow: 0 0 35px rgba(168, 144, 208, 0.6);
+  }
+  @keyframes heroGlow {
+    0%, 100% { text-shadow: 0 0 35px rgba(168, 144, 208, 0.6), 0 0 65px rgba(168, 144, 208, 0.3); }
+    50%       { text-shadow: 0 0 60px rgba(168, 144, 208, 1), 0 0 110px rgba(168, 144, 208, 0.7), 0 0 160px rgba(168, 144, 208, 0.35); }
+  }
 }
 
 .hero-sub {

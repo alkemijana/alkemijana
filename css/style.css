@@ -512,7 +512,7 @@ nav {
 .post-feature-img { max-width: 780px; margin: 0 auto 3rem; padding: 0 2rem; }
 .post-feature-img img { width: 100%; max-height: 420px; object-fit: cover; border: 1px solid var(--border); }
 
-.post-body { max-width: 780px; margin: 0 auto; padding: 0 2rem 4rem; font-size: 1.1rem; line-height: 1.9; color: var(--text); }
+.post-body { max-width: 780px; margin: 0 auto; padding: 0 2rem 4rem; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; line-height: 1.95; color: var(--silver-light); }
 .post-body h2        { font-family: 'Playfair Display', serif; font-size: 1.85rem; color: var(--lavender); margin: 2.5rem 0 1rem; }
 .post-body h3        { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); margin: 2rem 0 0.8rem; }
 .post-body p         { margin-bottom: 1.4rem; }

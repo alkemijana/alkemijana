@@ -900,13 +900,11 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   #admin-bar {
     flex-wrap: wrap;
     height: auto;
-    position: static;
+    position: fixed;
     gap: 0.4rem;
     padding: 0.6rem 0.7rem;
     justify-content: center;
   }
-  #admin-bar.show ~ #main-nav { position: static; }
-  body:has(#admin-bar.show) .page { padding-top: 0; }
   .abt-spacer { display: none; }
   .admin-badge { padding: 0.3rem 0.6rem; font-size: 0.62rem; }
   .abt { padding: 0.4rem 0.7rem; font-size: 0.66rem; }

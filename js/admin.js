@@ -32,19 +32,31 @@ function handleAdminLogin() {
   }
 }
 
+function adjustAdminLayout() {
+  const bar = document.getElementById('admin-bar');
+  if (!bar.classList.contains('show')) return;
+  const barH = bar.offsetHeight;
+  const nav = document.getElementById('main-nav');
+  nav.style.top = barH + 'px';
+  const navH = nav.offsetHeight;
+  document.querySelectorAll('.page').forEach(p => p.style.paddingTop = (barH + navH) + 'px');
+}
+window.addEventListener('resize', adjustAdminLayout);
+
 function activateAdmin() {
   isAdmin = true;
-  document.getElementById('admin-bar').classList.add('show');
-  document.getElementById('main-nav').style.top = '46px';
-  document.querySelectorAll('.page').forEach(p => p.style.paddingTop = '9.5rem');
+  const bar = document.getElementById('admin-bar');
+  bar.classList.add('show');
   syncToggleBtns();
+  requestAnimationFrame(adjustAdminLayout);
 }
 
 function adminLogout() {
   isAdmin = false;
   sessionStorage.removeItem('aj_admin');
   document.getElementById('admin-bar').classList.remove('show');
-  document.getElementById('main-nav').style.top = '0';
+  const nav = document.getElementById('main-nav');
+  nav.style.top = '0';
   document.querySelectorAll('.page').forEach(p => p.style.paddingTop = '');
   closeAdminPanel();
 }

@@ -40,6 +40,10 @@ export async function onRequest(context) {
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:image" content="${escapeHtml(image)}">
+<meta property="og:image:secure_url" content="${escapeHtml(image)}">
+<meta property="og:image:type" content="image/${image.toLowerCase().endsWith('.jpg') || image.toLowerCase().endsWith('.jpeg') ? 'jpeg' : (image.toLowerCase().endsWith('.svg') ? 'svg+xml' : 'png')}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="${escapeHtml(post ? post.title : 'Alkemijana')}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <meta property="og:site_name" content="Alkemijana">

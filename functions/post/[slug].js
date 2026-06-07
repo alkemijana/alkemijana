@@ -75,7 +75,7 @@ function extractPosts(src) {
   const m = src.match(/BLOG_POSTS\s*=\s*(\[[\s\S]*?\])\s*;\s*\/\/\s*===ALKEMIJANA:BLOG_POSTS:END===/);
   if (!m) return [];
   try {
-    return new Function('return ' + m[1])();
+    return JSON.parse(m[1]);
   } catch (e) {
     return [];
   }

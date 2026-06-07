@@ -253,11 +253,14 @@ function showPostEditor(p) {
 
     <div class="af">
       <label>Naslovna slika</label>
-      <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.3rem">
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-top:0.3rem;flex-wrap:wrap">
         <label class="ap-btn ap-btn-cancel" style="cursor:pointer;display:inline-block">
           📁 Odaberi s računala
           <input type="file" accept="image/*" style="display:none" onchange="handleBlogImageUpload(this)">
         </label>
+        <button type="button" class="ap-btn ap-btn-cancel" onclick="generateCoverFromIcon()" title="Generiraj mističnu naslovnu sliku iz odabrane ikone — radi na WhatsAppu, Facebooku, itd.">
+          ✨ Generiraj iz ikone
+        </button>
         <span id="img-filename" style="font-family:'Cormorant Infant',serif;color:var(--text-muted);font-size:0.9rem">
           ${p && p.imageUrl ? 'Slika učitana' : 'Nema odabrane slike'}
         </span>
@@ -330,6 +333,163 @@ function clearBlogImage() {
   document.getElementById('ed-img').value            = '';
   document.getElementById('img-prev').style.display  = 'none';
   document.getElementById('img-filename').textContent = 'Nema odabrane slike';
+}
+
+/* Generira mističnu PNG naslovnu sliku iz odabrane ikone + naslova članka.
+   Renderira se na canvasu u browseru (besplatno, neograničeno), uploada na
+   ImgBB i URL ide u članak. Dobiveni PNG radi kao OG preview na WhatsAppu,
+   Facebooku, Instagramu — svuda gdje SVG previewi ne rade pouzdano. */
+async function generateCoverFromIcon() {
+  const icon  = (document.getElementById('ed-icon').value  || '✦').trim();
+  const title = (document.getElementById('ed-title').value || 'Alkemijana').trim();
+  const date  = (document.getElementById('ed-date').value  || '').trim();
+  const cat   = (document.getElementById('ed-cat').value   || '').trim();
+
+  const filenameEl = document.getElementById('img-filename');
+  filenameEl.textContent = '✨ Generiram sliku...';
+
+  try {
+    if (document.fonts && document.fonts.load) {
+      await Promise.all([
+        document.fonts.load('600 56px "Playfair Display"'),
+        document.fonts.load('58px "Tangerine"'),
+        document.fonts.load('600 22px "Quicksand"')
+      ]);
+    }
+    const blob = await renderCoverCanvas({ icon, title, date, category: cat });
+    filenameEl.textContent = '⏳ Uploadam sliku...';
+    const file = new File([blob], `cover-${Date.now()}.png`, { type: 'image/png' });
+    const url  = await uploadToImgBB(file);
+
+    document.getElementById('ed-img').value           = url;
+    document.getElementById('img-prev').src           = url;
+    document.getElementById('img-prev').style.display = 'block';
+    filenameEl.textContent = '✅ Slika generirana iz ikone';
+  } catch (e) {
+    console.error(e);
+    filenameEl.textContent = '❌ Greška pri generiranju — pokušaj ponovo';
+  }
+}
+
+function renderCoverCanvas({ icon, title, date, category }) {
+  const W = 1200, H = 630;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = ctx.createRadialGradient(W/2, H*0.38, 0, W/2, H*0.38, 750);
+  bg.addColorStop(0, '#1c1840');
+  bg.addColorStop(0.55, '#0e0c24');
+  bg.addColorStop(1, '#06080f');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const seed = [...title].reduce((a, c) => a + c.charCodeAt(0), 0) || 1;
+  let rng = seed;
+  const rand = () => { rng = (rng * 9301 + 49297) % 233280; return rng / 233280; };
+
+  for (let i = 0; i < 80; i++) {
+    const x = rand() * W;
+    const y = rand() * H;
+    const r = 0.5 + rand() * 1.8;
+    ctx.globalAlpha = 0.25 + rand() * 0.55;
+    ctx.fillStyle = '#d8d4ec';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  for (let i = 0; i < 7; i++) {
+    const x = rand() * W;
+    const y = rand() * H;
+    const size = 14 + rand() * 18;
+    ctx.globalAlpha = 0.2 + rand() * 0.3;
+    ctx.fillStyle = '#a890d0';
+    ctx.font = `${size}px serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('✦', x, y);
+  }
+  ctx.globalAlpha = 1;
+
+  const cx = W/2, cy = 240;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 240);
+  glow.addColorStop(0, 'rgba(168,144,208,0.55)');
+  glow.addColorStop(0.6, 'rgba(168,144,208,0.12)');
+  glow.addColorStop(1, 'rgba(168,144,208,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 240, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#e4e0f4';
+  ctx.fillText(icon, cx, cy);
+
+  ctx.font = '58px "Tangerine", cursive';
+  ctx.fillStyle = '#a890d0';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Alkemijana', cx, 80);
+
+  const grad = ctx.createLinearGradient(W*0.25, 0, W*0.75, 0);
+  grad.addColorStop(0, 'rgba(168,144,208,0)');
+  grad.addColorStop(0.5, 'rgba(168,144,208,0.7)');
+  grad.addColorStop(1, 'rgba(168,144,208,0)');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W*0.25, 400);
+  ctx.lineTo(W*0.75, 400);
+  ctx.stroke();
+
+  ctx.font = '600 56px "Playfair Display", Georgia, serif';
+  ctx.fillStyle = '#e4e0f4';
+  const lines = wrapCanvasText(ctx, title, W * 0.78, 3);
+  lines.forEach((line, i) => {
+    ctx.fillText(line, cx, 470 + i * 64);
+  });
+
+  const meta = [date, category].filter(Boolean).join('   ·   ').toUpperCase();
+  if (meta) {
+    ctx.font = '600 22px "Quicksand", "Helvetica Neue", sans-serif';
+    ctx.fillStyle = '#a890d0';
+    const metaY = 470 + lines.length * 64 + 26;
+    ctx.fillText(spaceLetters(meta, 4), cx, Math.min(metaY, H - 40));
+  }
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/png', 0.92);
+  });
+}
+
+function wrapCanvasText(ctx, text, maxWidth, maxLines) {
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && cur) {
+      lines.push(cur);
+      cur = w;
+      if (lines.length === maxLines - 1) break;
+    } else {
+      cur = test;
+    }
+  }
+  if (cur && lines.length < maxLines) lines.push(cur);
+  if (lines.length === maxLines) {
+    let last = lines[maxLines - 1];
+    while (ctx.measureText(last + '…').width > maxWidth && last.length > 1) {
+      last = last.slice(0, -1);
+    }
+    if (last !== lines[maxLines - 1]) lines[maxLines - 1] = last.trim() + '…';
+  }
+  return lines;
+}
+
+function spaceLetters(s, px) {
+  return s.split('').join(String.fromCharCode(8202).repeat(Math.max(1, Math.round(px/2))));
 }
 
 function cancelPostEdit() {

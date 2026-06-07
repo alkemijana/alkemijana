@@ -370,6 +370,35 @@ nav {
   border-color: var(--lavender);
   box-shadow: 0 0 18px rgba(168,144,208,0.4);
 }
+.blog-chip-count {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.45rem;
+  min-width: 1.3rem;
+  text-align: center;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  background: rgba(168,144,208,0.18);
+  border-radius: 999px;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+.blog-chip.active .blog-chip-count {
+  background: rgba(6,8,15,0.25);
+  color: var(--bg-deep);
+}
+.blog-chip-toggle {
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.08em;
+  color: var(--lavender);
+  background: transparent;
+  border-style: dashed;
+}
+.blog-chip-toggle:hover {
+  background: rgba(168,144,208,0.06);
+  color: var(--silver-bright);
+}
 
 .blog-results-meta {
   font-family: 'Cormorant Garamond', serif;

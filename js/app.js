@@ -128,7 +128,9 @@ function renderReviews(section, containerId) {
 
 /* ---- BLOG ---- */
 
-let activeBlogCategory = '';
+let activeBlogCategory  = '';
+let blogCategoriesOpen  = false;
+const BLOG_CHIPS_VISIBLE = 6;
 
 function renderBlogList() {
   const grid = document.getElementById('blog-grid');
@@ -136,11 +138,45 @@ function renderBlogList() {
 
   const chipsWrap = document.getElementById('blog-category-chips');
   if (chipsWrap) {
-    const cats = [...new Set(BLOG_POSTS.filter(p => !p.archived).map(p => p.category).filter(Boolean))].sort();
+    const active = BLOG_POSTS.filter(p => !p.archived);
+    const counts = {};
+    active.forEach(p => { if (p.category) counts[p.category] = (counts[p.category] || 0) + 1; });
+    const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b, 'hr'));
+
     if (activeBlogCategory && !cats.includes(activeBlogCategory)) activeBlogCategory = '';
-    const chip = (label, val) =>
-      `<button type="button" class="blog-chip ${activeBlogCategory === val ? 'active' : ''}" onclick="setBlogCategory('${esc(val).replace(/'/g, "\\'")}')">${label}</button>`;
-    chipsWrap.innerHTML = chip('✦ Sve', '') + cats.map(c => chip(esc(c), c)).join('');
+
+    const chip = (label, val, count) => {
+      const safeVal = String(val).replace(/'/g, "\\'");
+      const badge = (count != null) ? `<span class="blog-chip-count">${count}</span>` : '';
+      return `<button type="button" class="blog-chip ${activeBlogCategory === val ? 'active' : ''}" onclick="setBlogCategory('${safeVal}')">${label}${badge}</button>`;
+    };
+
+    const overLimit = cats.length > BLOG_CHIPS_VISIBLE;
+    let visible, hidden;
+    if (!overLimit) {
+      visible = cats; hidden = [];
+    } else {
+      visible = cats.slice(0, BLOG_CHIPS_VISIBLE);
+      hidden  = cats.slice(BLOG_CHIPS_VISIBLE);
+      if (activeBlogCategory && hidden.includes(activeBlogCategory) && !blogCategoriesOpen) {
+        visible = visible.slice(0, BLOG_CHIPS_VISIBLE - 1).concat([activeBlogCategory]);
+        hidden  = cats.filter(c => !visible.includes(c));
+      }
+    }
+
+    const renderChips = arr => arr.map(c => chip(esc(c), c, counts[c])).join('');
+    const allChip = chip('✦ Sve', '');
+
+    let html = allChip + renderChips(visible);
+    if (overLimit) {
+      if (blogCategoriesOpen) {
+        html += renderChips(hidden);
+        html += `<button type="button" class="blog-chip blog-chip-toggle" onclick="toggleBlogCategories()">Manje ▴</button>`;
+      } else {
+        html += `<button type="button" class="blog-chip blog-chip-toggle" onclick="toggleBlogCategories()">Više (+${hidden.length}) ▾</button>`;
+      }
+    }
+    chipsWrap.innerHTML = html;
   }
 
   filterBlogPosts();
@@ -148,6 +184,11 @@ function renderBlogList() {
 
 function setBlogCategory(c) {
   activeBlogCategory = c;
+  renderBlogList();
+}
+
+function toggleBlogCategories() {
+  blogCategoriesOpen = !blogCategoriesOpen;
   renderBlogList();
 }
 

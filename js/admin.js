@@ -907,7 +907,7 @@ let SITE_SETTINGS = ${settingsJson};
   if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }
 
   try {
-    const res = await fetch('/.netlify/functions/save-data', {
+    const res = await fetch('/save-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pass: ADMIN_CREDS.pass, content })

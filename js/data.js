@@ -256,7 +256,7 @@ let TEXTS = {
 
 // ===ALKEMIJANA:SETTINGS:START===
 let SITE_SETTINGS = {
-  "showReviews": false,
+  "showReviews": true,
   "showAboutReviews": false,
   "showServices": false,
   "aboutImageUrl": "https://i.ibb.co/S7xGJ5Qh/profilna-za-mail.png"

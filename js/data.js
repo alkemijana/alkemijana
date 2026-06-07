@@ -12,9 +12,9 @@ let BLOG_POSTS = [
     "icon": "☽",
     "imageUrl": "https://i.ibb.co/Df1vrX7b/0dde046ca7d9.jpg",
     "excerpt": "Mjesec je vladar naših emocija, podsvijesti i intuicije. Otkrijte kako njegov položaj u vašoj karti rođenja utječe na vaš emocionalni svijet...",
-    "content": "\n        \n        <p>Mjesec je jedno od najvažnijih nebeskih tijela u natalnoj astrologiji. Dok Sunce govori o tome tko jesmo prema svijetu, Mjesec otkriva naš unutarnji svijet — naše emocije, obrasce ponašanja koje smo usvojili u djetinjstvu i naš instinktivni odgovor na život.</p><p><br></p><figure class=\"post-inline-img\"><img src=\"https://i.ibb.co/jP1QbjSk/310a57d38008.png\" alt=\"\"></figure><p>&nbsp;</p><h2>Položaj Mjeseca po znakovima</h2><p>Svaki od dvanaest znakova Zodijaka daje Mjesecu drugačiji ton. Mjesec u Ovnu donosi impulsivnost u emocijama, dok Mjesec u Raku — svom domicilu — pojačava osjećajnost i potrebu za bliskošću.</p><blockquote>Vaš Mjesec nije ono što pokazujete svijetu — to je ono što osjećate kad ste sami sa sobom.</blockquote><p>U natalnoj konzultaciji uvijek posvećujem posebnu pažnju Mjesecu jer upravo on često nosi ključ za razumijevanje obrazaca koji se ponavljaju u životu.</p><p><br></p><p><br></p>\n      \n      ",
-    "sources": "test test",
-    "archived": false
+    "content": "\n        \n        \n        <p>Mjesec je jedno od najvažnijih nebeskih tijela u natalnoj astrologiji. Dok Sunce govori o tome tko jesmo prema svijetu, Mjesec otkriva naš unutarnji svijet — naše emocije, obrasce ponašanja koje smo usvojili u djetinjstvu i naš instinktivni odgovor na život.</p><p><span style=\"font-size: 1rem;\">&nbsp;</span></p><h2>Položaj Mjeseca po znakovima</h2><p>Svaki od dvanaest znakova Zodijaka daje Mjesecu drugačiji ton. Mjesec u Ovnu donosi impulsivnost u emocijama, dok Mjesec u Raku — svom domicilu — pojačava osjećajnost i potrebu za bliskošću.</p><blockquote>Vaš Mjesec nije ono što pokazujete svijetu — to je ono što osjećate kad ste sami sa sobom.</blockquote><p>U natalnoj konzultaciji uvijek posvećujem posebnu pažnju Mjesecu jer upravo on često nosi ključ za razumijevanje obrazaca koji se ponavljaju u životu.</p><p><br></p><p><br></p>\n      \n      \n      ",
+    "sources": "",
+    "archived": true
   },
   {
     "id": "velika-arkana",
@@ -24,8 +24,9 @@ let BLOG_POSTS = [
     "icon": "✦",
     "imageUrl": "https://i.ibb.co/DDrJhXhN/6b1b5b388922.jpg",
     "excerpt": "Dvadeset i dvije karte Velike Arkane predstavljaju arhetipove duhovnog putovanja. Vodič kroz njihova značenja i međusobne veze...",
-    "content": "<p>Velika Arkana predstavlja 22 karte koje opisuju cjelokupno putovanje ljudske duše — od Ludog koji kreće u nepoznato, do Svijeta koji označava dovršenje i integraciju.</p><h2>Ludi i Putovanje Duha</h2><p>Ludi (0) je polazišna točka — čista potencija, bezbrižna hrabrost koja korača prema rubu bez straha. Svaki put kad u čitanju izvučete Ludog, pitate se: gdje u životu trebam taj skok vjere?</p><blockquote>Svaka karta Velike Arkane je pitanje koje svemir postavlja vama. Vaš odgovor je uvijek slobodan.</blockquote><p>Preporučam da svakodnevno ujutro izvučete jednu kartu Velike Arkane i pratite kako njen arhetip rezonira kroz dan.</p>",
-    "archived": false
+    "content": "\n        <p>Velika Arkana predstavlja 22 karte koje opisuju cjelokupno putovanje ljudske duše — od Ludog koji kreće u nepoznato, do Svijeta koji označava dovršenje i integraciju.</p><h2>Ludi i Putovanje Duha</h2><p>Ludi (0) je polazišna točka — čista potencija, bezbrižna hrabrost koja korača prema rubu bez straha. Svaki put kad u čitanju izvučete Ludog, pitate se: gdje u životu trebam taj skok vjere?</p><blockquote>Svaka karta Velike Arkane je pitanje koje svemir postavlja vama. Vaš odgovor je uvijek slobodan.</blockquote><p>Preporučam da svakodnevno ujutro izvučete jednu kartu Velike Arkane i pratite kako njen arhetip rezonira kroz dan.</p>\n      ",
+    "sources": "",
+    "archived": true
   },
   {
     "id": "tarot-i-mjesec",
@@ -35,8 +36,9 @@ let BLOG_POSTS = [
     "icon": "☾",
     "imageUrl": "https://i.ibb.co/n8ZfTvS4/250dfd963412.jpg",
     "excerpt": "Mlad mjesec, pun mjesec, svaka faza nosi svoju energiju. Naučite kako uskladiti svoja tarot čitanja s ciklusima Mjeseca...",
-    "content": "<p>Mjesec prolazi kroz osam distinktnih faza svakih 29.5 dana. Svaka faza donosi drugačiju kvalitetu energije, i usklađivanjem tarot prakse s tim ritmovima čitanja postaju dublja i preciznija.</p><h2>Mlad Mjesec — vrijeme sijanja</h2><p>Mlad Mjesec je idealno vrijeme za čitanja koja se bave novim početcima i namjerama. Karte izvučene u ovoj fazi govore o potencijalu i sjemenu koje sadite.</p><blockquote>Tarot i Mjesec dijele isti jezik — jezik ciklusa, rasta i otpuštanja.</blockquote>",
-    "archived": false
+    "content": "\n        <p>Mjesec prolazi kroz osam distinktnih faza svakih 29.5 dana. Svaka faza donosi drugačiju kvalitetu energije, i usklađivanjem tarot prakse s tim ritmovima čitanja postaju dublja i preciznija.</p><h2>Mlad Mjesec — vrijeme sijanja</h2><p>Mlad Mjesec je idealno vrijeme za čitanja koja se bave novim početcima i namjerama. Karte izvučene u ovoj fazi govore o potencijalu i sjemenu koje sadite.</p><blockquote>Tarot i Mjesec dijele isti jezik — jezik ciklusa, rasta i otpuštanja.</blockquote>\n      ",
+    "sources": "",
+    "archived": true
   }
 ];
 // ===ALKEMIJANA:BLOG_POSTS:END===

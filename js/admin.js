@@ -534,7 +534,7 @@ function renderCoverCanvas({ icon, title, date, category }) {
   }
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/jpeg', 0.88);
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/png');
   });
 }
 

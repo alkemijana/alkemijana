@@ -286,7 +286,7 @@ function showPostEditor(p) {
         <button onclick="wSel('<blockquote>','</blockquote>')">❝ Citat</button>
         <button onclick="wSel('<strong>','</strong>')">Masno</button>
         <button onclick="eCmd('insertParagraph')">¶</button>
-        <label class="ed-img-upload" title="Ubaci sliku u tekst">
+        <label class="ed-img-upload" title="Ubaci sliku na mjesto kursora" onmousedown="saveEditorSelection(event)">
           🖼 Slika
           <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this)">
         </label>
@@ -347,16 +347,58 @@ function clearBlogImage() {
   document.getElementById('img-filename').textContent = 'Nema odabrane slike';
 }
 
-/* Ubaci sliku u tijelo članka — uploada na ImgBB i umetne <img> na mjestu kursora. */
+/* Selection u contenteditable se gubi čim user otvori file dialog (fokus
+   prelazi na OS prozor). Zato moramo zapamtiti raspon PRIJE nego dialog otvori,
+   pa ga vratiti kasnije kad ubacujemo sliku. */
+let _savedEditorRange = null;
+
+function saveEditorSelection() {
+  const ed = document.getElementById('blog-content-ed');
+  if (!ed) return;
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) {
+    _savedEditorRange = null;
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  if (ed.contains(range.commonAncestorContainer)) {
+    _savedEditorRange = range.cloneRange();
+  } else {
+    _savedEditorRange = null;
+  }
+}
+
+function restoreEditorSelection() {
+  const ed = document.getElementById('blog-content-ed');
+  if (!ed) return false;
+  ed.focus();
+  if (!_savedEditorRange) {
+    // Nije bilo kursora u editoru — stavi na kraj
+    const range = document.createRange();
+    range.selectNodeContents(ed);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(_savedEditorRange);
+  return true;
+}
+
+/* Ubaci sliku u tijelo članka — uploada na ImgBB i umetne <img> točno na
+   mjestu gdje je kursor bio kad je user kliknuo gumb. */
 async function insertImageInContent(input) {
   const file = input.files[0];
   if (!file) return;
-  const ed = document.getElementById('blog-content-ed');
-  ed.focus();
 
+  restoreEditorSelection();
   const placeholderId = 'img-ph-' + Date.now();
   document.execCommand('insertHTML', false,
     `<p id="${placeholderId}" style="color:var(--text-muted);font-style:italic">⏳ Uploadam sliku...</p>`);
+  _savedEditorRange = null;
 
   try {
     const url = await uploadToImgBB(file);

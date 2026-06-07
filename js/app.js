@@ -128,19 +128,32 @@ function renderReviews(section, containerId) {
 
 /* ---- BLOG ---- */
 
+let activeBlogCategory = '';
+
 function renderBlogList() {
   const grid = document.getElementById('blog-grid');
   if (!grid) return;
 
-  const select = document.getElementById('blog-category-filter');
-  if (select) {
+  const chipsWrap = document.getElementById('blog-category-chips');
+  if (chipsWrap) {
     const cats = [...new Set(BLOG_POSTS.filter(p => !p.archived).map(p => p.category).filter(Boolean))].sort();
-    const current = select.value;
-    select.innerHTML = '<option value="">Sve kategorije</option>' +
-      cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-    select.value = cats.includes(current) ? current : '';
+    if (activeBlogCategory && !cats.includes(activeBlogCategory)) activeBlogCategory = '';
+    const chip = (label, val) =>
+      `<button type="button" class="blog-chip ${activeBlogCategory === val ? 'active' : ''}" onclick="setBlogCategory('${esc(val).replace(/'/g, "\\'")}')">${label}</button>`;
+    chipsWrap.innerHTML = chip('✦ Sve', '') + cats.map(c => chip(esc(c), c)).join('');
   }
 
+  filterBlogPosts();
+}
+
+function setBlogCategory(c) {
+  activeBlogCategory = c;
+  renderBlogList();
+}
+
+function clearBlogSearch() {
+  const s = document.getElementById('blog-search');
+  if (s) { s.value = ''; s.focus(); }
   filterBlogPosts();
 }
 
@@ -149,13 +162,13 @@ function filterBlogPosts() {
   if (!grid) return;
 
   const searchEl = document.getElementById('blog-search');
-  const catEl    = document.getElementById('blog-category-filter');
   const query    = (searchEl ? searchEl.value : '').trim().toLowerCase();
-  const category = catEl ? catEl.value : '';
+
+  const wrap = document.querySelector('.blog-search-wrap');
+  if (wrap) wrap.classList.toggle('has-text', !!query);
 
   let filtered = BLOG_POSTS.filter(p => !p.archived);
-
-  if (category) filtered = filtered.filter(p => p.category === category);
+  if (activeBlogCategory) filtered = filtered.filter(p => p.category === activeBlogCategory);
 
   if (query) {
     filtered = filtered.filter(p => {
@@ -168,9 +181,32 @@ function filterBlogPosts() {
     });
   }
 
+  const meta = document.getElementById('blog-results-meta');
+  if (meta) {
+    if (query || activeBlogCategory) {
+      const total = BLOG_POSTS.filter(p => !p.archived).length;
+      meta.textContent = `${filtered.length} od ${total} članaka`;
+      meta.classList.add('show');
+    } else {
+      meta.textContent = '';
+      meta.classList.remove('show');
+    }
+  }
+
   grid.innerHTML = filtered.length
     ? filtered.map(blogCard).join('')
-    : '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;text-align:center;padding:3rem">Nema članaka koji odgovaraju pretrazi.</p>';
+    : `<div class="blog-empty">
+         <div class="blog-empty-glyph">✦</div>
+         <p>Nema članaka koji odgovaraju pretrazi.</p>
+         <button type="button" class="blog-empty-reset" onclick="resetBlogFilters()">Očisti filtere</button>
+       </div>`;
+}
+
+function resetBlogFilters() {
+  activeBlogCategory = '';
+  const s = document.getElementById('blog-search');
+  if (s) s.value = '';
+  renderBlogList();
 }
 
 function renderHomeBlogPreview() {

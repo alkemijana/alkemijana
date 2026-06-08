@@ -2,10 +2,10 @@
    AlkemiJana — Admin panel
    Pristup: AlkemiJana.html#admin  (ili index.html#admin)
    Korisničko ime : jana
-   Lozinka        : alkemijana2026
+   Lozinka        : (provjerava se preko /verify-pass — env var ADMIN_PASS)
    ============================================================ */
 
-const ADMIN_CREDS = { user: 'jana', pass: 'morasmora2026' };
+const ADMIN_USER  = 'jana';
 const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
 let isAdmin       = false;
@@ -17,13 +17,43 @@ let editingRevId  = null;
    PRIJAVA / ODJAVA
    ============================================================ */
 
-function handleAdminLogin() {
-  const u   = document.getElementById('aj-user').value;
-  const p   = document.getElementById('aj-pass').value;
-  const err = document.getElementById('admin-error');
-  if (u === ADMIN_CREDS.user && p === ADMIN_CREDS.pass) {
+async function handleAdminLogin() {
+  const u    = document.getElementById('aj-user').value;
+  const p    = document.getElementById('aj-pass').value;
+  const err  = document.getElementById('admin-error');
+  const btn  = document.querySelector('#admin-login-box .btn-primary');
+
+  if (u !== ADMIN_USER) {
+    err.style.display = 'block';
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Provjeravam...'; }
+  err.style.display = 'none';
+
+  let ok = false;
+  try {
+    const res = await fetch('/verify-pass', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pass: p })
+    });
+    const data = await res.json().catch(() => ({}));
+    ok = res.ok && data.ok === true;
+  } catch (e) {
+    // Lokalni razvoj (bez Cloudflare funkcija): pusti login da se UI može testirati,
+    // ali save neće raditi jer nema env vara.
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:') {
+      ok = !!p;
+    }
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Prijava'; }
+
+  if (ok) {
     isAdmin = true;
     sessionStorage.setItem('aj_admin', '1');
+    sessionStorage.setItem('aj_pass', p);
     document.getElementById('admin-login-overlay').classList.remove('show');
     activateAdmin();
     history.replaceState(null, '', '#');
@@ -54,6 +84,7 @@ function activateAdmin() {
 function adminLogout() {
   isAdmin = false;
   sessionStorage.removeItem('aj_admin');
+  sessionStorage.removeItem('aj_pass');
   document.getElementById('admin-bar').classList.remove('show');
   const nav = document.getElementById('main-nav');
   nav.style.top = '0';
@@ -678,39 +709,98 @@ function wSel(open, close) {
   }
 }
 
-/* Strip svih inline stilova (font-size, font-family, color iz Worda/Docsa)
-   i drugih tagova koji nam ne trebaju. Zadržava strukturu (p, h2, h3, strong,
+/* Strip svih inline stilova (font-size, font-family, color iz Worda/Docsa),
+   svih event-handler atributa (onclick, onerror...) i opasnih URL shema
+   (javascript:, data: osim slika). Zadržava strukturu (p, h2, h3, strong,
    b, em, i, u, blockquote, figure, img, a, ul, ol, li, br). */
 function sanitizeContentHtml(html) {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
 
   const allowedTags = new Set(['P','H2','H3','H4','STRONG','B','EM','I','U','BR','BLOCKQUOTE','FIGURE','IMG','A','UL','OL','LI','DIV','SPAN']);
+  // Per-tag whitelist atributa — sve ostalo (uključujući on* event handleri) se briše
+  const allowedAttrs = {
+    A:      ['href','title','target','rel'],
+    IMG:    ['src','alt','title','width','height'],
+    FIGURE: [],
+    SPAN:   ['style'],
+    P:[], H2:[], H3:[], H4:[], STRONG:[], B:[], EM:[], I:[], U:[], BR:[],
+    BLOCKQUOTE:[], UL:[], OL:[], LI:[], DIV:[]
+  };
   const stripStyleProps = ['font-size','font-family','line-height','color','background','background-color','font-weight','font-style'];
+
+  const safeUrl = (val, kind) => {
+    if (!val) return false;
+    const raw = String(val).toLowerCase();
+    // Ukloni sve kontrolne znakove i whitespace prije provjere — sprječava
+    // bypass tipa "java[tab]script:" ili "java script:"
+    let clean = '';
+    for (let i = 0; i < raw.length; i++) {
+      if (raw.charCodeAt(i) > 32) clean += raw[i];
+    }
+    if (kind === 'href') {
+      return clean.startsWith('http://') || clean.startsWith('https://') ||
+             clean.startsWith('mailto:') || clean.startsWith('tel:') ||
+             clean.startsWith('#') || clean.startsWith('/');
+    }
+    if (kind === 'src') {
+      return clean.startsWith('http://') || clean.startsWith('https://') ||
+             clean.startsWith('data:image/');
+    }
+    return false;
+  };
 
   const walk = (node) => {
     const children = [...node.childNodes];
     children.forEach(child => {
-      if (child.nodeType !== 1) return; // not element
-      if (!allowedTags.has(child.tagName)) {
+      if (child.nodeType === 8) { // komentar
+        child.parentNode.removeChild(child);
+        return;
+      }
+      if (child.nodeType !== 1) return; // ne-element
+      const tag = child.tagName;
+      if (!allowedTags.has(tag)) {
         // zamijeni s child contentom (unwrap)
         while (child.firstChild) child.parentNode.insertBefore(child.firstChild, child);
         child.parentNode.removeChild(child);
         return;
       }
-      // očisti inline style
+      // Drži samo atribute s whitelist-e (sve on* je automatski uklonjeno)
+      const allowed = allowedAttrs[tag] || [];
+      [...child.attributes].forEach(attr => {
+        if (!allowed.includes(attr.name.toLowerCase())) {
+          child.removeAttribute(attr.name);
+        }
+      });
+      // Validiraj URL-ove
+      if (tag === 'A' && child.hasAttribute('href') && !safeUrl(child.getAttribute('href'), 'href')) {
+        child.removeAttribute('href');
+      }
+      if (tag === 'IMG') {
+        if (!child.hasAttribute('src') || !safeUrl(child.getAttribute('src'), 'src')) {
+          child.parentNode.removeChild(child);
+          return;
+        }
+      }
+      // Sigurnost za target=_blank
+      if (tag === 'A' && (child.getAttribute('target') || '').toLowerCase() === '_blank') {
+        child.setAttribute('rel', 'noopener noreferrer');
+      }
+      // Očisti inline style (samo SPAN ga može imati prema whitelist-u)
       if (child.hasAttribute('style')) {
         stripStyleProps.forEach(p => {
           if (child.style[p.replace(/-([a-z])/g, (_, c) => c.toUpperCase())]) {
             child.style.removeProperty(p);
           }
         });
-        if (!child.getAttribute('style').trim()) child.removeAttribute('style');
+        const s = child.getAttribute('style') || '';
+        // Ukloni style koji sadrži expression(), javascript:, ili HTML znakove
+        if (!s.trim() || /expression\s*\(|javascript:|<|>/i.test(s)) {
+          child.removeAttribute('style');
+        }
       }
-      // makni class iz Worda/Docsa
-      if (child.hasAttribute('class')) child.removeAttribute('class');
       // SPAN bez stila je suvišan — unwrap
-      if (child.tagName === 'SPAN' && !child.hasAttribute('style')) {
+      if (tag === 'SPAN' && !child.hasAttribute('style')) {
         while (child.firstChild) child.parentNode.insertBefore(child.firstChild, child);
         child.parentNode.removeChild(child);
         return;
@@ -1347,16 +1437,26 @@ let SITE_SETTINGS = ${settingsJson};
 
   if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }
 
+  const pass = sessionStorage.getItem('aj_pass') || '';
+  if (!pass) {
+    alert('❌ Sesija je istekla. Prijavi se ponovo.');
+    if (saveBtn) { saveBtn.textContent = '↓ Spremi'; saveBtn.disabled = false; }
+    return;
+  }
+
   try {
     const res = await fetch('/save-data', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pass: ADMIN_CREDS.pass, content })
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
+      body: JSON.stringify({ content })
     });
     const data = await res.json();
 
     if (data.success) {
       alert('✅ Spremljeno! Stranica se automatski ažurira za ~30 sekundi.');
+    } else if (res.status === 403) {
+      sessionStorage.removeItem('aj_pass');
+      alert('❌ Pogrešna lozinka — prijavi se ponovo.');
     } else {
       alert('❌ Greška: ' + (data.error || 'Nepoznata greška'));
     }

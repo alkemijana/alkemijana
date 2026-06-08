@@ -56,7 +56,7 @@ ALKEMIJANA WEBSITE/
 ### Pristup
 - URL: **alkemijana.com#admin**
 - Username: **jana**
-- Lozinka: **morasmora2026**
+- Lozinka: pohranjena u Cloudflare Pages env varu `ADMIN_PASS` (NIJE u kodu)
 
 ### Što admin može
 1. **Blog** — dodaj/uredi/obriši/arhiviraj članke, upload slike (ImgBB), rich text editor
@@ -161,9 +161,12 @@ Za testiranje serverless funkcije lokalno: `npx wrangler pages dev` (ako instali
 
 ## Sigurnost
 
-- Lozinka admin je hard-coded u dva mjesta: `admin.js` (`ADMIN_CREDS.pass`) i `functions/save-data.js`. **Mora se sinkronizirati!**
-- GitHub token je u Cloudflare Pages env varu — NIJE u kodu.
+- Lozinka admin je u Cloudflare Pages env varu `ADMIN_PASS` — NIJE u kodu.
+  - Login overlay šalje upisanu lozinku na `/verify-pass` koja je uspoređuje s env varom.
+  - Nakon uspjeha lozinka se drži u `sessionStorage` (`aj_pass`) i šalje kao `X-Admin-Pass` header na `/save-data`.
+- GitHub token je u Cloudflare Pages env varu `GITHUB_TOKEN` — NIJE u kodu.
 - ImgBB i Web3Forms ključevi su u kodu — to je OK, oni su client-side ključevi s rate limit-om.
+- HTML sanitizator (`sanitizeContentHtml` u admin.js) koristi whitelist atributa i validira href/src sheme — sve `on*` event handlere automatski briše.
 
 ---
 

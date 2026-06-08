@@ -1,5 +1,6 @@
 export async function onRequestPost({ request, env }) {
   const GITHUB_TOKEN = env.GITHUB_TOKEN;
+  const ADMIN_PASS   = env.ADMIN_PASS;
   const REPO_OWNER   = 'alkemijana';
   const REPO_NAME    = 'alkemijana';
   const FILE_PATH    = 'js/data.js';
@@ -7,6 +8,9 @@ export async function onRequestPost({ request, env }) {
 
   if (!GITHUB_TOKEN) {
     return new Response(JSON.stringify({ error: 'GITHUB_TOKEN not configured' }), { status: 500 });
+  }
+  if (!ADMIN_PASS) {
+    return new Response(JSON.stringify({ error: 'ADMIN_PASS not configured' }), { status: 500 });
   }
 
   let body;
@@ -16,7 +20,10 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
 
-  if (body.pass !== 'morasmora2026') {
+  const provided = request.headers.get('x-admin-pass') || body.pass || '';
+  if (!safeEqual(provided, ADMIN_PASS)) {
+    // mala umjetna pauza da uspori pokušaje pogađanja (~250ms)
+    await new Promise(r => setTimeout(r, 250));
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
   }
 
@@ -65,4 +72,12 @@ export async function onRequestPost({ request, env }) {
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
+}
+
+function safeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let r = 0;
+  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return r === 0;
 }

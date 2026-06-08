@@ -31,6 +31,7 @@
   --noise-blend: overlay;
   --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.3);
   --transition-cover: #06080f;
+  --card-text: #d4cdec;
 }
 
 /* MISTIČNA SVIJETLA TEMA — pastelni lavender/krem, kao osvjetljen pergament */
@@ -61,6 +62,7 @@
   --noise-blend: multiply;
   --shadow-glow: 0 8px 32px rgba(106, 78, 160, 0.15);
   --transition-cover: #f4eef9;
+  --card-text: #3a2f5a;
 }
 
 /* Smooth color transitions when theme changes (osim za circular reveal koji
@@ -636,7 +638,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   letter-spacing: 0.06em;
   margin-bottom: 1rem;
 }
-.service-card p { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: #d4cdec; font-size: 1.15rem; margin-bottom: 1.5rem; line-height: 1.65; }
+.service-card p { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: var(--card-text); font-size: 1.15rem; margin-bottom: 1.5rem; line-height: 1.65; }
 .service-price { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--lavender); }
 .service-price small { font-family: 'Cormorant Infant', serif; font-size: 0.95rem; color: var(--text-muted); font-style: italic; }
 
@@ -876,7 +878,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 .blog-content { padding: 2rem; }
 .blog-meta    { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lavender); margin-bottom: 1rem; }
 .blog-content h3 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); margin-bottom: 1rem; line-height: 1.3; }
-.blog-content p  { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: #d4cdec; font-size: 1.15rem; margin-bottom: 1.5rem; line-height: 1.65; }
+.blog-content p  { font-family: 'Cormorant Garamond', serif; font-weight: 500; color: var(--card-text); font-size: 1.15rem; margin-bottom: 1.5rem; line-height: 1.65; }
 .blog-link { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--sage); }
 
 /* ---- BLOG POST PRIKAZ ---- */

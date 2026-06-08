@@ -321,8 +321,13 @@
       <li><a onclick="showPage('blog')"    data-page="blog">Blog</a></li>
       <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
     </ul>
+    <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
+      <span class="theme-toggle-icon theme-toggle-moon">☾</span>
+      <span class="theme-toggle-icon theme-toggle-sun">☀</span>
+    </button>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
   </nav>
+  <div id="theme-transition-circle"></div>
 
   <!-- POČETNA -->
   <section class="page active" id="home">

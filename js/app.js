@@ -21,6 +21,90 @@ function toggleMenu() {
   document.getElementById('navLinks').classList.toggle('open');
 }
 
+/* ---- THEME (tamna / svijetla) ---- */
+
+const THEME_KEY = 'aj_theme';
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+function toggleTheme(ev) {
+  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next    = current === 'light' ? 'dark' : 'light';
+
+  const circle = document.getElementById('theme-transition-circle');
+  if (!circle || !window.matchMedia) {
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    return;
+  }
+
+  // Ako user preferira reduced motion, samo prebaci bez animacije
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    return;
+  }
+
+  // Pozicija klika — circle se širi iz te točke
+  let x = window.innerWidth - 60;
+  let y = 60;
+  if (ev && (ev.clientX || ev.touches)) {
+    const t = ev.touches ? ev.touches[0] : ev;
+    x = t.clientX || x;
+    y = t.clientY || y;
+  } else if (ev && ev.currentTarget) {
+    const r = ev.currentTarget.getBoundingClientRect();
+    x = r.left + r.width / 2;
+    y = r.top  + r.height / 2;
+  }
+
+  // Krug mora pokriti najdalju točku ekrana od pozicije klika
+  const maxX = Math.max(x, window.innerWidth - x);
+  const maxY = Math.max(y, window.innerHeight - y);
+  const radius = Math.sqrt(maxX * maxX + maxY * maxY);
+  const size = Math.ceil(radius * 2) + 100;
+
+  // Boja kruga = boja NOVE pozadine (kupimo je iz CSS var-a privremenim
+  // postavljanjem data-theme na hidden helper, ali jednostavnije: invertiramo)
+  const newBg = next === 'light' ? '#f4eef9' : '#06080f';
+
+  circle.style.left = x + 'px';
+  circle.style.top  = y + 'px';
+  circle.style.background = newBg;
+  circle.style.setProperty('--reveal-size', size + 'px');
+  circle.classList.remove('theme-reveal');
+  // force reflow
+  void circle.offsetWidth;
+  circle.classList.add('theme-reveal');
+
+  // Prebaci temu u sredini animacije (kad je krug već prekrio ekran)
+  setTimeout(() => {
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  }, 450);
+
+  // Skini krug nakon animacije
+  setTimeout(() => {
+    circle.classList.remove('theme-reveal');
+    circle.style.width = '0';
+    circle.style.height = '0';
+  }, 1200);
+}
+
+// Postavi pohranjenu temu prije nego se DOM iscrta da ne bude flicker
+(function initTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light') applyTheme('light');
+  } catch (e) {}
+})();
+
 async function submitForm(e) {
   e.preventDefault();
   const form    = e.target;

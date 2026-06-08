@@ -3,6 +3,7 @@
    ============================================================ */
 
 :root {
+  /* MISTIČNA TAMNA TEMA (default) */
   --bg-deep: #06080f;
   --bg-mid: #0e0c24;
   --bg-light: #1c1840;
@@ -17,6 +18,65 @@
   --text: #c0bcce;
   --text-muted: #6a6488;
   --border: rgba(168, 144, 208, 0.2);
+
+  /* Theme-specific tokens */
+  --body-grad-1: rgba(61, 40, 120, 0.28);
+  --body-grad-2: rgba(14, 12, 36, 0.5);
+  --body-grad-3: rgba(106, 148, 120, 0.06);
+  --card-bg: rgba(28, 24, 64, 0.45);
+  --card-bg-hover: rgba(36, 32, 80, 0.55);
+  --nav-bg: rgba(6, 8, 15, 0.8);
+  --form-bg: rgba(14, 12, 36, 0.6);
+  --noise-opacity: 0.055;
+  --noise-blend: overlay;
+  --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --transition-cover: #06080f;
+}
+
+/* MISTIČNA SVIJETLA TEMA — pastelni lavender/krem, kao osvjetljen pergament */
+:root[data-theme="light"] {
+  --bg-deep: #f4eef9;
+  --bg-mid: #ede4f5;
+  --bg-light: #ffffff;
+  --navy: #f0e8f8;
+  --lavender: #6a4ea0;
+  --silver-bright: #1f1638;
+  --lavender-soft: #8a6dc4;
+  --silver: #4a3f6e;
+  --silver-light: #2e2752;
+  --sage: #8a6dc4;
+  --forest: #5d4a8a;
+  --text: #2e2752;
+  --text-muted: #6a5d8c;
+  --border: rgba(106, 78, 160, 0.22);
+
+  --body-grad-1: rgba(168, 144, 208, 0.22);
+  --body-grad-2: rgba(232, 220, 246, 0.5);
+  --body-grad-3: rgba(220, 200, 240, 0.4);
+  --card-bg: rgba(255, 255, 255, 0.55);
+  --card-bg-hover: rgba(255, 255, 255, 0.75);
+  --nav-bg: rgba(244, 238, 249, 0.85);
+  --form-bg: rgba(255, 255, 255, 0.55);
+  --noise-opacity: 0.025;
+  --noise-blend: multiply;
+  --shadow-glow: 0 8px 32px rgba(106, 78, 160, 0.15);
+  --transition-cover: #f4eef9;
+}
+
+/* Smooth color transitions when theme changes (osim za circular reveal koji
+   ide preko svega — taj poništi tranzicije da se animacija ne preklopi). */
+body, body::before, body::after,
+nav, .nav-links, .nav-links a, .logo,
+.section-title, .section-subtitle,
+.hero h1, .hero-desc,
+.service-card, .service-card p,
+.blog-card, .blog-content p,
+.review-card, .review-text,
+.post-body, .post-body p, .post-body h2, .post-body h3, .post-body blockquote,
+.form-group input, .form-group select, .form-group textarea,
+.pricing-row, .footer, .footer-text,
+.blog-search-input, .blog-category-select, .blog-chip {
+  transition: background-color 0.6s ease, color 0.6s ease, border-color 0.6s ease;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,9 +90,9 @@ body {
   line-height: 1.75;
   overflow-x: hidden;
   background-image:
-    radial-gradient(ellipse at 20% 10%, rgba(61, 40, 120, 0.28) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(14, 12, 36, 0.5) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(106, 148, 120, 0.06) 0%, transparent 60%);
+    radial-gradient(ellipse at 20% 10%, var(--body-grad-1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, var(--body-grad-2) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, var(--body-grad-3) 0%, transparent 60%);
   background-attachment: fixed;
 }
 
@@ -43,8 +103,8 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
   pointer-events: none;
   z-index: 1;
-  opacity: 0.055;
-  mix-blend-mode: overlay;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: var(--noise-blend);
 }
 
 .content { position: relative; z-index: 2; }
@@ -58,10 +118,10 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(6, 8, 15, 0.8);
+  background: var(--nav-bg);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
-  transition: top 0.3s;
+  transition: top 0.3s, background-color 0.6s ease;
 }
 
 .logo {
@@ -108,6 +168,76 @@ nav {
   color: var(--lavender);
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+/* ---- THEME TOGGLE (Mjesec ↔ Sunce) ---- */
+.theme-toggle {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--lavender);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  border-color: var(--lavender);
+  background: rgba(168, 144, 208, 0.08);
+  box-shadow: 0 0 18px rgba(168, 144, 208, 0.25);
+  transform: rotate(-12deg) scale(1.06);
+}
+.theme-toggle-icon {
+  position: absolute;
+  font-size: 1.2rem;
+  line-height: 1;
+  transition: transform 0.55s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.4s;
+}
+.theme-toggle-moon { transform: translateY(0) rotate(0deg); opacity: 1; }
+.theme-toggle-sun  { transform: translateY(140%) rotate(180deg); opacity: 0; }
+:root[data-theme="light"] .theme-toggle-moon { transform: translateY(-140%) rotate(-180deg); opacity: 0; }
+:root[data-theme="light"] .theme-toggle-sun  { transform: translateY(0) rotate(0deg); opacity: 1; }
+
+/* Circular reveal animacija pri prebacivanju teme — iz kursora se širi krug
+   nove pozadinske boje preko cijelog ekrana. */
+#theme-transition-circle {
+  position: fixed;
+  top: 0; left: 0;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: var(--transition-cover);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: none;
+}
+/* U svijetloj temi: invertiraj zvjezdice (bijele postaju tamno-ljubičaste točkice
+   na pastelnoj pozadini) + smanji vidljivost da budu suptilne. */
+:root[data-theme="light"] body > svg[viewBox="0 0 1920 1080"] {
+  filter: invert(0.78) hue-rotate(215deg) saturate(1.4) brightness(0.85);
+  opacity: 0.18 !important;
+  transition: opacity 0.6s ease, filter 0.6s ease;
+}
+body > svg[viewBox="0 0 1920 1080"] {
+  transition: opacity 0.6s ease, filter 0.6s ease;
+}
+
+#theme-transition-circle.theme-reveal {
+  width: var(--reveal-size, 200vmax);
+  height: var(--reveal-size, 200vmax);
+  opacity: 1;
+  transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1),
+              height 0.8s cubic-bezier(0.65, 0, 0.35, 1),
+              opacity 0.3s ease 0.7s;
 }
 
 /* ---- STRANICE ---- */
@@ -475,11 +605,11 @@ nav {
   margin-top: 3rem;
 }
 .service-card {
-  background: linear-gradient(135deg, rgba(28, 24, 64, 0.5), rgba(14, 12, 36, 0.7));
+  background: var(--card-bg);
   border: 1px solid var(--border);
   padding: 3rem 2.2rem;
   text-align: center;
-  transition: all 0.4s;
+  transition: background-color 0.6s ease, border-color 0.6s ease, transform 0.4s, box-shadow 0.4s;
   position: relative;
   overflow: hidden;
 }
@@ -511,7 +641,7 @@ nav {
 .service-price small { font-family: 'Cormorant Infant', serif; font-size: 0.95rem; color: var(--text-muted); font-style: italic; }
 
 /* ---- CIJENIK TABLICA ---- */
-.pricing-table { margin-top: 4rem; border: 1px solid var(--border); background: rgba(14, 12, 36, 0.5); }
+.pricing-table { margin-top: 4rem; border: 1px solid var(--border); background: var(--card-bg); }
 .pricing-row {
   display: grid;
   grid-template-columns: 2fr 3fr 1fr;
@@ -606,7 +736,7 @@ nav {
 .form-group select,
 .form-group textarea {
   width: 100%;
-  background: rgba(6, 8, 15, 0.7);
+  background: var(--form-bg);
   border: 1px solid var(--border);
   padding: 1.05rem 1.1rem;
   color: var(--text);
@@ -621,7 +751,8 @@ nav {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--lavender);
-  background: rgba(6, 8, 15, 0.95);
+  background: var(--form-bg);
+  box-shadow: 0 0 0 3px rgba(168,144,208,0.15);
 }
 .form-group select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23a890d0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -648,7 +779,7 @@ nav {
   margin-top: 3rem;
 }
 .review-card {
-  background: rgba(14, 12, 36, 0.5);
+  background: var(--card-bg);
   border: 1px solid var(--border);
   padding: 2.5rem;
   position: relative;
@@ -676,12 +807,12 @@ nav {
   margin-top: 3rem;
 }
 .blog-card {
-  background: linear-gradient(160deg, rgba(28, 24, 64, 0.55), rgba(14, 12, 36, 0.6));
+  background: var(--card-bg);
   border: 1px solid var(--border);
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  transition: all 0.45s ease;
+  transition: background-color 0.6s ease, border-color 0.6s ease, transform 0.45s ease, box-shadow 0.45s ease;
 }
 .blog-card::before {
   content: '';
@@ -879,7 +1010,7 @@ nav {
 .social-link svg { flex-shrink: 0; }
 
 /* ---- FOOTER ---- */
-footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-align: center; margin-top: 6rem; background: rgba(6, 8, 15, 0.7); }
+footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-align: center; margin-top: 6rem; background: var(--nav-bg); transition: background-color 0.6s ease; }
 .footer-logo    { font-family: 'Tangerine', cursive; font-size: 3.2rem; font-weight: 700; color: var(--lavender); letter-spacing: 0.08em; margin-bottom: 1rem; }
 .footer-tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 0.18em; font-size: 1.45rem; }
 .footer-social  { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
@@ -1192,7 +1323,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
     position: fixed;
     top: 70px; left: 0; right: 0;
     flex-direction: column;
-    background: rgba(6, 8, 15, 0.98);
+    background: var(--nav-bg);
+    backdrop-filter: blur(14px);
     padding: 2rem;
     gap: 1.5rem;
     transform: translateY(-150%);
@@ -1201,6 +1333,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   }
   .nav-links.open { transform: translateY(0); }
   .menu-toggle { display: block; }
+  .theme-toggle { width: 38px; height: 38px; margin-left: auto; margin-right: 0.5rem; }
+  .theme-toggle-icon { font-size: 1.05rem; }
   .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
   .about-image-float { float: none; max-width: 220px; margin: 0 auto 1.5rem; }
   .about-image-float:empty { width: 180px; height: 220px; }

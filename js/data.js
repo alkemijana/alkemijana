@@ -27,11 +27,11 @@ let BLOG_POSTS = [
     "icon": "☽",
     "imageUrl": "https://i.ibb.co/Df1vrX7b/0dde046ca7d9.jpg",
     "excerpt": "Mjesec je vladar naših emocija, podsvijesti i intuicije. Otkrijte kako njegov položaj u vašoj karti rođenja utječe na vaš emocionalni svijet...",
-    "content": "\n        \n        \n        \n        \n        <p>Mjesec je jedno od najvažnijih nebeskih tijela u natalnoj astrologiji. Dok Sunce govori o tome tko jesmo prema svijetu, Mjesec otkriva naš unutarnji svijet — naše emocije, obrasce ponašanja koje smo usvojili u djetinjstvu i naš instinktivni odgovor na život.</p><p>&nbsp;</p><h2>Položaj Mjeseca po znakovima</h2><p>Svaki od dvanaest znakova Zodijaka daje Mjesecu drugačiji ton. Mjesec u Ovnu donosi impulsivnost u emocijama, dok Mjesec u Raku — svom domicilu — pojačava osjećajnost i potrebu za bliskošću.</p><blockquote>Vaš Mjesec nije ono što pokazujete svijetu — to je ono što osjećate kad ste sami sa sobom.</blockquote><p>U natalnoj konzultaciji uvijek posvećujem posebnu pažnju Mjesecu jer upravo on često nosi ključ za razumijevanje obrazaca koji se ponavljaju u životu.</p><p><br></p><p><br></p>\n      \n      \n      \n      \n      ",
+    "content": "\n        \n        \n        \n        \n        \n        <p>Mjesec je jedno od najvažnijih nebeskih tijela u natalnoj astrologiji. Dok Sunce govori o tome tko jesmo prema svijetu, Mjesec otkriva naš unutarnji svijet — naše emocije, obrasce ponašanja koje smo usvojili u djetinjstvu i naš instinktivni odgovor na život.</p><p>&nbsp;</p><h2>Položaj Mjeseca po znakovima</h2><p>Svaki od dvanaest znakova Zodijaka daje Mjesecu drugačiji ton. Mjesec u Ovnu donosi impulsivnost u emocijama, dok Mjesec u Raku — svom domicilu — pojačava osjećajnost i potrebu za bliskošću.</p><blockquote>Vaš Mjesec nije ono što pokazujete svijetu — to je ono što osjećate kad ste sami sa sobom.</blockquote><p>U natalnoj konzultaciji uvijek posvećujem posebnu pažnju Mjesecu jer upravo on često nosi ključ za razumijevanje obrazaca koji se ponavljaju u životu.</p><p><br></p><p><br></p>\n      \n      \n      \n      \n      \n      ",
     "sources": "",
     "series": "Osnove astrologije",
     "seriesPart": 1,
-    "archived": true
+    "archived": false
   },
   {
     "id": "velika-arkana",

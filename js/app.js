@@ -364,7 +364,11 @@ function renderHomeBlogPreview() {
 }
 
 function blogCard(p) {
-  // Tagovi se NE prikazuju na kartici početne — samo datum
+  // Tagovi se NE prikazuju na kartici početne — samo datum.
+  // Ako je dio serijala, prikaži suptilni badge ispod naslova.
+  const seriesBadge = p.series
+    ? `<div class="blog-card-series">✦ ${esc(p.series)}${p.seriesPart ? ' · Dio ' + p.seriesPart : ''}</div>`
+    : '';
   return `
     <div class="blog-card" onclick="openPost('${p.id}')">
       <div class="blog-image">
@@ -373,6 +377,7 @@ function blogCard(p) {
       <div class="blog-content">
         <div class="blog-meta">${p.date}</div>
         <h3>${p.title}</h3>
+        ${seriesBadge}
         <p>${p.excerpt}</p>
         <div class="blog-link">Pročitaj više →</div>
       </div>

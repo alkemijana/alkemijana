@@ -155,7 +155,7 @@ function renderServices() {
         let info = '';
         if (s.showPrice !== false) info += s.price + ' €';
         if (s.showDuration !== false) info += (info ? ' / ' : '') + s.duration + ' min';
-        return `<option>${s.name}${info ? ' (' + info + ')' : ''}</option>`;
+        return `<option>${esc(s.name)}${info ? ' (' + esc(info) + ')' : ''}</option>`;
       }).join('') +
       '<option value="Ostalo">Ostalo / Nešto drugo</option>';
   }
@@ -165,14 +165,14 @@ function svcCard(s) {
   const sp = s.showPrice !== false;
   const sd = s.showDuration !== false;
   let priceHtml = '';
-  if (sp && sd)       priceHtml = `<div class="service-price">${s.price} €<small> / ${s.duration} min</small></div>`;
-  else if (sp)        priceHtml = `<div class="service-price">${s.price} €</div>`;
-  else if (sd)        priceHtml = `<div class="service-price"><small>${s.duration} min</small></div>`;
+  if (sp && sd)       priceHtml = `<div class="service-price">${esc(s.price)} €<small> / ${esc(s.duration)} min</small></div>`;
+  else if (sp)        priceHtml = `<div class="service-price">${esc(s.price)} €</div>`;
+  else if (sd)        priceHtml = `<div class="service-price"><small>${esc(s.duration)} min</small></div>`;
   return `
     <div class="service-card">
-      <span class="service-icon">${s.icon}</span>
-      <h3>${s.name}</h3>
-      <p>${s.desc}</p>
+      <span class="service-icon">${esc(s.icon)}</span>
+      <h3>${esc(s.name)}</h3>
+      <p>${esc(s.desc)}</p>
       ${priceHtml}
     </div>`;
 }
@@ -188,9 +188,9 @@ function renderPricingTable() {
      </div>` +
     active.map(r =>
       `<div class="pricing-row">
-         <div class="name">${r.name}</div>
-         <div class="desc">${r.desc}</div>
-         <div class="price">${r.price} €</div>
+         <div class="name">${esc(r.name)}</div>
+         <div class="desc">${esc(r.desc)}</div>
+         <div class="price">${esc(r.price)} €</div>
        </div>`
     ).join('');
 }
@@ -203,9 +203,9 @@ function renderReviews(section, containerId) {
   const active = REVIEWS.filter(r => r.section === section && !r.archived);
   el.innerHTML = active.map(r => `
     <div class="review-card">
-      <div class="review-stars">${'★'.repeat(r.stars)}</div>
-      <p class="review-text">${r.text}</p>
-      <div class="review-author">${r.author}<span>${r.location}</span></div>
+      <div class="review-stars">${'★'.repeat(parseInt(r.stars) || 0)}</div>
+      <p class="review-text">${esc(r.text)}</p>
+      <div class="review-author">${esc(r.author)}<span>${esc(r.location)}</span></div>
     </div>`
   ).join('');
 }
@@ -367,18 +367,19 @@ function blogCard(p) {
   // Tagovi se NE prikazuju na kartici početne — samo datum.
   // Ako je dio serijala, prikaži suptilni badge ispod naslova.
   const seriesBadge = p.series
-    ? `<div class="blog-card-series">✦ ${esc(p.series)}${p.seriesPart ? ' · Dio ' + p.seriesPart : ''}</div>`
+    ? `<div class="blog-card-series">✦ ${esc(p.series)}${p.seriesPart ? ' · Dio ' + esc(p.seriesPart) : ''}</div>`
     : '';
+  const safeImg = safeImgSrc(p.imageUrl);
   return `
-    <div class="blog-card" onclick="openPost('${p.id}')">
+    <div class="blog-card" onclick="openPost('${esc(p.id)}')">
       <div class="blog-image">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="">` : p.icon}
+        ${safeImg ? `<img src="${esc(safeImg)}" alt="">` : esc(p.icon)}
       </div>
       <div class="blog-content">
-        <div class="blog-meta">${p.date}</div>
-        <h3>${p.title}</h3>
+        <div class="blog-meta">${esc(p.date)}</div>
+        <h3>${esc(p.title)}</h3>
         ${seriesBadge}
-        <p>${p.excerpt}</p>
+        <p>${esc(p.excerpt)}</p>
         <div class="blog-link">Pročitaj više →</div>
       </div>
     </div>`;
@@ -402,8 +403,9 @@ function openPost(id) {
 
   const fi = document.getElementById('post-feature-img');
   const pi = document.getElementById('post-img');
-  if (p.imageUrl) { pi.src = p.imageUrl; fi.style.display = 'block'; }
-  else            { fi.style.display = 'none'; }
+  const safeFeature = safeImgSrc(p.imageUrl);
+  if (safeFeature) { pi.src = safeFeature; fi.style.display = 'block'; }
+  else             { pi.removeAttribute('src'); fi.style.display = 'none'; }
 
   const rt = document.getElementById('post-read-time');
   if (rt) {
@@ -491,14 +493,17 @@ function renderSeriesNav(p) {
     </div>
     <div class="series-nav-cards">`;
 
-  const seriesCardInner = (x) => `
+  const seriesCardInner = (x) => {
+    const safeXImg = safeImgSrc(x.imageUrl);
+    return `
     <div class="series-nav-thumb">
-      ${x.imageUrl ? `<img src="${esc(x.imageUrl)}" alt="">` : `<span class="series-nav-thumb-icon">${esc(x.icon || '✦')}</span>`}
+      ${safeXImg ? `<img src="${esc(safeXImg)}" alt="">` : `<span class="series-nav-thumb-icon">${esc(x.icon || '✦')}</span>`}
     </div>
     <div class="series-nav-text">
-      <div class="series-nav-num">Dio ${x.seriesPart || ''}</div>
+      <div class="series-nav-num">Dio ${esc(x.seriesPart || '')}</div>
       <div class="series-nav-title">${esc(x.title)}</div>
     </div>`;
+  };
 
   if (prev) {
     html += `
@@ -595,11 +600,8 @@ function applySettings() {
   // O meni slika
   const aboutImg = document.getElementById('about-image-float');
   if (aboutImg) {
-    if (SITE_SETTINGS.aboutImageUrl) {
-      aboutImg.innerHTML = `<img src="${SITE_SETTINGS.aboutImageUrl}" alt="Jana">`;
-    } else {
-      aboutImg.innerHTML = '';
-    }
+    const safeAbout = safeImgSrc(SITE_SETTINGS.aboutImageUrl);
+    aboutImg.innerHTML = safeAbout ? `<img src="${esc(safeAbout)}" alt="Jana">` : '';
   }
 }
 
@@ -636,9 +638,25 @@ function applyTexts() {
 /* ---- POMOĆNA FUNKCIJA ---- */
 
 function esc(s) {
-  return (s || '')
+  return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/'/g, '&#39;');
+}
+
+/* Vraća URL samo ako je http(s) ili data:image — inače prazan string.
+   Sprječava da netko stavi javascript: URL u admin polje slike. */
+function safeImgSrc(u) {
+  if (!u) return '';
+  const raw = String(u).toLowerCase();
+  let clean = '';
+  for (let i = 0; i < raw.length; i++) {
+    if (raw.charCodeAt(i) > 32) clean += raw[i];
+  }
+  if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:image/')) {
+    return String(u);
+  }
+  return '';
 }
 
 /* ---- AMBIENT ANIMACIJE (glare zvjezdice) ---- */

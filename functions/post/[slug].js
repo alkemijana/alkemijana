@@ -49,7 +49,7 @@ export async function onRequest(context) {
 <meta property="og:site_name" content="Alkemijana">
 <meta property="og:locale" content="hr_HR">
 ${post ? `<meta property="article:published_time" content="${escapeHtml(post.date || '')}">` : ''}
-${post && post.category ? `<meta property="article:section" content="${escapeHtml(post.category)}">` : ''}
+${post && Array.isArray(post.tags) ? post.tags.map(t => `<meta property="article:tag" content="${escapeHtml(t)}">`).join('\n') : (post && post.category ? `<meta property="article:section" content="${escapeHtml(post.category)}">` : '')}
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(title)}">

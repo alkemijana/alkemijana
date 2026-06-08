@@ -216,6 +216,14 @@ let activeBlogCategory  = '';
 let blogCategoriesOpen  = false;
 const BLOG_CHIPS_VISIBLE = 6;
 
+/* Vraća sve tagove za članak — koristi tags array, ali fallback na stari
+   category field za članke koji još nisu migrirani. */
+function getPostTags(p) {
+  if (Array.isArray(p.tags) && p.tags.length) return p.tags;
+  if (p.category) return [p.category];
+  return [];
+}
+
 function renderBlogList() {
   const grid = document.getElementById('blog-grid');
   if (!grid) return;
@@ -224,10 +232,14 @@ function renderBlogList() {
   if (chipsWrap) {
     const active = BLOG_POSTS.filter(p => !p.archived);
     const counts = {};
-    active.forEach(p => { if (p.category) counts[p.category] = (counts[p.category] || 0) + 1; });
-    const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b, 'hr'));
+    active.forEach(p => {
+      getPostTags(p).forEach(t => {
+        counts[t] = (counts[t] || 0) + 1;
+      });
+    });
+    const tags = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b, 'hr'));
 
-    if (activeBlogCategory && !cats.includes(activeBlogCategory)) activeBlogCategory = '';
+    if (activeBlogCategory && !tags.includes(activeBlogCategory)) activeBlogCategory = '';
 
     const chip = (label, val, count) => {
       const safeVal = String(val).replace(/'/g, "\\'");
@@ -235,16 +247,16 @@ function renderBlogList() {
       return `<button type="button" class="blog-chip ${activeBlogCategory === val ? 'active' : ''}" onclick="setBlogCategory('${safeVal}')">${label}${badge}</button>`;
     };
 
-    const overLimit = cats.length > BLOG_CHIPS_VISIBLE;
+    const overLimit = tags.length > BLOG_CHIPS_VISIBLE;
     let visible, hidden;
     if (!overLimit) {
-      visible = cats; hidden = [];
+      visible = tags; hidden = [];
     } else {
-      visible = cats.slice(0, BLOG_CHIPS_VISIBLE);
-      hidden  = cats.slice(BLOG_CHIPS_VISIBLE);
+      visible = tags.slice(0, BLOG_CHIPS_VISIBLE);
+      hidden  = tags.slice(BLOG_CHIPS_VISIBLE);
       if (activeBlogCategory && hidden.includes(activeBlogCategory) && !blogCategoriesOpen) {
         visible = visible.slice(0, BLOG_CHIPS_VISIBLE - 1).concat([activeBlogCategory]);
-        hidden  = cats.filter(c => !visible.includes(c));
+        hidden  = tags.filter(c => !visible.includes(c));
       }
     }
 
@@ -271,6 +283,14 @@ function setBlogCategory(c) {
   renderBlogList();
 }
 
+// Klik na tag UNUTAR otvorenog članka → otvori blog stranicu s tim tagom kao filter
+function openBlogWithTag(tag) {
+  activeBlogCategory = tag;
+  blogCategoriesOpen = false;
+  showPage('blog');
+  // showPage poziva renderBlogList koji već uvažava activeBlogCategory
+}
+
 function toggleBlogCategories() {
   blogCategoriesOpen = !blogCategoriesOpen;
   renderBlogList();
@@ -293,11 +313,13 @@ function filterBlogPosts() {
   if (wrap) wrap.classList.toggle('has-text', !!query);
 
   let filtered = BLOG_POSTS.filter(p => !p.archived);
-  if (activeBlogCategory) filtered = filtered.filter(p => p.category === activeBlogCategory);
+  if (activeBlogCategory) {
+    filtered = filtered.filter(p => getPostTags(p).some(t => t === activeBlogCategory));
+  }
 
   if (query) {
     filtered = filtered.filter(p => {
-      const haystack = [p.title, p.excerpt, p.content, p.category]
+      const haystack = [p.title, p.excerpt, p.content, ...getPostTags(p), p.series]
         .filter(Boolean)
         .join(' ')
         .replace(/<[^>]*>/g, ' ')
@@ -342,13 +364,14 @@ function renderHomeBlogPreview() {
 }
 
 function blogCard(p) {
+  // Tagovi se NE prikazuju na kartici početne — samo datum
   return `
     <div class="blog-card" onclick="openPost('${p.id}')">
       <div class="blog-image">
         ${p.imageUrl ? `<img src="${p.imageUrl}" alt="">` : p.icon}
       </div>
       <div class="blog-content">
-        <div class="blog-meta">${p.date} · ${p.category}</div>
+        <div class="blog-meta">${p.date}</div>
         <h3>${p.title}</h3>
         <p>${p.excerpt}</p>
         <div class="blog-link">Pročitaj više →</div>
@@ -368,7 +391,7 @@ function openPost(id) {
   });
   document.getElementById('navLinks').classList.remove('open');
 
-  document.getElementById('post-meta').textContent  = `${p.date} · ${p.category}`;
+  document.getElementById('post-meta').textContent  = p.date || '';
   document.getElementById('post-title').textContent = p.title;
   document.getElementById('post-body').innerHTML    = p.content;
 
@@ -384,6 +407,8 @@ function openPost(id) {
     rt.textContent = `⏳ Vrijeme čitanja: ${mins} min`;
   }
 
+  renderPostTags(p);
+  renderSeriesNav(p);
   renderPostSources(p.sources);
 
   document.getElementById('blog-list-view').classList.add('hidden');
@@ -391,6 +416,66 @@ function openPost(id) {
   window.location.hash = 'post/' + id;
   renderShareBar(p);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPostTags(p) {
+  const wrap = document.getElementById('post-tags');
+  if (!wrap) return;
+  const tags = getPostTags(p);
+  if (!tags.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = '';
+  wrap.innerHTML = tags.map(t =>
+    `<span class="post-tag" onclick="openBlogWithTag('${esc(t).replace(/'/g, "\\'")}')">${esc(t)}</span>`
+  ).join('');
+}
+
+function renderSeriesNav(p) {
+  const wrap = document.getElementById('post-series-nav');
+  if (!wrap) return;
+  if (!p.series) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  // Svi članci u istom serijalu (case-insensitive match), sortirani po seriesPart
+  const seriesKey = p.series.trim().toLowerCase();
+  const inSeries = BLOG_POSTS
+    .filter(x => !x.archived && x.series && x.series.trim().toLowerCase() === seriesKey)
+    .sort((a, b) => (a.seriesPart || 0) - (b.seriesPart || 0));
+
+  if (inSeries.length < 2) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  const idx = inSeries.findIndex(x => x.id === p.id);
+  const prev = idx > 0 ? inSeries[idx - 1] : null;
+  const next = idx < inSeries.length - 1 ? inSeries[idx + 1] : null;
+  const total = inSeries.length;
+  const partNum = p.seriesPart || (idx + 1);
+
+  let html = `
+    <div class="series-badge">
+      <span class="series-badge-label">SERIJAL</span>
+      <span class="series-badge-name">${esc(p.series)}</span>
+      <span class="series-badge-part">Dio ${partNum} od ${total}</span>
+    </div>
+    <div class="series-nav-cards">`;
+
+  if (prev) {
+    html += `
+      <a class="series-nav-card series-prev" onclick="openPost('${esc(prev.id)}')">
+        <div class="series-nav-dir">← Prethodni dio</div>
+        <div class="series-nav-num">Dio ${prev.seriesPart || ''}</div>
+        <div class="series-nav-title">${esc(prev.title)}</div>
+      </a>`;
+  }
+  if (next) {
+    html += `
+      <a class="series-nav-card series-next" onclick="openPost('${esc(next.id)}')">
+        <div class="series-nav-dir">Sljedeći dio →</div>
+        <div class="series-nav-num">Dio ${next.seriesPart || ''}</div>
+        <div class="series-nav-title">${esc(next.title)}</div>
+      </a>`;
+  }
+  html += `</div>`;
+
+  wrap.innerHTML = html;
+  wrap.style.display = 'block';
 }
 
 function renderPostSources(raw) {

@@ -212,7 +212,7 @@ function renderBlogAdminList() {
     <div class="bpi ${editingPostId === p.id ? 'sel' : ''} ${p.archived ? 'archived-item' : ''}"
       onclick="loadPostEditor('${p.id}')">
       <div class="bpi-t">${p.archived ? '🗄 ' : ''}${p.title}</div>
-      <div class="bpi-m">${p.date} · ${p.category}</div>
+      <div class="bpi-m">${p.date}${p.series ? ' · ' + esc(p.series) + (p.seriesPart ? ' #' + p.seriesPart : '') : ''}</div>
     </div>`
   ).join('');
 }
@@ -243,11 +243,27 @@ function showPostEditor(p) {
         <input id="ed-date" value="${p ? esc(p.date) : ''}"></div>
     </div>
     <div class="af-2">
-      <div class="af"><label>Kategorija</label>
-        <input id="ed-cat" value="${p ? esc(p.category) : ''}"></div>
       <div class="af"><label>Ikona — odabrana: <span id="blog-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
         <input id="ed-icon" value="${icon}" style="display:none">
         ${buildEmojiPicker(icon, 'selectBlogEmoji')}
+      </div>
+      <div class="af">
+        <label>Tagovi <span style="font-weight:400;color:var(--text-muted);font-style:italic">(Enter ili zarez za novi tag)</span></label>
+        <div class="tag-input-wrap" onclick="document.getElementById('ed-tag-text').focus()">
+          <span id="tag-chips-container"></span>
+          <input id="ed-tag-text" type="text" placeholder="dodaj tag..." autocomplete="off" onkeydown="handleTagKey(event)" onblur="commitTagInput()">
+        </div>
+      </div>
+    </div>
+
+    <div class="af-2">
+      <div class="af">
+        <label>Serijal <span style="font-weight:400;color:var(--text-muted);font-style:italic">(opcionalno)</span></label>
+        <input id="ed-series" type="text" placeholder="npr. Tarot osnove" value="${p && p.series ? esc(p.series) : ''}">
+      </div>
+      <div class="af">
+        <label>Dio serijala</label>
+        <input id="ed-series-part" type="number" min="1" placeholder="1, 2, 3..." value="${p && p.seriesPart ? p.seriesPart : ''}">
       </div>
     </div>
 
@@ -316,6 +332,57 @@ function showPostEditor(p) {
       ${!isNew ? `<button class="ap-btn ap-btn-del" onclick="deletePost('${p.id}')">Obriši</button>` : ''}
       <button class="ap-btn ap-btn-cancel" onclick="cancelPostEdit()">Odustani</button>
     </div>`;
+
+  initTagsForPost(p);
+}
+
+/* === TAG INPUT (chip-style) === */
+let editingTags = [];
+
+function initTagsForPost(p) {
+  if (p && Array.isArray(p.tags)) {
+    editingTags = p.tags.slice();
+  } else if (p && p.category) {
+    // Migracija: stara polja category → prvi tag
+    editingTags = [p.category];
+  } else {
+    editingTags = [];
+  }
+  renderTagChips();
+}
+
+function renderTagChips() {
+  const c = document.getElementById('tag-chips-container');
+  if (!c) return;
+  c.innerHTML = editingTags.map((t, i) =>
+    `<span class="tag-chip-pill">${esc(t)}<button type="button" onclick="removeTagAt(${i})" aria-label="Ukloni tag">×</button></span>`
+  ).join('');
+}
+
+function handleTagKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    commitTagInput();
+  } else if (e.key === 'Backspace' && !e.target.value && editingTags.length) {
+    editingTags.pop();
+    renderTagChips();
+  }
+}
+
+function commitTagInput() {
+  const inp = document.getElementById('ed-tag-text');
+  if (!inp) return;
+  const val = inp.value.trim().replace(/,/g, '');
+  if (val && !editingTags.some(t => t.toLowerCase() === val.toLowerCase())) {
+    editingTags.push(val);
+  }
+  inp.value = '';
+  renderTagChips();
+}
+
+function removeTagAt(i) {
+  editingTags.splice(i, 1);
+  renderTagChips();
 }
 
 function selectBlogEmoji(emoji, el) {
@@ -422,7 +489,7 @@ async function generateCoverFromIcon() {
   const icon  = (document.getElementById('ed-icon').value  || '✦').trim();
   const title = (document.getElementById('ed-title').value || 'Alkemijana').trim();
   const date  = (document.getElementById('ed-date').value  || '').trim();
-  const cat   = (document.getElementById('ed-cat').value   || '').trim();
+  const cat   = editingTags[0] || '';
 
   const filenameEl = document.getElementById('img-filename');
   filenameEl.textContent = '✨ Generiram sliku...';
@@ -676,20 +743,29 @@ function savePost() {
   const title = (document.getElementById('ed-title').value || '').trim();
   if (!title) { alert('Naslov je obavezan.'); return; }
 
+  // Commit-aj zadnji untyped tag prije spremanja
+  commitTagInput();
+
   const id = editingPostId === '__new__'
     ? title.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-')
     : editingPostId;
 
+  const seriesName = (document.getElementById('ed-series').value || '').trim();
+  const seriesPartRaw = document.getElementById('ed-series-part').value;
+  const seriesPart = seriesPartRaw ? parseInt(seriesPartRaw, 10) : null;
+
   const pd = {
     id, title,
-    date:     (document.getElementById('ed-date').value || '').trim(),
-    category: (document.getElementById('ed-cat').value  || '').trim(),
-    icon:     (document.getElementById('ed-icon').value || '✦').trim(),
-    imageUrl: document.getElementById('ed-img').value || '',
-    excerpt:  (document.getElementById('ed-exc').value  || '').trim(),
-    content:  sanitizeContentHtml(document.getElementById('blog-content-ed').innerHTML),
-    sources:  (document.getElementById('ed-sources').value || '').trim(),
-    archived: document.getElementById('ed-archived').checked,
+    date:       (document.getElementById('ed-date').value || '').trim(),
+    tags:       editingTags.slice(),
+    icon:       (document.getElementById('ed-icon').value || '✦').trim(),
+    imageUrl:   document.getElementById('ed-img').value || '',
+    excerpt:    (document.getElementById('ed-exc').value  || '').trim(),
+    content:    sanitizeContentHtml(document.getElementById('blog-content-ed').innerHTML),
+    sources:    (document.getElementById('ed-sources').value || '').trim(),
+    series:     seriesName,
+    seriesPart: seriesPart && seriesPart > 0 ? seriesPart : null,
+    archived:   document.getElementById('ed-archived').checked,
   };
 
   if (editingPostId === '__new__') BLOG_POSTS.unshift(pd);
@@ -1212,8 +1288,9 @@ async function downloadSite() {
       const p = needCover[i];
       if (saveBtn) saveBtn.textContent = `✨ Slika ${i + 1}/${needCover.length}...`;
       try {
+        const firstTag = (Array.isArray(p.tags) && p.tags[0]) || p.category || '';
         const blob = await renderCoverCanvas({
-          icon: p.icon, title: p.title, date: p.date, category: p.category
+          icon: p.icon, title: p.title, date: p.date, category: firstTag
         });
         const file = new File([blob], `cover-${p.id}-${Date.now()}.png`, { type: 'image/png' });
         p.imageUrl = await uploadToImgBB(file);

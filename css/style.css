@@ -934,6 +934,196 @@ body > svg[viewBox="0 0 1920 1080"] {
 .post-body a { color: var(--lavender); text-decoration: underline; text-decoration-color: rgba(168,144,208,0.4); text-underline-offset: 3px; transition: text-decoration-color 0.25s; }
 .post-body a:hover { text-decoration-color: var(--lavender); }
 
+/* ===== TAGOVI ČLANKA (u otvorenom članku, ne na kartici) ===== */
+.post-tags-wrap { max-width: 780px; margin: 0 auto; padding: 0 2rem; }
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border);
+  margin-top: 0.5rem;
+}
+.post-tag {
+  display: inline-block;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  background: rgba(168, 144, 208, 0.08);
+  border: 1px solid rgba(168, 144, 208, 0.3);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.15s;
+}
+.post-tag::before { content: '#'; opacity: 0.6; margin-right: 0.15rem; }
+.post-tag:hover {
+  background: rgba(168, 144, 208, 0.18);
+  color: var(--silver-bright);
+  border-color: var(--lavender);
+  transform: translateY(-1px);
+}
+
+/* ===== SERIJAL — badge + prev/next karte ===== */
+.post-series-nav {
+  max-width: 780px;
+  margin: 2.5rem auto 0;
+  padding: 0 2rem;
+}
+.series-badge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1rem 1.4rem;
+  background: linear-gradient(135deg, rgba(168, 144, 208, 0.12), rgba(168, 144, 208, 0.03));
+  border: 1px solid rgba(168, 144, 208, 0.3);
+  border-radius: 6px;
+  margin-bottom: 1.2rem;
+}
+.series-badge-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--lavender);
+  text-transform: uppercase;
+}
+.series-badge-name {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--silver-bright);
+  flex: 1;
+}
+.series-badge-part {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+.series-nav-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.series-nav-card {
+  display: block;
+  padding: 1.3rem 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.series-nav-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--lavender), transparent);
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+.series-nav-card:hover {
+  border-color: rgba(168, 144, 208, 0.5);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+.series-nav-card:hover::before { opacity: 1; }
+.series-prev { text-align: left; }
+.series-next { text-align: right; }
+.series-nav-card:only-child { grid-column: 1 / -1; }
+.series-nav-dir {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--lavender);
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+.series-nav-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+.series-nav-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--silver-bright);
+  line-height: 1.3;
+}
+@media (max-width: 600px) {
+  .series-nav-cards { grid-template-columns: 1fr; }
+  .series-next { text-align: left; }
+  .series-badge { padding: 0.8rem 1rem; gap: 0.5rem; }
+  .series-badge-name { font-size: 1rem; flex-basis: 100%; }
+}
+
+/* ===== TAG CHIP INPUT u adminu ===== */
+.tag-input-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: rgba(6, 8, 15, 0.7);
+  border: 1px solid var(--border);
+  min-height: 44px;
+  cursor: text;
+  transition: border-color 0.3s;
+}
+.tag-input-wrap:focus-within { border-color: var(--lavender); }
+.tag-input-wrap input {
+  flex: 1;
+  min-width: 100px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'Cormorant Infant', serif;
+  font-size: 1rem;
+  padding: 0.2rem 0.4rem;
+}
+.tag-chip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(168, 144, 208, 0.18);
+  border: 1px solid rgba(168, 144, 208, 0.35);
+  color: var(--silver-light);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+}
+.tag-chip-pill button {
+  background: transparent;
+  border: none;
+  color: var(--lavender);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.1rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.tag-chip-pill button:hover { opacity: 1; color: #e07070; }
+
 .post-sources {
   max-width: 780px;
   margin: 0 auto;

@@ -20,7 +20,8 @@ export async function onRequest(context) {
 
   const icon     = post && post.icon ? post.icon : '✦';
   const title    = post && post.title ? post.title : 'Alkemijana';
-  const category = post && post.category ? post.category.toUpperCase() : 'TAROT & ASTROLOGIJA';
+  const firstTag = post && Array.isArray(post.tags) && post.tags[0] ? post.tags[0] : (post && post.category) || '';
+  const category = firstTag ? firstTag.toUpperCase() : 'TAROT & ASTROLOGIJA';
   const date     = post && post.date ? post.date : '';
 
   const svg = renderSvg({ icon, title, category, date });

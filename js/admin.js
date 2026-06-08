@@ -1312,40 +1312,119 @@ function getDateStr(daysOffset) {
    TEKSTOVI
    ============================================================ */
 
-const TEXT_LABELS = {
-  heroSub:          'Podnaslov (početna)',
-  heroDesc:         'Opis (početna)',
-  servicesTitle:    'Naslov usluga',
-  servicesSub:      'Podnaslov usluga',
-  ctaTitle:         'CTA naslov',
-  ctaText:          'CTA tekst',
-  ctaBtn:           'CTA gumb',
-  reviewsTitle:     'Naslov recenzija',
-  reviewsSub:       'Podnaslov recenzija',
-  blogPreviewTitle: 'Naslov blog pregleda',
-  blogPreviewSub:   'Podnaslov blog pregleda',
-  blogPreviewBtn:   'Gumb za blog',
-  contactTitle:     'Naslov kontakta',
-  contactSub:       'Podnaslov kontakta',
-  footerTagline:    'Footer tagline',
-  aboutQuote:       'Citat (O meni)'
-};
+/* Tekstovi grupirani po sekciji stranice — lakše za pronaći u admin panelu.
+   Svaki ključ mora postojati i u TEXTS (data.js) i u applyTexts() (app.js). */
+const TEXT_GROUPS = [
+  {
+    title: 'Početna',
+    keys: {
+      heroSub:          'Hero — podnaslov',
+      heroDesc:         'Hero — opis',
+      servicesTitle:    'Usluge — naslov',
+      servicesSub:      'Usluge — podnaslov',
+      ctaTitle:         'CTA — naslov',
+      ctaText:          'CTA — tekst',
+      ctaBtn:           'CTA — gumb',
+      reviewsTitle:     'Recenzije — naslov',
+      reviewsSub:       'Recenzije — podnaslov',
+      blogPreviewTitle: 'Blog pregled — naslov',
+      blogPreviewSub:   'Blog pregled — podnaslov',
+      blogPreviewBtn:   'Blog pregled — gumb'
+    }
+  },
+  {
+    title: 'Stranica Usluge',
+    keys: {
+      servicesPageTitle: 'Naslov stranice',
+      servicesPageSub:   'Podnaslov stranice',
+      pricingTitle:      'Cjenik — naslov',
+      pricingSub:        'Cjenik — podnaslov',
+      servicesCtaTitle:  'CTA — naslov',
+      servicesCtaText:   'CTA — tekst',
+      servicesCtaBtn:    'CTA — gumb'
+    }
+  },
+  {
+    title: 'O meni',
+    keys: {
+      aboutPageTitle:    'Naslov stranice',
+      aboutP1:           'Odlomak 1',
+      aboutP2:           'Odlomak 2',
+      aboutP3:           'Odlomak 3',
+      aboutP4:           'Odlomak 4',
+      aboutQuote:        'Citat (između odlomaka)',
+      aboutP5:           'Odlomak 5 (nakon citata)',
+      aboutReviewsTitle: 'Recenzije — naslov'
+    }
+  },
+  {
+    title: 'Moja filozofija',
+    keys: {
+      philosophyTitle:      'Naslov sekcije',
+      valueDiscretionTitle: 'Vrijednost 1 — naslov',
+      valueDiscretionText:  'Vrijednost 1 — opis',
+      valueHonestyTitle:    'Vrijednost 2 — naslov',
+      valueHonestyText:     'Vrijednost 2 — opis',
+      valueFreedomTitle:    'Vrijednost 3 — naslov',
+      valueFreedomText:     'Vrijednost 3 — opis'
+    }
+  },
+  {
+    title: 'Blog stranica',
+    keys: {
+      blogPageTitle: 'Naslov stranice',
+      blogPageSub:   'Podnaslov stranice',
+      relatedTitle:  '"Možda će Vam se svidjeti" naslov'
+    }
+  },
+  {
+    title: 'Kontakt',
+    keys: {
+      contactTitle: 'Naslov',
+      contactSub:   'Podnaslov'
+    }
+  },
+  {
+    title: 'Footer',
+    keys: {
+      footerTagline: 'Tagline ispod naslova'
+    }
+  }
+];
+
+function allTextKeys() {
+  const out = [];
+  TEXT_GROUPS.forEach(g => Object.keys(g.keys).forEach(k => out.push(k)));
+  return out;
+}
 
 function renderTextsAdmin() {
   const wrap = document.getElementById('texts-fields');
-  wrap.innerHTML = Object.keys(TEXT_LABELS).map(key => `
-    <div class="af">
-      <label>${TEXT_LABELS[key]}</label>
-      ${TEXTS[key].length > 60
-        ? `<textarea id="txt-${key}" rows="2">${esc(TEXTS[key])}</textarea>`
-        : `<input id="txt-${key}" value="${esc(TEXTS[key])}">`
-      }
-    </div>`
-  ).join('');
+  wrap.innerHTML = TEXT_GROUPS.map(group => {
+    const fields = Object.keys(group.keys).map(key => {
+      const label = group.keys[key];
+      const val   = TEXTS[key] == null ? '' : String(TEXTS[key]);
+      const long  = val.length > 60;
+      const rows  = val.length > 200 ? 5 : (val.length > 100 ? 3 : 2);
+      return `
+        <div class="af">
+          <label>${label}</label>
+          ${long
+            ? `<textarea id="txt-${key}" rows="${rows}">${esc(val)}</textarea>`
+            : `<input id="txt-${key}" value="${esc(val)}">`
+          }
+        </div>`;
+    }).join('');
+    return `
+      <div class="text-group" style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <h4 style="font-family:'Quicksand',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--lavender);margin:0 0 1rem">${group.title}</h4>
+        ${fields}
+      </div>`;
+  }).join('');
 }
 
 function saveTexts() {
-  Object.keys(TEXT_LABELS).forEach(key => {
+  allTextKeys().forEach(key => {
     const el = document.getElementById('txt-' + key);
     if (el) TEXTS[key] = el.value;
   });

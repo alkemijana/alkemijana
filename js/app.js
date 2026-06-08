@@ -609,8 +609,9 @@ function applySettings() {
 
 function applyTexts() {
   const t = TEXTS;
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val == null ? '' : val; };
 
+  // Početna
   set('t-heroSub',          t.heroSub);
   set('t-heroDesc',         t.heroDesc);
   set('t-servicesTitle',    t.servicesTitle);
@@ -623,7 +624,42 @@ function applyTexts() {
   set('t-blogPreviewTitle', t.blogPreviewTitle);
   set('t-blogPreviewSub',   t.blogPreviewSub);
   set('t-blogPreviewBtn',   t.blogPreviewBtn);
-  set('t-footerTagline',    t.footerTagline);
+
+  // Stranica Usluge
+  set('t-servicesPageTitle', t.servicesPageTitle);
+  set('t-servicesPageSub',   t.servicesPageSub);
+  set('t-pricingTitle',      t.pricingTitle);
+  set('t-pricingSub',        t.pricingSub);
+  set('t-servicesCtaTitle',  t.servicesCtaTitle);
+  set('t-servicesCtaText',   t.servicesCtaText);
+  set('t-servicesCtaBtn',    t.servicesCtaBtn);
+
+  // O meni
+  set('t-aboutPageTitle',    t.aboutPageTitle);
+  set('t-aboutP1',           t.aboutP1);
+  set('t-aboutP2',           t.aboutP2);
+  set('t-aboutP3',           t.aboutP3);
+  set('t-aboutP4',           t.aboutP4);
+  set('t-aboutP5',           t.aboutP5);
+  set('t-aboutQuote',        t.aboutQuote);
+  set('t-aboutReviewsTitle', t.aboutReviewsTitle);
+
+  // Filozofija
+  set('t-philosophyTitle',       t.philosophyTitle);
+  set('t-valueDiscretionTitle',  t.valueDiscretionTitle);
+  set('t-valueDiscretionText',   t.valueDiscretionText);
+  set('t-valueHonestyTitle',     t.valueHonestyTitle);
+  set('t-valueHonestyText',      t.valueHonestyText);
+  set('t-valueFreedomTitle',     t.valueFreedomTitle);
+  set('t-valueFreedomText',      t.valueFreedomText);
+
+  // Blog stranica
+  set('t-blogPageTitle', t.blogPageTitle);
+  set('t-blogPageSub',   t.blogPageSub);
+  set('t-relatedTitle',  t.relatedTitle);
+
+  // Footer
+  set('t-footerTagline', t.footerTagline);
 
   // Kontakt naslov — dinamički prema stanju usluga
   const contactEl = document.getElementById('t-contactTitle');

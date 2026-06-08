@@ -368,18 +368,18 @@
   <!-- USLUGE -->
   <section class="page" id="usluge">
     <div class="container">
-      <h2 class="section-title">Usluge i Cjenik</h2>
-      <p class="section-subtitle">Svaka usluga je putovanje</p>
+      <h2 class="section-title" id="t-servicesPageTitle"></h2>
+      <p class="section-subtitle" id="t-servicesPageSub"></p>
       <div class="services-grid" id="all-services-grid"></div>
 
-      <h3 style="font-family:'Playfair Display',serif;font-size:2.1rem;color:var(--lavender);text-align:center;margin-top:5rem;margin-bottom:1rem">Detaljni Cjenik</h3>
-      <p class="section-subtitle" style="margin-bottom:2rem">Sve usluge u jednoj tablici</p>
+      <h3 id="t-pricingTitle" style="font-family:'Playfair Display',serif;font-size:2.1rem;color:var(--lavender);text-align:center;margin-top:5rem;margin-bottom:1rem"></h3>
+      <p class="section-subtitle" id="t-pricingSub" style="margin-bottom:2rem"></p>
       <div class="pricing-table" id="pricing-table-wrap"></div>
 
       <div class="cta-section">
-        <h2>Spremni za vaše putovanje?</h2>
-        <p>Odaberite uslugu i rezervirajte svoj termin</p>
-        <a class="btn btn-primary" onclick="showPage('kontakt')">Rezerviraj termin</a>
+        <h2 id="t-servicesCtaTitle"></h2>
+        <p id="t-servicesCtaText"></p>
+        <a class="btn btn-primary" onclick="showPage('kontakt')" id="t-servicesCtaBtn"></a>
       </div>
     </div>
   </section>
@@ -387,30 +387,30 @@
   <!-- O MENI -->
   <section class="page" id="o-meni">
     <div class="container">
-      <h2 class="section-title">O meni</h2>
+      <h2 class="section-title" id="t-aboutPageTitle"></h2>
       <p class="section-subtitle"></p>
       <div class="about-flow">
         <div class="about-image-float" id="about-image-float"></div>
         <div class="about-text">
           <h3></h3>
-          <p>Ja sam Jana i stvorila sam Alkemijanu kao mjesto gdje mogu spojiti svoje dvije strasti - rad s ljudima i spiritualnost.</p>
-          <p>Po obrazovanju sam magistra socijalne pedagogije, a posljednje tri godine radim na psihijatriji gdje vodim individualna savjetovanja i grupne programe koje sam sama kreirala - od treninga samopercepcije do regulacije emocija i roditeljskih vještina.</p>
-          <p>Uz klinički rad, dugi niz godina istražujem duhovne alate - tarot, visak, astrologiju, oracle karte, astro kockice. Sve te alate koristim ne kako bih spoznala budućnost već kako bih bolje upoznala sebe.</p>
-          <p>Moja je misija stvoriti siguran, nježan i transformativan prostor - posebno za one koji tek traže svoj glas, koji se osjećaju izgubljeno i kojima treba pomoć kako bi vidjeli svoju pravu vrijednost.</p>
-          <div class="quote">"Alkemijana nije mjesto gdje ćeš dobiti odgovore. To je mjesto gdje ćeš početi postavljati prava pitanja."</div>
-          <p>Teme kojima se kroz profesionalni i osobni rad najviše bavim uključuju samokritičnost, razvoj samosuosjećanja, postavljanje granica, emocionalnu pismenost i osnaživanje.</p>
+          <p id="t-aboutP1"></p>
+          <p id="t-aboutP2"></p>
+          <p id="t-aboutP3"></p>
+          <p id="t-aboutP4"></p>
+          <div class="quote" id="t-aboutQuote"></div>
+          <p id="t-aboutP5"></p>
         </div>
       </div>
       <div class="section">
-        <h2 class="section-title" style="font-size:2.6rem">Moja Filozofija</h2>
+        <h2 class="section-title" id="t-philosophyTitle" style="font-size:2.6rem"></h2>
         <div class="services-grid" style="margin-top:2rem">
-          <div class="service-card"><span class="service-icon">♇</span><h3>Diskrecija</h3><p>Sve što se dijeli ostaje između nas. Povjerenje je temelj svakog susreta.</p></div>
-          <div class="service-card"><span class="service-icon">☾</span><h3>Iskrenost</h3><p>Karte govore i ugodne i izazovne istine. Prenosim ih s poštovanjem i jasnoćom.</p></div>
-          <div class="service-card"><span class="service-icon">♅</span><h3>Sloboda Izbora</h3><p>Vi ste pisac svoje priče. Karte samo ukazuju na mogućnosti.</p></div>
+          <div class="service-card"><span class="service-icon">♇</span><h3 id="t-valueDiscretionTitle"></h3><p id="t-valueDiscretionText"></p></div>
+          <div class="service-card"><span class="service-icon">☾</span><h3 id="t-valueHonestyTitle"></h3><p id="t-valueHonestyText"></p></div>
+          <div class="service-card"><span class="service-icon">♅</span><h3 id="t-valueFreedomTitle"></h3><p id="t-valueFreedomText"></p></div>
         </div>
       </div>
       <div id="about-reviews-section" style="display:none;max-width:900px;margin:0 auto">
-        <h2 class="section-title" style="font-size:2.1rem;margin-top:4rem">Riječi onih koji su putovali sa mnom</h2>
+        <h2 class="section-title" id="t-aboutReviewsTitle" style="font-size:2.1rem;margin-top:4rem"></h2>
         <div class="reviews-grid" id="about-reviews-grid"></div>
       </div>
     </div>
@@ -419,8 +419,8 @@
   <!-- BLOG -->
   <section class="page" id="blog">
     <div class="container" id="blog-list-view">
-      <h2 class="section-title">Blog & Članci</h2>
-      <p class="section-subtitle">Mudrost koja se dijeli</p>
+      <h2 class="section-title" id="t-blogPageTitle"></h2>
+      <p class="section-subtitle" id="t-blogPageSub"></p>
       <div class="blog-filters">
         <div class="blog-search-wrap">
           <span class="blog-search-icon" aria-hidden="true">
@@ -459,7 +459,7 @@
       </div>
       <div class="share-bar" id="share-bar"></div>
       <div class="post-related" id="post-related" style="display:none">
-        <h3 class="post-related-title">Možda će ti se svidjeti</h3>
+        <h3 class="post-related-title" id="t-relatedTitle"></h3>
         <div class="post-related-grid" id="post-related-grid"></div>
       </div>
     </div>
@@ -648,7 +648,7 @@
       <!-- TAB: Tekstovi -->
       <div class="ap-tab-content" id="ap-texts">
         <div class="pricing-admin-wrap" id="texts-editor-wrap">
-          <h3>Upravljanje Tekstovima</h3>
+          <h3>Upravljanje tekstovima</h3>
           <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.95rem;margin-bottom:1.5rem">Sve poruke na stranici — uredite i kliknite Spremi.</p>
           <div id="texts-fields"></div>
           <div class="ap-actions">
@@ -660,7 +660,7 @@
       <!-- TAB: Cjenik -->
       <div class="ap-tab-content" id="ap-pricing">
         <div class="pricing-admin-wrap">
-          <h3>Upravljanje Cjenikom</h3>
+          <h3>Upravljanje cjenikom</h3>
           <div id="pricing-admin-list"></div>
           <button class="ap-btn ap-btn-save" style="margin-top:1rem" onclick="addPricingRow()">+ Dodaj stavku</button>
           <div class="ap-actions">

@@ -31,7 +31,7 @@ let BLOG_POSTS = [
     "sources": "",
     "series": "Osnove astrologije",
     "seriesPart": 1,
-    "archived": false
+    "archived": true
   },
   {
     "id": "velika-arkana",

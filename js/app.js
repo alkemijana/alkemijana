@@ -415,6 +415,7 @@ function openPost(id) {
   renderPostTags(p);
   renderSeriesNav(p);
   renderPostSources(p.sources);
+  renderRelatedPosts(p);
 
   document.getElementById('blog-list-view').classList.add('hidden');
   document.getElementById('blog-post-view').classList.add('active');
@@ -432,6 +433,35 @@ function renderPostTags(p) {
   wrap.innerHTML = tags.map(t =>
     `<span class="post-tag" onclick="openBlogWithTag('${esc(t).replace(/'/g, "\\'")}')">${esc(t)}</span>`
   ).join('');
+}
+
+/* "Možda će ti se svidjeti" — 3 random druga članka (ne ovaj, ne arhivirani,
+   ne oni već prikazani u serijal-nav iznad). Daje ljudima što čitati dalje. */
+function renderRelatedPosts(p) {
+  const wrap = document.getElementById('post-related');
+  const grid = document.getElementById('post-related-grid');
+  if (!wrap || !grid) return;
+
+  // Isključi ovaj članak, arhivirane, i one iz iste serije (jer su već vidljivi)
+  const seriesKey = p.series ? p.series.trim().toLowerCase() : null;
+  const pool = BLOG_POSTS.filter(x =>
+    !x.archived &&
+    x.id !== p.id &&
+    (!seriesKey || !x.series || x.series.trim().toLowerCase() !== seriesKey)
+  );
+
+  if (!pool.length) { wrap.style.display = 'none'; grid.innerHTML = ''; return; }
+
+  // Fisher-Yates shuffle + uzmi 3
+  const shuffled = pool.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const picks = shuffled.slice(0, 3);
+
+  grid.innerHTML = picks.map(blogCard).join('');
+  wrap.style.display = 'block';
 }
 
 function renderSeriesNav(p) {
@@ -461,20 +491,27 @@ function renderSeriesNav(p) {
     </div>
     <div class="series-nav-cards">`;
 
+  const seriesCardInner = (x) => `
+    <div class="series-nav-thumb">
+      ${x.imageUrl ? `<img src="${esc(x.imageUrl)}" alt="">` : `<span class="series-nav-thumb-icon">${esc(x.icon || '✦')}</span>`}
+    </div>
+    <div class="series-nav-text">
+      <div class="series-nav-num">Dio ${x.seriesPart || ''}</div>
+      <div class="series-nav-title">${esc(x.title)}</div>
+    </div>`;
+
   if (prev) {
     html += `
       <a class="series-nav-card series-prev" onclick="openPost('${esc(prev.id)}')">
         <div class="series-nav-dir">← Prethodni dio</div>
-        <div class="series-nav-num">Dio ${prev.seriesPart || ''}</div>
-        <div class="series-nav-title">${esc(prev.title)}</div>
+        <div class="series-nav-body">${seriesCardInner(prev)}</div>
       </a>`;
   }
   if (next) {
     html += `
       <a class="series-nav-card series-next" onclick="openPost('${esc(next.id)}')">
         <div class="series-nav-dir">Sljedeći dio →</div>
-        <div class="series-nav-num">Dio ${next.seriesPart || ''}</div>
-        <div class="series-nav-title">${esc(next.title)}</div>
+        <div class="series-nav-body">${seriesCardInner(next)}</div>
       </a>`;
   }
   html += `</div>`;

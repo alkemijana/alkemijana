@@ -1209,7 +1209,9 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
    točno gdje će se rečenice prelomiti u finalnoj verziji. */
 #blog-content-ed {
   min-height: 380px;
-  background: rgba(6, 8, 15, 0.8);
+  /* OPAQUE pozadina — ranije je bila poluprozirna pa je GPU morao kompozitirati
+     zvjezdice iza nje pri svakom tipkanju (sporo na slabijim laptopima). */
+  background: #0a0820;
   border: 1px solid var(--border);
   padding: 1.5rem 2rem;
   color: var(--silver-light);
@@ -1221,7 +1223,11 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   box-sizing: border-box;
   max-width: 780px;
   margin: 0 auto;
+  /* contain izolira layout/paint editora — promjene unutar njega ne reflowaju
+     ostatak admin panela. */
+  contain: layout style paint;
 }
+:root[data-theme="light"] #blog-content-ed { background: #ffffff; color: var(--text); }
 #blog-content-ed:focus { border-color: var(--lavender); }
 #blog-content-ed p { margin-bottom: 1.4rem; }
 #blog-content-ed h2 { font-family: 'Playfair Display', serif; font-size: 1.85rem; color: var(--lavender); line-height: 1.3; margin: 2.5rem 0 1rem; font-weight: 600; }

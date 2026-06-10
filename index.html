@@ -6,8 +6,8 @@
 
   <!-- ============ SEO — osnovno ============ -->
   <title id="meta-title">Alkemijana - Tarot & Astrologija</title>
-  <meta id="meta-description" name="description" content="Alkemijana - mistični kutak za tarot, astrologiju i unutarnje istraživanje. Sigurno mjesto za razgovor i tarot karte. Već znate - karte samo pokazuju put.">
-  <meta name="keywords" content="tarot, astrologija, tarot karte, čitanje tarota, čitanje karata, alkemija, alkemičar, alkemijana, oracle karte, visak, astro kockice, astrolog, tarot Hrvatska, online tarot, Jana tarot">
+  <meta id="meta-description" name="description" content="Alkemijana - osobni blog o tarotu, astrologiji i samospoznaji. Mistični kutak za unutarnje istraživanje i razmišljanje. Već znate - karte samo pokazuju put.">
+  <meta name="keywords" content="alkemijana, alkemija, alkemičar, tarot blog, astrologija blog, simbolika tarota, arhetipovi, samospoznaja, mistika, ezoterija">
   <meta name="author" content="Jana - Alkemijana">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="googlebot" content="index, follow">
@@ -21,7 +21,7 @@
   <!-- Open Graph (preview za WhatsApp, Facebook, Instagram, LinkedIn) -->
   <meta id="og-type"        property="og:type"        content="website">
   <meta id="og-title"       property="og:title"       content="Alkemijana - Tarot & Astrologija">
-  <meta id="og-description" property="og:description" content="Mistični kutak za tarot, astrologiju i unutarnje istraživanje. Već znate - karte samo pokazuju put.">
+  <meta id="og-description" property="og:description" content="Osobni blog o tarotu, astrologiji i samospoznaji. Već znate - karte samo pokazuju put.">
   <meta id="og-image"       property="og:image"       content="https://alkemijana.com/og/home.svg">
   <meta id="og-url"         property="og:url"         content="https://alkemijana.com/">
   <meta                     property="og:site_name"   content="Alkemijana">
@@ -30,22 +30,31 @@
   <!-- Twitter Card -->
   <meta                     name="twitter:card"        content="summary_large_image">
   <meta id="tw-title"       name="twitter:title"       content="Alkemijana - Tarot & Astrologija">
-  <meta id="tw-description" name="twitter:description" content="Mistični kutak za tarot, astrologiju i unutarnje istraživanje.">
+  <meta id="tw-description" name="twitter:description" content="Osobni blog o tarotu, astrologiji i samospoznaji.">
   <meta id="tw-image"       name="twitter:image"       content="https://alkemijana.com/og/home.svg">
 
-  <!-- JSON-LD: tko smo, što radimo, gdje smo (Google razumije ovo) -->
+  <!-- JSON-LD: Alkemijana je BLOG. Ne deklariramo nikakvu uslugu/poslovni
+       entitet (ProfessionalService/LocalBusiness) dok obrt nije registriran. -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "Blog",
+        "@id": "https://alkemijana.com/#blog",
+        "url": "https://alkemijana.com/",
+        "name": "Alkemijana",
+        "description": "Osobni blog o tarotu, astrologiji i samospoznaji.",
+        "inLanguage": "hr-HR",
+        "author": { "@id": "https://alkemijana.com/#person" },
+        "publisher": { "@id": "https://alkemijana.com/#person" }
+      },
+      {
         "@type": "WebSite",
         "@id": "https://alkemijana.com/#website",
         "url": "https://alkemijana.com/",
         "name": "Alkemijana",
-        "description": "Mistični kutak za tarot, astrologiju i unutarnje istraživanje.",
-        "inLanguage": "hr-HR",
-        "publisher": { "@id": "https://alkemijana.com/#person" }
+        "inLanguage": "hr-HR"
       },
       {
         "@type": "Person",
@@ -53,36 +62,9 @@
         "name": "Jana",
         "alternateName": "Alkemijana",
         "url": "https://alkemijana.com/",
-        "jobTitle": "Tarot i astrologija, magistra socijalne pedagogije",
-        "description": "Jana - magistra socijalne pedagogije, tarot, astrologija i savjetovanje.",
-        "knowsAbout": ["Tarot", "Astrologija", "Oracle karte", "Visak", "Astro kockice", "Socijalna pedagogija"],
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "HR"
-        },
-        "email": "jana@alkemijana.com",
-        "telephone": "+385976126893",
+        "description": "Autorica bloga Alkemijana. Magistra socijalne pedagogije.",
+        "knowsAbout": ["Tarot", "Astrologija", "Samospoznaja", "Socijalna pedagogija"],
         "sameAs": ["https://www.instagram.com/alkemijana"]
-      },
-      {
-        "@type": "ProfessionalService",
-        "@id": "https://alkemijana.com/#business",
-        "name": "Alkemijana - Tarot i Astrologija",
-        "image": "https://alkemijana.com/og/home.svg",
-        "url": "https://alkemijana.com/",
-        "telephone": "+385976126893",
-        "email": "jana@alkemijana.com",
-        "areaServed": [
-          { "@type": "Country", "name": "Hrvatska" },
-          { "@type": "VirtualLocation", "name": "Online" }
-        ],
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "HR"
-        },
-        "founder": { "@id": "https://alkemijana.com/#person" },
-        "description": "Tarot čitanje, astrološka tumačenja, oracle karte i visak. Hrvatska i online.",
-        "serviceType": ["Tarot čitanje", "Astrološko tumačenje", "Oracle karte", "Duhovno savjetovanje"]
       }
     ]
   }
@@ -596,7 +578,7 @@
           <div class="form-success" id="formSuccess">
             <span class="icon">✦</span>
             <h3>Hvala vam</h3>
-            <p>Vaša poruka je poslana. Javit ću Vam se u najkraćem mogućem roku sa slobodnim terminima.</p>
+            <p>Vaša poruka je poslana. Javit ću Vam se u najkraćem mogućem roku.</p>
           </div>
         </div>
       </div>

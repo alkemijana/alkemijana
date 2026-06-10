@@ -5,6 +5,13 @@
 /* ---- NAVIGACIJA ---- */
 
 function showPage(id) {
+  /* LEGAL: ako usluge nisu uključene u adminu (nema registriranog obrta),
+     #usluge stranica je potpuno blokirana — preusmjeri na početnu.
+     Tako čak ni direktni URL/bookmark ne može prikazati cjenik. */
+  if (id === 'usluge' && !SITE_SETTINGS.showServices) {
+    id = 'home';
+    try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-links a').forEach(a => {
@@ -143,6 +150,16 @@ function renderServices() {
   const allGrid  = document.getElementById('all-services-grid');
   const sel      = document.getElementById('booking-service-select');
 
+  /* LEGAL: kad u adminu showServices=false (nema registriranog obrta),
+     ne smijemo NIŠTA renderirati u DOM — ni opise, ni cijene, ni opcije
+     u <select>-u. Crawleri i View Source tako vide samo prazne kontejnere. */
+  if (!SITE_SETTINGS.showServices) {
+    if (homeGrid) homeGrid.innerHTML = '';
+    if (allGrid)  allGrid.innerHTML  = '';
+    if (sel)      sel.innerHTML      = '<option value="">—</option>';
+    return;
+  }
+
   const active     = SERVICES.filter(s => !s.archived);
   const homeActive = active.filter(s => s.home);
 
@@ -180,6 +197,8 @@ function svcCard(s) {
 function renderPricingTable() {
   const wrap = document.getElementById('pricing-table-wrap');
   if (!wrap) return;
+  /* LEGAL: cjenik se NIKAD ne renderira u DOM kad showServices=false */
+  if (!SITE_SETTINGS.showServices) { wrap.innerHTML = ''; return; }
   const active = PRICING.filter(r => !r.archived);
   wrap.innerHTML =
     `<div class="pricing-row header">
@@ -483,7 +502,7 @@ function setPostMetaTags(p) {
 function resetPostMetaTags() {
   const baseUrl = 'https://alkemijana.com/';
   const title   = 'Alkemijana - Tarot & Astrologija';
-  const desc    = 'Alkemijana - mistični kutak za tarot, astrologiju i unutarnje istraživanje. Sigurno mjesto za razgovor i tarot karte. Već znate - karte samo pokazuju put.';
+  const desc    = 'Alkemijana - osobni blog o tarotu, astrologiji i samospoznaji. Mistični kutak za unutarnje istraživanje i razmišljanje. Već znate - karte samo pokazuju put.';
   const img     = baseUrl + 'og/home.svg';
 
   document.title = title;
@@ -893,14 +912,22 @@ function applySettings() {
   const navUsluge    = document.getElementById('nav-usluge');
   const homeSvc      = document.getElementById('home-services-section');
   const homeCta      = document.getElementById('home-cta-section');
+  const uslugePage   = document.getElementById('usluge');
   const svcFormGroup = document.getElementById('svc-form-group');
   const svcFormRow   = document.getElementById('svc-form-row');
 
   if (navUsluge)    navUsluge.style.display    = show ? '' : 'none';
   if (homeSvc)      homeSvc.style.display      = show ? 'block' : 'none';
   if (homeCta)      homeCta.style.display      = show ? 'block' : 'none';
+  if (uslugePage)   uslugePage.style.display   = show ? '' : 'none';
   if (svcFormGroup) svcFormGroup.style.display = show ? '' : 'none';
   if (svcFormRow)   svcFormRow.style.gridTemplateColumns = show ? '' : '1fr';
+
+  // Ponovno renderiraj usluge/cjenik — ako je toggle prebačen, ovo
+  // ili napuni grid-ove ili ih očisti (renderServices/renderPricingTable
+  // sami provjeravaju showServices stanje).
+  renderServices();
+  renderPricingTable();
 
   // O meni slika
   const aboutImg = document.getElementById('about-image-float');
@@ -916,28 +943,33 @@ function applyTexts() {
   const t = TEXTS;
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val == null ? '' : val; };
 
+  /* LEGAL: kad je showServices=false, sve service-y tekstove postavljamo
+     na prazan string. Crawleri/View Source tako ne vide ni naslove
+     poput "Moje usluge", "Cjenik", "Zakažite susret" — ni "Rezervirajte termin". */
+  const svc = SITE_SETTINGS.showServices;
+
   // Početna
   set('t-heroSub',          t.heroSub);
   set('t-heroDesc',         t.heroDesc);
-  set('t-servicesTitle',    t.servicesTitle);
-  set('t-servicesSub',      t.servicesSub);
-  set('t-ctaTitle',         t.ctaTitle);
-  set('t-ctaText',          t.ctaText);
-  set('t-ctaBtn',           t.ctaBtn);
+  set('t-servicesTitle',    svc ? t.servicesTitle : '');
+  set('t-servicesSub',      svc ? t.servicesSub   : '');
+  set('t-ctaTitle',         svc ? t.ctaTitle      : '');
+  set('t-ctaText',          svc ? t.ctaText       : '');
+  set('t-ctaBtn',           svc ? t.ctaBtn        : '');
   set('t-reviewsTitle',     t.reviewsTitle);
   set('t-reviewsSub',       t.reviewsSub);
   set('t-blogPreviewTitle', t.blogPreviewTitle);
   set('t-blogPreviewSub',   t.blogPreviewSub);
   set('t-blogPreviewBtn',   t.blogPreviewBtn);
 
-  // Stranica Usluge
-  set('t-servicesPageTitle', t.servicesPageTitle);
-  set('t-servicesPageSub',   t.servicesPageSub);
-  set('t-pricingTitle',      t.pricingTitle);
-  set('t-pricingSub',        t.pricingSub);
-  set('t-servicesCtaTitle',  t.servicesCtaTitle);
-  set('t-servicesCtaText',   t.servicesCtaText);
-  set('t-servicesCtaBtn',    t.servicesCtaBtn);
+  // Stranica Usluge — sve tekstove cistimo ako !svc
+  set('t-servicesPageTitle', svc ? t.servicesPageTitle : '');
+  set('t-servicesPageSub',   svc ? t.servicesPageSub   : '');
+  set('t-pricingTitle',      svc ? t.pricingTitle      : '');
+  set('t-pricingSub',        svc ? t.pricingSub        : '');
+  set('t-servicesCtaTitle',  svc ? t.servicesCtaTitle  : '');
+  set('t-servicesCtaText',   svc ? t.servicesCtaText   : '');
+  set('t-servicesCtaBtn',    svc ? t.servicesCtaBtn    : '');
 
   // O meni
   set('t-aboutPageTitle',    t.aboutPageTitle);

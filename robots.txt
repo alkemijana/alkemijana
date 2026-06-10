@@ -2,5 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /save-data
 Disallow: /verify-pass
+Disallow: /#usluge
+Disallow: /#admin
 
 Sitemap: https://alkemijana.com/sitemap.xml

@@ -558,7 +558,8 @@ function closeBlogPost() {
 function renderShareBar(p) {
   document.getElementById('share-bar').innerHTML = `
     <span>Podijeli:</span>
-    <button class="share-btn" onclick="copyPostLink('${p.id}', this)">🔗 Kopiraj link</button>`;
+    <button class="share-btn" onclick="copyPostLink('${p.id}', this)">🔗 Kopiraj link</button>
+    <button class="share-btn" onclick="downloadPostPdf('${p.id}')">📄 Skini PDF</button>`;
 }
 
 function copyPostLink(id, btn) {
@@ -568,6 +569,227 @@ function copyPostLink(id, btn) {
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = '🔗 Kopiraj link'; btn.classList.remove('copied'); }, 2500);
   });
+}
+
+/* ---- SKINI ČLANAK KAO PDF ----
+   Otvara novi prozor s "print-ready" verzijom članka (bijela podloga, crna slova,
+   naslovna slika kao mala kružnica u kutu, brojevi stranica preko CSS @page).
+   Posjetitelj može u dialogu odabrati "Save as PDF" ili printati. */
+function downloadPostPdf(id) {
+  const p = BLOG_POSTS.find(x => x.id === id);
+  if (!p) return;
+
+  const cover    = safeImgSrc(p.imageUrl);
+  const dateStr  = p.date || '';
+  const content  = p.content || '';
+  const titleEsc = esc(p.title);
+  const safeFile = (p.title || 'clanak').replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 80) || 'clanak';
+
+  const html = `<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<title>${titleEsc} — Alkemijana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Tangerine:wght@700&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 22mm 16mm;
+    @bottom-center {
+      content: "— " counter(page) " / " counter(pages) " —";
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 9pt;
+      color: #666;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { background: #ffffff !important; color: #111 !important; margin: 0; padding: 0; }
+  body {
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.7;
+    color: #111;
+  }
+  .no-print-bar {
+    background: linear-gradient(180deg,#f8f5fb,#efeaf5);
+    border-bottom: 1px solid #d8cee6;
+    padding: 14px 16px;
+    text-align: center;
+    font-family: 'Quicksand', system-ui, sans-serif;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .no-print-bar button {
+    background: #4a2d6a; color: #fff; border: 0; border-radius: 4px;
+    padding: 9px 18px; margin: 0 4px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: 0.05em;
+  }
+  .no-print-bar button:hover { background: #5d3d82; }
+  .no-print-bar .hint { display:block; margin-top:8px; color:#5a4a72; font-size:12px; }
+
+  .sheet { max-width: 178mm; margin: 8mm auto 0; padding: 0 4mm 14mm; }
+
+  .pdf-header {
+    position: relative;
+    text-align: center;
+    border-bottom: 1px solid #c9bcd9;
+    padding: 4mm 30mm 8mm 4mm;
+    margin-bottom: 8mm;
+  }
+  .pdf-brand {
+    font-family: 'Tangerine', cursive;
+    font-size: 44pt;
+    color: #3d245a;
+    line-height: 1;
+    margin: 0;
+  }
+  .pdf-tagline {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 8.5pt;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #7a6a8e;
+    margin-top: 3mm;
+  }
+  .pdf-cover {
+    position: absolute;
+    top: 2mm; right: 2mm;
+    width: 24mm; height: 24mm;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid #6a4d8a;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+
+  .pdf-meta {
+    text-align: center;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 9pt;
+    color: #6a5a82;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 5mm;
+  }
+  h1.pdf-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    font-size: 26pt;
+    line-height: 1.25;
+    color: #111;
+    text-align: center;
+    margin: 0 0 5mm 0;
+    page-break-after: avoid;
+  }
+  .pdf-ornament {
+    text-align: center;
+    color: #8a6db0;
+    font-size: 13pt;
+    letter-spacing: 1.2em;
+    margin: 4mm 0 7mm;
+    padding-left: 1.2em;
+  }
+
+  .pdf-body { color: #111; }
+  .pdf-body, .pdf-body * { background: transparent !important; }
+  .pdf-body p { margin: 0 0 4mm 0; orphans: 3; widows: 3; text-align: justify; }
+  .pdf-body h1, .pdf-body h2, .pdf-body h3, .pdf-body h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: #2a1d4a;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .pdf-body h2 { font-size: 16pt; margin: 8mm 0 3mm; }
+  .pdf-body h3 { font-size: 13pt; margin: 6mm 0 2mm; }
+  .pdf-body blockquote {
+    border-left: 3px solid #8a6db0;
+    padding: 1mm 0 1mm 5mm;
+    margin: 5mm 0;
+    font-style: italic;
+    color: #2a2138;
+  }
+  .pdf-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 6mm auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    border-radius: 2px;
+  }
+  .pdf-body a { color: #4a2d6a; text-decoration: underline; }
+  .pdf-body ul, .pdf-body ol { padding-left: 8mm; margin: 3mm 0 4mm; }
+  .pdf-body li { margin-bottom: 2mm; }
+  .pdf-body hr { border: 0; border-top: 1px solid #c9bcd9; margin: 6mm 0; }
+
+  .pdf-footer {
+    margin-top: 10mm;
+    padding-top: 4mm;
+    border-top: 1px solid #c9bcd9;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 9pt;
+    color: #6a5a82;
+    text-align: center;
+    letter-spacing: 0.15em;
+  }
+  .pdf-footer .star { color: #8a6db0; letter-spacing: 0.6em; display: block; margin-bottom: 2mm; }
+
+  @media print {
+    html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-print, .no-print-bar { display: none !important; }
+    .sheet { margin: 0; padding: 0; max-width: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="no-print-bar">
+    <button onclick="window.print()">🖨️ Printaj / Spremi kao PDF</button>
+    <button onclick="window.close()">✕ Zatvori</button>
+    <span class="hint">U dijalogu odaberi <b>"Save as PDF"</b> kao odredište kako bi skinuo članak.</span>
+  </div>
+
+  <div class="sheet">
+    <header class="pdf-header">
+      ${cover ? `<img class="pdf-cover" src="${esc(cover)}" alt="">` : ''}
+      <div class="pdf-brand">Alkemijana</div>
+      <div class="pdf-tagline">Tarot · Astrologija · Mistika</div>
+    </header>
+
+    ${dateStr ? `<div class="pdf-meta">${esc(dateStr)}</div>` : ''}
+    <h1 class="pdf-title">${titleEsc}</h1>
+    <div class="pdf-ornament">✦ ✦ ✦</div>
+
+    <article class="pdf-body">${content}</article>
+
+    <div class="pdf-footer">
+      <span class="star">✦ ✦ ✦</span>
+      Alkemijana · alkemijana.com
+    </div>
+  </div>
+
+  <script>
+    document.title = ${JSON.stringify(safeFile + ' — Alkemijana')};
+    function waitForImages() {
+      const imgs = Array.from(document.images || []);
+      if (!imgs.length) return Promise.resolve();
+      return Promise.all(imgs.map(img => img.complete ? Promise.resolve() :
+        new Promise(res => { img.onload = img.onerror = res; })));
+    }
+    window.addEventListener('load', function () {
+      waitForImages().then(() => setTimeout(() => window.print(), 350));
+    });
+  <\/script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Molim dopusti pop-up prozore za ovu stranicu kako bi mogao/la skinuti PDF.');
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }
 
 /* ---- POSTAVKE STRANICE ---- */

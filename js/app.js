@@ -634,32 +634,49 @@ function downloadPostPdf(id) {
     position: relative;
     text-align: center;
     border-bottom: 1px solid #c9bcd9;
-    padding: 4mm 30mm 8mm 4mm;
+    padding: 4mm 4mm 6mm 4mm;
     margin-bottom: 8mm;
+    min-height: 30mm;
   }
   .pdf-brand {
     font-family: 'Tangerine', cursive;
-    font-size: 44pt;
+    font-size: 48pt;
     color: #3d245a;
     line-height: 1;
     margin: 0;
   }
-  .pdf-tagline {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 8.5pt;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: #7a6a8e;
-    margin-top: 3mm;
+  .pdf-cover-frame {
+    position: absolute;
+    top: 2mm;
+    right: 2mm;
+    padding: 1.8mm;
+    background: #faf6ef;
+    border: 1.2px solid #3d245a;
+    box-shadow: 0 1.5px 4px rgba(0,0,0,0.18);
+  }
+  .pdf-cover-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0.9mm;
+    border: 0.4px solid #8a6db0;
+    pointer-events: none;
+  }
+  .pdf-cover-frame::after {
+    content: '✦';
+    position: absolute;
+    top: -2.2mm; left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    padding: 0 1mm;
+    color: #8a6db0;
+    font-size: 7pt;
   }
   .pdf-cover {
-    position: absolute;
-    top: 2mm; right: 2mm;
-    width: 24mm; height: 24mm;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1.5px solid #6a4d8a;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    display: block;
+    max-width: 30mm;
+    max-height: 24mm;
+    width: auto;
+    height: auto;
   }
 
   .pdf-meta {
@@ -750,9 +767,8 @@ function downloadPostPdf(id) {
 
   <div class="sheet">
     <header class="pdf-header">
-      ${cover ? `<img class="pdf-cover" src="${esc(cover)}" alt="">` : ''}
+      ${cover ? `<div class="pdf-cover-frame"><img class="pdf-cover" src="${esc(cover)}" alt=""></div>` : ''}
       <div class="pdf-brand">Alkemijana</div>
-      <div class="pdf-tagline">Tarot · Astrologija · Mistika</div>
     </header>
 
     ${dateStr ? `<div class="pdf-meta">${esc(dateStr)}</div>` : ''}

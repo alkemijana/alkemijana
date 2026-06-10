@@ -482,8 +482,8 @@ function setPostMetaTags(p) {
 
 function resetPostMetaTags() {
   const baseUrl = 'https://alkemijana.com/';
-  const title   = 'Alkemijana — Tarot, Astrologija i Duhovno Vodstvo | Jana, Rab';
-  const desc    = 'Alkemijana — mistični kutak za tarot, astrologiju i unutarnje istraživanje. Jana iz Rapa, magistra socijalne pedagogije, vodi vas kroz tarot, oracle karte, visak i astrološko tumačenje. Već znate — karte samo pokazuju put.';
+  const title   = 'Alkemijana - Tarot, Astrologija i Duhovno Vodstvo';
+  const desc    = 'Alkemijana - mistični kutak za tarot, astrologiju i unutarnje istraživanje. Sigurno mjesto za razgovor, tarot karte i duhovno vodstvo. Već znate - karte samo pokazuju put.';
   const img     = baseUrl + 'og/home.svg';
 
   document.title = title;

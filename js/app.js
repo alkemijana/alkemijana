@@ -483,7 +483,7 @@ function setPostMetaTags(p) {
 function resetPostMetaTags() {
   const baseUrl = 'https://alkemijana.com/';
   const title   = 'Alkemijana - Tarot & Astrologija';
-  const desc    = 'Alkemijana - mistični kutak za tarot, astrologiju i unutarnje istraživanje. Sigurno mjesto za razgovor, tarot karte i duhovno vodstvo. Već znate - karte samo pokazuju put.';
+  const desc    = 'Alkemijana - mistični kutak za tarot, astrologiju i unutarnje istraživanje. Sigurno mjesto za razgovor i tarot karte. Već znate - karte samo pokazuju put.';
   const img     = baseUrl + 'og/home.svg';
 
   document.title = title;

@@ -691,7 +691,7 @@ function cancelPostEdit() {
   editingPostId = null;
   renderBlogAdminList();
   document.getElementById('blog-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberite članak za uređivanje ili dodajte novi.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi članak za uređivanje ili dodaj novi.</p>';
 }
 
 function eCmd(cmd) {
@@ -980,7 +980,7 @@ function cancelServiceEdit() {
   editingSvcId = null;
   renderSvcAdmin();
   document.getElementById('svc-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberite uslugu za uređivanje ili dodajte novu.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi uslugu za uređivanje ili dodaj novu.</p>';
 }
 
 function saveService() {
@@ -1126,7 +1126,7 @@ function cancelReviewEdit() {
   editingRevId = null;
   renderReviewsAdmin();
   document.getElementById('rev-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberite recenziju za uređivanje ili dodajte novu.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi recenziju za uređivanje ili dodaj novu.</p>';
 }
 
 function saveReview() {
@@ -1374,7 +1374,7 @@ const TEXT_GROUPS = [
     keys: {
       blogPageTitle: 'Naslov stranice',
       blogPageSub:   'Podnaslov stranice',
-      relatedTitle:  '"Možda će Vam se svidjeti" naslov'
+      relatedTitle:  '"Možda će ti se svidjeti" naslov'
     }
   },
   {

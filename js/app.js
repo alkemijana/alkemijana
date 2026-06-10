@@ -945,7 +945,7 @@ function applyTexts() {
 
   /* LEGAL: kad je showServices=false, sve service-y tekstove postavljamo
      na prazan string. Crawleri/View Source tako ne vide ni naslove
-     poput "Moje usluge", "Cjenik", "Zakažite susret" — ni "Rezervirajte termin". */
+     poput "Moje usluge", "Cjenik", "Zakazi susret", "Rezerviraj termin". */
   const svc = SITE_SETTINGS.showServices;
 
   // Početna

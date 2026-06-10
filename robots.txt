@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /save-data
+Disallow: /verify-pass
+
+Sitemap: https://alkemijana.com/sitemap.xml

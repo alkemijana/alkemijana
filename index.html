@@ -3,23 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alkemijana — Tarot & Astrologija</title>
-  <meta name="description" content="Mistični kutak za tarot i astrologiju. Već znaš. Karte samo pokazuju put.">
+
+  <!-- ============ SEO — osnovno ============ -->
+  <title id="meta-title">Alkemijana — Tarot, Astrologija i Duhovno Vodstvo | Jana, Rab</title>
+  <meta id="meta-description" name="description" content="Alkemijana — mistični kutak za tarot, astrologiju i unutarnje istraživanje. Jana iz Rapa, magistra socijalne pedagogije, vodi vas kroz tarot, oracle karte, visak i astrološko tumačenje. Već znate — karte samo pokazuju put.">
+  <meta name="keywords" content="tarot, astrologija, tarot karte, čitanje tarota, čitanje karata, alkemija, alkemičar, alkemijana, duhovno vodstvo, oracle karte, visak, astro kockice, astrolog, tarot Hrvatska, tarot Rab, Jana tarot">
+  <meta name="author" content="Jana — Alkemijana">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta name="googlebot" content="index, follow">
+  <link id="meta-canonical" rel="canonical" href="https://alkemijana.com/">
+  <meta name="theme-color" content="#2a1d4a">
+  <meta name="geo.region" content="HR">
+  <meta name="geo.placename" content="Rab">
+
+  <!-- Favicon (inline SVG ✦) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232a1d4a'/%3E%3Ctext y='72' x='50' font-size='70' text-anchor='middle' fill='%23e4e0f4'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
 
   <!-- Open Graph (preview za WhatsApp, Facebook, Instagram, LinkedIn) -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Alkemijana — Tarot & Astrologija">
-  <meta property="og:description" content="Mistični kutak za tarot i astrologiju. Već znaš. Karte samo pokazuju put.">
-  <meta property="og:image" content="https://alkemijana.com/og/home.svg">
-  <meta property="og:url" content="https://alkemijana.com/">
-  <meta property="og:site_name" content="Alkemijana">
-  <meta property="og:locale" content="hr_HR">
+  <meta id="og-type"        property="og:type"        content="website">
+  <meta id="og-title"       property="og:title"       content="Alkemijana — Tarot, Astrologija i Duhovno Vodstvo">
+  <meta id="og-description" property="og:description" content="Mistični kutak za tarot, astrologiju i unutarnje istraživanje. Već znate — karte samo pokazuju put.">
+  <meta id="og-image"       property="og:image"       content="https://alkemijana.com/og/home.svg">
+  <meta id="og-url"         property="og:url"         content="https://alkemijana.com/">
+  <meta                     property="og:site_name"   content="Alkemijana">
+  <meta                     property="og:locale"      content="hr_HR">
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Alkemijana — Tarot & Astrologija">
-  <meta name="twitter:description" content="Mistični kutak za tarot i astrologiju.">
-  <meta name="twitter:image" content="https://alkemijana.com/og/home.svg">
+  <meta                     name="twitter:card"        content="summary_large_image">
+  <meta id="tw-title"       name="twitter:title"       content="Alkemijana — Tarot, Astrologija i Duhovno Vodstvo">
+  <meta id="tw-description" name="twitter:description" content="Mistični kutak za tarot, astrologiju i unutarnje istraživanje.">
+  <meta id="tw-image"       name="twitter:image"       content="https://alkemijana.com/og/home.svg">
+
+  <!-- JSON-LD: tko smo, što radimo, gdje smo (Google razumije ovo) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://alkemijana.com/#website",
+        "url": "https://alkemijana.com/",
+        "name": "Alkemijana",
+        "description": "Mistični kutak za tarot, astrologiju i duhovno vodstvo.",
+        "inLanguage": "hr-HR",
+        "publisher": { "@id": "https://alkemijana.com/#person" }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://alkemijana.com/#person",
+        "name": "Jana",
+        "alternateName": "Alkemijana",
+        "url": "https://alkemijana.com/",
+        "jobTitle": "Tarot i astrologija, magistra socijalne pedagogije",
+        "description": "Jana iz Rapa — magistra socijalne pedagogije, tarot i astrologija, duhovno vodstvo i savjetovanje.",
+        "knowsAbout": ["Tarot", "Astrologija", "Oracle karte", "Visak", "Astro kockice", "Duhovno vodstvo", "Socijalna pedagogija"],
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Rab",
+          "addressCountry": "HR"
+        },
+        "email": "jana@alkemijana.com",
+        "telephone": "+385976126893",
+        "sameAs": ["https://www.instagram.com/alkemijana"]
+      },
+      {
+        "@type": "ProfessionalService",
+        "@id": "https://alkemijana.com/#business",
+        "name": "Alkemijana — Tarot i Astrologija",
+        "image": "https://alkemijana.com/og/home.svg",
+        "url": "https://alkemijana.com/",
+        "telephone": "+385976126893",
+        "email": "jana@alkemijana.com",
+        "priceRange": "€€",
+        "areaServed": { "@type": "Country", "name": "Hrvatska" },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Rab",
+          "addressCountry": "HR"
+        },
+        "founder": { "@id": "https://alkemijana.com/#person" },
+        "description": "Tarot čitanje, astrološka tumačenja, oracle karte, visak i duhovno vodstvo. Online i uživo.",
+        "serviceType": ["Tarot čitanje", "Astrološko tumačenje", "Oracle karte", "Duhovno savjetovanje"]
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -423,7 +423,83 @@ function openPost(id) {
   document.getElementById('blog-post-view').classList.add('active');
   window.location.hash = 'post/' + id;
   renderShareBar(p);
+  setPostMetaTags(p);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---- SEO: dinamički meta tagovi za blog članak ----
+   Mijenja title, description, canonical, OG/Twitter te dodaje Article JSON-LD.
+   Bot-ovi koji renderiraju JS (Googlebot već neko vrijeme) ovo pokupe;
+   za one koji ne renderiraju JS — server-side meta bi tražio prebacivanje
+   s hash-routinga na prave URL-ove (zaseban posao). */
+function setPostMetaTags(p) {
+  const baseUrl = 'https://alkemijana.com/';
+  const url     = baseUrl + '#post/' + p.id;
+  const plain   = (p.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const desc    = (p.excerpt && p.excerpt.trim()) || plain.slice(0, 160);
+  const img     = safeImgSrc(p.imageUrl) || baseUrl + 'og/home.svg';
+  const title   = `${p.title} — Alkemijana`;
+
+  document.title = title;
+  const set = (id, attr, val) => { const el = document.getElementById(id); if (el) el.setAttribute(attr, val); };
+  set('meta-description', 'content', desc);
+  set('meta-canonical',   'href',    url);
+  set('og-type',          'content', 'article');
+  set('og-title',         'content', title);
+  set('og-description',   'content', desc);
+  set('og-image',         'content', img);
+  set('og-url',           'content', url);
+  set('tw-title',         'content', title);
+  set('tw-description',   'content', desc);
+  set('tw-image',         'content', img);
+
+  // Article JSON-LD — ubacujemo/zamjenjujemo poseban <script id="ld-article">
+  let ld = document.getElementById('ld-article');
+  if (!ld) {
+    ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.id   = 'ld-article';
+    document.head.appendChild(ld);
+  }
+  ld.textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": p.title,
+    "description": desc,
+    "image": img,
+    "datePublished": p.date || undefined,
+    "inLanguage": "hr-HR",
+    "author": { "@type": "Person", "name": "Jana", "url": baseUrl },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Alkemijana",
+      "logo": { "@type": "ImageObject", "url": baseUrl + "og/home.svg" }
+    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": url },
+    "keywords": (getPostTags(p) || []).join(", ")
+  });
+}
+
+function resetPostMetaTags() {
+  const baseUrl = 'https://alkemijana.com/';
+  const title   = 'Alkemijana — Tarot, Astrologija i Duhovno Vodstvo | Jana, Rab';
+  const desc    = 'Alkemijana — mistični kutak za tarot, astrologiju i unutarnje istraživanje. Jana iz Rapa, magistra socijalne pedagogije, vodi vas kroz tarot, oracle karte, visak i astrološko tumačenje. Već znate — karte samo pokazuju put.';
+  const img     = baseUrl + 'og/home.svg';
+
+  document.title = title;
+  const set = (id, attr, val) => { const el = document.getElementById(id); if (el) el.setAttribute(attr, val); };
+  set('meta-description', 'content', desc);
+  set('meta-canonical',   'href',    baseUrl);
+  set('og-type',          'content', 'website');
+  set('og-title',         'content', title);
+  set('og-description',   'content', desc);
+  set('og-image',         'content', img);
+  set('og-url',           'content', baseUrl);
+  set('tw-title',         'content', title);
+  set('tw-description',   'content', desc);
+  set('tw-image',         'content', img);
+  const ld = document.getElementById('ld-article');
+  if (ld) ld.remove();
 }
 
 function renderPostTags(p) {
@@ -552,6 +628,7 @@ function closeBlogPost() {
   document.getElementById('blog-post-view').classList.remove('active');
   document.getElementById('blog-list-view').classList.remove('hidden');
   window.location.hash = '';
+  resetPostMetaTags();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

@@ -661,16 +661,6 @@ function downloadPostPdf(id) {
     border: 0.4px solid #8a6db0;
     pointer-events: none;
   }
-  .pdf-cover-frame::after {
-    content: '✦';
-    position: absolute;
-    top: -2.2mm; left: 50%;
-    transform: translateX(-50%);
-    background: #ffffff;
-    padding: 0 1mm;
-    color: #8a6db0;
-    font-size: 7pt;
-  }
   .pdf-cover {
     display: block;
     max-width: 30mm;

@@ -45,7 +45,7 @@ const ASPECT_DEFS = [
 const GLYPHS = {
   sun:     { s:'M12,5.2 A6.8,6.8 0 1,0 12,18.8 A6.8,6.8 0 1,0 12,5.2',
              f:'M12,10.4 A1.6,1.6 0 1,0 12,13.6 A1.6,1.6 0 1,0 12,10.4' },
-  moon:    { f:'M13.8,3.6 A8.4,8.4 0 1,0 13.8,20.4 A6.6,6.6 0 1,1 13.8,3.6 Z' },
+  moon:    { f:'M16,3.7 A8.3,8.3 0 1,0 16,20.3 A11.5,11.5 0 0,1 16,3.7 Z' },
   mercury: { s:'M12,6.4 A4.6,4.6 0 1,0 12,15.6 A4.6,4.6 0 1,0 12,6.4 M12,15.6 L12,21.2 M9.3,18.4 L14.7,18.4 M7.8,2.4 A4.4,4.4 0 0,0 16.2,2.4' },
   venus:   { s:'M12,3.4 A4.9,4.9 0 1,0 12,13.2 A4.9,4.9 0 1,0 12,3.4 M12,13.2 L12,21 M8.6,17.1 L15.4,17.1' },
   mars:    { s:'M10,8.8 A5.2,5.2 0 1,0 10,19.2 A5.2,5.2 0 1,0 10,8.8 M13.7,10.3 L19.5,4.5 M14.3,4.5 L19.5,4.5 L19.5,9.7' },
@@ -104,6 +104,18 @@ function fmtDegMin(lon) {
 function signIndex(lon) { return Math.floor(norm360(lon) / 30) % 12; }
 function signName(lon)  { return SIGNS[signIndex(lon)]; }
 function signKey(lon)   { return SIGN_KEYS[signIndex(lon)]; }
+
+/* Širina teksta u px mjerena stvarnim (web) fontom preko canvasa.
+   svg2pdf centrira text-anchor="middle" metrikom helvetice pa tekst "bježi" —
+   zato x računamo sami (isti trik kao kod poster naslova). */
+function measureTextPx(text, sizePx, family, weight) {
+  try {
+    const c = measureTextPx._c || (measureTextPx._c = document.createElement('canvas'));
+    const ctx = c.getContext('2d');
+    ctx.font = (weight ? weight + ' ' : '') + sizePx + 'px ' + (family || 'Quicksand, sans-serif');
+    return ctx.measureText(String(text)).width;
+  } catch (e) { return 0; }
+}
 
 function escHtml(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

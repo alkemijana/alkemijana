@@ -23,14 +23,15 @@ function birthDataLine(chart) {
 
 /* ============ SVG KOTAČ ============ */
 
-/* Dasharray uzorci za crno-bijeli ispis — radna verzija (linetype mode) */
+/* Dasharray uzorci za crno-bijeli ispis — radna verzija (linetype mode).
+   Jedinice su SVG user-units kotača; legenda u PDF-u skalira iste brojeve. */
 function aspectDashPattern(aspId) {
   switch (aspId) {
-    case 'conjunction': return '1.5,2.8';
-    case 'sextile':     return '4,3';
-    case 'square':      return null;        // solid
-    case 'trine':       return '9,4';
-    case 'opposition':  return '8,3,1.5,3';
+    case 'conjunction': return '2,5';
+    case 'sextile':     return '8,6';
+    case 'square':      return null;          // puna linija
+    case 'trine':       return '16,7';
+    case 'opposition':  return '14,6,2.5,6';
     default:            return null;
   }
 }
@@ -46,10 +47,10 @@ function buildChartSVG(chart, pal, opts) {
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
   const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
   const R_PTICK = R_ZOD, R_SIGN = 427;
-  // osi izvan kotača (item 2)
-  const R_AXIS_TICK = R_OUT + 13, R_AXIS_LBL = R_OUT + 32, R_AXIS_DEG = R_OUT + 53;
-  // stupnjevi cuspsi izvan kotača (item 4)
-  const R_CUSP_DEG = R_OUT + 17;
+  // osi izvan kotača — stupanj se crta ISPOD oznake (ekranski) da se ne preklapaju
+  const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 30;
+  // znak + stupanj cuspsi izvan kotača
+  const R_CUSP_SIGN = R_OUT + 16;
   const asc = chart.asc;
 
   // kut na ekranu: ASC lijevo, longitude rastu suprotno od kazaljke
@@ -73,12 +74,18 @@ function buildChartSVG(chart, pal, opts) {
       ' L' + x3.toFixed(1) + ',' + y3.toFixed(1) +
       ' A' + rIn + ',' + rIn + ' 0 0,1 ' + x4.toFixed(1) + ',' + y4.toFixed(1) + ' Z" fill="' + fill + '" stroke="none"/>';
   }
-  // centrirani tekst — koristi dy=".35em" umjesto dominant-baseline (pouzdano u svg2pdf)
+  // centrirani tekst — x i y računamo SAMI canvas metrikom stvarnog fonta,
+  // jer svg2pdf centrira text-anchor="middle" helvetica metrikom (tekst bježi u PDF-u)
   function textC(x, y, fill, size, content, weight, family) {
-    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="' + fill +
-      '" font-size="' + size + '" font-family="' + (family || 'Quicksand, sans-serif') + '"' +
-      (weight ? ' font-weight="' + weight + '"' : '') +
-      ' text-anchor="middle" dy=".35em">' + content + '</text>';
+    const fam = family || 'Quicksand, sans-serif';
+    const txt = String(content);
+    const wpx = measureTextPx(txt, size, fam, weight);
+    const attrs = ' fill="' + fill + '" font-size="' + size + '" font-family="' + fam + '"' +
+      (weight ? ' font-weight="' + weight + '"' : '');
+    if (wpx > 0) {
+      return '<text x="' + (x - wpx / 2).toFixed(1) + '" y="' + (y + size * 0.35).toFixed(1) + '"' + attrs + '>' + txt + '</text>';
+    }
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '"' + attrs + ' text-anchor="middle" dy=".35em">' + txt + '</text>';
   }
 
   let s = '';
@@ -107,12 +114,13 @@ function buildChartSVG(chart, pal, opts) {
     s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
   }
 
-  // stupnjevi cuspsi izvan kotača (item 4)
+  // znak + stupanj cuspsi izvan kotača (stupanj ispod znaka, ekranski — bez preklapanja)
   if (showCuspDegrees) {
     for (let i = 1; i <= 12; i++) {
-      if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoj stupanj
-      const [cx, cy] = pt(chart.cusps[i], R_CUSP_DEG);
-      s += textC(cx, cy, pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
+      if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoju oznaku
+      const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
+      s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 16, elementColor(chart.cusps[i], pal), 1.7);
+      s += textC(cx, cy + 15, pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
     }
   }
 
@@ -127,11 +135,10 @@ function buildChartSVG(chart, pal, opts) {
     s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
     // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
     s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
-    // oznaka i stupanj izvan kotača
+    // oznaka izvan kotača, stupanj ISPOD nje (ekranski offset — nikad se ne preklapaju)
     const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
     s += textC(tx, ty, pal.axisText, 19, ax.label, '600');
-    const [dx, dy] = pt(ax.lon, R_AXIS_DEG);
-    s += textC(dx, dy, pal.degText, 13.5, fmtDegMin(ax.lon));
+    s += textC(tx, ty + 18, pal.degText, 13.5, fmtDegMin(ax.lon));
   }
 
   // prsten brojeva kuća
@@ -160,9 +167,9 @@ function buildChartSVG(chart, pal, opts) {
     }
   }
 
-  // planeti — razmicanje preklapanja (item 1: što manji razmak da spojnice budu kratke)
+  // planeti — razmicanje preklapanja (minimalno, da glif ostane u svojoj kući)
   const sorted = chart.planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-  const MIN_SEP = 7.2;
+  const MIN_SEP = 6.0;
   const adj = sorted.map(p => norm360(p.lon - asc));
   for (let it = 0; it < 120; it++) {
     let moved = false;
@@ -183,20 +190,15 @@ function buildChartSVG(chart, pal, opts) {
   for (let i = 0; i < sorted.length; i++) {
     const p = sorted[i];
     const dispLon = norm360(asc + adj[i]);
-    // crtica na stvarnoj poziciji (kratka — item 1)
-    s += line(p.lon, R_PTICK, R_PTICK - 8, pal.planet, 1.6);
+    // duža crtica na stvarnoj poziciji — ulazi u prsten planeta (umjesto spojnice)
+    s += line(p.lon, R_PTICK, R_GLYPH + 18, pal.tick, 1.2);
     // crtica s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
     s += line(p.lon, R_HIN, R_HIN - 9, pal.planet, 1.4);
-    // spojnica od stvarne pozicije do glifa (kratka spojnica)
-    const [cx1, cy1] = pt(p.lon, R_PTICK - 8), [cx2, cy2] = pt(dispLon, R_GLYPH + 18);
-    s += '<line x1="' + cx1.toFixed(1) + '" y1="' + cy1.toFixed(1) + '" x2="' + cx2.toFixed(1) + '" y2="' + cy2.toFixed(1) +
-      '" stroke="' + pal.tick + '" stroke-width="0.7"/>';
     const [gx, gy] = pt(dispLon, R_GLYPH);
     s += glyphSvgEl(p.id, gx, gy, 30, pal.planet, 1.8);
     // retrogradna oznaka — malo R uz glif planeta
     if (p.retro) {
-      s += '<text x="' + (gx + 14).toFixed(1) + '" y="' + (gy - 9).toFixed(1) + '" fill="' + pal.tense +
-        '" font-size="12" font-family="Quicksand, sans-serif" text-anchor="middle" dy=".35em">R</text>';
+      s += textC(gx + 14, gy - 9, pal.tense, 12, 'R');
     }
     // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
     const dm = degMinParts(p.lon);

@@ -229,19 +229,24 @@ function buildAstroSeekSVG(chart) {
   for (const a of chart.aspects) { byPair[a.a + '|' + a.b] = a; byPair[a.b + '|' + a.a] = a; }
 
   // Layout (sve u mm, viewBox točno po sadržaju)
-  const cs   = 6.5;            // veličina ćelije
+  const cs   = 6.0;            // veličina ćelije
   const labW = 34;             // širina label dijela (glif + ime + znak + stupanj + kuća)
   const domW = 56;             // širina dominantnog bloka
   const gx0  = labW;           // x grida
-  const gy0  = 5;              // y grida (nakon header retka)
+  const gy0  = 6;              // y grida (nakon naslova)
   const n    = pts.length;
   const gridH = n * cs;
   const w    = labW + n * cs + 4 + domW; // ukupna širina sadržaja
 
+  // širina teksta u mm (canvas metrika; px širina je proporcionalna veličini fonta)
+  function tw(text, sizeMm, weight) {
+    return textWidthPx(String(text), 'Quicksand, sans-serif', weight, 100) / 100 * sizeMm;
+  }
+
   let s = '';
 
-  // Naslov sekcije
-  s += '<text x="0" y="0" fill="' + INK + '" font-size="3.6" font-family="PlayfairDisplay, serif" font-weight="400">Aspektna tablica</text>';
+  // Naslov sekcije (baseline na 3.2 da ne bude odrezan na vrhu viewBoxa)
+  s += '<text x="0" y="3.2" fill="' + INK + '" font-size="3.6" font-family="PlayfairDisplay, serif" font-weight="400">Aspektna tablica</text>';
 
   for (let i = 0; i < n; i++) {
     const p  = pts[i];
@@ -258,8 +263,8 @@ function buildAstroSeekSVG(chart) {
     const dm = degMinParts(p.lon);
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
     s += '<text x="19.6" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + dmTxt + '</text>';
-    // kuća
-    s += '<text x="' + (labW - 1.2).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="2.3" font-family="Quicksand, sans-serif" text-anchor="end" dy=".35em">' + p.house + '</text>';
+    // kuća (desno poravnato — x računamo sami, svg2pdf ne centrira pouzdano)
+    s += '<text x="' + (labW - 1.2 - tw(p.house, 2.3)).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + p.house + '</text>';
 
     // — Cells: 0..i (diagonal at i)
     for (let j = 0; j <= i; j++) {
@@ -267,14 +272,21 @@ function buildAstroSeekSVG(chart) {
       const cy = ry;
       s += '<rect x="' + cx.toFixed(2) + '" y="' + cy.toFixed(2) + '" width="' + cs + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.15"/>';
       if (j === i) {
-        // diagonala — glif planeta
-        s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 3.4, INK, 0.5);
+        // diagonala — glif planeta, ili tekst za ASC/MC (nemaju glif)
+        if (GLYPHS[p.id]) {
+          s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 3.4, INK, 0.5);
+        } else {
+          const lbl = p.id === 'asc' ? 'AC' : 'MC';
+          s += '<text x="' + (cx + cs / 2 - tw(lbl, 2.1, '600') / 2).toFixed(2) + '" y="' + (cy + cs / 2).toFixed(2) +
+            '" fill="' + INK + '" font-size="2.1" font-weight="600" font-family="Quicksand, sans-serif" dy=".35em">' + lbl + '</text>';
+        }
       } else {
         const ap = byPair[pts[i].id + '|' + pts[j].id];
         if (ap) {
           s += inlineGlyph(ap.aspect, cx + cs / 2 - 0.6, cy + cs / 2 - 0.4, 3, aspectColor(ap.aspect, PAL), 0.5);
-          s += '<text x="' + (cx + cs - 0.3).toFixed(2) + '" y="' + (cy + cs - 0.5).toFixed(2) +
-            '" fill="' + MUT + '" font-size="1.6" font-family="Quicksand, sans-serif" text-anchor="end">' + Math.round(ap.orb) + '</text>';
+          const orbTxt = Math.round(ap.orb);
+          s += '<text x="' + (cx + cs - 0.3 - tw(orbTxt, 1.6)).toFixed(2) + '" y="' + (cy + cs - 0.5).toFixed(2) +
+            '" fill="' + MUT + '" font-size="1.6" font-family="Quicksand, sans-serif">' + orbTxt + '</text>';
         }
       }
     }
@@ -295,7 +307,7 @@ function buildAstroSeekSVG(chart) {
     bucket[e][q].push(p);
   }
 
-  s += '<text x="' + domX + '" y="0" fill="' + INK + '" font-size="3.6" font-family="PlayfairDisplay, serif">Dominante</text>';
+  s += '<text x="' + domX + '" y="3.2" fill="' + INK + '" font-size="3.6" font-family="PlayfairDisplay, serif">Dominante</text>';
 
   const qHeaderY = gy0 + 1.5;
   const elOrder  = [0, 2, 1, 3];  // FIR, AIR, EAR, WAT (kao u Astro-Seek attachmentu)
@@ -391,24 +403,27 @@ async function downloadWorking() {
       finally { el.remove(); }
     }
 
-    const TOTAL_PAGES = 3;
+    const TOTAL_PAGES = 2;
 
-    // ===== STRANICA 1: zaglavlje + kotač + legenda =====
+    // ===== STRANICA 1: kotač + aspektna tablica + dominante =====
     pageHeader(chart.input.name || 'Natalna karta', birthDataLine(chart));
 
-    const chartSize = 175;
+    const chartSize = 148;
+    const chartY = 27;
     await renderSvgOnDoc(
       buildChartSVG(chart, PALETTES.ink, {
         showAspects: true,
-        aspectsEnabled: { conjunction: false, sextile: true, square: true, trine: true, opposition: true },
+        aspectsEnabled: { conjunction: true, sextile: true, square: true, trine: true, opposition: true },
         showCuspDegrees: true,
         linetype: true
       }),
-      (W - chartSize) / 2, 30, chartSize, chartSize
+      (W - chartSize) / 2, chartY, chartSize, chartSize
     );
 
-    // legenda aspekata s linetype prikazom
-    let ly = 30 + chartSize + 6;
+    // legenda aspekata — dasharray i debljina skalirani ISTO kao linije na karti,
+    // pa se uzorci u legendi vizualno poklapaju s nacrtanim aspektima
+    const chartScale = chartSize / 1120; // SVG user-unit kotača → mm
+    let ly = chartY + chartSize + 5;
     doc.setFontSize(8.5);
     const leg = [
       ['Konjunkcija 0°',  aspectColor('conjunction', PALETTES.ink), aspectDashPattern('conjunction')],
@@ -421,35 +436,33 @@ async function downloadWorking() {
       const m = h.replace('#', '');
       return [parseInt(m.substr(0, 2), 16), parseInt(m.substr(2, 2), 16), parseInt(m.substr(4, 2), 16)];
     }
-    let lx = PAGE_M + 6;
+    let lx = PAGE_M + 2;
     for (const [t, color, dash] of leg) {
       const rgb = hexToRgb(color);
-      doc.setDrawColor(rgb[0], rgb[1], rgb[2]); doc.setLineWidth(0.7);
+      doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+      doc.setLineWidth(Math.max(0.25, 1.5 * chartScale));
       if (dash) {
-        const parts = dash.split(',').map(Number);
-        doc.setLineDashPattern(parts, 0);
+        doc.setLineDashPattern(dash.split(',').map(v => Number(v) * chartScale), 0);
       } else {
         doc.setLineDashPattern([], 0);
       }
-      doc.line(lx, ly - 1.2, lx + 9, ly - 1.2);
+      doc.line(lx, ly - 1.2, lx + 10, ly - 1.2);
       doc.setLineDashPattern([], 0);
       doc.setTextColor(74, 63, 110);
-      doc.text(t, lx + 10.5, ly);
-      lx += doc.getTextWidth(t) + 16;
+      doc.text(t, lx + 11.5, ly);
+      lx += doc.getTextWidth(t) + 17;
     }
+
+    // aspektna tablica + dominante ispod legende — skalirano da stane do podnožja
+    const a2 = buildAstroSeekSVG(chart);
+    const gridTop = ly + 4;
+    const availH = H - 12 - gridTop;
+    const gsc = Math.min(CONTENT_W / a2.viewW, availH / a2.viewH);
+    await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
+
     pageFooter(1, TOTAL_PAGES);
 
-    // ===== STRANICA 2: Astro-Seek aspektna tablica + dominante =====
-    doc.addPage();
-    pageHeader('Aspektna tablica i dominante', chart.input.name || '');
-    const a2 = buildAstroSeekSVG(chart);
-    // skaliraj proporcionalno tako da širina ispuni stranicu
-    const a2H = a2.viewH * (CONTENT_W / a2.viewW);
-    await renderSvgOnDoc(a2.svg, PAGE_M, 32, CONTENT_W, a2H);
-
-    pageFooter(2, TOTAL_PAGES);
-
-    // ===== STRANICA 3: Pozicije + Kuće + Aspekti (planet-aspekt-planet) =====
+    // ===== STRANICA 2: Pozicije + Kuće + Aspekti (planet-aspekt-planet) =====
     doc.addPage();
     pageHeader('Pozicije, kuće i aspekti', chart.input.name || '');
 
@@ -479,10 +492,10 @@ async function downloadWorking() {
       await drawGlyphPdf(doc, signKey(p.lon), x0 + 38, yy, 3.6, elementColor(p.lon, PALETTES.ink));
       doc.text(signName(p.lon), x0 + 43, yy);
       doc.setTextColor(70, 60, 110);
-      doc.text(fmtDegMin(p.lon) + (p.retro ? '  R' : ''), x0 + 68, yy);
+      doc.text(fmtDegMin(p.lon) + (p.retro ? '  R' : ''), x0 + 62, yy);
       if (p.house) {
         doc.setTextColor(110, 100, 150);
-        doc.text(p.house + '. kuća', x0 + 84, yy);
+        doc.text(p.house + '. kuća', x0 + posColW - 7, yy, { align: 'right' });
       }
     }
     y += posPerCol * rowDy + 4;
@@ -543,7 +556,7 @@ async function downloadWorking() {
       doc.text(a.orb.toFixed(1) + '°', x0 + aColW - 5, yy, { align: 'right' });
     }
 
-    pageFooter(3, TOTAL_PAGES);
+    pageFooter(2, TOTAL_PAGES);
 
     doc.save(pdfFileName('radna-A4'));
   });

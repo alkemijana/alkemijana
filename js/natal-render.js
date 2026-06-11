@@ -23,13 +23,33 @@ function birthDataLine(chart) {
 
 /* ============ SVG KOTAČ ============ */
 
+/* Dasharray uzorci za crno-bijeli ispis — radna verzija (linetype mode) */
+function aspectDashPattern(aspId) {
+  switch (aspId) {
+    case 'conjunction': return '1.5,2.8';
+    case 'sextile':     return '4,3';
+    case 'square':      return null;        // solid
+    case 'trine':       return '9,4';
+    case 'opposition':  return '8,3,1.5,3';
+    default:            return null;
+  }
+}
+
 function buildChartSVG(chart, pal, opts) {
   opts = opts || {};
+  const aspectsEnabled = opts.aspectsEnabled || { conjunction: false, sextile: true, square: true, trine: true, opposition: true };
+  const showCuspDegrees = opts.showCuspDegrees !== false;
+  const linetype = !!opts.linetype;
+
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386, R_HOUT = 256, R_HIN = 236;
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
   const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
   const R_PTICK = R_ZOD, R_SIGN = 427;
+  // osi izvan kotača (item 2)
+  const R_AXIS_TICK = R_OUT + 13, R_AXIS_LBL = R_OUT + 32, R_AXIS_DEG = R_OUT + 53;
+  // stupnjevi cuspsi izvan kotača (item 4)
+  const R_CUSP_DEG = R_OUT + 17;
   const asc = chart.asc;
 
   // kut na ekranu: ASC lijevo, longitude rastu suprotno od kazaljke
@@ -53,6 +73,13 @@ function buildChartSVG(chart, pal, opts) {
       ' L' + x3.toFixed(1) + ',' + y3.toFixed(1) +
       ' A' + rIn + ',' + rIn + ' 0 0,1 ' + x4.toFixed(1) + ',' + y4.toFixed(1) + ' Z" fill="' + fill + '" stroke="none"/>';
   }
+  // centrirani tekst — koristi dy=".35em" umjesto dominant-baseline (pouzdano u svg2pdf)
+  function textC(x, y, fill, size, content, weight, family) {
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" fill="' + fill +
+      '" font-size="' + size + '" font-family="' + (family || 'Quicksand, sans-serif') + '"' +
+      (weight ? ' font-weight="' + weight + '"' : '') +
+      ' text-anchor="middle" dy=".35em">' + content + '</text>';
+  }
 
   let s = '';
 
@@ -74,34 +101,37 @@ function buildChartSVG(chart, pal, opts) {
   }
   s += circle(R_TICK, pal.ringSoft, 0.8);
 
-  // kuće — vrhovi
+  // kuće — vrhovi (osim osi koje crtamo ispod s posebnim izgledom)
   for (let i = 1; i <= 12; i++) {
     if (i === 1 || i === 4 || i === 7 || i === 10) continue;
     s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
   }
+
+  // stupnjevi cuspsi izvan kotača (item 4)
+  if (showCuspDegrees) {
+    for (let i = 1; i <= 12; i++) {
+      if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoj stupanj
+      const [cx, cy] = pt(chart.cusps[i], R_CUSP_DEG);
+      s += textC(cx, cy, pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
+    }
+  }
+
   // osi (ASC/DSC/MC/IC) — prekinute u unutarnjoj kružnici (ne smetaju aspektima),
-  // oznake i stupnjevi unutar kotača; strelice na ASC i MC kraju
+  // oznake i stupnjevi IZVAN kotača (item 2)
   const axes = [
-    { lon: chart.asc, label: 'ASC', arrow: true }, { lon: norm360(chart.asc + 180), label: 'DSC' },
-    { lon: chart.mc, label: 'MC', arrow: true },   { lon: norm360(chart.mc + 180), label: 'IC' }
+    { lon: chart.asc, label: 'ASC' }, { lon: norm360(chart.asc + 180), label: 'DSC' },
+    { lon: chart.mc, label: 'MC' },   { lon: norm360(chart.mc + 180), label: 'IC' }
   ];
   for (const ax of axes) {
+    // linija osi unutar kotača (prekinuta u sredini ostaje, aspekti se vide)
     s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
-    if (ax.arrow) {
-      const [hx, hy] = pt(ax.lon, R_ZOD);
-      const aRad = (180 + (ax.lon - asc)) * D2R;
-      const ux = Math.cos(aRad), uy = -Math.sin(aRad);
-      const px = -uy, py = ux;
-      s += '<path d="M' + (hx + ux * 10).toFixed(1) + ',' + (hy + uy * 10).toFixed(1) +
-        ' L' + (hx + px * 5).toFixed(1) + ',' + (hy + py * 5).toFixed(1) +
-        ' L' + (hx - px * 5).toFixed(1) + ',' + (hy - py * 5).toFixed(1) + ' Z" fill="' + pal.axis + '"/>';
-    }
-    const [tx, ty] = pt(ax.lon + 7, 208);
-    s += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" fill="' + pal.axisText +
-      '" font-size="19" font-family="Quicksand, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="middle">' + ax.label + '</text>';
-    // stupanj osi — uvijek ispod oznake (u ekranskim koordinatama)
-    s += '<text x="' + tx.toFixed(1) + '" y="' + (ty + 17).toFixed(1) + '" fill="' + pal.degText +
-      '" font-size="13.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' + fmtDegMin(ax.lon) + '</text>';
+    // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
+    s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
+    // oznaka i stupanj izvan kotača
+    const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
+    s += textC(tx, ty, pal.axisText, 19, ax.label, '600');
+    const [dx, dy] = pt(ax.lon, R_AXIS_DEG);
+    s += textC(dx, dy, pal.degText, 13.5, fmtDegMin(ax.lon));
   }
 
   // prsten brojeva kuća
@@ -110,8 +140,7 @@ function buildChartSVG(chart, pal, opts) {
     const a = chart.cusps[i], b = chart.cusps[i === 12 ? 1 : i + 1];
     const mid = norm360(a + norm360(b - a) / 2);
     const [nx, ny] = pt(mid, (R_HOUT + R_HIN) / 2);
-    s += '<text x="' + nx.toFixed(1) + '" y="' + ny.toFixed(1) + '" fill="' + pal.houseNum +
-      '" font-size="17" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' + i + '</text>';
+    s += textC(nx, ny, pal.houseNum, 17, i);
   }
 
   // aspektne linije
@@ -120,17 +149,20 @@ function buildChartSVG(chart, pal, opts) {
     for (const p of chart.planets) lonOf[p.id] = p.lon;
     lonOf.asc = chart.asc; lonOf.mc = chart.mc;
     for (const a of chart.aspects) {
-      if (a.aspect === 'conjunction') continue;
+      if (!aspectsEnabled[a.aspect]) continue;
+      // konjunkcije: kratka linija između stvarnih pozicija (gotovo iste) — preskoči ako orb=0 vizualno nema smisla
       const [x1, y1] = pt(lonOf[a.a], R_HIN - 9), [x2, y2] = pt(lonOf[a.b], R_HIN - 9);
-      const op = Math.max(0.25, 1 - a.orb / 9).toFixed(2);
+      const op = Math.max(0.3, 1 - a.orb / 9).toFixed(2);
+      const dash = linetype ? aspectDashPattern(a.aspect) : null;
       s += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
-        '" stroke="' + aspectColor(a.aspect, pal) + '" stroke-width="1.5" opacity="' + op + '"/>';
+        '" stroke="' + aspectColor(a.aspect, pal) + '" stroke-width="1.5" opacity="' + op + '"' +
+        (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
     }
   }
 
-  // planeti — razmicanje preklapanja
+  // planeti — razmicanje preklapanja (item 1: što manji razmak da spojnice budu kratke)
   const sorted = chart.planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-  const MIN_SEP = 10.5;
+  const MIN_SEP = 7.2;
   const adj = sorted.map(p => norm360(p.lon - asc));
   for (let it = 0; it < 120; it++) {
     let moved = false;
@@ -151,35 +183,34 @@ function buildChartSVG(chart, pal, opts) {
   for (let i = 0; i < sorted.length; i++) {
     const p = sorted[i];
     const dispLon = norm360(asc + adj[i]);
-    // crtica na stvarnoj poziciji + spojnica do prikazane
-    s += line(p.lon, R_PTICK, R_PTICK - 12, pal.planet, 1.6);
-    // crtica i s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
+    // crtica na stvarnoj poziciji (kratka — item 1)
+    s += line(p.lon, R_PTICK, R_PTICK - 8, pal.planet, 1.6);
+    // crtica s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
     s += line(p.lon, R_HIN, R_HIN - 9, pal.planet, 1.4);
-    const [cx1, cy1] = pt(p.lon, R_PTICK - 12), [cx2, cy2] = pt(dispLon, R_GLYPH + 20);
+    // spojnica od stvarne pozicije do glifa (kratka spojnica)
+    const [cx1, cy1] = pt(p.lon, R_PTICK - 8), [cx2, cy2] = pt(dispLon, R_GLYPH + 18);
     s += '<line x1="' + cx1.toFixed(1) + '" y1="' + cy1.toFixed(1) + '" x2="' + cx2.toFixed(1) + '" y2="' + cy2.toFixed(1) +
       '" stroke="' + pal.tick + '" stroke-width="0.7"/>';
     const [gx, gy] = pt(dispLon, R_GLYPH);
-    s += glyphSvgEl(p.id, gx, gy, 34, pal.planet, 1.8);
+    s += glyphSvgEl(p.id, gx, gy, 30, pal.planet, 1.8);
     // retrogradna oznaka — malo R uz glif planeta
     if (p.retro) {
-      s += '<text x="' + (gx + 15).toFixed(1) + '" y="' + (gy - 10).toFixed(1) + '" fill="' + pal.tense +
-        '" font-size="12" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">R</text>';
+      s += '<text x="' + (gx + 14).toFixed(1) + '" y="' + (gy - 9).toFixed(1) + '" fill="' + pal.tense +
+        '" font-size="12" font-family="Quicksand, sans-serif" text-anchor="middle" dy=".35em">R</text>';
     }
     // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
     const dm = degMinParts(p.lon);
     const [dx, dy] = pt(dispLon, R_DEG);
-    s += '<text x="' + dx.toFixed(1) + '" y="' + dy.toFixed(1) + '" fill="' + pal.degText +
-      '" font-size="15.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' + dm.d + '°</text>';
+    s += textC(dx, dy, pal.degText, 15.5, dm.d + '°');
     const [sx, sy] = pt(dispLon, R_SGN);
     s += glyphSvgEl(signKey(p.lon), sx, sy, 21, elementColor(p.lon, pal), 2.0);
     const [mx, my] = pt(dispLon, R_MIN);
-    s += '<text x="' + mx.toFixed(1) + '" y="' + my.toFixed(1) + '" fill="' + pal.degText +
-      '" font-size="13.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' +
-      pad2(dm.m) + '′</text>';
+    s += textC(mx, my, pal.degText, 13.5, pad2(dm.m) + '′');
   }
 
-  return '<svg viewBox="-30 -30 1060 1060" xmlns="http://www.w3.org/2000/svg" font-family="Quicksand, sans-serif">' +
-    (pal.bg && pal.bg !== 'none' ? '<rect x="-30" y="-30" width="1060" height="1060" fill="' + pal.bg + '"/>' : '') +
+  // viewBox prošireni za labele osi izvan kotača
+  return '<svg viewBox="-60 -60 1120 1120" xmlns="http://www.w3.org/2000/svg" font-family="Quicksand, sans-serif">' +
+    (pal.bg && pal.bg !== 'none' ? '<rect x="-60" y="-60" width="1120" height="1120" fill="' + pal.bg + '"/>' : '') +
     s + '</svg>';
 }
 
@@ -193,8 +224,13 @@ function renderNatalResult(chart) {
   document.getElementById('natal-chart-title').textContent = title;
   document.getElementById('natal-chart-sub').textContent = birthDataLine(chart);
 
+  const chartOpts = (typeof NATAL_CHART_OPTS !== 'undefined') ? {
+    showAspects: true,
+    aspectsEnabled: NATAL_CHART_OPTS.aspectsEnabled,
+    showCuspDegrees: NATAL_CHART_OPTS.showCuspDegrees
+  } : { showAspects: true };
   document.getElementById('natal-wheel').innerHTML =
-    buildChartSVG(chart, currentScreenPalette(), { showAspects: true });
+    buildChartSVG(chart, currentScreenPalette(), chartOpts);
 
   // Tablica planeta
   const pal = currentScreenPalette();

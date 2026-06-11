@@ -94,6 +94,56 @@ function initNodeToggle() {
   });
 }
 
+/* ============ KONTROLE KOTAČA (aspekti, stupnjevi kuća) ============ */
+
+const NATAL_CHART_OPTS = {
+  aspectsEnabled: { conjunction: false, sextile: true, square: true, trine: true, opposition: true },
+  showCuspDegrees: true
+};
+
+function initChartControls() {
+  // vrati spremljene postavke
+  try {
+    const saved = JSON.parse(localStorage.getItem('aj_natal_chart_opts') || 'null');
+    if (saved) {
+      if (saved.aspectsEnabled) Object.assign(NATAL_CHART_OPTS.aspectsEnabled, saved.aspectsEnabled);
+      if (typeof saved.showCuspDegrees === 'boolean') NATAL_CHART_OPTS.showCuspDegrees = saved.showCuspDegrees;
+    }
+  } catch (e) {}
+  // sinkroniziraj checkboxove s NATAL_CHART_OPTS
+  document.querySelectorAll('#natal-chart-controls input[type="checkbox"][data-asp]').forEach(cb => {
+    cb.checked = !!NATAL_CHART_OPTS.aspectsEnabled[cb.dataset.asp];
+    cb.addEventListener('change', () => {
+      NATAL_CHART_OPTS.aspectsEnabled[cb.dataset.asp] = cb.checked;
+      persistChartOpts();
+      redrawChartWheel();
+    });
+  });
+  const cdEl = document.getElementById('natal-cc-cuspdeg');
+  if (cdEl) {
+    cdEl.checked = NATAL_CHART_OPTS.showCuspDegrees;
+    cdEl.addEventListener('change', () => {
+      NATAL_CHART_OPTS.showCuspDegrees = cdEl.checked;
+      persistChartOpts();
+      redrawChartWheel();
+    });
+  }
+}
+
+function persistChartOpts() {
+  try { localStorage.setItem('aj_natal_chart_opts', JSON.stringify(NATAL_CHART_OPTS)); } catch (e) {}
+}
+
+function redrawChartWheel() {
+  if (!currentChart) return;
+  const wheel = document.getElementById('natal-wheel');
+  if (wheel) wheel.innerHTML = buildChartSVG(currentChart, currentScreenPalette(), {
+    showAspects: true,
+    aspectsEnabled: NATAL_CHART_OPTS.aspectsEnabled,
+    showCuspDegrees: NATAL_CHART_OPTS.showCuspDegrees
+  });
+}
+
 function initNatalTabs() {
   const tabs = document.getElementById('natal-tabs');
   if (!tabs) return;
@@ -165,6 +215,7 @@ window.addEventListener('load', () => {
   initPlaceAutocomplete();
   initNodeToggle();
   initNatalTabs();
+  initChartControls();
   document.getElementById('natal-poster-btn').addEventListener('click', downloadPoster);
   document.getElementById('natal-working-btn').addEventListener('click', downloadWorking);
 

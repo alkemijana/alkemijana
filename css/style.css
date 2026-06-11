@@ -1696,6 +1696,61 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-wheel { max-width: 740px; margin: 0 auto; }
 .nt-wheel svg { width: 100%; height: auto; display: block; }
 
+/* — Natal CTA kartica na početnoj — */
+#home-natal-section { margin-top: 2.2rem; margin-bottom: 1rem; }
+.home-natal-card {
+  max-width: 880px; margin: 0 auto;
+  background: linear-gradient(135deg, rgba(106,78,160,0.10), rgba(168,144,208,0.04));
+  border: 1px solid rgba(168,144,208,0.32); border-radius: 18px;
+  padding: 1.8rem 2.2rem;
+  display: flex; align-items: center; gap: 1.6rem;
+}
+.home-natal-glyph { flex-shrink: 0; color: var(--lavender); opacity: 0.85; line-height: 0; }
+.home-natal-text { flex: 1; min-width: 0; }
+.home-natal-text h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--lavender);
+  margin: 0 0 0.4rem;
+}
+.home-natal-text p {
+  font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text);
+  margin: 0 0 1rem; line-height: 1.55;
+}
+@media (max-width: 640px) {
+  .home-natal-card { flex-direction: column; text-align: center; padding: 1.6rem 1.4rem; }
+  .home-natal-glyph svg { width: 54px; height: 54px; }
+}
+
+/* — Kontrole ispod kotača (aspekti, stupnjevi kuća) — */
+.nt-chart-controls {
+  max-width: 860px; margin: 1.6rem auto 0;
+  display: flex; flex-direction: column; gap: 0.7rem; align-items: center;
+}
+.nt-cc-group { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 0.8rem; }
+.nt-cc-lbl {
+  font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted); margin-right: 0.3rem;
+}
+.nt-cc-chip {
+  display: inline-flex; align-items: center; gap: 0.42rem; cursor: pointer;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text);
+  user-select: none; transition: border-color 0.2s, background 0.2s;
+}
+.nt-cc-chip:hover { border-color: var(--lavender); }
+.nt-cc-chip input[type="checkbox"] {
+  width: 14px; height: 14px; margin: 0; accent-color: var(--lavender); cursor: pointer;
+}
+.nt-cc-chip .nt-cc-line {
+  display: inline-block; width: 22px; height: 0; border-top: 2px solid currentColor;
+}
+.nt-cc-conj { color: #9b95b5; }
+.nt-cc-sext, .nt-cc-tri { color: #7fae90; }
+.nt-cc-sq, .nt-cc-opp { color: #c08090; }
+:root[data-theme="light"] .nt-cc-conj { color: #7a7494; }
+:root[data-theme="light"] .nt-cc-sext, :root[data-theme="light"] .nt-cc-tri { color: #4f8a64; }
+:root[data-theme="light"] .nt-cc-sq, :root[data-theme="light"] .nt-cc-opp { color: #b06478; }
+
 .nt-downloads {
   display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
   max-width: 860px; margin: 2.6rem auto;

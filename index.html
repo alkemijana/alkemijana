@@ -388,6 +388,24 @@
         <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
       </div>
     </div>
+    <div class="section container" id="home-natal-section">
+      <div class="home-natal-card">
+        <div class="home-natal-glyph">
+          <svg viewBox="0 0 48 48" width="64" height="64" aria-hidden="true">
+            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+            <circle cx="24" cy="24" r="14" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.45"/>
+            <path d="M24 4 L24 44 M4 24 L44 24 M9.86 9.86 L38.14 38.14 M38.14 9.86 L9.86 38.14" stroke="currentColor" stroke-width="0.6" opacity="0.35"/>
+            <circle cx="24" cy="24" r="2.6" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="home-natal-text">
+          <h3 id="t-homeNatalTitle"></h3>
+          <p id="t-homeNatalText"></p>
+          <a class="btn btn-primary" onclick="showPage('natal')" id="t-homeNatalBtn"></a>
+        </div>
+      </div>
+    </div>
+
     <div class="section container" id="home-services-section">
       <h2 class="section-title" id="t-servicesTitle"></h2>
       <p class="section-subtitle" id="t-servicesSub"></p>
@@ -633,6 +651,20 @@
           <div id="natal-chart-sub"></div>
         </div>
         <div id="natal-wheel" class="nt-wheel"></div>
+
+        <div class="nt-chart-controls" id="natal-chart-controls">
+          <div class="nt-cc-group nt-cc-aspects">
+            <span class="nt-cc-lbl">Aspekti:</span>
+            <label class="nt-cc-chip" data-asp="conjunction"><input type="checkbox" data-asp="conjunction"><span class="nt-cc-line nt-cc-conj"></span><span>Konjunkcija</span></label>
+            <label class="nt-cc-chip" data-asp="sextile"><input type="checkbox" data-asp="sextile" checked><span class="nt-cc-line nt-cc-sext"></span><span>Sekstil</span></label>
+            <label class="nt-cc-chip" data-asp="square"><input type="checkbox" data-asp="square" checked><span class="nt-cc-line nt-cc-sq"></span><span>Kvadrat</span></label>
+            <label class="nt-cc-chip" data-asp="trine"><input type="checkbox" data-asp="trine" checked><span class="nt-cc-line nt-cc-tri"></span><span>Trigon</span></label>
+            <label class="nt-cc-chip" data-asp="opposition"><input type="checkbox" data-asp="opposition" checked><span class="nt-cc-line nt-cc-opp"></span><span>Opozicija</span></label>
+          </div>
+          <div class="nt-cc-group">
+            <label class="nt-cc-chip"><input type="checkbox" id="natal-cc-cuspdeg" checked><span>Stupnjevi granica kuća</span></label>
+          </div>
+        </div>
 
         <div class="nt-downloads">
           <div class="nt-dl-card">

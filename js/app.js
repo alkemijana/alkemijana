@@ -995,6 +995,11 @@ function applyTexts() {
   set('t-blogPageSub',   t.blogPageSub);
   set('t-relatedTitle',  t.relatedTitle);
 
+  // Početna — CTA za natalnu kartu
+  set('t-homeNatalTitle', t.homeNatalTitle);
+  set('t-homeNatalText',  t.homeNatalText);
+  set('t-homeNatalBtn',   t.homeNatalBtn);
+
   // Natalna karta
   set('t-natalPageTitle',    t.natalPageTitle);
   set('t-natalPageSub',      t.natalPageSub);

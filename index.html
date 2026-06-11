@@ -588,14 +588,14 @@
   <!-- NATALNA KARTA -->
   <section class="page" id="natal">
     <div class="container">
-      <h2 class="section-title">Natalna karta</h2>
-      <p class="section-subtitle">Unesi podatke rođenja i otkrij svoju kartu neba — besplatno.</p>
+      <h2 class="section-title" id="t-natalPageTitle"></h2>
+      <p class="section-subtitle" id="t-natalPageSub"></p>
 
       <div class="form-section nt-form-wrap">
         <form id="natal-form">
-          <div class="form-row">
+          <div class="form-row nt-form-row">
             <div class="form-group">
-              <label>Ime (za naslov karte, nije obavezno)</label>
+              <label>Ime (nije obavezno)</label>
               <input type="text" id="natal-name" placeholder="npr. Ana Horvat" maxlength="60">
             </div>
             <div class="form-group nt-place-group">
@@ -604,7 +604,7 @@
               <div class="nt-dd" id="natal-place-dd"></div>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row nt-form-row">
             <div class="form-group">
               <label>Datum rođenja</label>
               <input type="date" id="natal-date" min="1900-01-01" max="2099-12-31">
@@ -615,8 +615,8 @@
             </div>
           </div>
           <div id="natal-error" class="nt-error" style="display:none"></div>
-          <button type="submit" class="btn btn-primary" style="width:100%" id="natal-submit">✦ Izračunaj natalnu kartu</button>
-          <p class="nt-note">Vremenska zona i povijesno ljetno/zimsko vrijeme određuju se automatski prema mjestu i datumu rođenja.</p>
+          <button type="submit" class="btn btn-primary" style="width:100%" id="natal-submit"></button>
+          <p class="nt-note" id="t-natalNote"></p>
         </form>
       </div>
 
@@ -629,8 +629,8 @@
 
         <div class="nt-downloads">
           <div class="nt-dl-card">
-            <h4>✦ Poster za ispis</h4>
-            <p>Ukrasna karta u visokoj rezoluciji — odnesi PDF u kopirnicu i isprintaj na kvalitetnom papiru.</p>
+            <h4 id="t-natalPosterTitle"></h4>
+            <p id="t-natalPosterText"></p>
             <div class="nt-dl-row">
               <select id="natal-poster-size">
                 <option value="A4">A4 (21 × 29,7 cm)</option>
@@ -639,14 +639,14 @@
                 <option value="A1">A1 (59,4 × 84,1 cm)</option>
                 <option value="A0">A0 (84,1 × 118,9 cm)</option>
               </select>
-              <button class="btn btn-primary" id="natal-poster-btn">⬇ Preuzmi poster PDF</button>
+              <button class="btn btn-primary" id="natal-poster-btn"></button>
             </div>
           </div>
           <div class="nt-dl-card">
-            <h4>☾ Radna verzija</h4>
-            <p>A4 dokument s kartom i svim tablicama — pregledan ispis za iščitavanje karte.</p>
+            <h4 id="t-natalWorkingTitle"></h4>
+            <p id="t-natalWorkingText"></p>
             <div class="nt-dl-row">
-              <button class="btn" id="natal-working-btn">⬇ Preuzmi radni PDF (A4)</button>
+              <button class="btn" id="natal-working-btn"></button>
             </div>
           </div>
         </div>

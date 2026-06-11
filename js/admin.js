@@ -1378,6 +1378,21 @@ const TEXT_GROUPS = [
     }
   },
   {
+    title: 'Natalna karta',
+    keys: {
+      natalPageTitle:    'Naslov stranice',
+      natalPageSub:      'Podnaslov stranice',
+      natalBtn:          'Gumb za izračun',
+      natalNote:         'Napomena ispod gumba',
+      natalPosterTitle:  'Poster kartica — naslov',
+      natalPosterText:   'Poster kartica — opis',
+      natalPosterBtn:    'Poster kartica — gumb',
+      natalWorkingTitle: 'Radna verzija — naslov',
+      natalWorkingText:  'Radna verzija — opis',
+      natalWorkingBtn:   'Radna verzija — gumb'
+    }
+  },
+  {
     title: 'Kontakt',
     keys: {
       contactTitle: 'Naslov',

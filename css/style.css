@@ -1750,3 +1750,11 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   .nt-downloads, .nt-tables { grid-template-columns: 1fr; }
   .nt-chart-head h3 { font-size: 2.6rem; }
 }
+
+/* Natalna forma — poravnanje i tamni native pickeri */
+.nt-form-row { align-items: end; }
+.nt-form-row .form-group { margin-bottom: 1.6rem; }
+#natal-form input[type="date"],
+#natal-form input[type="time"] { color-scheme: dark; }
+:root[data-theme="light"] #natal-form input[type="date"],
+:root[data-theme="light"] #natal-form input[type="time"] { color-scheme: light; }

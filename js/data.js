@@ -305,7 +305,17 @@ let TEXTS = {
   "valueFreedomText": "Ti si pisac svoje priče. Karte samo ukazuju na mogućnosti.",
   "blogPageTitle": "Blog & članci",
   "blogPageSub": "Mudrost koja se dijeli",
-  "relatedTitle": "Možda će ti se svidjeti"
+  "relatedTitle": "Možda će ti se svidjeti",
+  "natalPageTitle": "Natalna karta",
+  "natalPageSub": "Unesi podatke rođenja i otkrij svoju kartu neba.",
+  "natalBtn": "✦ Izračunaj natalnu kartu",
+  "natalNote": "Vremenska zona i povijesno ljetno/zimsko vrijeme određuju se automatski prema mjestu i datumu rođenja.",
+  "natalPosterTitle": "✦ Poster za ispis",
+  "natalPosterText": "Ukrasna karta u visokoj rezoluciji — odnesi PDF u kopirnicu i isprintaj na kvalitetnom papiru.",
+  "natalPosterBtn": "⬇ Preuzmi poster PDF",
+  "natalWorkingTitle": "☾ Radna verzija",
+  "natalWorkingText": "A4 dokument s kartom i svim tablicama — pregledan ispis za iščitavanje karte.",
+  "natalWorkingBtn": "⬇ Preuzmi radni PDF (A4)"
 };
 // ===ALKEMIJANA:TEXTS:END===
 

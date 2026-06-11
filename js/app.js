@@ -995,6 +995,19 @@ function applyTexts() {
   set('t-blogPageSub',   t.blogPageSub);
   set('t-relatedTitle',  t.relatedTitle);
 
+  // Natalna karta
+  set('t-natalPageTitle',    t.natalPageTitle);
+  set('t-natalPageSub',      t.natalPageSub);
+  set('t-natalNote',         t.natalNote);
+  set('t-natalPosterTitle',  t.natalPosterTitle);
+  set('t-natalPosterText',   t.natalPosterText);
+  set('t-natalWorkingTitle', t.natalWorkingTitle);
+  set('t-natalWorkingText',  t.natalWorkingText);
+  // gumbi imaju funkcionalne id-eve pa im tekst postavljamo direktno
+  set('natal-submit',      t.natalBtn);
+  set('natal-poster-btn',  t.natalPosterBtn);
+  set('natal-working-btn', t.natalWorkingBtn);
+
   // Footer
   set('t-footerTagline', t.footerTagline);
 

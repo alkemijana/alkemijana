@@ -80,8 +80,9 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   (ne ovise o fontovima — identični na ekranu i u PDF-u). Palete u `PALETTES`
   (dark/light/poster/ink) + boje elemenata (fire/earth/air/water za znakove);
   kotač se ponovo iscrta pri promjeni teme (MutationObserver). Astro-Seek stil:
-  planeti u prstenu kao stupanj · glif znaka · minute; osi ASC/DSC/MC/IC pune linije
-  kroz središte s oznakama unutar kotača.
+  planeti u prstenu kao stupanj · glif znaka · minute (R uz glif ako je retrogradno);
+  osi ASC/DSC/MC/IC prekinute u unutarnjoj kružnici, s oznakom i stupnjem unutar
+  kotača; crtice na unutarnjoj kružnici pokazuju gdje počinju aspektne linije.
 - **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
   zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla, karta + tablice pozicija/
   kuća/aspekata). TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.

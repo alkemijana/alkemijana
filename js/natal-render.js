@@ -79,14 +79,14 @@ function buildChartSVG(chart, pal, opts) {
     if (i === 1 || i === 4 || i === 7 || i === 10) continue;
     s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
   }
-  // osi (ASC/DSC/MC/IC) — pune linije kroz središte, oznake unutar kotača
-  // (kao Astro-Seek); strelice na ASC i MC kraju
+  // osi (ASC/DSC/MC/IC) — prekinute u unutarnjoj kružnici (ne smetaju aspektima),
+  // oznake i stupnjevi unutar kotača; strelice na ASC i MC kraju
   const axes = [
     { lon: chart.asc, label: 'ASC', arrow: true }, { lon: norm360(chart.asc + 180), label: 'DSC' },
     { lon: chart.mc, label: 'MC', arrow: true },   { lon: norm360(chart.mc + 180), label: 'IC' }
   ];
   for (const ax of axes) {
-    s += line(ax.lon, 0, R_ZOD, pal.axis, 2.2);
+    s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
     if (ax.arrow) {
       const [hx, hy] = pt(ax.lon, R_ZOD);
       const aRad = (180 + (ax.lon - asc)) * D2R;
@@ -96,9 +96,12 @@ function buildChartSVG(chart, pal, opts) {
         ' L' + (hx + px * 5).toFixed(1) + ',' + (hy + py * 5).toFixed(1) +
         ' L' + (hx - px * 5).toFixed(1) + ',' + (hy - py * 5).toFixed(1) + ' Z" fill="' + pal.axis + '"/>';
     }
-    const [tx, ty] = pt(ax.lon + 7, 212);
+    const [tx, ty] = pt(ax.lon + 7, 208);
     s += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" fill="' + pal.axisText +
       '" font-size="19" font-family="Quicksand, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="middle">' + ax.label + '</text>';
+    // stupanj osi — uvijek ispod oznake (u ekranskim koordinatama)
+    s += '<text x="' + tx.toFixed(1) + '" y="' + (ty + 17).toFixed(1) + '" fill="' + pal.degText +
+      '" font-size="13.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' + fmtDegMin(ax.lon) + '</text>';
   }
 
   // prsten brojeva kuća
@@ -118,7 +121,7 @@ function buildChartSVG(chart, pal, opts) {
     lonOf.asc = chart.asc; lonOf.mc = chart.mc;
     for (const a of chart.aspects) {
       if (a.aspect === 'conjunction') continue;
-      const [x1, y1] = pt(lonOf[a.a], R_HIN - 4), [x2, y2] = pt(lonOf[a.b], R_HIN - 4);
+      const [x1, y1] = pt(lonOf[a.a], R_HIN - 9), [x2, y2] = pt(lonOf[a.b], R_HIN - 9);
       const op = Math.max(0.25, 1 - a.orb / 9).toFixed(2);
       s += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
         '" stroke="' + aspectColor(a.aspect, pal) + '" stroke-width="1.5" opacity="' + op + '"/>';
@@ -150,11 +153,18 @@ function buildChartSVG(chart, pal, opts) {
     const dispLon = norm360(asc + adj[i]);
     // crtica na stvarnoj poziciji + spojnica do prikazane
     s += line(p.lon, R_PTICK, R_PTICK - 12, pal.planet, 1.6);
+    // crtica i s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
+    s += line(p.lon, R_HIN, R_HIN - 9, pal.planet, 1.4);
     const [cx1, cy1] = pt(p.lon, R_PTICK - 12), [cx2, cy2] = pt(dispLon, R_GLYPH + 20);
     s += '<line x1="' + cx1.toFixed(1) + '" y1="' + cy1.toFixed(1) + '" x2="' + cx2.toFixed(1) + '" y2="' + cy2.toFixed(1) +
       '" stroke="' + pal.tick + '" stroke-width="0.7"/>';
     const [gx, gy] = pt(dispLon, R_GLYPH);
     s += glyphSvgEl(p.id, gx, gy, 34, pal.planet, 1.8);
+    // retrogradna oznaka — malo R uz glif planeta
+    if (p.retro) {
+      s += '<text x="' + (gx + 15).toFixed(1) + '" y="' + (gy - 10).toFixed(1) + '" fill="' + pal.tense +
+        '" font-size="12" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">R</text>';
+    }
     // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
     const dm = degMinParts(p.lon);
     const [dx, dy] = pt(dispLon, R_DEG);
@@ -165,7 +175,7 @@ function buildChartSVG(chart, pal, opts) {
     const [mx, my] = pt(dispLon, R_MIN);
     s += '<text x="' + mx.toFixed(1) + '" y="' + my.toFixed(1) + '" fill="' + pal.degText +
       '" font-size="13.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' +
-      pad2(dm.m) + '′' + (p.retro ? ' <tspan font-size="11">R</tspan>' : '') + '</text>';
+      pad2(dm.m) + '′</text>';
   }
 
   return '<svg viewBox="-30 -30 1060 1060" xmlns="http://www.w3.org/2000/svg" font-family="Quicksand, sans-serif">' +

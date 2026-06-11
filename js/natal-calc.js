@@ -176,6 +176,9 @@ function computeChart(input) {
     } else if (def.id === 'node') {
       lon = trueLunarNode(time);
       retro = true; // čvor se pretežno kreće retrogradno — standardna oznaka
+    } else if (def.id === 'snode') {
+      lon = norm360(trueLunarNode(time) + 180);
+      retro = true;
     } else if (def.id === 'lilith') {
       lon = meanLilith(T);
     } else if (def.id === 'chiron') {
@@ -204,9 +207,9 @@ function computeChart(input) {
 
   for (const p of planets) p.house = houseOf(p.lon, cusps);
 
-  // Fortuna i Vertex su izvedene točke — ne ulaze u aspekte (kao na Astro-Seeku)
+  // Izvedene točke ne ulaze u aspekte (Južni čvor bi samo zrcalio aspekte Sjevernog)
   const aspectPoints = planets
-    .filter(p => p.id !== 'fortune' && p.id !== 'vertex')
+    .filter(p => p.id !== 'fortune' && p.id !== 'vertex' && p.id !== 'snode')
     .map(p => ({ id: p.id, lon: p.lon }))
     .concat([{ id: 'asc', lon: asc, isAngle: true }, { id: 'mc', lon: mc, isAngle: true }]);
   const aspects = computeAspects(aspectPoints);

@@ -1760,6 +1760,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   .nt-table-card { padding: 1.1rem 0.9rem; }
   .nt-table { font-size: 0.78rem; }
   .nt-table td, .nt-table th { padding: 0.34rem 0.25rem; }
+  .nt-table th { font-size: 0.66rem; letter-spacing: 0.04em; }
   .nt-kuca { display: none; }
 
   /* Aspekti — kao redovi koji se slobodno prelamaju umjesto fiksnih stupaca */
@@ -1770,6 +1771,9 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
     padding: 0.45rem 0;
   }
   .nt-table-aspects td { padding: 0; border-bottom: none; white-space: nowrap; }
+  /* poništi postotne širine stupaca iz desktop tablice — flex redovi se sami slažu */
+  .nt-table-aspects td:nth-child(1), .nt-table-aspects td:nth-child(2),
+  .nt-table-aspects td:nth-child(3), .nt-table-aspects td:nth-child(4) { width: auto; }
   .nt-table-aspects td:nth-child(4) { margin-left: auto; padding-left: 0.4rem; }
 }
 

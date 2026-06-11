@@ -26,8 +26,10 @@ function birthDataLine(chart) {
 function buildChartSVG(chart, pal, opts) {
   opts = opts || {};
   const C = 500;
-  const R_OUT = 458, R_ZOD = 396, R_TICK = 386, R_HOUT = 306, R_HIN = 286;
-  const R_GLYPH = 348, R_DEG = 318, R_PTICK = R_ZOD, R_SIGN = 427;
+  const R_OUT = 458, R_ZOD = 396, R_TICK = 386, R_HOUT = 256, R_HIN = 236;
+  // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
+  const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
+  const R_PTICK = R_ZOD, R_SIGN = 427;
   const asc = chart.asc;
 
   // kut na ekranu: ASC lijevo, longitude rastu suprotno od kazaljke
@@ -62,7 +64,7 @@ function buildChartSVG(chart, pal, opts) {
   for (let k = 0; k < 12; k++) {
     s += line(k * 30, R_ZOD, R_OUT, pal.ringSoft, 1);
     const [gx, gy] = pt(k * 30 + 15, R_SIGN);
-    s += glyphSvgEl(SIGN_KEYS[k], gx, gy, 34, pal.sign, 1.9);
+    s += glyphSvgEl(SIGN_KEYS[k], gx, gy, 34, elementColor(k * 30, pal), 1.9);
   }
 
   // stupanjske crtice
@@ -77,27 +79,26 @@ function buildChartSVG(chart, pal, opts) {
     if (i === 1 || i === 4 || i === 7 || i === 10) continue;
     s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
   }
-  // osi (ASC/DSC/MC/IC) — naglašene, sa strelicom i oznakom
+  // osi (ASC/DSC/MC/IC) — pune linije kroz središte, oznake unutar kotača
+  // (kao Astro-Seek); strelice na ASC i MC kraju
   const axes = [
-    { lon: chart.asc, label: 'ASC' }, { lon: norm360(chart.asc + 180), label: 'DSC' },
-    { lon: chart.mc, label: 'MC' },   { lon: norm360(chart.mc + 180), label: 'IC' }
+    { lon: chart.asc, label: 'ASC', arrow: true }, { lon: norm360(chart.asc + 180), label: 'DSC' },
+    { lon: chart.mc, label: 'MC', arrow: true },   { lon: norm360(chart.mc + 180), label: 'IC' }
   ];
   for (const ax of axes) {
-    // crta do unutarnjeg ruba zodijačkog pojasa, pa kratki nastavak izvan njega
-    // — tako linija ne prelazi preko glifova znakova
-    s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.4);
-    s += line(ax.lon, R_OUT, 474, pal.axis, 2.4);
-    const [tx, ty] = pt(ax.lon, 494);
+    s += line(ax.lon, 0, R_ZOD, pal.axis, 2.2);
+    if (ax.arrow) {
+      const [hx, hy] = pt(ax.lon, R_ZOD);
+      const aRad = (180 + (ax.lon - asc)) * D2R;
+      const ux = Math.cos(aRad), uy = -Math.sin(aRad);
+      const px = -uy, py = ux;
+      s += '<path d="M' + (hx + ux * 10).toFixed(1) + ',' + (hy + uy * 10).toFixed(1) +
+        ' L' + (hx + px * 5).toFixed(1) + ',' + (hy + py * 5).toFixed(1) +
+        ' L' + (hx - px * 5).toFixed(1) + ',' + (hy - py * 5).toFixed(1) + ' Z" fill="' + pal.axis + '"/>';
+    }
+    const [tx, ty] = pt(ax.lon + 7, 212);
     s += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" fill="' + pal.axisText +
-      '" font-size="20" font-family="Quicksand, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="middle">' + ax.label + '</text>';
-    // strelica
-    const [hx, hy] = pt(ax.lon, 474);
-    const aRad = (180 + (ax.lon - asc)) * D2R;
-    const ux = Math.cos(aRad), uy = -Math.sin(aRad);
-    const px = -uy, py = ux;
-    s += '<path d="M' + (hx + ux * 9).toFixed(1) + ',' + (hy + uy * 9).toFixed(1) +
-      ' L' + (hx + px * 5).toFixed(1) + ',' + (hy + py * 5).toFixed(1) +
-      ' L' + (hx - px * 5).toFixed(1) + ',' + (hy - py * 5).toFixed(1) + ' Z" fill="' + pal.axis + '"/>';
+      '" font-size="19" font-family="Quicksand, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="middle">' + ax.label + '</text>';
   }
 
   // prsten brojeva kuća
@@ -149,15 +150,22 @@ function buildChartSVG(chart, pal, opts) {
     const dispLon = norm360(asc + adj[i]);
     // crtica na stvarnoj poziciji + spojnica do prikazane
     s += line(p.lon, R_PTICK, R_PTICK - 12, pal.planet, 1.6);
-    const [cx1, cy1] = pt(p.lon, R_PTICK - 12), [cx2, cy2] = pt(dispLon, R_GLYPH + 22);
+    const [cx1, cy1] = pt(p.lon, R_PTICK - 12), [cx2, cy2] = pt(dispLon, R_GLYPH + 20);
     s += '<line x1="' + cx1.toFixed(1) + '" y1="' + cy1.toFixed(1) + '" x2="' + cx2.toFixed(1) + '" y2="' + cy2.toFixed(1) +
       '" stroke="' + pal.tick + '" stroke-width="0.7"/>';
     const [gx, gy] = pt(dispLon, R_GLYPH);
-    s += glyphSvgEl(p.id, gx, gy, 36, pal.planet, 1.8);
+    s += glyphSvgEl(p.id, gx, gy, 34, pal.planet, 1.8);
+    // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
+    const dm = degMinParts(p.lon);
     const [dx, dy] = pt(dispLon, R_DEG);
     s += '<text x="' + dx.toFixed(1) + '" y="' + dy.toFixed(1) + '" fill="' + pal.degText +
-      '" font-size="15.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' +
-      fmtDegMin(p.lon) + (p.retro ? ' <tspan font-size="12">R</tspan>' : '') + '</text>';
+      '" font-size="15.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' + dm.d + '°</text>';
+    const [sx, sy] = pt(dispLon, R_SGN);
+    s += glyphSvgEl(signKey(p.lon), sx, sy, 21, elementColor(p.lon, pal), 2.0);
+    const [mx, my] = pt(dispLon, R_MIN);
+    s += '<text x="' + mx.toFixed(1) + '" y="' + my.toFixed(1) + '" fill="' + pal.degText +
+      '" font-size="13.5" font-family="Quicksand, sans-serif" text-anchor="middle" dominant-baseline="middle">' +
+      pad2(dm.m) + '′' + (p.retro ? ' <tspan font-size="11">R</tspan>' : '') + '</text>';
   }
 
   return '<svg viewBox="-30 -30 1060 1060" xmlns="http://www.w3.org/2000/svg" font-family="Quicksand, sans-serif">' +
@@ -183,19 +191,19 @@ function renderNatalResult(chart) {
   let rows = '';
   for (const p of chart.planets) {
     rows += '<tr><td>' + glyphSvgHtml(p.id, 19, pal.sign) + ' ' + p.name + '</td>' +
-      '<td>' + glyphSvgHtml(signKey(p.lon), 17, pal.sign) + ' ' + signName(p.lon) + '</td>' +
+      '<td>' + glyphSvgHtml(signKey(p.lon), 17, elementColor(p.lon, pal)) + ' ' + signName(p.lon) + '</td>' +
       '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td>' +
       '<td class="nt-num">' + p.house + '.<span class="nt-kuca"> kuća</span></td></tr>';
   }
-  rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, pal.sign) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
-  rows += '<tr class="nt-angle-row"><td>MC (sredina neba)</td><td>' + glyphSvgHtml(signKey(chart.mc), 17, pal.sign) + ' ' + signName(chart.mc) + '</td><td class="nt-num">' + fmtDegMin(chart.mc) + '</td><td></td></tr>';
+  rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, elementColor(chart.asc, pal)) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
+  rows += '<tr class="nt-angle-row"><td>MC (sredina neba)</td><td>' + glyphSvgHtml(signKey(chart.mc), 17, elementColor(chart.mc, pal)) + ' ' + signName(chart.mc) + '</td><td class="nt-num">' + fmtDegMin(chart.mc) + '</td><td></td></tr>';
   document.getElementById('natal-planets-tbody').innerHTML = rows;
 
   // Tablica kuća
   let hrows = '';
   for (let i = 1; i <= 12; i++) {
     hrows += '<tr><td class="nt-num">' + i + '.</td><td>' +
-      glyphSvgHtml(signKey(chart.cusps[i]), 17, pal.sign) + ' ' + signName(chart.cusps[i]) +
+      glyphSvgHtml(signKey(chart.cusps[i]), 17, elementColor(chart.cusps[i], pal)) + ' ' + signName(chart.cusps[i]) +
       '</td><td class="nt-num">' + fmtDegMin(chart.cusps[i]) + '</td></tr>';
   }
   document.getElementById('natal-houses-tbody').innerHTML = hrows;

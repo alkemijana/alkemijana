@@ -237,48 +237,48 @@ async function downloadWorking() {
     for (const p of chart.planets) nameOf[p.id] = p.name;
     nameOf.asc = 'ASC'; nameOf.mc = 'MC';
 
-    const INK_PLANET = '#2a2348', INK_SIGN = '#5a4090';
+    const INK_PLANET = '#2a2348';
 
     for (const p of chart.planets) {
       doc.setTextColor(46, 39, 82);
       await drawGlyphPdf(doc, p.id, 20, y, 4, INK_PLANET);
       doc.text(p.name, 26, y);
-      await drawGlyphPdf(doc, signKey(p.lon), 62, y, 4, INK_SIGN);
+      await drawGlyphPdf(doc, signKey(p.lon), 62, y, 4, elementColor(p.lon, PALETTES.ink));
       doc.text(signName(p.lon), 68, y);
       doc.text(fmtDegMin(p.lon) + (p.retro ? '  R' : ''), 95, y);
       doc.text(p.house + '. kuća', 125, y);
-      y += 6.2;
+      y += 6.0;
     }
     doc.setTextColor(90, 64, 144);
-    await drawGlyphPdf(doc, signKey(chart.asc), 62, y, 4, INK_SIGN);
-    doc.text('ASC (podznak)', 20, y); doc.text(signName(chart.asc), 68, y); doc.text(fmtDegMin(chart.asc), 95, y); y += 6.2;
-    await drawGlyphPdf(doc, signKey(chart.mc), 62, y, 4, INK_SIGN);
+    await drawGlyphPdf(doc, signKey(chart.asc), 62, y, 4, elementColor(chart.asc, PALETTES.ink));
+    doc.text('ASC (podznak)', 20, y); doc.text(signName(chart.asc), 68, y); doc.text(fmtDegMin(chart.asc), 95, y); y += 6.0;
+    await drawGlyphPdf(doc, signKey(chart.mc), 62, y, 4, elementColor(chart.mc, PALETTES.ink));
     doc.text('MC (sredina neba)', 20, y); doc.text(signName(chart.mc), 68, y); doc.text(fmtDegMin(chart.mc), 95, y);
 
     doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(14); doc.setTextColor(42, 35, 72);
-    doc.text('Kuće (Placidus)', 20, y + 14);
+    doc.text('Kuće (Placidus)', 20, y + 11);
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(9.5);
-    let hy = y + 22;
+    let hy = y + 19;
     for (let i = 1; i <= 12; i++) {
       const col = i <= 6 ? 0 : 1;
-      const yy = hy + ((i - 1) % 6) * 6.2;
+      const yy = hy + ((i - 1) % 6) * 6.0;
       doc.setTextColor(46, 39, 82);
       doc.text(i + '.', 20 + col * 90, yy);
-      await drawGlyphPdf(doc, signKey(chart.cusps[i]), 28 + col * 90, yy, 4, INK_SIGN);
+      await drawGlyphPdf(doc, signKey(chart.cusps[i]), 28 + col * 90, yy, 4, elementColor(chart.cusps[i], PALETTES.ink));
       doc.text(signName(chart.cusps[i]), 34 + col * 90, yy);
       doc.text(fmtDegMin(chart.cusps[i]), 64 + col * 90, yy);
     }
 
-    let ay = hy + 6 * 6.2 + 14;
+    let ay = hy + 6 * 6.0 + 11;
     doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(14); doc.setTextColor(42, 35, 72);
     doc.text('Aspekti', 20, ay);
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(9);
-    ay += 8;
+    ay += 7;
     const half = Math.ceil(chart.aspects.length / 2);
     for (let i = 0; i < chart.aspects.length; i++) {
       const a = chart.aspects[i];
       const col = i < half ? 0 : 1;
-      const yy = ay + (i % half) * 5.6;
+      const yy = ay + (i % half) * 5.2;
       if (yy > H - 15) continue;
       const baseX = 20 + col * 95;
       let cx = baseX;

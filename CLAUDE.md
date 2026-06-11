@@ -67,7 +67,9 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
 - **Izračun:** astronomy-engine (vendoriran u `js/lib/`, lazy-load pri prvom izračunu).
   Geocentrične pozicije na ekliptici datuma, retrogradnost, pravi Mjesečev čvor
   (oskulirajući, iz state vektora), srednja Lilith (Meeus), Kiron iz vlastite
-  efemeride (`js/natal-chiron.js`, interpolacija JPL Horizons podataka, 1900–2099).
+  efemeride (`js/natal-chiron.js`, interpolacija JPL Horizons podataka, 1900–2099),
+  Fortuna (dnevna/noćna formula) i Vertex (ascendent ko-širine uz RAMC+180°) —
+  izvedene točke, ne ulaze u aspekte.
 - **Točnost:** verificirano protiv JPL Horizons — planeti unutar ~5 lučnih sekundi;
   ASC/MC/Placidus provjereni geometrijski (visina ASC = 0°, omjeri polulukova 1/3, 2/3).
   Rezultati se poklapaju s Astro-Seekom (isti izvori efemerida).
@@ -76,7 +78,10 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   povijesni UTC offseti (ljetno vrijeme, Jugoslavija...) preko `Intl.DateTimeFormat`.
 - **Kotač:** SVG, glifovi planeta/znakova su ručno crtani path-evi u `GLYPHS` objektu
   (ne ovise o fontovima — identični na ekranu i u PDF-u). Palete u `PALETTES`
-  (dark/light/poster/ink); kotač se ponovo iscrta pri promjeni teme (MutationObserver).
+  (dark/light/poster/ink) + boje elemenata (fire/earth/air/water za znakove);
+  kotač se ponovo iscrta pri promjeni teme (MutationObserver). Astro-Seek stil:
+  planeti u prstenu kao stupanj · glif znaka · minute; osi ASC/DSC/MC/IC pune linije
+  kroz središte s oznakama unutar kotača.
 - **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
   zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla, karta + tablice pozicija/
   kuća/aspekata). TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.

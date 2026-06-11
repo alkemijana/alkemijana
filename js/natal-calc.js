@@ -156,6 +156,12 @@ function computeChart(input) {
   const T = time.tt / 36525;
   const jdUt = 2451545.0 + time.ut;
 
+  const eps  = trueObliquity(time);
+  const gast = Astronomy.SiderealTime(time);
+  const ramc = norm360(gast * 15 + input.lon);
+  const { asc, mc } = computeAscMc(ramc, eps, input.lat);
+  const cusps = placidusCusps(ramc, eps, input.lat, asc, mc);
+
   const planets = [];
   for (const def of PLANET_DEFS) {
     let lon = null, retro = false;
@@ -183,15 +189,25 @@ function computeChart(input) {
     planets.push({ id: def.id, name: def.name, lon: norm360(lon), retro });
   }
 
-  const eps  = trueObliquity(time);
-  const gast = Astronomy.SiderealTime(time);
-  const ramc = norm360(gast * 15 + input.lon);
-  const { asc, mc } = computeAscMc(ramc, eps, input.lat);
-  const cusps = placidusCusps(ramc, eps, input.lat, asc, mc);
+  // Fortuna (Pars Fortunae): dnevna karta = ASC + Mjesec − Sunce, noćna obratno
+  const sunP = planets.find(p => p.id === 'sun');
+  const moonP = planets.find(p => p.id === 'moon');
+  const dayChart = houseOf(sunP.lon, cusps) >= 7; // Sunce iznad horizonta
+  const fortuneLon = norm360(dayChart ? asc + moonP.lon - sunP.lon : asc + sunP.lon - moonP.lon);
+  planets.push({ id: 'fortune', name: 'Fortuna', lon: fortuneLon, retro: false });
+
+  // Vertex: presjek prvog vertikala i ekliptike na zapadu
+  // = ascendent za ko-širinu (90° − lat) uz RAMC + 180°
+  const colat = input.lat >= 0 ? 90 - input.lat : -90 - input.lat;
+  const vertexLon = computeAscMc(norm360(ramc + 180), eps, colat).asc;
+  planets.push({ id: 'vertex', name: 'Vertex', lon: norm360(vertexLon), retro: false });
 
   for (const p of planets) p.house = houseOf(p.lon, cusps);
 
-  const aspectPoints = planets.map(p => ({ id: p.id, lon: p.lon }))
+  // Fortuna i Vertex su izvedene točke — ne ulaze u aspekte (kao na Astro-Seeku)
+  const aspectPoints = planets
+    .filter(p => p.id !== 'fortune' && p.id !== 'vertex')
+    .map(p => ({ id: p.id, lon: p.lon }))
     .concat([{ id: 'asc', lon: asc, isAngle: true }, { id: 'mc', lon: mc, isAngle: true }]);
   const aspects = computeAspects(aspectPoints);
 

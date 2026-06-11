@@ -58,6 +58,8 @@ const GLYPHS = {
   lilith:  { s:'M12,13.2 L12,21 M8.6,17.1 L15.4,17.1',
              f:'M13.6,3.6 A5.2,5.2 0 1,0 13.6,13 A4.1,4.1 0 1,1 13.6,3.6 Z' },
   chiron:  { s:'M12,3.2 L12,12.4 M16.8,3.6 L12,8.2 L16.8,12.4 M12,12.4 A4.1,4.1 0 1,0 12,20.6 A4.1,4.1 0 1,0 12,12.4' },
+  fortune: { s:'M12,4 A8,8 0 1,0 12,20 A8,8 0 1,0 12,4 M6.4,6.4 L17.6,17.6 M17.6,6.4 L6.4,17.6' },
+  vertex:  { s:'M3.6,5 L8.4,19 L13.2,5 M15.2,12.6 L21,19.4 M21,12.6 L15.2,19.4' },
 
   aries:       { s:'M12,21 L12,9.6 C12,5.4 10,3.1 7.6,3.1 C5.2,3.1 3.8,4.9 3.8,7.4 M12,9.6 C12,5.4 14,3.1 16.4,3.1 C18.8,3.1 20.2,4.9 20.2,7.4' },
   taurus:      { s:'M12,9.4 A5.8,5.8 0 1,0 12,21 A5.8,5.8 0 1,0 12,9.4 M5,3.2 A7,6.2 0 0,0 19,3.2' },
@@ -85,12 +87,16 @@ const D2R = Math.PI / 180, R2D = 180 / Math.PI;
 function norm360(x) { x = x % 360; return x < 0 ? x + 360 : x; }
 function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
-function fmtDegMin(lon) {
+function degMinParts(lon) {
   const inSign = norm360(lon) % 30;
   let d = Math.floor(inSign);
   let m = Math.round((inSign - d) * 60);
   if (m === 60) { m = 0; d += 1; }
-  return d + '°' + pad2(m) + "'";
+  return { d, m };
+}
+function fmtDegMin(lon) {
+  const p = degMinParts(lon);
+  return p.d + '°' + pad2(p.m) + "'";
 }
 function signIndex(lon) { return Math.floor(norm360(lon) / 30) % 12; }
 function signName(lon)  { return SIGNS[signIndex(lon)]; }
@@ -154,7 +160,8 @@ const PALETTES = {
     sign: '#a890d0', tick: 'rgba(196,192,216,0.4)',
     planet: '#e4e0f4', degText: '#9d97b8', houseNum: '#8a84a8',
     cusp: 'rgba(168,144,208,0.4)', axis: '#a890d0', axisText: '#c4c0d8',
-    conj: '#9b95b5', harm: '#7fae90', tense: '#c08090', bg: 'none'
+    conj: '#9b95b5', harm: '#7fae90', tense: '#c08090', bg: 'none',
+    fire: '#c98f9b', earth: '#8ab69b', air: '#b1a0d8', water: '#8fa7d4'
   },
   light: {
     ring: 'rgba(74,63,110,0.6)', ringSoft: 'rgba(106,78,160,0.35)',
@@ -162,7 +169,8 @@ const PALETTES = {
     sign: '#6a4ea0', tick: 'rgba(74,63,110,0.45)',
     planet: '#2e2752', degText: '#6a5d8c', houseNum: '#8a7dac',
     cusp: 'rgba(106,78,160,0.45)', axis: '#6a4ea0', axisText: '#4a3f6e',
-    conj: '#7a7494', harm: '#4f8a64', tense: '#b06478', bg: 'none'
+    conj: '#7a7494', harm: '#4f8a64', tense: '#b06478', bg: 'none',
+    fire: '#b06478', earth: '#4f8a64', air: '#7a5ab0', water: '#4a6fa8'
   },
   poster: {
     ring: 'rgba(216,210,238,0.75)', ringSoft: 'rgba(168,144,208,0.45)',
@@ -170,7 +178,8 @@ const PALETTES = {
     sign: '#b8a2dd', tick: 'rgba(206,200,228,0.5)',
     planet: '#efeaff', degText: '#a89fc8', houseNum: '#968ebb',
     cusp: 'rgba(178,156,215,0.5)', axis: '#b8a2dd', axisText: '#d4cdec',
-    conj: '#a59ec2', harm: '#8fbe9f', tense: '#cf8fa0', bg: 'none'
+    conj: '#a59ec2', harm: '#8fbe9f', tense: '#cf8fa0', bg: 'none',
+    fire: '#cf8fa0', earth: '#8fbe9f', air: '#b8a2dd', water: '#8fa8d8'
   },
   ink: {
     ring: '#5a4d85', ringSoft: '#9a8fc0',
@@ -178,7 +187,8 @@ const PALETTES = {
     sign: '#5a4090', tick: '#8a80ab',
     planet: '#2a2348', degText: '#6a5d8c', houseNum: '#8a7dac',
     cusp: '#a99fd0', axis: '#5a4090', axisText: '#4a3f6e',
-    conj: '#7a7494', harm: '#3f7a54', tense: '#a05468', bg: 'none'
+    conj: '#7a7494', harm: '#3f7a54', tense: '#a05468', bg: 'none',
+    fire: '#a05468', earth: '#3f7a54', air: '#6a4ea0', water: '#3f5e8e'
   }
 };
 
@@ -186,6 +196,11 @@ function aspectColor(aspId, pal) {
   if (aspId === 'conjunction') return pal.conj;
   if (aspId === 'trine' || aspId === 'sextile') return pal.harm;
   return pal.tense;
+}
+
+/* Boja elementa znaka: vatra / zemlja / zrak / voda */
+function elementColor(lon, pal) {
+  return [pal.fire, pal.earth, pal.air, pal.water][signIndex(lon) % 4];
 }
 
 /* ============ LAZY LOAD SKRIPTI ============ */

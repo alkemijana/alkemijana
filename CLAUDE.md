@@ -27,7 +27,11 @@ ALKEMIJANA WEBSITE/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke)
 │   ├── app.js                      ← Navigacija, renderiranje, blog, animacije
 │   ├── admin.js                    ← Admin panel logika
-│   ├── natal.js                    ← Natalna karta: izračun, SVG kotač, PDF export
+│   ├── natal-data.js               ← Natalna karta: konstante, glifovi, palete, helperi (norm360, fmtDegMin, glyphSvg...)
+│   ├── natal-calc.js               ← Natalna karta: astronomski izračun (computeChart, Placidus, Kiron, aspekti)
+│   ├── natal-render.js             ← Natalna karta: SVG kotač + tablice na stranici
+│   ├── natal-pdf.js                ← Natalna karta: PDF eksport (poster A4–A0 + radna A4)
+│   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue — učitava se zadnji)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)

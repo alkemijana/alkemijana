@@ -30,7 +30,7 @@ function aspectDashPattern(aspId) {
     case 'conjunction': return '2,5';
     case 'sextile':     return '8,6';
     case 'square':      return null;          // puna linija
-    case 'trine':       return '16,7';
+    case 'trine':       return '26,9';
     case 'opposition':  return '14,6,2.5,6';
     default:            return null;
   }
@@ -47,10 +47,10 @@ function buildChartSVG(chart, pal, opts) {
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
   const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
   const R_PTICK = R_ZOD, R_SIGN = 427;
-  // osi izvan kotača — stupanj se crta ISPOD oznake (ekranski) da se ne preklapaju
-  const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 30;
+  // osi izvan kotača — stupanj se slaže prema van (ekranski) da ne dira kružnicu
+  const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 34;
   // znak + stupanj cuspsi izvan kotača
-  const R_CUSP_SIGN = R_OUT + 16;
+  const R_CUSP_SIGN = R_OUT + 20;
   const asc = chart.asc;
 
   // kut na ekranu: ASC lijevo, longitude rastu suprotno od kazaljke
@@ -120,7 +120,8 @@ function buildChartSVG(chart, pal, opts) {
       if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoju oznaku
       const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
       s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 16, elementColor(chart.cusps[i], pal), 1.7);
-      s += textC(cx, cy + 15, pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
+      // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
+      s += textC(cx, cy + (cy < C ? -15 : 15), pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
     }
   }
 
@@ -135,10 +136,10 @@ function buildChartSVG(chart, pal, opts) {
     s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
     // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
     s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
-    // oznaka izvan kotača, stupanj ISPOD nje (ekranski offset — nikad se ne preklapaju)
+    // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
     const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
     s += textC(tx, ty, pal.axisText, 19, ax.label, '600');
-    s += textC(tx, ty + 18, pal.degText, 13.5, fmtDegMin(ax.lon));
+    s += textC(tx, ty + (ty < C ? -17 : 18), pal.degText, 13.5, fmtDegMin(ax.lon));
   }
 
   // prsten brojeva kuća

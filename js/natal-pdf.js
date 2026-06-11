@@ -230,7 +230,7 @@ function buildAstroSeekSVG(chart) {
 
   // Layout (sve u mm, viewBox točno po sadržaju)
   const cs   = 6.0;            // veličina ćelije
-  const labW = 34;             // širina label dijela (glif + ime + znak + stupanj + kuća)
+  const labW = 38;             // širina label dijela (glif + ime + znak + stupanj + kuća)
   const domW = 56;             // širina dominantnog bloka
   const gx0  = labW;           // x grida
   const gy0  = 6;              // y grida (nakon naslova)
@@ -252,17 +252,18 @@ function buildAstroSeekSVG(chart) {
     const p  = pts[i];
     const ry = gy0 + i * cs;
 
-    // — Label dio
+    // — Label dio — u kućici spojenoj s mrežom (rub jednak ćelijama)
+    s += '<rect x="0" y="' + ry.toFixed(2) + '" width="' + labW + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.15"/>';
     // glif planeta
-    s += inlineGlyph(p.id, 1.8, ry + cs / 2, 3.6, INK, 0.5);
-    // ime
-    s += '<text x="4.2" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.4" font-family="Quicksand, sans-serif" dy=".35em">' + escHtml(p.name) + '</text>';
+    s += inlineGlyph(p.id, 2.2, ry + cs / 2, 3.6, INK, 0.5);
+    // ime (manji font da dugačka imena ne diraju glif znaka)
+    s += '<text x="4.6" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.2" font-family="Quicksand, sans-serif" dy=".35em">' + escHtml(p.name) + '</text>';
     // glif znaka
-    s += inlineGlyph(signKey(p.lon), 17.2, ry + cs / 2, 3.2, elementColor(p.lon, PAL), 0.5);
+    s += inlineGlyph(signKey(p.lon), 20.4, ry + cs / 2, 3.2, elementColor(p.lon, PAL), 0.5);
     // stupanj + R
     const dm = degMinParts(p.lon);
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
-    s += '<text x="19.6" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + dmTxt + '</text>';
+    s += '<text x="22.8" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + dmTxt + '</text>';
     // kuća (desno poravnato — x računamo sami, svg2pdf ne centrira pouzdano)
     s += '<text x="' + (labW - 1.2 - tw(p.house, 2.3)).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + p.house + '</text>';
 

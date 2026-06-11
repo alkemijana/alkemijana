@@ -94,14 +94,31 @@ function posterStars(w, h, seed, avoid) {
 /* Smanji veličinu fonta dok tekst ne stane u maxWidth (mjereno preko canvasa) */
 function fitFontSize(text, family, weight, maxSize, maxWidth, minSize) {
   minSize = minSize || maxSize * 0.35;
+  const measured = textWidthPx(text, family, weight, maxSize);
+  if (!measured || measured <= maxWidth) return maxSize;
+  return Math.max(minSize, maxSize * (maxWidth / measured) * 0.98);
+}
+
+/* Širina teksta u px, mjerena stvarnim (web) fontom preko canvasa */
+function textWidthPx(text, family, weight, sizePx) {
   try {
-    const canvas = fitFontSize._c || (fitFontSize._c = document.createElement('canvas'));
+    const canvas = textWidthPx._c || (textWidthPx._c = document.createElement('canvas'));
     const ctx = canvas.getContext('2d');
-    ctx.font = (weight ? weight + ' ' : '') + maxSize + 'px ' + family;
-    const measured = ctx.measureText(text).width;
-    if (!measured || measured <= maxWidth) return maxSize;
-    return Math.max(minSize, maxSize * (maxWidth / measured) * 0.98);
-  } catch (e) { return maxSize; }
+    ctx.font = (weight ? weight + ' ' : '') + sizePx + 'px ' + family;
+    return ctx.measureText(text).width;
+  } catch (e) { return 0; }
+}
+
+/* Centrirani tekst za poster: x računamo sami (canvas metrika stvarnog fonta)
+   jer svg2pdf centrira text-anchor="middle" metrikom fallback fonta pa tekst pobjegne. */
+function svgCenteredText(text, cx, y, sizePx, fill, pdfFamily, cssFamily, weight) {
+  const w = textWidthPx(text, cssFamily, weight, sizePx);
+  const attrs = ' fill="' + fill + '" font-family="' + pdfFamily + '"' +
+    (weight ? ' font-weight="bold"' : '') + ' font-size="' + sizePx + '"';
+  if (w > 0) {
+    return '<text x="' + (cx - w / 2).toFixed(2) + '" y="' + y + '"' + attrs + '>' + escHtml(text) + '</text>';
+  }
+  return '<text x="' + cx + '" y="' + y + '"' + attrs + ' text-anchor="middle">' + escHtml(text) + '</text>';
 }
 
 /* Poster SVG — dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
@@ -116,7 +133,7 @@ function buildPosterSVG(chart, w, h) {
   const dataLine = birthDataLine(chart);
   const sun = chart.planets.find(p => p.id === 'sun');
   const moon = chart.planets.find(p => p.id === 'moon');
-  const trio = 'Sunce ' + signName(sun.lon) + '  ·  Mjesec ' + signName(moon.lon) + '  ·  Podznak ' + signName(chart.asc);
+  const trio = 'Sunce ' + signName(sun.lon) + ' · Mjesec ' + signName(moon.lon) + ' · Podznak ' + signName(chart.asc);
 
   const inner = buildChartSVG(chart, pal, { showAspects: true })
     .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
@@ -139,8 +156,7 @@ function buildPosterSVG(chart, w, h) {
   // naslov — font koji prikazuje sva slova (č, ć, š, ž, đ), suzi se ako je predugačak
   const maxTextW = w * 0.84;
   const f1 = fitFontSize(name, 'Dancing Script', '700', w * 0.105, maxTextW);
-  s += '<text x="' + cx + '" y="' + (h * 0.105) + '" fill="#e4e0f4" font-family="DancingScript" font-weight="bold" font-size="' + f1 +
-       '" text-anchor="middle">' + escHtml(name) + '</text>';
+  s += svgCenteredText(name, cx, h * 0.105, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
   // linija s zvjezdicom
   const ly = h * 0.125, lw = w * 0.3;
   s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
@@ -148,20 +164,16 @@ function buildPosterSVG(chart, w, h) {
   s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
   // podaci rođenja
   const fData = fitFontSize(dataLine, 'Playfair Display', null, w * 0.0235, maxTextW);
-  s += '<text x="' + cx + '" y="' + (h * 0.152) + '" fill="#c4c0d8" font-family="PlayfairDisplay" font-size="' + fData +
-       '" text-anchor="middle">' + escHtml(dataLine) + '</text>';
+  s += svgCenteredText(dataLine, cx, h * 0.152, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
   const fTrio = fitFontSize(trio, 'Quicksand', null, w * 0.0185, maxTextW);
-  s += '<text x="' + cx + '" y="' + (h * 0.175) + '" fill="#9d95c0" font-family="Quicksand" font-size="' + fTrio +
-       '" text-anchor="middle">' + escHtml(trio) + '</text>';
+  s += svgCenteredText(trio, cx, h * 0.175, fTrio, '#9d95c0', 'Quicksand', 'Quicksand', null);
 
   // kotač (unutarnje koordinate -30..1030 → 1060 jedinica)
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1060) + ') translate(30,30)">' + inner + '</g>';
 
   // podnožje
-  s += '<text x="' + cx + '" y="' + (h * 0.925) + '" fill="#d8d2ee" font-family="Tangerine" font-weight="bold" font-size="' + (w * 0.052) +
-       '" text-anchor="middle">Alkemijana</text>';
-  s += '<text x="' + cx + '" y="' + (h * 0.945) + '" fill="#8a82ac" font-family="Quicksand" font-size="' + (w * 0.016) +
-       '" text-anchor="middle">alkemijana.com · Placidus · tropski zodijak</text>';
+  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
+  s += svgCenteredText('alkemijana.com · Placidus · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }

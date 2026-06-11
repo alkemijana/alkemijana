@@ -91,9 +91,10 @@ function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
 function degMinParts(lon) {
   const inSign = norm360(lon) % 30;
-  let d = Math.floor(inSign);
-  let m = Math.round((inSign - d) * 60);
-  if (m === 60) { m = 0; d += 1; }
+  const d = Math.floor(inSign);
+  // minute se odsijecaju, ne zaokružuju (astrološka konvencija, isto kao Astro-Seek)
+  // — planet na 29°59.9' je na 29°59', nikad na "30°00'"
+  const m = Math.floor((inSign - d) * 60);
   return { d, m };
 }
 function fmtDegMin(lon) {

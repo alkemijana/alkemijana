@@ -26,9 +26,14 @@ ALKEMIJANA WEBSITE/
 ├── js/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke)
 │   ├── app.js                      ← Navigacija, renderiranje, blog, animacije
-│   └── admin.js                    ← Admin panel logika
+│   ├── admin.js                    ← Admin panel logika
+│   ├── natal.js                    ← Natalna karta: izračun, SVG kotač, PDF export
+│   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
+│   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
+├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── functions/
 │   └── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
+├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── .gitignore
 └── CLAUDE.md                       ← ovaj fajl
 ```
@@ -47,7 +52,32 @@ ALKEMIJANA WEBSITE/
 - **Italic citati:** Cormorant Garamond
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
 - **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
-- **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, kontakt)
+- **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, natalna karta, kontakt)
+
+---
+
+## Natalna karta (js/natal.js)
+
+Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
+
+- **Izračun:** astronomy-engine (vendoriran u `js/lib/`, lazy-load pri prvom izračunu).
+  Geocentrične pozicije na ekliptici datuma, retrogradnost, pravi Mjesečev čvor
+  (oskulirajući, iz state vektora), srednja Lilith (Meeus), Kiron iz vlastite
+  efemeride (`js/natal-chiron.js`, interpolacija JPL Horizons podataka, 1900–2099).
+- **Točnost:** verificirano protiv JPL Horizons — planeti unutar ~5 lučnih sekundi;
+  ASC/MC/Placidus provjereni geometrijski (visina ASC = 0°, omjeri polulukova 1/3, 2/3).
+  Rezultati se poklapaju s Astro-Seekom (isti izvori efemerida).
+- **Kuće:** Placidus (iterativno); blokirano za |lat| > 66°. ASC/MC standardne formule.
+- **Vrijeme:** mjesto → Open-Meteo geocoding (besplatan, bez ključa) daje IANA zonu;
+  povijesni UTC offseti (ljetno vrijeme, Jugoslavija...) preko `Intl.DateTimeFormat`.
+- **Kotač:** SVG, glifovi planeta/znakova su ručno crtani path-evi u `GLYPHS` objektu
+  (ne ovise o fontovima — identični na ekranu i u PDF-u). Palete u `PALETTES`
+  (dark/light/poster/ink); kotač se ponovo iscrta pri promjeni teme (MutationObserver).
+- **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
+  zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla, karta + tablice pozicija/
+  kuća/aspekata). TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
+- Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
+- Nema admin integracije — alat nema sadržaja za uređivanje.
 
 ---
 
@@ -155,6 +185,8 @@ U `admin.js` `switchTab()` poziva odgovarajuću render funkciju.
 
 ### Lokalni razvoj (testing prije deploya)
 Otvori `index.html` u browseru — sve radi osim auto-save (koristi fallback download).
+Za natalnu kartu (fetch fontova za PDF) bolje je preko HTTP servera:
+`powershell -File tools/serve.ps1` → http://localhost:8344 (radi i bez Node/Pythona).
 Za testiranje serverless funkcije lokalno: `npx wrangler pages dev` (ako instalirano).
 
 ---

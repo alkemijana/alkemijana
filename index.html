@@ -367,6 +367,7 @@
       <li id="nav-usluge"><a onclick="showPage('usluge')"  data-page="usluge">Usluge</a></li>
       <li><a onclick="showPage('o-meni')"  data-page="o-meni">O meni</a></li>
       <li><a onclick="showPage('blog')"    data-page="blog">Blog</a></li>
+      <li><a onclick="showPage('natal')"   data-page="natal">Natalna karta</a></li>
       <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
     </ul>
     <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
@@ -584,6 +585,101 @@
     </div>
   </section>
 
+  <!-- NATALNA KARTA -->
+  <section class="page" id="natal">
+    <div class="container">
+      <h2 class="section-title">Natalna karta</h2>
+      <p class="section-subtitle">Unesi podatke rođenja i otkrij svoju kartu neba — besplatno.</p>
+
+      <div class="form-section nt-form-wrap">
+        <form id="natal-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ime (za naslov karte, nije obavezno)</label>
+              <input type="text" id="natal-name" placeholder="npr. Ana Horvat" maxlength="60">
+            </div>
+            <div class="form-group nt-place-group">
+              <label>Mjesto rođenja <span id="natal-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
+              <input type="text" id="natal-place" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
+              <div class="nt-dd" id="natal-place-dd"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Datum rođenja</label>
+              <input type="date" id="natal-date" min="1900-01-01" max="2099-12-31">
+            </div>
+            <div class="form-group">
+              <label>Vrijeme rođenja (što točnije)</label>
+              <input type="time" id="natal-time">
+            </div>
+          </div>
+          <div id="natal-error" class="nt-error" style="display:none"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%" id="natal-submit">✦ Izračunaj natalnu kartu</button>
+          <p class="nt-note">Vremenska zona i povijesno ljetno/zimsko vrijeme određuju se automatski prema mjestu i datumu rođenja.</p>
+        </form>
+      </div>
+
+      <div id="natal-result" style="display:none">
+        <div class="nt-chart-head">
+          <h3 id="natal-chart-title"></h3>
+          <div id="natal-chart-sub"></div>
+        </div>
+        <div id="natal-wheel" class="nt-wheel"></div>
+
+        <div class="nt-downloads">
+          <div class="nt-dl-card">
+            <h4>✦ Poster za ispis</h4>
+            <p>Ukrasna karta u visokoj rezoluciji — odnesi PDF u kopirnicu i isprintaj na kvalitetnom papiru.</p>
+            <div class="nt-dl-row">
+              <select id="natal-poster-size">
+                <option value="A4">A4 (21 × 29,7 cm)</option>
+                <option value="A3">A3 (29,7 × 42 cm)</option>
+                <option value="A2" selected>A2 (42 × 59,4 cm)</option>
+                <option value="A1">A1 (59,4 × 84,1 cm)</option>
+                <option value="A0">A0 (84,1 × 118,9 cm)</option>
+              </select>
+              <button class="btn btn-primary" id="natal-poster-btn">⬇ Preuzmi poster PDF</button>
+            </div>
+          </div>
+          <div class="nt-dl-card">
+            <h4>☾ Radna verzija</h4>
+            <p>A4 dokument s kartom i svim tablicama — pregledan ispis za iščitavanje karte.</p>
+            <div class="nt-dl-row">
+              <button class="btn" id="natal-working-btn">⬇ Preuzmi radni PDF (A4)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="nt-tables">
+          <div class="nt-table-card">
+            <h4>Planeti</h4>
+            <table class="nt-table">
+              <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
+              <tbody id="natal-planets-tbody"></tbody>
+            </table>
+          </div>
+          <div class="nt-table-card">
+            <h4>Kuće (Placidus)</h4>
+            <table class="nt-table">
+              <thead><tr><th>Kuća</th><th>Znak</th><th>Stupanj</th></tr></thead>
+              <tbody id="natal-houses-tbody"></tbody>
+            </table>
+          </div>
+          <div class="nt-table-card nt-table-aspects">
+            <h4>Aspekti</h4>
+            <table class="nt-table">
+              <thead><tr><th></th><th>Aspekt</th><th></th><th>Orb</th></tr></thead>
+              <tbody id="natal-aspects-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="nt-disclaimer">Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · Pravi Mjesečev čvor, srednja Lilith</p>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="footer-logo">Alkemijana</div>
     <div class="footer-social">
@@ -732,6 +828,8 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/natal-chiron.js"></script>
+<script src="js/natal.js"></script>
 
 </body>
 </html>

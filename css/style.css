@@ -1656,3 +1656,97 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   .admin-badge { padding: 0.3rem 0.6rem; font-size: 0.62rem; }
   .abt { padding: 0.4rem 0.7rem; font-size: 0.66rem; }
 }
+
+/* ============================================================
+   NATALNA KARTA
+   ============================================================ */
+
+.nt-form-wrap { max-width: 760px; margin: 0 auto 3rem; padding: 2.6rem; }
+
+.nt-place-group { position: relative; }
+.nt-place-ok { color: #6a9478; font-weight: 700; margin-left: 4px; }
+.nt-dd {
+  display: none; position: absolute; z-index: 40;
+  top: 100%; left: 0; right: 0; margin-top: 4px;
+  background: var(--bg-light); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: var(--shadow-glow);
+}
+.nt-dd-item {
+  padding: 0.65rem 1rem; cursor: pointer;
+  font-family: 'Quicksand', sans-serif; font-size: 0.92rem; color: var(--text);
+}
+.nt-dd-item:hover { background: var(--card-bg-hover); color: var(--silver-bright); }
+.nt-dd-empty { padding: 0.65rem 1rem; font-family: 'Quicksand', sans-serif; font-size: 0.88rem; color: var(--text-muted); }
+
+.nt-error {
+  margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 8px;
+  background: rgba(176, 106, 122, 0.12); border: 1px solid rgba(176, 106, 122, 0.4);
+  color: #c98a9a; font-family: 'Quicksand', sans-serif; font-size: 0.92rem;
+}
+.nt-note { margin-top: 0.9rem; text-align: center; font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
+
+.nt-chart-head { text-align: center; margin-bottom: 1.2rem; }
+.nt-chart-head h3 {
+  font-family: 'Tangerine', cursive; font-weight: 700; font-size: 3.4rem;
+  color: var(--silver-bright); line-height: 1.1;
+}
+.nt-chart-head div { font-family: 'Quicksand', sans-serif; font-size: 0.95rem; color: var(--text-muted); }
+
+.nt-wheel { max-width: 740px; margin: 0 auto; }
+.nt-wheel svg { width: 100%; height: auto; display: block; }
+
+.nt-downloads {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
+  max-width: 860px; margin: 2.6rem auto;
+}
+.nt-dl-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.6rem 1.8rem;
+}
+.nt-dl-card h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 0.5rem; }
+.nt-dl-card p  { font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5; }
+.nt-dl-row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+.nt-dl-row select {
+  background: var(--form-bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.65rem 0.9rem; font-family: 'Quicksand', sans-serif; font-size: 0.9rem;
+}
+
+.nt-tables {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem;
+  max-width: 860px; margin: 0 auto;
+}
+.nt-table-aspects { grid-column: 1 / -1; }
+.nt-table-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.4rem 1.6rem; overflow-x: auto;
+}
+.nt-table-card h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--lavender); margin-bottom: 0.8rem; }
+.nt-table { width: 100%; border-collapse: collapse; font-family: 'Quicksand', sans-serif; font-size: 0.9rem; }
+.nt-table th {
+  text-align: left; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted); padding: 0.3rem 0.6rem 0.5rem; border-bottom: 1px solid var(--border);
+}
+.nt-table td { padding: 0.42rem 0.6rem; color: var(--text); border-bottom: 1px solid rgba(168, 144, 208, 0.08); white-space: nowrap; }
+.nt-table tr:last-child td { border-bottom: none; }
+.nt-num { font-variant-numeric: tabular-nums; }
+.nt-glyph { vertical-align: -3px; margin-right: 2px; }
+.nt-retro { color: #c98a9a; font-size: 0.85em; }
+.nt-angle-row td { color: var(--lavender); }
+.nt-asp-trine, .nt-asp-sextile { color: #6a9478; }
+.nt-asp-square, .nt-asp-opposition { color: #c08090; }
+.nt-asp-conjunction { color: var(--silver); }
+:root[data-theme="light"] .nt-asp-trine, :root[data-theme="light"] .nt-asp-sextile { color: #3f7a54; }
+:root[data-theme="light"] .nt-asp-square, :root[data-theme="light"] .nt-asp-opposition { color: #a05468; }
+
+.nt-disclaimer {
+  text-align: center; margin: 2.2rem auto 0; max-width: 700px;
+  font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .nt-form-wrap { padding: 1.6rem; }
+  .nt-downloads, .nt-tables { grid-template-columns: 1fr; }
+  .nt-chart-head h3 { font-size: 2.6rem; }
+}

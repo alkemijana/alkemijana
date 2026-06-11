@@ -230,6 +230,101 @@ function renderNatalResult(chart) {
       '<td class="nt-num">' + a.orb.toFixed(1) + '°</td></tr>';
   }
   document.getElementById('natal-aspects-tbody').innerHTML = arows;
+
+  renderAspectGrid(chart, pal);
+  renderDominants(chart, pal);
+  renderShape(chart);
+
+  const disc = document.getElementById('natal-disclaimer');
+  if (disc) {
+    disc.textContent = 'Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · ' +
+      (chart.input.nodeType === 'mean' ? 'Srednji' : 'Pravi') + ' Mjesečev čvor, srednja Lilith';
+  }
+}
+
+/* ============ ASPEKTNA TABLICA (trokutasta mreža) ============ */
+
+function renderAspectGrid(chart, pal) {
+  const wrap = document.getElementById('natal-aspgrid');
+  if (!wrap) return;
+  // točke koje sudjeluju u aspektima, redoslijedom karte + ASC/MC
+  const pts = chart.planets
+    .filter(p => p.id !== 'fortune' && p.id !== 'vertex' && p.id !== 'snode')
+    .map(p => ({ id: p.id, name: p.name }));
+  pts.push({ id: 'asc', name: 'ASC' }, { id: 'mc', name: 'MC' });
+
+  const byPair = {};
+  for (const a of chart.aspects) { byPair[a.a + '|' + a.b] = a; byPair[a.b + '|' + a.a] = a; }
+
+  let h = '<table class="nt-aspgrid"><tbody>';
+  for (let i = 0; i < pts.length; i++) {
+    h += '<tr>';
+    for (let j = 0; j < i; j++) {
+      const a = byPair[pts[i].id + '|' + pts[j].id];
+      if (a) {
+        h += '<td class="nt-ag-cell" title="' + escHtml(pts[i].name + ' ' + a.aspectName.toLowerCase() + ' ' + pts[j].name + ' (orb ' + a.orb.toFixed(1) + '°)') + '">' +
+          glyphSvgHtml(a.aspect, 15, aspectColor(a.aspect, pal)) +
+          '<span class="nt-ag-orb">' + Math.round(a.orb) + '</span></td>';
+      } else {
+        h += '<td class="nt-ag-cell nt-ag-empty"></td>';
+      }
+    }
+    // dijagonala — glif točke
+    h += '<td class="nt-ag-diag" title="' + escHtml(pts[i].name) + '">' +
+      (GLYPHS[pts[i].id] ? glyphSvgHtml(pts[i].id, 17, pal.planet) : '<span class="nt-ag-lbl">' + pts[i].name + '</span>') + '</td>';
+    h += '</tr>';
+  }
+  h += '</tbody></table>';
+  wrap.innerHTML = h;
+}
+
+/* ============ DOMINANTE ============ */
+
+function renderDominants(chart, pal) {
+  const el = document.getElementById('natal-dominants');
+  if (!el) return;
+  const dom = computeDominants(chart);
+
+  const bar = (label, pct, color) =>
+    '<div class="nt-dom-row"><span class="nt-dom-lbl">' + label + '</span>' +
+    '<div class="nt-dom-bar"><div class="nt-dom-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+    '<span class="nt-dom-pct">' + pct + '%</span></div>';
+
+  let h = '<div class="nt-dom-grid">';
+  h += '<div class="nt-table-card"><h4>Elementi</h4>' +
+    bar('Vatra', dom.elements[0], pal.fire) +
+    bar('Zemlja', dom.elements[1], pal.earth) +
+    bar('Zrak', dom.elements[2], pal.air) +
+    bar('Voda', dom.elements[3], pal.water) + '</div>';
+  h += '<div class="nt-table-card"><h4>Kvalitete</h4>' +
+    bar('Kardinalno', dom.qualities[0], pal.axis) +
+    bar('Fiksno', dom.qualities[1], pal.harm) +
+    bar('Promjenjivo', dom.qualities[2], pal.conj) + '</div>';
+
+  let rows = '';
+  for (const c of dom.aspectCounts.slice(0, 8)) {
+    rows += '<tr><td>' + (GLYPHS[c.id] ? glyphSvgHtml(c.id, 17, pal.sign) + ' ' : '') + c.name +
+      '</td><td class="nt-num">' + c.count + '</td></tr>';
+  }
+  h += '<div class="nt-table-card"><h4>Najaspektiraniji</h4><table class="nt-table nt-table-dom">' +
+    '<thead><tr><th>Točka</th><th>Aspekata</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+/* ============ OBLIK KARTE ============ */
+
+function renderShape(chart) {
+  const el = document.getElementById('natal-shape');
+  if (!el) return;
+  const sh = detectShape(chart);
+  el.innerHTML = '<div class="nt-table-card nt-shape-card">' +
+    '<h4>Oblik karte</h4>' +
+    '<div class="nt-shape-name">' + escHtml(sh.name) + '</div>' +
+    (sh.handle ? '<div class="nt-shape-handle">Ručka: <strong>' + escHtml(sh.handle) + '</strong></div>' : '') +
+    '<p class="nt-shape-desc">' + escHtml(sh.desc) + '</p>' +
+    '<p class="nt-shape-note">Oblik se određuje prema rasporedu 10 klasičnih planeta (Jonesovi uzorci).</p>' +
+    '</div>';
 }
 
 /* Ponovno iscrtaj kotač kad se promijeni tema */

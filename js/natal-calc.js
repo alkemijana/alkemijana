@@ -174,10 +174,10 @@ function computeChart(input) {
         retro = (norm360(l2 - l1 + 180) - 180) < 0;
       }
     } else if (def.id === 'node') {
-      lon = trueLunarNode(time);
+      lon = input.nodeType === 'mean' ? meanLunarNode(T) : trueLunarNode(time);
       retro = true; // čvor se pretežno kreće retrogradno — standardna oznaka
     } else if (def.id === 'snode') {
-      lon = norm360(trueLunarNode(time) + 180);
+      lon = norm360((input.nodeType === 'mean' ? meanLunarNode(T) : trueLunarNode(time)) + 180);
       retro = true;
     } else if (def.id === 'lilith') {
       lon = meanLilith(T);
@@ -215,4 +215,96 @@ function computeChart(input) {
   const aspects = computeAspects(aspectPoints);
 
   return { input, planets, asc, mc, cusps, aspects, eps, ramc, jdUt };
+}
+
+/* ============ DOMINANTE (elementi, kvalitete, najaspektiraniji) ============ */
+
+/* Ponderirano: svjetla (Sunce, Mjesec) i ASC najjače, osobni planeti srednje,
+   društveni i vanjski slabije. Kao Astro-Seek: 10 planeta + ASC + MC. */
+function computeDominants(chart) {
+  const W = { sun:3, moon:3, mercury:2, venus:2, mars:2, jupiter:1.5, saturn:1.5, uranus:1, neptune:1, pluto:1 };
+  const pts = chart.planets.filter(p => W[p.id]).map(p => ({ lon: p.lon, w: W[p.id] }));
+  pts.push({ lon: chart.asc, w: 3 }, { lon: chart.mc, w: 2 });
+
+  const elements = [0, 0, 0, 0];   // vatra, zemlja, zrak, voda
+  const qualities = [0, 0, 0];     // kardinalno, fiksno, promjenjivo
+  let total = 0;
+  for (const pt of pts) {
+    const si = signIndex(pt.lon);
+    elements[si % 4] += pt.w;
+    qualities[si % 3] += pt.w;
+    total += pt.w;
+  }
+
+  // broj aspekata po točki (konjunkcije i sve ostalo zajedno)
+  const counts = {};
+  for (const a of chart.aspects) {
+    counts[a.a] = (counts[a.a] || 0) + 1;
+    counts[a.b] = (counts[a.b] || 0) + 1;
+  }
+  const nameOf = {};
+  for (const p of chart.planets) nameOf[p.id] = p.name;
+  nameOf.asc = 'ASC'; nameOf.mc = 'MC';
+  const aspectCounts = Object.keys(counts)
+    .map(id => ({ id, name: nameOf[id] || id, count: counts[id] }))
+    .sort((x, y) => y.count - x.count);
+
+  const pct = arr => arr.map(v => Math.round(v / total * 100));
+  return {
+    elements: pct(elements),    // [vatra, zemlja, zrak, voda] u %
+    qualities: pct(qualities),  // [kardinalno, fiksno, promjenjivo] u %
+    aspectCounts
+  };
+}
+
+/* ============ OBLIK KARTE (Jonesovi uzorci) ============ */
+
+/* Klasičnih 10 planeta; raspored po kružnici određuje uzorak. */
+function detectShape(chart) {
+  const ids = ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto'];
+  const pl = chart.planets.filter(p => ids.indexOf(p.id) >= 0);
+  const lons = pl.map(p => p.lon).sort((a, b) => a - b);
+  const n = lons.length;
+
+  const gaps = [];
+  for (let i = 0; i < n; i++) {
+    gaps.push({ size: norm360(lons[(i + 1) % n] - lons[i]), after: lons[i] });
+  }
+  const sorted = gaps.slice().sort((a, b) => b.size - a.size);
+  const g1 = sorted[0], g2 = sorted[1];
+  const span = 360 - g1.size; // luk u kojem su svi planeti
+
+  // Vedro: svi osim jednog u polukrugu, a taj jedan izoliran nasuprot (ručka)
+  let bucket = null;
+  for (const p of pl) {
+    const rest = lons.filter(l => l !== p.lon);
+    const rgaps = [];
+    for (let i = 0; i < rest.length; i++) rgaps.push(norm360(rest[(i + 1) % rest.length] - rest[i]));
+    const rspan = 360 - Math.max.apply(null, rgaps);
+    if (rspan <= 190) {
+      let minDist = 360;
+      for (const l of rest) minDist = Math.min(minDist, Math.abs(norm360(p.lon - l + 180) - 180));
+      if (minDist >= 60) { bucket = p; break; }
+    }
+  }
+
+  if (span <= 135) {
+    return { name: 'Snop (Bundle)', desc: 'Svi planeti su zbijeni unutar trećine kruga — vrlo usredotočena osobnost s uskim, dubokim fokusom interesa i talenata.' };
+  }
+  if (span <= 190) {
+    return { name: 'Zdjela (Bowl)', desc: 'Svi planeti zauzimaju polovicu kruga — samostalna, samodostatna osoba; prazna polovica karte pokazuje područje života koje privlači i motivira.' };
+  }
+  if (bucket) {
+    return { name: 'Vedro (Bucket)', desc: 'Planeti u polukrugu s jednim izdvojenim planetom nasuprot — "ručkom". Sva se energija usmjerava kroz taj planet.', handle: bucket.name };
+  }
+  if (span <= 250) {
+    return { name: 'Lokomotiva (Locomotive)', desc: 'Planeti zauzimaju dvije trećine kruga — snažan pokretački duh; planet koji "vuče" ostale (prvi u smjeru kazaljke iza praznine) daje ton cijeloj karti.' };
+  }
+  if (g1.size >= 60 && g2.size >= 60) {
+    return { name: 'Klackalica (Seesaw)', desc: 'Planeti u dvije nasuprotne skupine — život u dijalogu suprotnosti, stalno odvagivanje dviju strana, dar za sagledavanje obje perspektive.' };
+  }
+  if (g1.size < 65) {
+    return { name: 'Raspršeni (Splash)', desc: 'Planeti ravnomjerno raspršeni po cijelom krugu — širok raspon interesa i sposobnosti, univerzalnost, ali i izazov raspršenosti.' };
+  }
+  return { name: 'Lepeza (Splay)', desc: 'Planeti u nekoliko nepravilno raspoređenih skupina — individualist koji ne pristaje na kalupe, s nekoliko jakih, neovisnih područja djelovanja.' };
 }

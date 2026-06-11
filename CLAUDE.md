@@ -69,7 +69,12 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   (oskulirajući, iz state vektora), srednja Lilith (Meeus), Kiron iz vlastite
   efemeride (`js/natal-chiron.js`, interpolacija JPL Horizons podataka, 1900–2099),
   Fortuna (dnevna/noćna formula) i Vertex (ascendent ko-širine uz RAMC+180°) —
-  izvedene točke, ne ulaze u aspekte.
+  izvedene točke, ne ulaze u aspekte. Mjesečev čvor: pravi (default) ili srednji —
+  switch u formi (`aj_natal_node` u localStorage), preračunava postojeću kartu.
+- **Kartice rezultata (kao Astro-Seek):** Pozicije (tablice planeta/kuća/aspekata),
+  Aspektna tablica (trokutasta mreža), Dominante (elementi/kvalitete ponderirano +
+  najaspektiraniji), Oblik karte (Jonesovi uzorci — computeDominants/detectShape
+  u natal-calc.js). Minute se odsijecaju, ne zaokružuju (kao Astro-Seek).
 - **Točnost:** verificirano protiv JPL Horizons — planeti unutar ~5 lučnih sekundi;
   ASC/MC/Placidus provjereni geometrijski (visina ASC = 0°, omjeri polulukova 1/3, 2/3).
   Rezultati se poklapaju s Astro-Seekom (isti izvori efemerida).

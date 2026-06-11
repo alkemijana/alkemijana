@@ -614,6 +614,13 @@
               <input type="time" id="natal-time">
             </div>
           </div>
+          <div class="nt-options-row">
+            <span class="nt-opt-label">Mjesečev čvor:</span>
+            <div class="nt-seg" id="natal-node-seg">
+              <button type="button" class="nt-seg-btn active" data-node="true">Pravi</button>
+              <button type="button" class="nt-seg-btn" data-node="mean">Srednji</button>
+            </div>
+          </div>
           <div id="natal-error" class="nt-error" style="display:none"></div>
           <button type="submit" class="btn btn-primary" style="width:100%" id="natal-submit"></button>
           <p class="nt-note" id="t-natalNote"></p>
@@ -651,31 +658,55 @@
           </div>
         </div>
 
-        <div class="nt-tables">
-          <div class="nt-table-card">
-            <h4>Planeti</h4>
-            <table class="nt-table">
-              <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
-              <tbody id="natal-planets-tbody"></tbody>
-            </table>
-          </div>
-          <div class="nt-table-card">
-            <h4>Kuće (Placidus)</h4>
-            <table class="nt-table">
-              <thead><tr><th>Kuća</th><th>Znak</th><th>Stupanj</th></tr></thead>
-              <tbody id="natal-houses-tbody"></tbody>
-            </table>
-          </div>
-          <div class="nt-table-card nt-table-aspects">
-            <h4>Aspekti</h4>
-            <table class="nt-table">
-              <thead><tr><th></th><th>Aspekt</th><th></th><th>Orb</th></tr></thead>
-              <tbody id="natal-aspects-tbody"></tbody>
-            </table>
+        <div class="nt-tabs" id="natal-tabs">
+          <button class="nt-tab active" data-tab="pozicije">Pozicije</button>
+          <button class="nt-tab" data-tab="aspekti">Aspektna tablica</button>
+          <button class="nt-tab" data-tab="dominante">Dominante</button>
+          <button class="nt-tab" data-tab="oblik">Oblik karte</button>
+        </div>
+
+        <div class="nt-tabpane" id="natal-tab-pozicije">
+          <div class="nt-tables">
+            <div class="nt-table-card">
+              <h4>Planeti</h4>
+              <table class="nt-table">
+                <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
+                <tbody id="natal-planets-tbody"></tbody>
+              </table>
+            </div>
+            <div class="nt-table-card">
+              <h4>Kuće (Placidus)</h4>
+              <table class="nt-table">
+                <thead><tr><th>Kuća</th><th>Znak</th><th>Stupanj</th></tr></thead>
+                <tbody id="natal-houses-tbody"></tbody>
+              </table>
+            </div>
+            <div class="nt-table-card nt-table-aspects">
+              <h4>Aspekti</h4>
+              <table class="nt-table">
+                <thead><tr><th></th><th>Aspekt</th><th></th><th>Orb</th></tr></thead>
+                <tbody id="natal-aspects-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <p class="nt-disclaimer">Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · Pravi Mjesečev čvor, srednja Lilith</p>
+        <div class="nt-tabpane" id="natal-tab-aspekti" style="display:none">
+          <div class="nt-table-card nt-grid-card">
+            <h4>Aspektna tablica</h4>
+            <div class="nt-aspgrid-wrap" id="natal-aspgrid"></div>
+          </div>
+        </div>
+
+        <div class="nt-tabpane" id="natal-tab-dominante" style="display:none">
+          <div id="natal-dominants"></div>
+        </div>
+
+        <div class="nt-tabpane" id="natal-tab-oblik" style="display:none">
+          <div id="natal-shape"></div>
+        </div>
+
+        <p class="nt-disclaimer" id="natal-disclaimer">Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · Pravi Mjesečev čvor, srednja Lilith</p>
       </div>
     </div>
   </section>

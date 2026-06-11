@@ -62,6 +62,51 @@ function initPlaceAutocomplete() {
   inp.addEventListener('blur', () => setTimeout(() => { dd.style.display = 'none'; }, 200));
 }
 
+/* ============ POSTAVKE (čvor) I KARTICE ============ */
+
+function currentNodeType() {
+  const btn = document.querySelector('#natal-node-seg .nt-seg-btn.active');
+  return btn ? btn.dataset.node : 'true';
+}
+
+function initNodeToggle() {
+  const seg = document.getElementById('natal-node-seg');
+  if (!seg) return;
+  // vrati spremljeni izbor
+  try {
+    const saved = localStorage.getItem('aj_natal_node');
+    if (saved) {
+      seg.querySelectorAll('.nt-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.node === saved));
+    }
+  } catch (e) {}
+  seg.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.nt-seg-btn');
+    if (!btn || btn.classList.contains('active')) return;
+    seg.querySelectorAll('.nt-seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    try { localStorage.setItem('aj_natal_node', btn.dataset.node); } catch (e) {}
+    // ako je karta već izračunata — preračunaj s novim tipom čvora
+    if (currentChart) {
+      const inp = Object.assign({}, currentChart.input, { nodeType: btn.dataset.node });
+      currentChart = computeChart(inp);
+      renderNatalResult(currentChart);
+    }
+  });
+}
+
+function initNatalTabs() {
+  const tabs = document.getElementById('natal-tabs');
+  if (!tabs) return;
+  tabs.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('.nt-tab');
+    if (!btn) return;
+    tabs.querySelectorAll('.nt-tab').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.nt-tabpane').forEach(p => {
+      p.style.display = (p.id === 'natal-tab-' + btn.dataset.tab) ? 'block' : 'none';
+    });
+  });
+}
+
 /* ============ FORMA ============ */
 
 async function natalSubmit(ev) {
@@ -92,7 +137,7 @@ async function natalSubmit(ev) {
     const chart = computeChart({
       utcDate, lat: selectedPlace.lat, lon: selectedPlace.lon,
       name, y, mo, d, h, mi, offsetMin,
-      place: selectedPlace
+      place: selectedPlace, nodeType: currentNodeType()
     });
     currentChart = chart;
     renderNatalResult(chart);
@@ -118,6 +163,8 @@ window.addEventListener('load', () => {
   if (!form) return;
   form.addEventListener('submit', natalSubmit);
   initPlaceAutocomplete();
+  initNodeToggle();
+  initNatalTabs();
   document.getElementById('natal-poster-btn').addEventListener('click', downloadPoster);
   document.getElementById('natal-working-btn').addEventListener('click', downloadWorking);
 

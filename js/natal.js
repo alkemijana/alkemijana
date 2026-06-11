@@ -70,7 +70,13 @@ const GLYPHS = {
   sagittarius: { s:'M4.6,19.4 L19.4,4.6 M12.6,4.6 L19.4,4.6 L19.4,11.4 M7.5,11.3 L12.7,16.5' },
   capricorn:   { s:'M3.2,5.8 L6.8,13.4 L10.2,5.8 L10.2,14.6 C10.2,18.1 12.4,20.2 15.2,20.2 C18,20.2 19.5,18.3 19,16.1 C18.5,14.1 16.3,13.3 14.5,14.5 C13.1,15.5 12.7,17.4 13.7,18.8' },
   aquarius:    { s:'M3.6,8.8 L8,5.2 L12,8.8 L16,5.2 L20.4,8.8 M3.6,16.4 L8,12.8 L12,16.4 L16,12.8 L20.4,16.4' },
-  pisces:      { s:'M7.2,3.4 C9.9,6.5 9.9,17.5 7.2,20.6 M16.8,3.4 C14.1,6.5 14.1,17.5 16.8,20.6 M9.8,12 L14.2,12' }
+  pisces:      { s:'M7.2,3.4 C9.9,6.5 9.9,17.5 7.2,20.6 M16.8,3.4 C14.1,6.5 14.1,17.5 16.8,20.6 M9.8,12 L14.2,12' },
+
+  conjunction: { s:'M14,12 A5,5 0 1,0 4,12 A5,5 0 1,0 14,12 M20,12 A5,5 0 1,0 10,12 A5,5 0 1,0 20,12' },
+  sextile:     { s:'M12,4 L19,16 L5,16 Z M12,20 L5,8 L19,8 Z' },
+  square:      { s:'M5,5 L19,5 L19,19 L5,19 Z' },
+  trine:       { s:'M12,4 L20,18 L4,18 Z' },
+  opposition:  { s:'M12,7 A5,5 0 1,0 12,17 A5,5 0 1,0 12,7 M1,12 L23,12' }
 };
 
 /* ============ MALE POMOĆNE ============ */
@@ -430,8 +436,11 @@ function buildChartSVG(chart, pal, opts) {
     { lon: chart.mc, label: 'MC' },   { lon: norm360(chart.mc + 180), label: 'IC' }
   ];
   for (const ax of axes) {
-    s += line(ax.lon, R_HIN, 474, pal.axis, 2.4);
-    const [tx, ty] = pt(ax.lon, 488);
+    // crta do unutarnjeg ruba zodijačkog pojasa, pa kratki nastavak izvan njega
+    // — tako linija ne prelazi preko glifova znakova
+    s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.4);
+    s += line(ax.lon, R_OUT, 474, pal.axis, 2.4);
+    const [tx, ty] = pt(ax.lon, 494);
     s += '<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" fill="' + pal.axisText +
       '" font-size="20" font-family="Quicksand, sans-serif" font-weight="600" text-anchor="middle" dominant-baseline="middle">' + ax.label + '</text>';
     // strelica
@@ -659,7 +668,7 @@ function renderNatalResult(chart) {
     rows += '<tr><td>' + glyphSvgHtml(p.id, 19, pal.sign) + ' ' + p.name + '</td>' +
       '<td>' + glyphSvgHtml(signKey(p.lon), 17, pal.sign) + ' ' + signName(p.lon) + '</td>' +
       '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td>' +
-      '<td class="nt-num">' + p.house + '. kuća</td></tr>';
+      '<td class="nt-num">' + p.house + '.<span class="nt-kuca"> kuća</span></td></tr>';
   }
   rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, pal.sign) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
   rows += '<tr class="nt-angle-row"><td>MC (sredina neba)</td><td>' + glyphSvgHtml(signKey(chart.mc), 17, pal.sign) + ' ' + signName(chart.mc) + '</td><td class="nt-num">' + fmtDegMin(chart.mc) + '</td><td></td></tr>';
@@ -681,7 +690,7 @@ function renderNatalResult(chart) {
   let arows = '';
   for (const a of chart.aspects) {
     arows += '<tr><td>' + (GLYPHS[a.a] ? glyphSvgHtml(a.a, 17, pal.sign) + ' ' : '') + nameOf[a.a] + '</td>' +
-      '<td class="nt-asp nt-asp-' + a.aspect + '">' + a.aspectName + '</td>' +
+      '<td class="nt-asp nt-asp-' + a.aspect + '">' + glyphSvgHtml(a.aspect, 16, aspectColor(a.aspect, pal)) + ' ' + a.aspectName + '</td>' +
       '<td>' + (GLYPHS[a.b] ? glyphSvgHtml(a.b, 17, pal.sign) + ' ' : '') + nameOf[a.b] + '</td>' +
       '<td class="nt-num">' + a.orb.toFixed(1) + '°</td></tr>';
   }
@@ -699,6 +708,7 @@ new MutationObserver(() => {
 
 const FONT_FILES = [
   { file: 'assets/fonts/Tangerine-Bold.ttf',        name: 'Tangerine',        style: 'bold' },
+  { file: 'assets/fonts/DancingScript.ttf',         name: 'DancingScript',    style: 'bold' },
   { file: 'assets/fonts/PlayfairDisplay-Regular.ttf', name: 'PlayfairDisplay', style: 'normal' },
   { file: 'assets/fonts/Quicksand-Medium.ttf',      name: 'Quicksand',        style: 'normal' }
 ];
@@ -736,6 +746,20 @@ function svgToElement(svgStr) {
   return div.firstElementChild;
 }
 
+/* Nacrtaj mali glif (planet/znak/aspekt) u PDF na poziciji bazne linije teksta (x, y) */
+async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
+  const g = GLYPHS[key];
+  if (!g) return;
+  let inner = '';
+  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="none"/>';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
+  const el = svgToElement(svg);
+  document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+  try { await doc.svg(el, { x: x, y: y - sizeMm * 0.78, width: sizeMm, height: sizeMm }); }
+  finally { el.remove(); }
+}
+
 const PAGE_MM = { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] };
 
 /* Zvjezdano nebo za poster (deterministički pseudo-random).
@@ -763,6 +787,19 @@ function posterStars(w, h, seed, avoid) {
     placed++;
   }
   return out;
+}
+
+/* Smanji veličinu fonta dok tekst ne stane u maxWidth (mjereno preko canvasa) */
+function fitFontSize(text, family, weight, maxSize, maxWidth, minSize) {
+  minSize = minSize || maxSize * 0.35;
+  try {
+    const canvas = fitFontSize._c || (fitFontSize._c = document.createElement('canvas'));
+    const ctx = canvas.getContext('2d');
+    ctx.font = (weight ? weight + ' ' : '') + maxSize + 'px ' + family;
+    const measured = ctx.measureText(text).width;
+    if (!measured || measured <= maxWidth) return maxSize;
+    return Math.max(minSize, maxSize * (maxWidth / measured) * 0.98);
+  } catch (e) { return maxSize; }
 }
 
 /* Poster SVG — dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
@@ -797,9 +834,10 @@ function buildPosterSVG(chart, w, h) {
   s += '<rect x="' + (m + w * 0.008) + '" y="' + (m + w * 0.008) + '" width="' + (w - 2 * m - w * 0.016) + '" height="' + (h - 2 * m - w * 0.016) +
        '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0007) + '"/>';
 
-  // naslov
-  const f1 = w * 0.105; // Tangerine ime
-  s += '<text x="' + cx + '" y="' + (h * 0.105) + '" fill="#e4e0f4" font-family="Tangerine" font-weight="bold" font-size="' + f1 +
+  // naslov — font koji prikazuje sva slova (č, ć, š, ž, đ), suzi se ako je predugačak
+  const maxTextW = w * 0.84;
+  const f1 = fitFontSize(name, 'Dancing Script', '700', w * 0.105, maxTextW);
+  s += '<text x="' + cx + '" y="' + (h * 0.105) + '" fill="#e4e0f4" font-family="DancingScript" font-weight="bold" font-size="' + f1 +
        '" text-anchor="middle">' + escHtml(name) + '</text>';
   // linija s zvjezdicom
   const ly = h * 0.125, lw = w * 0.3;
@@ -807,9 +845,11 @@ function buildPosterSVG(chart, w, h) {
   s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
   s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
   // podaci rođenja
-  s += '<text x="' + cx + '" y="' + (h * 0.152) + '" fill="#c4c0d8" font-family="PlayfairDisplay" font-size="' + (w * 0.0235) +
+  const fData = fitFontSize(dataLine, 'Playfair Display', null, w * 0.0235, maxTextW);
+  s += '<text x="' + cx + '" y="' + (h * 0.152) + '" fill="#c4c0d8" font-family="PlayfairDisplay" font-size="' + fData +
        '" text-anchor="middle">' + escHtml(dataLine) + '</text>';
-  s += '<text x="' + cx + '" y="' + (h * 0.175) + '" fill="#9d95c0" font-family="Quicksand" font-size="' + (w * 0.0185) +
+  const fTrio = fitFontSize(trio, 'Quicksand', null, w * 0.0185, maxTextW);
+  s += '<text x="' + cx + '" y="' + (h * 0.175) + '" fill="#9d95c0" font-family="Quicksand" font-size="' + fTrio +
        '" text-anchor="middle">' + escHtml(trio) + '</text>';
 
   // kotač (unutarnje koordinate -30..1030 → 1060 jedinica)
@@ -895,17 +935,23 @@ async function downloadWorking() {
     for (const p of chart.planets) nameOf[p.id] = p.name;
     nameOf.asc = 'ASC'; nameOf.mc = 'MC';
 
+    const INK_PLANET = '#2a2348', INK_SIGN = '#5a4090';
+
     for (const p of chart.planets) {
       doc.setTextColor(46, 39, 82);
-      doc.text(p.name, 20, y);
-      doc.text(signName(p.lon), 62, y);
+      await drawGlyphPdf(doc, p.id, 20, y, 4, INK_PLANET);
+      doc.text(p.name, 26, y);
+      await drawGlyphPdf(doc, signKey(p.lon), 62, y, 4, INK_SIGN);
+      doc.text(signName(p.lon), 68, y);
       doc.text(fmtDegMin(p.lon) + (p.retro ? '  R' : ''), 95, y);
       doc.text(p.house + '. kuća', 125, y);
       y += 6.2;
     }
     doc.setTextColor(90, 64, 144);
-    doc.text('ASC (podznak)', 20, y); doc.text(signName(chart.asc), 62, y); doc.text(fmtDegMin(chart.asc), 95, y); y += 6.2;
-    doc.text('MC (sredina neba)', 20, y); doc.text(signName(chart.mc), 62, y); doc.text(fmtDegMin(chart.mc), 95, y);
+    await drawGlyphPdf(doc, signKey(chart.asc), 62, y, 4, INK_SIGN);
+    doc.text('ASC (podznak)', 20, y); doc.text(signName(chart.asc), 68, y); doc.text(fmtDegMin(chart.asc), 95, y); y += 6.2;
+    await drawGlyphPdf(doc, signKey(chart.mc), 62, y, 4, INK_SIGN);
+    doc.text('MC (sredina neba)', 20, y); doc.text(signName(chart.mc), 68, y); doc.text(fmtDegMin(chart.mc), 95, y);
 
     doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(14); doc.setTextColor(42, 35, 72);
     doc.text('Kuće (Placidus)', 20, y + 14);
@@ -916,8 +962,9 @@ async function downloadWorking() {
       const yy = hy + ((i - 1) % 6) * 6.2;
       doc.setTextColor(46, 39, 82);
       doc.text(i + '.', 20 + col * 90, yy);
-      doc.text(signName(chart.cusps[i]), 30 + col * 90, yy);
-      doc.text(fmtDegMin(chart.cusps[i]), 62 + col * 90, yy);
+      await drawGlyphPdf(doc, signKey(chart.cusps[i]), 28 + col * 90, yy, 4, INK_SIGN);
+      doc.text(signName(chart.cusps[i]), 34 + col * 90, yy);
+      doc.text(fmtDegMin(chart.cusps[i]), 64 + col * 90, yy);
     }
 
     let ay = hy + 6 * 6.2 + 14;
@@ -931,10 +978,19 @@ async function downloadWorking() {
       const col = i < half ? 0 : 1;
       const yy = ay + (i % half) * 5.6;
       if (yy > H - 15) continue;
+      const baseX = 20 + col * 95;
+      let cx = baseX;
+      if (GLYPHS[a.a]) { await drawGlyphPdf(doc, a.a, cx, yy, 3.6, INK_PLANET); cx += 4.2; }
       doc.setTextColor(46, 39, 82);
-      doc.text(nameOf[a.a] + ' – ' + nameOf[a.b], 20 + col * 95, yy);
+      doc.text(nameOf[a.a], cx, yy);
+      cx += doc.getTextWidth(nameOf[a.a]) + 2;
+      if (GLYPHS[a.b]) { await drawGlyphPdf(doc, a.b, cx, yy, 3.6, INK_PLANET); cx += 4.2; }
+      doc.text(nameOf[a.b], cx, yy);
+
+      const ax2 = baseX + 58;
+      await drawGlyphPdf(doc, a.aspect, ax2, yy, 3.6, aspectColor(a.aspect, PALETTES.ink));
       doc.setTextColor(110, 100, 150);
-      doc.text(a.aspectName + ' (' + a.orb.toFixed(1) + '°)', 60 + col * 95, yy);
+      doc.text(a.aspectName + ' (' + a.orb.toFixed(1) + '°)', ax2 + 4.2, yy);
     }
     doc.setFontSize(8); doc.setTextColor(138, 130, 172);
     doc.text('Alkemijana · alkemijana.com', W / 2, H - 10, { align: 'center' });

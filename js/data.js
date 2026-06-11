@@ -311,7 +311,7 @@ let TEXTS = {
   "natalBtn": "✦ Izračunaj natalnu kartu",
   "natalNote": "Vremenska zona i povijesno ljetno/zimsko vrijeme određuju se automatski prema mjestu i datumu rođenja.",
   "natalPosterTitle": "✦ Poster za ispis",
-  "natalPosterText": "Ukrasna karta u visokoj rezoluciji — odnesi PDF u kopirnicu i isprintaj na kvalitetnom papiru.",
+  "natalPosterText": "Ukrasna karta u visokoj rezoluciji, u formatima od A4 do A0.",
   "natalPosterBtn": "⬇ Preuzmi poster PDF",
   "natalWorkingTitle": "☾ Radna verzija",
   "natalWorkingText": "A4 dokument s kartom i svim tablicama — pregledan ispis za iščitavanje karte.",

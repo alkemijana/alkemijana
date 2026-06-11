@@ -1688,8 +1688,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 
 .nt-chart-head { text-align: center; margin-bottom: 1.2rem; }
 .nt-chart-head h3 {
-  font-family: 'Tangerine', cursive; font-weight: 700; font-size: 3.4rem;
-  color: var(--silver-bright); line-height: 1.1;
+  font-family: 'Dancing Script', cursive; font-weight: 700; font-size: 2.6rem;
+  color: var(--silver-bright); line-height: 1.2;
 }
 .nt-chart-head div { font-family: 'Quicksand', sans-serif; font-size: 0.95rem; color: var(--text-muted); }
 
@@ -1720,17 +1720,22 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-table-aspects { grid-column: 1 / -1; }
 .nt-table-card {
   background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
-  padding: 1.4rem 1.6rem; overflow-x: auto;
+  padding: 1.4rem 1.6rem;
 }
 .nt-table-card h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--lavender); margin-bottom: 0.8rem; }
-.nt-table { width: 100%; border-collapse: collapse; font-family: 'Quicksand', sans-serif; font-size: 0.9rem; }
+.nt-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Quicksand', sans-serif; font-size: 0.9rem; }
 .nt-table th {
   text-align: left; font-weight: 600; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-muted); padding: 0.3rem 0.6rem 0.5rem; border-bottom: 1px solid var(--border);
+  color: var(--text-muted); padding: 0.3rem 0.4rem 0.5rem; border-bottom: 1px solid var(--border);
 }
-.nt-table td { padding: 0.42rem 0.6rem; color: var(--text); border-bottom: 1px solid rgba(168, 144, 208, 0.08); white-space: nowrap; }
+.nt-table td { padding: 0.42rem 0.4rem; color: var(--text); border-bottom: 1px solid rgba(168, 144, 208, 0.08); white-space: nowrap; }
 .nt-table tr:last-child td { border-bottom: none; }
+.nt-kuca { display: inline; }
 .nt-num { font-variant-numeric: tabular-nums; }
+.nt-table th:nth-child(1), .nt-table td:nth-child(1) { width: 40%; }
+.nt-table th:nth-child(2), .nt-table td:nth-child(2) { width: 32%; }
+.nt-table th:nth-child(3), .nt-table td:nth-child(3) { width: 18%; }
+.nt-table th:nth-child(4), .nt-table td:nth-child(4) { width: 10%; }
 .nt-glyph { vertical-align: -3px; margin-right: 2px; }
 .nt-retro { color: #c98a9a; font-size: 0.85em; }
 .nt-angle-row td { color: var(--lavender); }
@@ -1748,7 +1753,24 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 @media (max-width: 760px) {
   .nt-form-wrap { padding: 1.6rem; }
   .nt-downloads, .nt-tables { grid-template-columns: 1fr; }
-  .nt-chart-head h3 { font-size: 2.6rem; }
+  .nt-chart-head h3 { font-size: 2.2rem; }
+}
+
+@media (max-width: 480px) {
+  .nt-table-card { padding: 1.1rem 0.9rem; }
+  .nt-table { font-size: 0.78rem; }
+  .nt-table td, .nt-table th { padding: 0.34rem 0.25rem; }
+  .nt-kuca { display: none; }
+
+  /* Aspekti — kao redovi koji se slobodno prelamaju umjesto fiksnih stupaca */
+  .nt-table-aspects thead { display: none; }
+  .nt-table-aspects table, .nt-table-aspects tbody, .nt-table-aspects tr, .nt-table-aspects td { display: block; width: auto; }
+  .nt-table-aspects tr {
+    display: flex; align-items: center; flex-wrap: wrap; column-gap: 0.4rem; row-gap: 0.2rem;
+    padding: 0.45rem 0;
+  }
+  .nt-table-aspects td { padding: 0; border-bottom: none; white-space: nowrap; }
+  .nt-table-aspects td:nth-child(4) { margin-left: auto; padding-left: 0.4rem; }
 }
 
 /* Natalna forma — poravnanje i tamni native pickeri */

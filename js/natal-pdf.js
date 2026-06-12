@@ -268,17 +268,17 @@ function buildAstroSeekSVG(chart) {
     s += '<rect x="0" y="' + ry.toFixed(2) + '" width="' + labW + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.35"/>';
     // glif planeta
     s += inlineGlyph(p.id, 2.9, ry + cs / 2, 5.0, INK, 0.6);
-    // ime
-    s += '<text x="6.2" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="3.15"' + B + ' font-family="Quicksand, sans-serif" dy=".35em">' + escHtml(p.name) + '</text>';
+    // ime — vertikalno centrirano (svg2pdf ne poštuje dy pouzdano → eksplicitan baseline)
+    s += '<text x="6.2" y="' + (ry + cs / 2 + 1.1).toFixed(2) + '" fill="' + INK + '" font-size="3.15"' + B + ' font-family="Quicksand, sans-serif">' + escHtml(p.name) + '</text>';
     // glif znaka
     s += inlineGlyph(signKey(p.lon), 26.0, ry + cs / 2, 4.5, elementColor(p.lon, PAL), 0.6);
-    // stupanj + R
+    // stupanj + R — vertikalno centrirano
     const dm = degMinParts(p.lon);
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
-    s += '<text x="28.8" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif" dy=".35em">' + dmTxt + '</text>';
+    s += '<text x="28.8" y="' + (ry + cs / 2 + 1.05).toFixed(2) + '" fill="' + INK + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif">' + dmTxt + '</text>';
     // kuća (desno poravnato — x računamo sami, svg2pdf ne centrira pouzdano)
     if (p.house) {
-      s += '<text x="' + (labW - 1.6 - tw(p.house, 3.0)).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif" dy=".35em">' + p.house + '</text>';
+      s += '<text x="' + (labW - 1.6 - tw(p.house, 3.0)).toFixed(2) + '" y="' + (ry + cs / 2 + 1.05).toFixed(2) + '" fill="' + MUT + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif">' + p.house + '</text>';
     }
 
     // — Cells: 0..i (diagonal at i)
@@ -292,8 +292,8 @@ function buildAstroSeekSVG(chart) {
           s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 5.0, INK, 0.6);
         } else {
           const lbl = p.id === 'asc' ? 'AC' : 'MC';
-          s += '<text x="' + (cx + cs / 2 - tw(lbl, 3.0) / 2).toFixed(2) + '" y="' + (cy + cs / 2).toFixed(2) +
-            '" fill="' + INK + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif" dy=".35em">' + lbl + '</text>';
+          s += '<text x="' + (cx + cs / 2 - tw(lbl, 3.0) / 2).toFixed(2) + '" y="' + (cy + cs / 2 + 1.05).toFixed(2) +
+            '" fill="' + INK + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif">' + lbl + '</text>';
         }
       } else {
         const ap = byPair[pts[i].id + '|' + pts[j].id];
@@ -390,7 +390,7 @@ async function downloadWorking() {
     const W = 210, H = 297;
     const INK_PLANET = '#2a2348';
     const INK_MUT    = '#6a5d8c';
-    const PAGE_M     = 11;
+    const PAGE_M     = 5;
     const CONTENT_W  = W - 2 * PAGE_M;
     const nameOf = {};
     for (const p of chart.planets) nameOf[p.id] = p.name;
@@ -420,19 +420,10 @@ async function downloadWorking() {
 
     const TOTAL_PAGES = 2;
 
-    // ===== STRANICA 1: karta (lijevo) + legenda aspekata (desno) + aspektna tablica + dominante =====
-    const title1 = chart.input.name || 'Natalna karta';
-    doc.setFont('PlayfairDisplay', 'normal'); doc.setTextColor(42, 35, 72);
-    let tSize = 13;
-    doc.setFontSize(tSize);
-    while (tSize > 8 && doc.getTextWidth(title1) > 110) { tSize -= 0.5; doc.setFontSize(tSize); }
-    doc.text(title1, PAGE_M, 11);
-    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8); doc.setTextColor(90, 80, 130);
-    doc.text(birthDataLine(chart), PAGE_M, 16);
-
-    const chartSize = 150;
-    const chartX = PAGE_M;
-    const chartY = 18;
+    // ===== STRANICA 1: velika karta (lijevo, do margina) + naslov i legenda (desni stupac) =====
+    const chartSize = 164;
+    const chartX = PAGE_M;          // lijeva margina (5mm)
+    const chartY = 5;               // gornja margina
     await renderSvgOnDoc(
       buildChartSVG(chart, PALETTES.ink, {
         showAspects: true,
@@ -444,10 +435,28 @@ async function downloadWorking() {
       chartX, chartY, chartSize, chartSize
     );
 
-    // — Legenda aspekata POKRAJ karte (desno). Debljina linije i dasharray
-    //   skalirani identično kao na karti (chartScale) → potpuno konzistentno s kartom.
+    // — Desni stupac: naslov (ime + podaci rođenja) gore, pa legenda aspekata.
+    const rightX = chartX + chartSize + 4;
+    const rightW = (W - PAGE_M) - rightX;
+    const title1 = chart.input.name || 'Natalna karta';
+    doc.setFont('PlayfairDisplay', 'normal'); doc.setTextColor(42, 35, 72);
+    let tSize = 13;
+    doc.setFontSize(tSize);
+    while (tSize > 8 && doc.getTextWidth(title1) > rightW) { tSize -= 0.5; doc.setFontSize(tSize); }
+    doc.text(title1, rightX, 11);
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.6); doc.setTextColor(90, 80, 130);
+    const bdLines = doc.splitTextToSize(birthDataLine(chart), rightW);
+    doc.text(bdLines, rightX, 15.5);
+
+    // Legenda aspekata — debljina linije i dasharray skalirani identično kao na
+    // karti (chartScale) → potpuno konzistentno s linijama na natalnoj karti.
     const chartScale = chartSize / 1120;
-    const legX = chartX + chartSize + 4;
+    const hexToRgb = h => { const m = h.replace('#', ''); return [parseInt(m.substr(0, 2), 16), parseInt(m.substr(2, 2), 16), parseInt(m.substr(4, 2), 16)]; };
+    let lyy = 15.5 + bdLines.length * 3.3 + 8;
+    doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(11); doc.setTextColor(42, 35, 72);
+    doc.text('Aspekti', rightX, lyy);
+    lyy += 7.5;
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.4);
     const legItems = [
       ['conjunction', 'Konjunkcija 0°'],
       ['sextile',     'Sekstil 60°'],
@@ -455,12 +464,6 @@ async function downloadWorking() {
       ['trine',       'Trigon 120°'],
       ['opposition',  'Opozicija 180°']
     ];
-    const hexToRgb = h => { const m = h.replace('#', ''); return [parseInt(m.substr(0, 2), 16), parseInt(m.substr(2, 2), 16), parseInt(m.substr(4, 2), 16)]; };
-    let lyy = chartY + (chartSize - 53) / 2;
-    doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(11); doc.setTextColor(42, 35, 72);
-    doc.text('Aspekti', legX, lyy);
-    lyy += 8;
-    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.6);
     for (const [id, label] of legItems) {
       const rgb = hexToRgb(aspectColor(id, PALETTES.ink));
       doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
@@ -468,11 +471,11 @@ async function downloadWorking() {
       const dash = aspectDashPattern(id);
       if (dash) doc.setLineDashPattern(dash.split(',').map(v => Number(v) * chartScale), 0);
       else doc.setLineDashPattern([], 0);
-      doc.line(legX, lyy, legX + 17, lyy);
+      doc.line(rightX, lyy, rightX + 16, lyy);
       doc.setLineDashPattern([], 0);
       doc.setTextColor(60, 50, 100);
-      doc.text(label, legX, lyy + 4.3);
-      lyy += 9.6;
+      doc.text(label, rightX, lyy + 4.2);
+      lyy += 9.4;
     }
 
     // napomena za karte bez vremena rođenja
@@ -487,7 +490,7 @@ async function downloadWorking() {
     //   Sve tri stavke (karta, aspektna tablica, dominante) stanu na 1. stranicu.
     const a2 = buildAstroSeekSVG(chart);
     const gridTop = ly + 2;
-    const availH = (H - 11) - gridTop;
+    const availH = (H - 11) - gridTop;   // ostavlja prostor do podnožja
     const gsc = Math.min(CONTENT_W / a2.viewW, availH / a2.viewH);
     await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
 

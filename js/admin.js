@@ -1364,6 +1364,17 @@ function getDateStr(daysOffset) {
    Svaki ključ mora postojati i u TEXTS (data.js) i u applyTexts() (app.js). */
 const TEXT_GROUPS = [
   {
+    title: 'Navigacija (izbornik)',
+    keys: {
+      navHome:     'Početna',
+      navServices: 'Usluge',
+      navAbout:    'O meni',
+      navBlog:     'Blog',
+      navNatal:    'Natalna karta',
+      navContact:  'Kontakt'
+    }
+  },
+  {
     title: 'Početna',
     keys: {
       heroSub:          'Hero — podnaslov',
@@ -1377,7 +1388,10 @@ const TEXT_GROUPS = [
       reviewsSub:       'Recenzije — podnaslov',
       blogPreviewTitle: 'Blog pregled — naslov',
       blogPreviewSub:   'Blog pregled — podnaslov',
-      blogPreviewBtn:   'Blog pregled — gumb'
+      blogPreviewBtn:   'Blog pregled — gumb',
+      homeNatalTitle:   'Natalna karta CTA — naslov',
+      homeNatalText:    'Natalna karta CTA — tekst',
+      homeNatalBtn:     'Natalna karta CTA — gumb'
     }
   },
   {
@@ -1420,9 +1434,12 @@ const TEXT_GROUPS = [
   {
     title: 'Blog stranica',
     keys: {
-      blogPageTitle: 'Naslov stranice',
-      blogPageSub:   'Podnaslov stranice',
-      relatedTitle:  '"Možda će ti se svidjeti" naslov'
+      blogPageTitle:        'Naslov stranice',
+      blogPageSub:          'Podnaslov stranice',
+      relatedTitle:         '"Možda će ti se svidjeti" naslov',
+      blogSearchPlaceholder: 'Tražilica — placeholder',
+      blogBackBtn:          'Gumb "Povratak na blog"',
+      blogSourcesTitle:     'Naslov "Izvori"'
     }
   },
   {
@@ -1437,20 +1454,48 @@ const TEXT_GROUPS = [
       natalPosterBtn:    'Poster kartica — gumb',
       natalWorkingTitle: 'Radna verzija — naslov',
       natalWorkingText:  'Radna verzija — opis',
-      natalWorkingBtn:   'Radna verzija — gumb'
+      natalWorkingBtn:   'Radna verzija — gumb',
+      natalNameLabel:    'Forma — Ime (oznaka)',
+      natalNamePlaceholder: 'Forma — Ime (placeholder)',
+      natalPlaceLabel:   'Forma — Mjesto rođenja (oznaka)',
+      natalPlacePlaceholder: 'Forma — Mjesto rođenja (placeholder)',
+      natalDateLabel:    'Forma — Datum rođenja',
+      natalTimeLabel:    'Forma — Vrijeme rođenja',
+      natalNoTimeLabel:  'Forma — "Ne znam vrijeme rođenja"',
+      natalNodeLabel:    'Forma — "Mjesečev čvor:"',
+      natalNodeTrue:     'Forma — čvor "Pravi"',
+      natalNodeMean:     'Forma — čvor "Srednji"'
     }
   },
   {
     title: 'Kontakt',
     keys: {
-      contactTitle: 'Naslov',
-      contactSub:   'Podnaslov'
+      contactTitle:         'Naslov',
+      contactSub:           'Podnaslov',
+      contactEmailLabel:    'Oznaka — Email',
+      contactPhoneLabel:    'Oznaka — Telefon',
+      contactLocationLabel: 'Oznaka — Lokacija',
+      contactLocationValue: 'Lokacija — vrijednost',
+      contactLocationNote:  'Lokacija — napomena (sitno)',
+      contactFollowLabel:   'Oznaka — Pratite me',
+      formNameLabel:        'Forma — Ime i prezime',
+      formEmailLabel:       'Forma — Email',
+      formPhoneLabel:       'Forma — Telefon',
+      formServiceLabel:     'Forma — Usluga (oznaka)',
+      formServicePlaceholder: 'Forma — Usluga (prazna opcija)',
+      formMessageLabel:     'Forma — Poruka (oznaka)',
+      formMessagePlaceholder: 'Forma — Poruka (placeholder)',
+      formSubmitBtn:        'Forma — gumb za slanje',
+      formSuccessTitle:     'Poruka uspjeha — naslov',
+      formSuccessText:      'Poruka uspjeha — tekst'
     }
   },
   {
     title: 'Footer',
     keys: {
-      footerTagline: 'Tagline ispod naslova'
+      footerTagline: 'Tagline ispod naslova',
+      footerCopy:    'Copyright redak',
+      footerCredit:  'Kredit (Designed by…)'
     }
   }
 ];

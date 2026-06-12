@@ -167,7 +167,7 @@ function renderServices() {
   if (allGrid)  allGrid.innerHTML  = active.map(svcCard).join('');
 
   if (sel) {
-    sel.innerHTML = '<option value="">Odaberi uslugu</option>' +
+    sel.innerHTML = `<option value="">${esc(TEXTS.formServicePlaceholder || 'Odaberi uslugu')}</option>` +
       active.map(s => {
         let info = '';
         if (s.showPrice !== false) info += s.price + ' €';
@@ -1024,6 +1024,56 @@ function applyTexts() {
       : t.contactTitle;
   }
   set('t-contactSub', t.contactSub);
+
+  // Placeholderi (postavljaju se na placeholder atribut, ne textContent)
+  const setPh = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = val == null ? '' : val; };
+
+  // Navigacija
+  set('t-navHome',     t.navHome);
+  set('t-navServices', t.navServices);
+  set('t-navAbout',    t.navAbout);
+  set('t-navBlog',     t.navBlog);
+  set('t-navNatal',    t.navNatal);
+  set('t-navContact',  t.navContact);
+
+  // Kontakt — info i forma
+  set('t-contactEmailLabel',    t.contactEmailLabel);
+  set('t-contactPhoneLabel',    t.contactPhoneLabel);
+  set('t-contactLocationLabel', t.contactLocationLabel);
+  set('t-contactLocationValue', t.contactLocationValue);
+  set('t-contactLocationNote',  t.contactLocationNote);
+  set('t-contactFollowLabel',   t.contactFollowLabel);
+  set('t-formNameLabel',        t.formNameLabel);
+  set('t-formEmailLabel',       t.formEmailLabel);
+  set('t-formPhoneLabel',       t.formPhoneLabel);
+  set('t-formServiceLabel',     svc ? t.formServiceLabel : '');
+  set('t-formServicePlaceholder', t.formServicePlaceholder);
+  set('t-formMessageLabel',     t.formMessageLabel);
+  setPh('booking-message',      t.formMessagePlaceholder);
+  set('form-submit-btn',        t.formSubmitBtn);
+  set('t-formSuccessTitle',     t.formSuccessTitle);
+  set('t-formSuccessText',      t.formSuccessText);
+
+  // Blog
+  setPh('blog-search',     t.blogSearchPlaceholder);
+  set('t-blogBackBtn',     t.blogBackBtn);
+  set('t-blogSourcesTitle', t.blogSourcesTitle);
+
+  // Natalna karta — forma
+  set('t-natalNameLabel',   t.natalNameLabel);
+  setPh('natal-name',       t.natalNamePlaceholder);
+  set('t-natalPlaceLabel',  t.natalPlaceLabel);
+  setPh('natal-place',      t.natalPlacePlaceholder);
+  set('t-natalDateLabel',   t.natalDateLabel);
+  set('t-natalTimeLabel',   t.natalTimeLabel);
+  set('t-natalNoTimeLabel', t.natalNoTimeLabel);
+  set('t-natalNodeLabel',   t.natalNodeLabel);
+  set('t-natalNodeTrue',    t.natalNodeTrue);
+  set('t-natalNodeMean',    t.natalNodeMean);
+
+  // Footer
+  set('t-footerCopy',   t.footerCopy);
+  set('t-footerCredit', t.footerCredit);
 }
 
 /* ---- POMOĆNA FUNKCIJA ---- */

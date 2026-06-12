@@ -363,12 +363,12 @@
   <nav id="main-nav">
     <div class="logo" onclick="showPage('home')">Alkemijana</div>
     <ul class="nav-links" id="navLinks">
-      <li><a onclick="showPage('home')"    data-page="home"   class="active">Početna</a></li>
-      <li id="nav-usluge"><a onclick="showPage('usluge')"  data-page="usluge">Usluge</a></li>
-      <li><a onclick="showPage('o-meni')"  data-page="o-meni">O meni</a></li>
-      <li><a onclick="showPage('blog')"    data-page="blog">Blog</a></li>
-      <li><a onclick="showPage('natal')"   data-page="natal">Natalna karta</a></li>
-      <li><a onclick="showPage('kontakt')" data-page="kontakt">Kontakt</a></li>
+      <li><a onclick="showPage('home')"    data-page="home"   class="active" id="t-navHome">Početna</a></li>
+      <li id="nav-usluge"><a onclick="showPage('usluge')"  data-page="usluge" id="t-navServices">Usluge</a></li>
+      <li><a onclick="showPage('o-meni')"  data-page="o-meni" id="t-navAbout">O meni</a></li>
+      <li><a onclick="showPage('blog')"    data-page="blog" id="t-navBlog">Blog</a></li>
+      <li><a onclick="showPage('natal')"   data-page="natal" id="t-navNatal">Natalna karta</a></li>
+      <li><a onclick="showPage('kontakt')" data-page="kontakt" id="t-navContact">Kontakt</a></li>
     </ul>
     <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
       <span class="theme-toggle-icon theme-toggle-moon">☾</span>
@@ -496,7 +496,7 @@
               <line x1="20" y1="20" x2="16.5" y2="16.5"></line>
             </svg>
           </span>
-          <input type="text" id="blog-search" class="blog-search-input" placeholder="Pretraži članke po naslovu, sadržaju…" oninput="filterBlogPosts()" autocomplete="off">
+          <input type="text" id="blog-search" class="blog-search-input" placeholder="" oninput="filterBlogPosts()" autocomplete="off">
           <button type="button" id="blog-search-clear" class="blog-search-clear" onclick="clearBlogSearch()" aria-label="Očisti pretragu">×</button>
         </div>
         <div class="blog-category-chips" id="blog-category-chips"></div>
@@ -506,7 +506,7 @@
     </div>
     <div id="blog-post-view">
       <div class="container" style="padding-top:2rem">
-        <button class="back-btn" onclick="closeBlogPost()">← Povratak na blog</button>
+        <button class="back-btn" onclick="closeBlogPost()" id="t-blogBackBtn">← Povratak na blog</button>
       </div>
       <div class="post-header">
         <div class="blog-meta" id="post-meta"></div>
@@ -521,7 +521,7 @@
       <div class="post-tags-wrap"><div class="post-tags" id="post-tags" style="display:none"></div></div>
       <div class="post-series-nav" id="post-series-nav" style="display:none"></div>
       <div class="post-sources" id="post-sources" style="display:none">
-        <h3>Izvori</h3>
+        <h3 id="t-blogSourcesTitle">Izvori</h3>
         <ul id="post-sources-list"></ul>
       </div>
       <div class="share-bar" id="share-bar"></div>
@@ -540,19 +540,19 @@
       <div class="contact-grid">
         <div>
           <div class="contact-info-item">
-            <div class="label">Email</div>
+            <div class="label" id="t-contactEmailLabel">Email</div>
             <div class="value"><a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a></div>
           </div>
           <div class="contact-info-item">
-            <div class="label">Telefon</div>
+            <div class="label" id="t-contactPhoneLabel">Telefon</div>
             <div class="value"><a href="tel:+385976126893">+385 97 6126 893</a></div>
           </div>
           <div class="contact-info-item">
-            <div class="label">Lokacija</div>
-            <div class="value">Hrvatska<br><small style="color:var(--text-muted);font-size:1rem">+ online</small></div>
+            <div class="label" id="t-contactLocationLabel">Lokacija</div>
+            <div class="value"><span id="t-contactLocationValue">Hrvatska</span><br><small style="color:var(--text-muted);font-size:1rem" id="t-contactLocationNote">+ online</small></div>
           </div>
           <div class="contact-info-item">
-            <div class="label">Pratite me</div>
+            <div class="label" id="t-contactFollowLabel">Pratite me</div>
             <div class="social-links">
               <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
@@ -575,28 +575,28 @@
             <input type="hidden" name="redirect"   value="false">
 
             <div class="form-row">
-              <div class="form-group"><label>Ime i prezime</label><input type="text"  name="ime"    required></div>
-              <div class="form-group"><label>Email</label>        <input type="email" name="email"  required></div>
+              <div class="form-group"><label id="t-formNameLabel">Ime i prezime</label><input type="text"  name="ime"    required></div>
+              <div class="form-group"><label id="t-formEmailLabel">Email</label>        <input type="email" name="email"  required></div>
             </div>
             <div class="form-row" id="svc-form-row">
-              <div class="form-group"><label>Telefon</label><input type="tel" name="telefon"></div>
+              <div class="form-group"><label id="t-formPhoneLabel">Telefon</label><input type="tel" name="telefon"></div>
               <div class="form-group" id="svc-form-group">
-                <label>Usluga</label>
+                <label id="t-formServiceLabel">Usluga</label>
                 <select name="usluga" id="booking-service-select">
-                  <option value="">Odaberi uslugu</option>
+                  <option value="" id="t-formServicePlaceholder">Odaberi uslugu</option>
                 </select>
               </div>
             </div>
             <div class="form-group">
-              <label>Tvoja poruka</label>
-              <textarea name="poruka" placeholder="Napiši svoju poruku, pitanje ili komentar..."></textarea>
+              <label id="t-formMessageLabel">Tvoja poruka</label>
+              <textarea name="poruka" id="booking-message" placeholder=""></textarea>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%" id="form-submit-btn">Pošalji upit</button>
           </form>
           <div class="form-success" id="formSuccess">
             <span class="icon">✦</span>
-            <h3>Hvala vam</h3>
-            <p>Tvoja poruka je poslana. Javit ću ti se u najkraćem mogućem roku.</p>
+            <h3 id="t-formSuccessTitle">Hvala vam</h3>
+            <p id="t-formSuccessText">Tvoja poruka je poslana. Javit ću ti se u najkraćem mogućem roku.</p>
           </div>
         </div>
       </div>
@@ -613,31 +613,31 @@
         <form id="natal-form">
           <div class="form-row nt-form-row">
             <div class="form-group">
-              <label>Ime (nije obavezno)</label>
+              <label id="t-natalNameLabel">Ime (nije obavezno)</label>
               <input type="text" id="natal-name" placeholder="npr. Ana Horvat" maxlength="60">
             </div>
             <div class="form-group nt-place-group">
-              <label>Mjesto rođenja <span id="natal-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
+              <label><span id="t-natalPlaceLabel">Mjesto rođenja</span> <span id="natal-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
               <input type="text" id="natal-place" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
               <div class="nt-dd" id="natal-place-dd"></div>
             </div>
           </div>
           <div class="form-row nt-form-row">
             <div class="form-group">
-              <label>Datum rođenja</label>
+              <label id="t-natalDateLabel">Datum rođenja</label>
               <input type="date" id="natal-date" min="1900-01-01" max="2099-12-31">
             </div>
             <div class="form-group">
-              <label>Vrijeme rođenja</label>
+              <label id="t-natalTimeLabel">Vrijeme rođenja</label>
               <input type="time" id="natal-time">
-              <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime"><span>Ne znam vrijeme rođenja</span></label>
+              <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime"><span id="t-natalNoTimeLabel">Ne znam vrijeme rođenja</span></label>
             </div>
           </div>
           <div class="nt-options-row">
-            <span class="nt-opt-label">Mjesečev čvor:</span>
+            <span class="nt-opt-label" id="t-natalNodeLabel">Mjesečev čvor:</span>
             <div class="nt-seg" id="natal-node-seg">
-              <button type="button" class="nt-seg-btn active" data-node="true">Pravi</button>
-              <button type="button" class="nt-seg-btn" data-node="mean">Srednji</button>
+              <button type="button" class="nt-seg-btn active" data-node="true" id="t-natalNodeTrue">Pravi</button>
+              <button type="button" class="nt-seg-btn" data-node="mean" id="t-natalNodeMean">Srednji</button>
             </div>
           </div>
           <div id="natal-error" class="nt-error" style="display:none"></div>
@@ -757,8 +757,8 @@
       </a>
     </div>
     <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
-    <div class="footer-copy">© 2026 Alkemijana. Sva prava pridržana.</div>
-    <div class="footer-credit">Designed by Altum3D</div>
+    <div class="footer-copy" id="t-footerCopy">© 2026 Alkemijana. Sva prava pridržana.</div>
+    <div class="footer-credit" id="t-footerCredit">Designed by Altum3D</div>
   </footer>
 
 </div><!-- /.content -->

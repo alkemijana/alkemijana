@@ -1,28 +1,31 @@
-// Čitanje/brisanje evidencije natalnih karata — SAMO admin (X-Admin-Pass header).
-// GET  -> lista zapisa.  POST {action:'delete', key} | {action:'clear'} -> brisanje.
+// Statistika izrađenih karata — SAMO admin (X-Admin-Pass). Čita samo nazive ključeva
+// (datum je u nazivu), pa ne troši po-ključ dohvate. POST {action:'reset'} briše brojač.
 
 export async function onRequestGet({ request, env }) {
   const unauth = checkAuth(request, env);
   if (unauth) return unauth;
 
   const KV = env.NATAL_LOG;
-  if (!KV) return json({ ok: true, entries: [], note: 'KV (NATAL_LOG) nije konfiguriran — vidi CLAUDE.md za postavljanje.' }, 200);
+  if (!KV) return json({ ok: true, total: 0, last30: 0, last7: 0, note: 'KV (NATAL_LOG) nije konfiguriran — vidi CLAUDE.md za postavljanje.' }, 200);
 
   try {
-    const entries = [];
-    let cursor;
+    const now = Date.now();
+    const d30 = ymdNum(now - 30 * 864e5);
+    const d7  = ymdNum(now - 7 * 864e5);
+    let total = 0, last30 = 0, last7 = 0, cursor;
     do {
-      const list = await KV.list({ prefix: 'e:', cursor });
+      const list = await KV.list({ prefix: 'c:', cursor });
       for (const k of list.keys) {
-        const v = await KV.get(k.name);
-        if (!v) continue;
-        try { const o = JSON.parse(v); o._key = k.name; entries.push(o); } catch {}
+        const dd = parseInt(k.name.split(':')[1], 10); // c:YYYYMMDD:hash
+        if (!isFinite(dd)) continue;
+        total++;
+        if (dd >= d30) last30++;
+        if (dd >= d7) last7++;
       }
       cursor = list.list_complete ? null : list.cursor;
     } while (cursor);
 
-    entries.sort((a, b) => (a.ts < b.ts ? 1 : a.ts > b.ts ? -1 : 0)); // najnoviji prvi
-    return json({ ok: true, entries }, 200);
+    return json({ ok: true, total, last30, last7 }, 200);
   } catch (e) {
     return json({ ok: false, error: e.message }, 500);
   }
@@ -37,25 +40,26 @@ export async function onRequestPost({ request, env }) {
 
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'Invalid JSON' }, 400); }
+  if (body.action !== 'reset') return json({ ok: false, error: 'Nepoznata akcija' }, 400);
 
   try {
-    if (body.action === 'delete' && body.key) {
-      await KV.delete(String(body.key));
-      return json({ ok: true }, 200);
-    }
-    if (body.action === 'clear') {
+    for (const prefix of ['c:', 's:']) {
       let cursor;
       do {
-        const list = await KV.list({ prefix: 'e:', cursor });
+        const list = await KV.list({ prefix, cursor });
         for (const k of list.keys) await KV.delete(k.name);
         cursor = list.list_complete ? null : list.cursor;
       } while (cursor);
-      return json({ ok: true }, 200);
     }
-    return json({ ok: false, error: 'Nepoznata akcija' }, 400);
+    return json({ ok: true }, 200);
   } catch (e) {
     return json({ ok: false, error: e.message }, 500);
   }
+}
+
+function ymdNum(ms) {
+  const d = new Date(ms);
+  return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
 }
 
 function checkAuth(request, env) {

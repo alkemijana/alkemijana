@@ -194,7 +194,7 @@ async function natalSubmit(ev) {
     currentChart = chart;
     renderNatalResult(chart);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
-    logNatalCreation(chart, { name, dateV, timeV, noTime });
+    logNatalCreation(chart);
     document.getElementById('natal-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);
@@ -209,29 +209,32 @@ function showNatalError(msg) {
   err.style.display = 'block';
 }
 
-/* Tiha evidencija izrade karte (admin je vidi). Ne blokira i ne ruši UI ako padne. */
-function logNatalCreation(chart, f) {
+/* Anoniman brojač izrada — šalje SAMO hash unosa (bez imena i bez ikakvih osobnih
+   podataka u čistom obliku). Server broji jedinstvene hasheve. Ne blokira/ne ruši UI. */
+function logNatalCreation(chart) {
   try {
-    const sun = chart.planets.find(p => p.id === 'sun');
-    const moon = chart.planets.find(p => p.id === 'moon');
-    fetch('/log-natal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: f.name || '',
-        date: f.dateV || '',
-        time: f.noTime ? '' : (f.timeV || ''),
-        noTime: !!f.noTime,
-        place: (chart.input.place && chart.input.place.label) || '',
-        lat: chart.input.lat, lon: chart.input.lon,
-        tz: (chart.input.place && chart.input.place.tz) || '',
-        nodeType: chart.input.nodeType || '',
-        sun: sun ? signName(sun.lon) : '',
-        moon: moon ? signName(moon.lon) : '',
-        asc: chart.noTime ? '' : signName(chart.asc)
-      })
+    const i = chart.input;
+    // normaliziran opis unosa (bez imena) — koristi se isključivo za hash
+    const norm = [
+      i.y, i.mo, i.d,
+      chart.noTime ? 'NT' : (i.h + ':' + i.mi),
+      (typeof i.lat === 'number' ? i.lat.toFixed(4) : ''),
+      (typeof i.lon === 'number' ? i.lon.toFixed(4) : ''),
+      i.nodeType || ''
+    ].join('|');
+    sha256Hex(norm).then(h => {
+      fetch('/log-natal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ h })
+      }).catch(() => {});
     }).catch(() => {});
   } catch (e) {}
+}
+
+async function sha256Hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /* ============ INIT ============ */

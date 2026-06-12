@@ -1167,13 +1167,13 @@ function deleteReview(id) {
 }
 
 /* ============================================================
-   NATALNE KARTE — evidencija izrada (samo admin, KV pohrana)
+   NATALNE KARTE — anoniman brojač izrada (samo admin, KV)
    ============================================================ */
 
 async function loadNatalLog() {
   const el = document.getElementById('natallog-display');
   if (!el) return;
-  el.innerHTML = '<p style="color:var(--text-muted);font-style:italic;text-align:center;padding:2rem">Učitavam zapise…</p>';
+  el.innerHTML = '<p style="color:var(--text-muted);font-style:italic;text-align:center;padding:2rem">Učitavam…</p>';
 
   const pass = sessionStorage.getItem('aj_pass') || '';
   if (!pass) { el.innerHTML = '<p style="color:var(--text-muted)">Sesija je istekla — prijavi se ponovo.</p>'; return; }
@@ -1184,61 +1184,33 @@ async function loadNatalLog() {
     const data = await res.json();
     if (!data.ok) { el.innerHTML = '<p style="color:#c08090">Greška: ' + esc(data.error || 'nepoznata') + '</p>'; return; }
 
-    const entries = data.entries || [];
-    let html = '<div class="nl-bar">' +
-      '<span class="nl-count">Ukupno zapisa: ' + entries.length + '</span>' +
-      '<span class="nl-actions">' +
-        '<button class="ap-btn" onclick="loadNatalLog()">↻ Osvježi</button>' +
-        (entries.length ? '<button class="ap-btn nl-clear" onclick="clearNatalLog()">Obriši sve</button>' : '') +
-      '</span></div>';
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem">' +
+      bigStatCard('Ukupno izrađenih karata', data.total || 0, '✦') +
+      bigStatCard('Zadnjih 30 dana', data.last30 || 0, '☾') +
+      bigStatCard('Zadnjih 7 dana', data.last7 || 0, '✧') +
+      '</div>';
 
+    html += '<p style="color:var(--text-muted);font-style:italic;font-size:0.88rem;margin-bottom:1.2rem">Broje se samo jedinstveni unosi (ista karta se ne broji dvaput). Ne pohranjuju se nikakvi osobni podaci.</p>';
     if (data.note) html += '<p style="color:var(--text-muted);font-style:italic;margin-bottom:1rem">' + esc(data.note) + '</p>';
 
-    if (!entries.length) {
-      html += '<p style="color:var(--text-muted);font-style:italic">Još nema zabilježenih izrada karata.</p>';
-    } else {
-      html += '<div class="nl-wrap"><table class="nl-table"><thead><tr>' +
-        '<th>Izrađeno</th><th>Ime</th><th>Datum/vrijeme rođenja</th><th>Mjesto</th><th>☉</th><th>☾</th><th>ASC</th><th></th>' +
-        '</tr></thead><tbody>';
-      for (const e of entries) {
-        let created = '';
-        try { created = e.ts ? new Date(e.ts).toLocaleString('hr-HR') : ''; } catch (x) { created = e.ts || ''; }
-        const birth = (e.date || '—') + (e.noTime ? ' (bez vremena)' : (e.time ? ' u ' + e.time : ''));
-        html += '<tr>' +
-          '<td>' + esc(created) + '</td>' +
-          '<td>' + esc(e.name || '—') + '</td>' +
-          '<td>' + esc(birth) + '</td>' +
-          '<td>' + esc(e.place || '') + '</td>' +
-          '<td>' + esc(e.sun || '') + '</td>' +
-          '<td>' + esc(e.moon || '') + '</td>' +
-          '<td>' + esc(e.asc || '') + '</td>' +
-          '<td><button class="nl-del" title="Obriši zapis" onclick="deleteNatalLog(\'' + esc(e._key || '') + '\')">×</button></td>' +
-          '</tr>';
-      }
-      html += '</tbody></table></div>';
-    }
+    html += '<div class="nl-actions">' +
+      '<button class="ap-btn" onclick="loadNatalLog()">↻ Osvježi</button>' +
+      (data.total ? '<button class="ap-btn nl-clear" onclick="resetNatalCount()">Resetiraj brojač</button>' : '') +
+      '</div>';
+
     el.innerHTML = html;
   } catch (e) {
-    el.innerHTML = '<p style="color:var(--text-muted)">Ne mogu dohvatiti zapise (radi samo na objavljenoj stranici, ne lokalno).</p>';
+    el.innerHTML = '<p style="color:var(--text-muted)">Ne mogu dohvatiti brojač (radi samo na objavljenoj stranici, ne lokalno).</p>';
   }
 }
 
-async function deleteNatalLog(key) {
-  if (!key || !confirm('Obrisati ovaj zapis?')) return;
+async function resetNatalCount() {
+  if (!confirm('Resetirati brojač na nulu? Ovo se ne može poništiti.')) return;
   const pass = sessionStorage.getItem('aj_pass') || '';
   try {
-    await fetch('/natal-log', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }, body: JSON.stringify({ action: 'delete', key }) });
+    await fetch('/natal-log', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }, body: JSON.stringify({ action: 'reset' }) });
     loadNatalLog();
-  } catch (e) { alert('Greška pri brisanju.'); }
-}
-
-async function clearNatalLog() {
-  if (!confirm('Obrisati SVE zapise o izrađenim kartama? Ovo se ne može poništiti.')) return;
-  const pass = sessionStorage.getItem('aj_pass') || '';
-  try {
-    await fetch('/natal-log', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass }, body: JSON.stringify({ action: 'clear' }) });
-    loadNatalLog();
-  } catch (e) { alert('Greška pri brisanju.'); }
+  } catch (e) { alert('Greška pri resetiranju.'); }
 }
 
 /* ============================================================

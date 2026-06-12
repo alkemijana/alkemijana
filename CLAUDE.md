@@ -105,7 +105,7 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   **str. 2** = pozicije planeta + kuće (Placidus) + popis aspekata.
   TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
-- Pri izradi karte šalje se evidencija na `/log-natal` (vidi Admin → Evidencija karata).
+- Pri izradi karte šalje se anoniman signal na `/log-natal` (samo hash unosa) za brojač — vidi Admin → Brojač karata.
 
 ---
 
@@ -123,20 +123,23 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
 4. **Recenzije** — dodaj/uredi/arhiviraj recenzije za početnu i o-meni
 5. **Tekstovi** — uredi sav statički tekst (hero, CTA, naslovi sekcija, footer...)
 6. **Statistika** — GoatCounter analytics (ukupno posjeta, jedinstveni, po stranicama, blog članci, 30-dnevni graf)
-7. **Natalne karte** — evidencija svake izrađene natalne karte (ime, datum/vrijeme/mjesto rođenja, Sunce/Mjesec/ASC). Vidljiva samo prijavljenom adminu; pojedinačno ili skupno brisanje. Pohrana u Cloudflare KV (vidi dolje).
+7. **Natalne karte** — anoniman brojač izrada (ukupno / zadnjih 30 / zadnjih 7 dana). Broje se samo jedinstveni unosi. **Ne pohranjuju se nikakvi osobni podaci** (samo hash unosa). Vidljivo prijavljenom adminu; "Resetiraj brojač". Pohrana u Cloudflare KV (vidi dolje).
 8. **Toggle gumbi (dropdown "Prikaz"):** Usluge On/Off, Rec. Početna, Rec. O meni
 9. **📷 Slika** — upload vlastite slike za O meni
 10. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Cloudflare Pages funkcije → auto-deploy na Cloudflareu za ~30 sek
 11. **Arhiviranje** — svaki blog/usluga/cjenik/recenzija ima checkbox "Arhivirano" → skriva od posjetitelja, ali ostaje u adminu da se može vratiti
 
-### Evidencija natalnih karata (KV)
-Pri svakoj izradi karte `js/natal.js` šalje POST na `/log-natal` (fire-and-forget) s podacima unosa.
-`functions/log-natal.js` ih zapisuje u **Cloudflare KV** namespace vezan kao **`NATAL_LOG`**.
-Admin tab "Natalne karte" čita ih preko `/natal-log` (GET, zaštićeno `X-Admin-Pass`).
-**Postavljanje (jednokratno):** u Cloudflare dashboardu → Workers & Pages → KV → *Create namespace* (npr. `alkemijana-natal-log`),
-zatim Pages projekt → Settings → Functions → KV namespace bindings → dodaj binding imena **`NATAL_LOG`**.
-Bez bindinga logiranje tiho ne radi (admin tab pokaže napomenu), izrada karte i dalje radi normalno.
-**Privatnost:** pohranjuje osobne podatke posjetitelja (ime, datum rođenja). Ispod gumba „Izračunaj natalnu kartu" stoji sitna napomena (`.nt-consent` u index.html) da se klikom prihvaća pohrana radi interne evidencije, s linkom na kontakt za uvid/brisanje. Napomena: privola klikom je „lakša" varijanta — eksplicitni checkbox je pravno čvršći ako zatreba.
+### Brojač natalnih karata (KV) — anonimno
+Pri izradi karte `js/natal.js` računa **SHA-256 hash unosa** (datum, vrijeme, lat/lon, tip čvora — **bez imena**)
+i šalje POST na `/log-natal` samo s tim hashom (fire-and-forget). `functions/log-natal.js` u **Cloudflare KV**
+(binding **`NATAL_LOG`**) drži `s:<hash>` (dedup) i `c:<YYYYMMDD>:<hash>` (brojač s datumom u nazivu ključa).
+Tako se broje samo **jedinstveni unosi** i **ne pohranjuju se nikakvi osobni podaci** (hash je jednosmjeran, nema imena).
+Admin tab "Natalne karte" preko `/natal-log` (GET, `X-Admin-Pass`) čita samo nazive ključeva → ukupno / 30 / 7 dana
+(bez po-ključ dohvata, zbog limita Functions subrequestova). POST `{action:'reset'}` briše brojač.
+**Postavljanje (jednokratno):** Cloudflare → Workers & Pages → KV → *Create namespace* (npr. `alkemijana-natal-log`),
+pa Pages projekt → Settings → Functions → KV namespace bindings → binding imena **`NATAL_LOG`**.
+Bez bindinga brojač tiho ne radi (admin pokaže napomenu), izrada karte radi normalno.
+**Privatnost:** ništa osobno se ne sprema → nema GDPR obveze obavijesti/privole za ovaj brojač.
 
 ### Kako auto-save radi
 Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.

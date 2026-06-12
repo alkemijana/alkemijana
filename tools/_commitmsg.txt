@@ -1,8 +1,0 @@
-Natalna karta: Mjesec kao obrub (bez ispune), aries siri zaobljeni rogovi
-
-- Glif Mjeseca: crescent sada samo stroke (obrub), bez ispune — kako je
-  trazeno; cita se cisto i na maloj velicini na kotacu
-- Aries: rogovi prosireni i zaobljeni da blize odgovaraju referenci
-- Ostali zodijacki glifovi vizualno verificirani protiv referenci (Astro-Seek)
-
-Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>

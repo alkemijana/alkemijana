@@ -655,7 +655,7 @@ function renderShareBar(p) {
   document.getElementById('share-bar').innerHTML = `
     <span>Podijeli:</span>
     <button class="share-btn" onclick="copyPostLink('${p.id}', this)">🔗 Kopiraj link</button>
-    <button class="share-btn" onclick="downloadPostPdf('${p.id}')">📄 Skini PDF</button>`;
+    <button class="share-btn" onclick="downloadPostPdf('${p.id}')">📄 Preuzmi PDF</button>`;
 }
 
 function copyPostLink(id, btn) {

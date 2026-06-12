@@ -180,7 +180,7 @@ function buildChartSVG(chart, pal, opts) {
 
   // planeti — razmicanje preklapanja (minimalno, da glif ostane u svojoj kući)
   const sorted = chart.planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-  const MIN_SEP = 6.0 * (1 + (ls - 1) * 0.6); // veće oznake → malo veći razmak
+  const MIN_SEP = 4.5 * (1 + (ls - 1) * 0.6); // veće oznake → malo veći razmak; minimalan razmak, glifovi se smiju gotovo dodirivati
   const adj = sorted.map(p => norm360(p.lon - asc));
   for (let it = 0; it < 120; it++) {
     let moved = false;

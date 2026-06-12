@@ -203,6 +203,14 @@ function buildChartSVG(chart, pal, opts) {
     const dispLon = norm360(asc + adj[i]);
     // duža crtica na stvarnoj poziciji — ulazi u prsten planeta (umjesto spojnice)
     s += line(p.lon, R_PTICK, R_GLYPH + 18, pal.tick, 1.2);
+    // poveznica do glifa kad je razmaknut (gust skup simbola u kući) — pokazuje na koji se stupanj odnosi
+    const dispDelta = Math.abs(norm360(dispLon - p.lon + 180) - 180);
+    if (dispDelta > 1.0) {
+      const [lcx1, lcy1] = pt(p.lon, R_GLYPH + 18);
+      const [lcx2, lcy2] = pt(dispLon, R_GLYPH + 12);
+      s += '<line x1="' + lcx1.toFixed(1) + '" y1="' + lcy1.toFixed(1) + '" x2="' + lcx2.toFixed(1) + '" y2="' + lcy2.toFixed(1) +
+        '" stroke="' + pal.degText + '" stroke-width="1" opacity="0.85"/>';
+    }
     // crtica s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
     s += line(p.lon, R_HIN, R_HIN - 9, pal.planet, 1.4);
     const [gx, gy] = pt(dispLon, R_GLYPH);

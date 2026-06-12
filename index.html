@@ -791,6 +791,7 @@
         <button class="ap-tab-btn"        id="tab-reviews"  onclick="switchTab('reviews')">Recenzije</button>
         <button class="ap-tab-btn"        id="tab-texts"    onclick="switchTab('texts')">Tekstovi</button>
         <button class="ap-tab-btn"        id="tab-stats"    onclick="switchTab('stats')">Statistika</button>
+        <button class="ap-tab-btn"        id="tab-natallog" onclick="switchTab('natallog')">Natalne karte</button>
       </div>
       <button class="ap-close" onclick="closeAdminPanel()">×</button>
     </div>
@@ -850,6 +851,15 @@
           <div style="margin-top:2rem">
             <a href="https://alkemijana.goatcounter.com" target="_blank" rel="noopener" class="share-btn">Detaljni dashboard ↗</a>
           </div>
+        </div>
+      </div>
+
+      <!-- TAB: Natalne karte (evidencija izrada) -->
+      <div class="ap-tab-content" id="ap-natallog">
+        <div class="pricing-admin-wrap">
+          <h3>Izrađene natalne karte</h3>
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.95rem;margin-bottom:1.5rem">Evidencija svih izračuna natalnih karata posjetitelja — vidljiva samo tebi kad si prijavljena.</p>
+          <div id="natallog-display" style="margin-top:0.5rem"></div>
         </div>
       </div>
 

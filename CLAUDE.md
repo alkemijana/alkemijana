@@ -36,7 +36,10 @@ ALKEMIJANA WEBSITE/
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── functions/
-│   └── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
+│   ├── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
+│   ├── verify-pass.js              ← Provjera admin lozinke (env ADMIN_PASS)
+│   ├── log-natal.js                ← Zapisuje izradu natalne karte u KV (binding NATAL_LOG)
+│   └── natal-log.js                ← Admin čitanje/brisanje evidencije karata (X-Admin-Pass)
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
 ├── .gitignore
@@ -92,11 +95,17 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   planeti u prstenu kao stupanj · glif znaka · minute (R uz glif ako je retrogradno);
   osi ASC/DSC/MC/IC prekinute u unutarnjoj kružnici, s oznakom i stupnjem unutar
   kotača; crtice na unutarnjoj kružnici pokazuju gdje počinju aspektne linije.
+  Kad je u kući gust skup pa se glifovi razmaknu (>1°), tanka poveznica vodi od
+  stvarnog stupnja (crtica na zodijaku) do razmaknutog glifa.
+- **Glifovi znakova:** DejaVu Sans (slobodni font, bez obveze atribucije), obrisi
+  izvučeni i normalizirani u `viewBox 0 0 24 24` kao fill path-evi u `GLYPHS`.
 - **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
-  zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla, karta + tablice pozicija/
-  kuća/aspekata). TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
+  zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla). Radna A4:
+  **str. 1** = velika karta + legenda aspekata + aspektna tablica + dominante;
+  **str. 2** = pozicije planeta + kuće (Placidus) + popis aspekata.
+  TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
-- Nema admin integracije — alat nema sadržaja za uređivanje.
+- Pri izradi karte šalje se evidencija na `/log-natal` (vidi Admin → Evidencija karata).
 
 ---
 
@@ -114,10 +123,20 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
 4. **Recenzije** — dodaj/uredi/arhiviraj recenzije za početnu i o-meni
 5. **Tekstovi** — uredi sav statički tekst (hero, CTA, naslovi sekcija, footer...)
 6. **Statistika** — GoatCounter analytics (ukupno posjeta, jedinstveni, po stranicama, blog članci, 30-dnevni graf)
-7. **Toggle gumbi (dropdown "Prikaz"):** Usluge On/Off, Rec. Početna, Rec. O meni
-8. **📷 Slika** — upload vlastite slike za O meni
-9. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Cloudflare Pages funkcije → auto-deploy na Cloudflareu za ~30 sek
-10. **Arhiviranje** — svaki blog/usluga/cjenik/recenzija ima checkbox "Arhivirano" → skriva od posjetitelja, ali ostaje u adminu da se može vratiti
+7. **Natalne karte** — evidencija svake izrađene natalne karte (ime, datum/vrijeme/mjesto rođenja, Sunce/Mjesec/ASC). Vidljiva samo prijavljenom adminu; pojedinačno ili skupno brisanje. Pohrana u Cloudflare KV (vidi dolje).
+8. **Toggle gumbi (dropdown "Prikaz"):** Usluge On/Off, Rec. Početna, Rec. O meni
+9. **📷 Slika** — upload vlastite slike za O meni
+10. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Cloudflare Pages funkcije → auto-deploy na Cloudflareu za ~30 sek
+11. **Arhiviranje** — svaki blog/usluga/cjenik/recenzija ima checkbox "Arhivirano" → skriva od posjetitelja, ali ostaje u adminu da se može vratiti
+
+### Evidencija natalnih karata (KV)
+Pri svakoj izradi karte `js/natal.js` šalje POST na `/log-natal` (fire-and-forget) s podacima unosa.
+`functions/log-natal.js` ih zapisuje u **Cloudflare KV** namespace vezan kao **`NATAL_LOG`**.
+Admin tab "Natalne karte" čita ih preko `/natal-log` (GET, zaštićeno `X-Admin-Pass`).
+**Postavljanje (jednokratno):** u Cloudflare dashboardu → Workers & Pages → KV → *Create namespace* (npr. `alkemijana-natal-log`),
+zatim Pages projekt → Settings → Functions → KV namespace bindings → dodaj binding imena **`NATAL_LOG`**.
+Bez bindinga logiranje tiho ne radi (admin tab pokaže napomenu), izrada karte i dalje radi normalno.
+**Privatnost:** ovo pohranjuje osobne podatke posjetitelja (ime, datum rođenja) — za GDPR dodaj kratku napomenu uz formu i/ili u pravila privatnosti.
 
 ### Kako auto-save radi
 Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.

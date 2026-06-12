@@ -194,6 +194,7 @@ async function natalSubmit(ev) {
     currentChart = chart;
     renderNatalResult(chart);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
+    logNatalCreation(chart, { name, dateV, timeV, noTime });
     document.getElementById('natal-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);
@@ -206,6 +207,31 @@ function showNatalError(msg) {
   const err = document.getElementById('natal-error');
   err.textContent = msg;
   err.style.display = 'block';
+}
+
+/* Tiha evidencija izrade karte (admin je vidi). Ne blokira i ne ruši UI ako padne. */
+function logNatalCreation(chart, f) {
+  try {
+    const sun = chart.planets.find(p => p.id === 'sun');
+    const moon = chart.planets.find(p => p.id === 'moon');
+    fetch('/log-natal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: f.name || '',
+        date: f.dateV || '',
+        time: f.noTime ? '' : (f.timeV || ''),
+        noTime: !!f.noTime,
+        place: (chart.input.place && chart.input.place.label) || '',
+        lat: chart.input.lat, lon: chart.input.lon,
+        tz: (chart.input.place && chart.input.place.tz) || '',
+        nodeType: chart.input.nodeType || '',
+        sun: sun ? signName(sun.lon) : '',
+        moon: moon ? signName(moon.lon) : '',
+        asc: chart.noTime ? '' : signName(chart.asc)
+      })
+    }).catch(() => {});
+  } catch (e) {}
 }
 
 /* ============ INIT ============ */

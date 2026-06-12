@@ -166,15 +166,17 @@ async function natalSubmit(ev) {
 
   const name = document.getElementById('natal-name').value.trim();
   const dateV = document.getElementById('natal-date').value;
-  const timeV = document.getElementById('natal-time').value;
+  const noTime = document.getElementById('natal-notime').checked;
+  const timeV = noTime ? '12:00' : document.getElementById('natal-time').value;
 
-  if (!dateV || !timeV) { return showNatalError('Upiši datum i vrijeme rođenja.'); }
+  if (!dateV)           { return showNatalError('Upiši datum rođenja.'); }
+  if (!timeV)           { return showNatalError('Upiši vrijeme rođenja ili označi da ga ne znaš.'); }
   if (!selectedPlace)   { return showNatalError('Upiši mjesto rođenja i odaberi ga s popisa.'); }
 
   const [y, mo, d] = dateV.split('-').map(Number);
   const [h, mi] = timeV.split(':').map(Number);
   if (y < 1900 || y > 2099) return showNatalError('Podržane su godine rođenja od 1900. do 2099.');
-  if (Math.abs(selectedPlace.lat) > 66) return showNatalError('Placidus sustav kuća nije definiran za polarne širine (>66°).');
+  if (!noTime && Math.abs(selectedPlace.lat) > 66) return showNatalError('Placidus sustav kuća nije definiran za polarne širine (>66°).');
 
   const btn = document.getElementById('natal-submit');
   const origTxt = btn.textContent;
@@ -186,12 +188,12 @@ async function natalSubmit(ev) {
     const { date: utcDate, offsetMin } = localToUtc(y, mo, d, h, mi, selectedPlace.tz);
     const chart = computeChart({
       utcDate, lat: selectedPlace.lat, lon: selectedPlace.lon,
-      name, y, mo, d, h, mi, offsetMin,
+      name, y, mo, d, h, mi, offsetMin, noTime,
       place: selectedPlace, nodeType: currentNodeType()
     });
     currentChart = chart;
     renderNatalResult(chart);
-    try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV, place: selectedPlace })); } catch (e) {}
+    try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
     document.getElementById('natal-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);
@@ -212,6 +214,11 @@ window.addEventListener('load', () => {
   const form = document.getElementById('natal-form');
   if (!form) return;
   form.addEventListener('submit', natalSubmit);
+  // checkbox "ne znam vrijeme rođenja" — isključuje polje vremena
+  const ntCb = document.getElementById('natal-notime');
+  ntCb.addEventListener('change', () => {
+    document.getElementById('natal-time').disabled = ntCb.checked;
+  });
   initPlaceAutocomplete();
   initNodeToggle();
   initNatalTabs();
@@ -226,6 +233,10 @@ window.addEventListener('load', () => {
       document.getElementById('natal-name').value = saved.name || '';
       document.getElementById('natal-date').value = saved.dateV || '';
       document.getElementById('natal-time').value = saved.timeV || '';
+      if (saved.noTime) {
+        document.getElementById('natal-notime').checked = true;
+        document.getElementById('natal-time').disabled = true;
+      }
       if (saved.place) {
         selectedPlace = saved.place;
         document.getElementById('natal-place').value = saved.place.label;

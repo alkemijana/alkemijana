@@ -151,7 +151,9 @@ function computeAspects(points) {
 
 /* Glavni izračun karte */
 function computeChart(input) {
-  // input: { utcDate, lat, lon, ... }
+  // input: { utcDate, lat, lon, noTime, ... }
+  // noTime: vrijeme rođenja nepoznato → pozicije za podne, bez kuća/ASC/MC
+  const noTime = !!input.noTime;
   const time = Astronomy.MakeTime(input.utcDate);
   const T = time.tt / 36525;
   const jdUt = 2451545.0 + time.ut;
@@ -159,8 +161,12 @@ function computeChart(input) {
   const eps  = trueObliquity(time);
   const gast = Astronomy.SiderealTime(time);
   const ramc = norm360(gast * 15 + input.lon);
-  const { asc, mc } = computeAscMc(ramc, eps, input.lat);
-  const cusps = placidusCusps(ramc, eps, input.lat, asc, mc);
+  let asc = null, mc = null, cusps = null;
+  if (!noTime) {
+    const am = computeAscMc(ramc, eps, input.lat);
+    asc = am.asc; mc = am.mc;
+    cusps = placidusCusps(ramc, eps, input.lat, asc, mc);
+  }
 
   const planets = [];
   for (const def of PLANET_DEFS) {
@@ -192,29 +198,34 @@ function computeChart(input) {
     planets.push({ id: def.id, name: def.name, lon: norm360(lon), retro });
   }
 
-  // Fortuna (Pars Fortunae): dnevna karta = ASC + Mjesec − Sunce, noćna obratno
-  const sunP = planets.find(p => p.id === 'sun');
-  const moonP = planets.find(p => p.id === 'moon');
-  const dayChart = houseOf(sunP.lon, cusps) >= 7; // Sunce iznad horizonta
-  const fortuneLon = norm360(dayChart ? asc + moonP.lon - sunP.lon : asc + sunP.lon - moonP.lon);
-  planets.push({ id: 'fortune', name: 'Fortuna', lon: fortuneLon, retro: false });
+  // Fortuna i Vertex ovise o ASC/kućama — bez vremena rođenja ih nema
+  if (!noTime) {
+    // Fortuna (Pars Fortunae): dnevna karta = ASC + Mjesec − Sunce, noćna obratno
+    const sunP = planets.find(p => p.id === 'sun');
+    const moonP = planets.find(p => p.id === 'moon');
+    const dayChart = houseOf(sunP.lon, cusps) >= 7; // Sunce iznad horizonta
+    const fortuneLon = norm360(dayChart ? asc + moonP.lon - sunP.lon : asc + sunP.lon - moonP.lon);
+    planets.push({ id: 'fortune', name: 'Fortuna', lon: fortuneLon, retro: false });
 
-  // Vertex: presjek prvog vertikala i ekliptike na zapadu
-  // = ascendent za ko-širinu (90° − lat) uz RAMC + 180°
-  const colat = input.lat >= 0 ? 90 - input.lat : -90 - input.lat;
-  const vertexLon = computeAscMc(norm360(ramc + 180), eps, colat).asc;
-  planets.push({ id: 'vertex', name: 'Vertex', lon: norm360(vertexLon), retro: false });
+    // Vertex: presjek prvog vertikala i ekliptike na zapadu
+    // = ascendent za ko-širinu (90° − lat) uz RAMC + 180°
+    const colat = input.lat >= 0 ? 90 - input.lat : -90 - input.lat;
+    const vertexLon = computeAscMc(norm360(ramc + 180), eps, colat).asc;
+    planets.push({ id: 'vertex', name: 'Vertex', lon: norm360(vertexLon), retro: false });
+  }
 
-  for (const p of planets) p.house = houseOf(p.lon, cusps);
+  for (const p of planets) p.house = noTime ? null : houseOf(p.lon, cusps);
 
   // Izvedene točke ne ulaze u aspekte (Južni čvor bi samo zrcalio aspekte Sjevernog)
   const aspectPoints = planets
     .filter(p => p.id !== 'fortune' && p.id !== 'vertex' && p.id !== 'snode')
-    .map(p => ({ id: p.id, lon: p.lon }))
-    .concat([{ id: 'asc', lon: asc, isAngle: true }, { id: 'mc', lon: mc, isAngle: true }]);
+    .map(p => ({ id: p.id, lon: p.lon }));
+  if (!noTime) {
+    aspectPoints.push({ id: 'asc', lon: asc, isAngle: true }, { id: 'mc', lon: mc, isAngle: true });
+  }
   const aspects = computeAspects(aspectPoints);
 
-  return { input, planets, asc, mc, cusps, aspects, eps, ramc, jdUt };
+  return { input, planets, asc, mc, cusps, aspects, eps, ramc, jdUt, noTime };
 }
 
 /* ============ DOMINANTE (elementi, kvalitete, najaspektiraniji) ============ */
@@ -224,7 +235,7 @@ function computeChart(input) {
 function computeDominants(chart) {
   const W = { sun:3, moon:3, mercury:2, venus:2, mars:2, jupiter:1.5, saturn:1.5, uranus:1, neptune:1, pluto:1 };
   const pts = chart.planets.filter(p => W[p.id]).map(p => ({ lon: p.lon, w: W[p.id] }));
-  pts.push({ lon: chart.asc, w: 3 }, { lon: chart.mc, w: 2 });
+  if (!chart.noTime) pts.push({ lon: chart.asc, w: 3 }, { lon: chart.mc, w: 2 });
 
   const elements = [0, 0, 0, 0];   // vatra, zemlja, zrak, voda
   const qualities = [0, 0, 0];     // kardinalno, fiksno, promjenjivo

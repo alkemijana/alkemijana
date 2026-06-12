@@ -16,6 +16,9 @@ function currentScreenPalette() {
 
 function birthDataLine(chart) {
   const i = chart.input;
+  if (chart.noTime) {
+    return i.d + '. ' + i.mo + '. ' + i.y + '. (vrijeme nepoznato) · ' + i.place.label;
+  }
   const off = i.offsetMin;
   const offStr = 'UTC' + (off >= 0 ? '+' : '−') + Math.floor(Math.abs(off) / 60) + (Math.abs(off) % 60 ? ':' + pad2(Math.abs(off) % 60) : '');
   return i.d + '. ' + i.mo + '. ' + i.y + '. u ' + i.h + ':' + pad2(i.mi) + ' (' + offStr + ') · ' + i.place.label;
@@ -41,6 +44,8 @@ function buildChartSVG(chart, pal, opts) {
   const aspectsEnabled = opts.aspectsEnabled || { conjunction: false, sextile: true, square: true, trine: true, opposition: true };
   const showCuspDegrees = opts.showCuspDegrees !== false;
   const linetype = !!opts.linetype;
+  const ls = opts.labelScale || 1;   // množi fontove/glifove (radni PDF — krupnije oznake)
+  const noTime = !!chart.noTime;     // bez vremena rođenja: nema kuća/osi, 0° Ovna lijevo
 
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386, R_HOUT = 256, R_HIN = 236;
@@ -50,8 +55,8 @@ function buildChartSVG(chart, pal, opts) {
   // osi izvan kotača — stupanj se slaže prema van (ekranski) da ne dira kružnicu
   const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 34;
   // znak + stupanj cuspsi izvan kotača
-  const R_CUSP_SIGN = R_OUT + 20;
-  const asc = chart.asc;
+  const R_CUSP_SIGN = R_OUT + 22;
+  const asc = noTime ? 0 : chart.asc;
 
   // kut na ekranu: ASC lijevo, longitude rastu suprotno od kazaljke
   function pt(lonDeg, r) {
@@ -98,7 +103,7 @@ function buildChartSVG(chart, pal, opts) {
   for (let k = 0; k < 12; k++) {
     s += line(k * 30, R_ZOD, R_OUT, pal.ringSoft, 1);
     const [gx, gy] = pt(k * 30 + 15, R_SIGN);
-    s += glyphSvgEl(SIGN_KEYS[k], gx, gy, 34, elementColor(k * 30, pal), 1.9);
+    s += glyphSvgEl(SIGN_KEYS[k], gx, gy, 34 * ls, elementColor(k * 30, pal), 1.9);
   }
 
   // stupanjske crtice
@@ -108,54 +113,59 @@ function buildChartSVG(chart, pal, opts) {
   }
   s += circle(R_TICK, pal.ringSoft, 0.8);
 
-  // kuće — vrhovi (osim osi koje crtamo ispod s posebnim izgledom)
-  for (let i = 1; i <= 12; i++) {
-    if (i === 1 || i === 4 || i === 7 || i === 10) continue;
-    s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
-  }
-
-  // znak + stupanj cuspsi izvan kotača (stupanj ispod znaka, ekranski — bez preklapanja)
-  if (showCuspDegrees) {
+  if (!noTime) {
+    // kuće — vrhovi (osim osi koje crtamo ispod s posebnim izgledom)
     for (let i = 1; i <= 12; i++) {
-      if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoju oznaku
-      const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
-      s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 16, elementColor(chart.cusps[i], pal), 1.7);
-      // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
-      s += textC(cx, cy + (cy < C ? -15 : 15), pal.houseNum, 11, fmtDegMin(chart.cusps[i]));
+      if (i === 1 || i === 4 || i === 7 || i === 10) continue;
+      s += line(chart.cusps[i], R_HIN, R_ZOD, pal.cusp, 1.1);
+    }
+
+    // znak + stupanj cuspsi izvan kotača (stupanj ispod znaka, ekranski — bez preklapanja)
+    if (showCuspDegrees) {
+      for (let i = 1; i <= 12; i++) {
+        if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoju oznaku
+        const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
+        s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 21 * ls, elementColor(chart.cusps[i], pal), 1.7);
+        // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
+        s += textC(cx, cy + (cy < C ? -18 : 18) * ls, pal.houseNum, 13 * ls, fmtDegMin(chart.cusps[i]));
+      }
+    }
+
+    // osi (ASC/DSC/MC/IC) — prekinute u unutarnjoj kružnici (ne smetaju aspektima),
+    // oznake i stupnjevi IZVAN kotača (item 2)
+    const axes = [
+      { lon: chart.asc, label: 'ASC' }, { lon: norm360(chart.asc + 180), label: 'DSC' },
+      { lon: chart.mc, label: 'MC' },   { lon: norm360(chart.mc + 180), label: 'IC' }
+    ];
+    for (const ax of axes) {
+      // linija osi unutar kotača (prekinuta u sredini ostaje, aspekti se vide)
+      s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
+      // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
+      s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
+      // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
+      const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
+      s += textC(tx, ty, pal.axisText, 19 * ls, ax.label, '600');
+      s += textC(tx, ty + (ty < C ? -17 : 18) * ls, pal.degText, 13.5 * ls, fmtDegMin(ax.lon));
     }
   }
 
-  // osi (ASC/DSC/MC/IC) — prekinute u unutarnjoj kružnici (ne smetaju aspektima),
-  // oznake i stupnjevi IZVAN kotača (item 2)
-  const axes = [
-    { lon: chart.asc, label: 'ASC' }, { lon: norm360(chart.asc + 180), label: 'DSC' },
-    { lon: chart.mc, label: 'MC' },   { lon: norm360(chart.mc + 180), label: 'IC' }
-  ];
-  for (const ax of axes) {
-    // linija osi unutar kotača (prekinuta u sredini ostaje, aspekti se vide)
-    s += line(ax.lon, R_HIN, R_ZOD, pal.axis, 2.2);
-    // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
-    s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
-    // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
-    const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
-    s += textC(tx, ty, pal.axisText, 19, ax.label, '600');
-    s += textC(tx, ty + (ty < C ? -17 : 18), pal.degText, 13.5, fmtDegMin(ax.lon));
-  }
-
-  // prsten brojeva kuća
-  s += circle(R_HOUT, pal.ringSoft, 1) + circle(R_HIN, pal.ring, 1.2);
-  for (let i = 1; i <= 12; i++) {
-    const a = chart.cusps[i], b = chart.cusps[i === 12 ? 1 : i + 1];
-    const mid = norm360(a + norm360(b - a) / 2);
-    const [nx, ny] = pt(mid, (R_HOUT + R_HIN) / 2);
-    s += textC(nx, ny, pal.houseNum, 17, i);
+  // prsten brojeva kuća (bez vremena rođenja: samo unutarnja kružnica za aspekte)
+  s += circle(R_HIN, pal.ring, 1.2);
+  if (!noTime) {
+    s += circle(R_HOUT, pal.ringSoft, 1);
+    for (let i = 1; i <= 12; i++) {
+      const a = chart.cusps[i], b = chart.cusps[i === 12 ? 1 : i + 1];
+      const mid = norm360(a + norm360(b - a) / 2);
+      const [nx, ny] = pt(mid, (R_HOUT + R_HIN) / 2);
+      s += textC(nx, ny, pal.houseNum, 17 * ls, i);
+    }
   }
 
   // aspektne linije
   if (opts.showAspects !== false) {
     const lonOf = {};
     for (const p of chart.planets) lonOf[p.id] = p.lon;
-    lonOf.asc = chart.asc; lonOf.mc = chart.mc;
+    if (!noTime) { lonOf.asc = chart.asc; lonOf.mc = chart.mc; }
     for (const a of chart.aspects) {
       if (!aspectsEnabled[a.aspect]) continue;
       // konjunkcije: kratka linija između stvarnih pozicija (gotovo iste) — preskoči ako orb=0 vizualno nema smisla
@@ -170,7 +180,7 @@ function buildChartSVG(chart, pal, opts) {
 
   // planeti — razmicanje preklapanja (minimalno, da glif ostane u svojoj kući)
   const sorted = chart.planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-  const MIN_SEP = 6.0;
+  const MIN_SEP = 6.0 * (1 + (ls - 1) * 0.6); // veće oznake → malo veći razmak
   const adj = sorted.map(p => norm360(p.lon - asc));
   for (let it = 0; it < 120; it++) {
     let moved = false;
@@ -196,19 +206,19 @@ function buildChartSVG(chart, pal, opts) {
     // crtica s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
     s += line(p.lon, R_HIN, R_HIN - 9, pal.planet, 1.4);
     const [gx, gy] = pt(dispLon, R_GLYPH);
-    s += glyphSvgEl(p.id, gx, gy, 30, pal.planet, 1.8);
+    s += glyphSvgEl(p.id, gx, gy, 30 * ls, pal.planet, 1.8);
     // retrogradna oznaka — malo R uz glif planeta
     if (p.retro) {
-      s += textC(gx + 14, gy - 9, pal.tense, 12, 'R');
+      s += textC(gx + 14 * ls, gy - 9 * ls, pal.tense, 12 * ls, 'R');
     }
     // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
     const dm = degMinParts(p.lon);
     const [dx, dy] = pt(dispLon, R_DEG);
-    s += textC(dx, dy, pal.degText, 15.5, dm.d + '°');
+    s += textC(dx, dy, pal.degText, 15.5 * ls, dm.d + '°');
     const [sx, sy] = pt(dispLon, R_SGN);
-    s += glyphSvgEl(signKey(p.lon), sx, sy, 21, elementColor(p.lon, pal), 2.0);
+    s += glyphSvgEl(signKey(p.lon), sx, sy, 21 * ls, elementColor(p.lon, pal), 2.0);
     const [mx, my] = pt(dispLon, R_MIN);
-    s += textC(mx, my, pal.degText, 13.5, pad2(dm.m) + '′');
+    s += textC(mx, my, pal.degText, 13.5 * ls, pad2(dm.m) + '′');
   }
 
   // viewBox prošireni za labele osi izvan kotača
@@ -242,18 +252,24 @@ function renderNatalResult(chart) {
     rows += '<tr><td>' + glyphSvgHtml(p.id, 19, pal.sign) + ' ' + p.name + '</td>' +
       '<td>' + glyphSvgHtml(signKey(p.lon), 17, elementColor(p.lon, pal)) + ' ' + signName(p.lon) + '</td>' +
       '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td>' +
-      '<td class="nt-num">' + p.house + '.<span class="nt-kuca"> kuća</span></td></tr>';
+      '<td class="nt-num">' + (p.house ? p.house + '.<span class="nt-kuca"> kuća</span>' : '—') + '</td></tr>';
   }
-  rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, elementColor(chart.asc, pal)) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
-  rows += '<tr class="nt-angle-row"><td>MC (sredina neba)</td><td>' + glyphSvgHtml(signKey(chart.mc), 17, elementColor(chart.mc, pal)) + ' ' + signName(chart.mc) + '</td><td class="nt-num">' + fmtDegMin(chart.mc) + '</td><td></td></tr>';
+  if (!chart.noTime) {
+    rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, elementColor(chart.asc, pal)) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
+    rows += '<tr class="nt-angle-row"><td>MC (sredina neba)</td><td>' + glyphSvgHtml(signKey(chart.mc), 17, elementColor(chart.mc, pal)) + ' ' + signName(chart.mc) + '</td><td class="nt-num">' + fmtDegMin(chart.mc) + '</td><td></td></tr>';
+  }
   document.getElementById('natal-planets-tbody').innerHTML = rows;
 
-  // Tablica kuća
+  // Tablica kuća (bez vremena rođenja kuće ne postoje — sakrij karticu)
+  const housesCard = document.getElementById('natal-houses-card');
+  if (housesCard) housesCard.style.display = chart.noTime ? 'none' : '';
   let hrows = '';
-  for (let i = 1; i <= 12; i++) {
-    hrows += '<tr><td class="nt-num">' + i + '.</td><td>' +
-      glyphSvgHtml(signKey(chart.cusps[i]), 17, elementColor(chart.cusps[i], pal)) + ' ' + signName(chart.cusps[i]) +
-      '</td><td class="nt-num">' + fmtDegMin(chart.cusps[i]) + '</td></tr>';
+  if (!chart.noTime) {
+    for (let i = 1; i <= 12; i++) {
+      hrows += '<tr><td class="nt-num">' + i + '.</td><td>' +
+        glyphSvgHtml(signKey(chart.cusps[i]), 17, elementColor(chart.cusps[i], pal)) + ' ' + signName(chart.cusps[i]) +
+        '</td><td class="nt-num">' + fmtDegMin(chart.cusps[i]) + '</td></tr>';
+    }
   }
   document.getElementById('natal-houses-tbody').innerHTML = hrows;
 
@@ -276,8 +292,12 @@ function renderNatalResult(chart) {
 
   const disc = document.getElementById('natal-disclaimer');
   if (disc) {
-    disc.textContent = 'Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · ' +
-      (chart.input.nodeType === 'mean' ? 'Srednji' : 'Pravi') + ' Mjesečev čvor, srednja Lilith';
+    disc.textContent = chart.noTime
+      ? 'Vrijeme rođenja nepoznato — pozicije izračunate za podne. Bez kuća, podznaka (ASC) i MC-a; ' +
+        'Mjesec se pomakne do ±7° pa je njegova pozicija približna. Pozicije planeta: NASA JPL efemeride · Tropski zodijak · ' +
+        (chart.input.nodeType === 'mean' ? 'Srednji' : 'Pravi') + ' Mjesečev čvor, srednja Lilith'
+      : 'Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · ' +
+        (chart.input.nodeType === 'mean' ? 'Srednji' : 'Pravi') + ' Mjesečev čvor, srednja Lilith';
   }
 }
 
@@ -290,7 +310,7 @@ function renderAspectGrid(chart, pal) {
   const pts = chart.planets
     .filter(p => p.id !== 'fortune' && p.id !== 'vertex' && p.id !== 'snode')
     .map(p => ({ id: p.id, name: p.name }));
-  pts.push({ id: 'asc', name: 'ASC' }, { id: 'mc', name: 'MC' });
+  if (!chart.noTime) pts.push({ id: 'asc', name: 'ASC' }, { id: 'mc', name: 'MC' });
 
   const byPair = {};
   for (const a of chart.aspects) { byPair[a.a + '|' + a.b] = a; byPair[a.b + '|' + a.a] = a; }

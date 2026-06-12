@@ -133,7 +133,8 @@ function buildPosterSVG(chart, w, h) {
   const dataLine = birthDataLine(chart);
   const sun = chart.planets.find(p => p.id === 'sun');
   const moon = chart.planets.find(p => p.id === 'moon');
-  const trio = 'Sunce ' + signName(sun.lon) + ' · Mjesec ' + signName(moon.lon) + ' · Podznak ' + signName(chart.asc);
+  const trio = 'Sunce ' + signName(sun.lon) + ' · Mjesec ' + signName(moon.lon) +
+    (chart.noTime ? '' : ' · Podznak ' + signName(chart.asc));
 
   const inner = buildChartSVG(chart, pal, { showAspects: true })
     .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
@@ -173,7 +174,8 @@ function buildPosterSVG(chart, w, h) {
 
   // podnožje
   s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
-  s += svgCenteredText('alkemijana.com · Placidus · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText(chart.noTime ? 'alkemijana.com · tropski zodijak' : 'alkemijana.com · Placidus · tropski zodijak',
+    cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }
@@ -222,8 +224,10 @@ function buildAstroSeekSVG(chart) {
     const cp = chart.planets.find(x => x.id === id);
     if (cp) pts.push({ id, name: cp.name, lon: cp.lon, house: cp.house, retro: cp.retro });
   }
-  pts.push({ id: 'asc', name: 'ASC', lon: chart.asc, house: 1 });
-  pts.push({ id: 'mc',  name: 'MC',  lon: chart.mc,  house: 10 });
+  if (!chart.noTime) {
+    pts.push({ id: 'asc', name: 'ASC', lon: chart.asc, house: 1 });
+    pts.push({ id: 'mc',  name: 'MC',  lon: chart.mc,  house: 10 });
+  }
 
   const byPair = {};
   for (const a of chart.aspects) { byPair[a.a + '|' + a.b] = a; byPair[a.b + '|' + a.a] = a; }
@@ -265,7 +269,9 @@ function buildAstroSeekSVG(chart) {
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
     s += '<text x="22.8" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + INK + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + dmTxt + '</text>';
     // kuća (desno poravnato — x računamo sami, svg2pdf ne centrira pouzdano)
-    s += '<text x="' + (labW - 1.2 - tw(p.house, 2.3)).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + p.house + '</text>';
+    if (p.house) {
+      s += '<text x="' + (labW - 1.2 - tw(p.house, 2.3)).toFixed(2) + '" y="' + (ry + cs / 2).toFixed(2) + '" fill="' + MUT + '" font-size="2.3" font-family="Quicksand, sans-serif" dy=".35em">' + p.house + '</text>';
+    }
 
     // — Cells: 0..i (diagonal at i)
     for (let j = 0; j <= i; j++) {
@@ -406,17 +412,26 @@ async function downloadWorking() {
 
     const TOTAL_PAGES = 2;
 
-    // ===== STRANICA 1: kotač + aspektna tablica + dominante =====
-    pageHeader(chart.input.name || 'Natalna karta', birthDataLine(chart));
+    // ===== STRANICA 1: velika karta (naslov malen, u kutu) + legenda + kuće =====
+    // naslov u gornjem lijevom kutu — karta dobiva maksimalnu širinu
+    const title1 = chart.input.name || 'Natalna karta';
+    doc.setFont('PlayfairDisplay', 'normal'); doc.setTextColor(42, 35, 72);
+    let tSize = 13;
+    doc.setFontSize(tSize);
+    while (tSize > 8 && doc.getTextWidth(title1) > 110) { tSize -= 0.5; doc.setFontSize(tSize); }
+    doc.text(title1, PAGE_M, 11);
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8); doc.setTextColor(90, 80, 130);
+    doc.text(birthDataLine(chart), PAGE_M, 16);
 
-    const chartSize = 148;
-    const chartY = 27;
+    const chartSize = 196;
+    const chartY = 16;
     await renderSvgOnDoc(
       buildChartSVG(chart, PALETTES.ink, {
         showAspects: true,
         aspectsEnabled: { conjunction: true, sextile: true, square: true, trine: true, opposition: true },
         showCuspDegrees: true,
-        linetype: true
+        linetype: true,
+        labelScale: 1.25
       }),
       (W - chartSize) / 2, chartY, chartSize, chartSize
     );
@@ -424,8 +439,8 @@ async function downloadWorking() {
     // legenda aspekata — dasharray i debljina skalirani ISTO kao linije na karti,
     // pa se uzorci u legendi vizualno poklapaju s nacrtanim aspektima
     const chartScale = chartSize / 1120; // SVG user-unit kotača → mm
-    let ly = chartY + chartSize + 5;
-    doc.setFontSize(8.5);
+    let ly = chartY + chartSize + 6;
+    doc.setFontSize(9);
     const leg = [
       ['Konjunkcija 0°',  aspectColor('conjunction', PALETTES.ink), aspectDashPattern('conjunction')],
       ['Sekstil 60°',     aspectColor('sextile',     PALETTES.ink), aspectDashPattern('sextile')],
@@ -454,33 +469,58 @@ async function downloadWorking() {
       lx += doc.getTextWidth(t) + 17;
     }
 
-    // aspektna tablica + dominante ispod legende — skalirano da stane do podnožja
-    const a2 = buildAstroSeekSVG(chart);
-    const gridTop = ly + 4;
-    const availH = H - 12 - gridTop;
-    const gsc = Math.min(CONTENT_W / a2.viewW, availH / a2.viewH);
-    await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
+    // — Kuće (Placidus) na dnu 1. stranice (uz veliku kartu)
+    if (!chart.noTime) {
+      let hy = ly + 8;
+      doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(12); doc.setTextColor(42, 35, 72);
+      doc.text('Kuće (Placidus)', PAGE_M, hy);
+      doc.setFont('Quicksand', 'normal'); doc.setFontSize(9);
+      hy += 6;
+      const hColW1 = CONTENT_W / 3;
+      const hRowDy = 5.3;
+      for (let i = 1; i <= 12; i++) {
+        const col = Math.floor((i - 1) / 4);
+        const yy = hy + ((i - 1) % 4) * hRowDy;
+        const x0 = PAGE_M + col * hColW1;
+        doc.setTextColor(46, 39, 82);
+        doc.text(i + '.', x0, yy);
+        await drawGlyphPdf(doc, signKey(chart.cusps[i]), x0 + 7, yy, 3.6, elementColor(chart.cusps[i], PALETTES.ink));
+        doc.text(signName(chart.cusps[i]), x0 + 12, yy);
+        doc.setTextColor(70, 60, 110);
+        doc.text(fmtDegMin(chart.cusps[i]), x0 + 36, yy);
+      }
+    } else {
+      doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.5); doc.setTextColor(110, 100, 150);
+      doc.text('Vrijeme rođenja nepoznato — pozicije za podne, bez kuća, podznaka (ASC) i MC-a. Pozicija Mjeseca je približna (±7°).', PAGE_M, ly + 8);
+    }
 
     pageFooter(1, TOTAL_PAGES);
 
-    // ===== STRANICA 2: Pozicije + Kuće + Aspekti (planet-aspekt-planet) =====
+    // ===== STRANICA 2: aspektna tablica + dominante + pozicije + aspekti =====
     doc.addPage();
-    pageHeader('Pozicije, kuće i aspekti', chart.input.name || '');
+    pageHeader('Aspektna tablica, pozicije i aspekti', chart.input.name || '');
+
+    // — Aspektna tablica + dominante (Astro-Seek stil)
+    const a2 = buildAstroSeekSVG(chart);
+    const gridTop = 31;
+    const gsc = Math.min(CONTENT_W / a2.viewW, 105 / a2.viewH);
+    await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
 
     // — Pozicije planeta
-    let y = 34;
+    let y = gridTop + a2.viewH * gsc + 9;
     doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(12); doc.setTextColor(42, 35, 72);
     doc.text('Pozicije planeta', PAGE_M, y);
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(9);
     y += 5;
 
     const posColW = CONTENT_W / 2;
-    const posRows = chart.planets.length + 2; // + ASC + MC
-    const posPerCol = Math.ceil(posRows / 2);
     const rowDy = 5.3;
     const allPositions = chart.planets.slice();
-    allPositions.push({ id: 'asc', name: 'ASC (podznak)', lon: chart.asc });
-    allPositions.push({ id: 'mc',  name: 'MC (sredina neba)', lon: chart.mc });
+    if (!chart.noTime) {
+      allPositions.push({ id: 'asc', name: 'ASC (podznak)', lon: chart.asc });
+      allPositions.push({ id: 'mc',  name: 'MC (sredina neba)', lon: chart.mc });
+    }
+    const posPerCol = Math.ceil(allPositions.length / 2);
 
     for (let i = 0; i < allPositions.length; i++) {
       const p = allPositions[i];
@@ -500,26 +540,6 @@ async function downloadWorking() {
       }
     }
     y += posPerCol * rowDy + 4;
-
-    // — Kuće (Placidus)
-    doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(12); doc.setTextColor(42, 35, 72);
-    doc.text('Kuće (Placidus)', PAGE_M, y);
-    doc.setFont('Quicksand', 'normal'); doc.setFontSize(9);
-    y += 5;
-
-    const hColW = CONTENT_W / 3;
-    for (let i = 1; i <= 12; i++) {
-      const col = Math.floor((i - 1) / 4);
-      const yy = y + ((i - 1) % 4) * rowDy;
-      const x0 = PAGE_M + col * hColW;
-      doc.setTextColor(46, 39, 82);
-      doc.text(i + '.', x0, yy);
-      await drawGlyphPdf(doc, signKey(chart.cusps[i]), x0 + 7, yy, 3.6, elementColor(chart.cusps[i], PALETTES.ink));
-      doc.text(signName(chart.cusps[i]), x0 + 12, yy);
-      doc.setTextColor(70, 60, 110);
-      doc.text(fmtDegMin(chart.cusps[i]), x0 + 36, yy);
-    }
-    y += 4 * rowDy + 4;
 
     // — Aspekti (planet — aspekt — planet — orb), 2 stupca
     doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(12); doc.setTextColor(42, 35, 72);

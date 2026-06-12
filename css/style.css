@@ -1744,6 +1744,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-cc-chip .nt-cc-line {
   display: inline-block; width: 22px; height: 0; border-top: 2px solid currentColor;
 }
+.nt-notime-chip { margin-top: 0.55rem; }
+input[type="time"]:disabled { opacity: 0.45; }
 .nt-cc-conj { color: #9b95b5; }
 .nt-cc-sext, .nt-cc-tri { color: #7fae90; }
 .nt-cc-sq, .nt-cc-opp { color: #c08090; }

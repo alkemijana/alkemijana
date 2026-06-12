@@ -38,6 +38,7 @@ ALKEMIJANA WEBSITE/
 ├── functions/
 │   └── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
+├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
 ├── .gitignore
 └── CLAUDE.md                       ← ovaj fajl
 ```
@@ -79,6 +80,9 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   ASC/MC/Placidus provjereni geometrijski (visina ASC = 0°, omjeri polulukova 1/3, 2/3).
   Rezultati se poklapaju s Astro-Seekom (isti izvori efemerida).
 - **Kuće:** Placidus (iterativno); blokirano za |lat| > 66°. ASC/MC standardne formule.
+- **Bez vremena rođenja:** checkbox u formi (`natal-notime`) — pozicije se računaju za
+  podne, karta se crta s 0° Ovna lijevo, bez kuća/ASC/MC/Fortune/Vertexa (`chart.noTime`
+  flag kroz computeChart → buildChartSVG → tablice/PDF), uz napomenu da je Mjesec približan.
 - **Vrijeme:** mjesto → Open-Meteo geocoding (besplatan, bez ključa) daje IANA zonu;
   povijesni UTC offseti (ljetno vrijeme, Jugoslavija...) preko `Intl.DateTimeFormat`.
 - **Kotač:** SVG, glifovi planeta/znakova su ručno crtani path-evi u `GLYPHS` objektu

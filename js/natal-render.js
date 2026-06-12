@@ -39,6 +39,20 @@ function aspectDashPattern(aspId) {
   }
 }
 
+/* Debljina aspektne linije (SVG user-units kotača) — uz boju i dasharray,
+   različita debljina dodatno olakšava raspoznavanje. Legenda u PDF-u koristi
+   iste vrijednosti (skalirane) pa se uzorci poklapaju s nacrtanim aspektima. */
+function aspectLineWidth(aspId) {
+  switch (aspId) {
+    case 'conjunction': return 2.4;
+    case 'opposition':  return 2.0;
+    case 'square':      return 1.6;
+    case 'trine':       return 1.2;
+    case 'sextile':     return 0.9;
+    default:            return 1.5;
+  }
+}
+
 function buildChartSVG(chart, pal, opts) {
   opts = opts || {};
   const aspectsEnabled = opts.aspectsEnabled || { conjunction: false, sextile: true, square: true, trine: true, opposition: true };
@@ -172,8 +186,9 @@ function buildChartSVG(chart, pal, opts) {
       const [x1, y1] = pt(lonOf[a.a], R_HIN - 9), [x2, y2] = pt(lonOf[a.b], R_HIN - 9);
       const op = Math.max(0.3, 1 - a.orb / 9).toFixed(2);
       const dash = linetype ? aspectDashPattern(a.aspect) : null;
+      const lw = aspectLineWidth(a.aspect);
       s += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) +
-        '" stroke="' + aspectColor(a.aspect, pal) + '" stroke-width="1.5" opacity="' + op + '"' +
+        '" stroke="' + aspectColor(a.aspect, pal) + '" stroke-width="' + lw + '" opacity="' + op + '"' +
         (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
     }
   }

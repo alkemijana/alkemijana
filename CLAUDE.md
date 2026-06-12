@@ -136,7 +136,7 @@ Admin tab "Natalne karte" čita ih preko `/natal-log` (GET, zaštićeno `X-Admin
 **Postavljanje (jednokratno):** u Cloudflare dashboardu → Workers & Pages → KV → *Create namespace* (npr. `alkemijana-natal-log`),
 zatim Pages projekt → Settings → Functions → KV namespace bindings → dodaj binding imena **`NATAL_LOG`**.
 Bez bindinga logiranje tiho ne radi (admin tab pokaže napomenu), izrada karte i dalje radi normalno.
-**Privatnost:** ovo pohranjuje osobne podatke posjetitelja (ime, datum rođenja) — za GDPR dodaj kratku napomenu uz formu i/ili u pravila privatnosti.
+**Privatnost:** pohranjuje osobne podatke posjetitelja (ime, datum rođenja). Ispod gumba „Izračunaj natalnu kartu" stoji sitna napomena (`.nt-consent` u index.html) da se klikom prihvaća pohrana radi interne evidencije, s linkom na kontakt za uvid/brisanje. Napomena: privola klikom je „lakša" varijanta — eksplicitni checkbox je pravno čvršći ako zatreba.
 
 ### Kako auto-save radi
 Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.

@@ -712,9 +712,9 @@
       <p class="section-subtitle" id="t-natalPageSub">Izradi svoju natalnu kartu online — pozicije planeta, kuće, aspekti i dominante.</p>
 
       <div class="nt-intro">
-        <p><strong>Natalna karta</strong> je astrološki dijagram tvog neba u trenutku rođenja — pokazuje gdje su bili Sunce, Mjesec, planeti i druge točke gledano s mjesta gdje si rođen/a. Ovaj alat ti omogućuje <strong>izradu natalne karte besplatno i bez registracije</strong>, na hrvatskom jeziku, u nekoliko sekundi.</p>
-        <p>Karta uključuje pozicije svih klasičnih planeta (Sunce, Mjesec, Merkur, Venera, Mars, Jupiter, Saturn, Uran, Neptun, Pluton), Mjesečev čvor, Kiron, Lilith, Fortunu i Vertex, kuće po Placidus sustavu, glavne aspekte (konjunkcija, sekstil, kvadrat, trigon, opozicija), dominantne elemente i kvalitete te Jonesov oblik karte. Izračun je usklađen s NASA JPL Horizons efemeridama.</p>
-        <p>Po izradi možeš preuzeti <strong>natalnu kartu kao PDF poster</strong> (A4 do A0, za uokviriti) ili <strong>radnu A4 verziju</strong> sa svim tablicama za detaljno iščitavanje.</p>
+        <p id="t-natalIntroP1"></p>
+        <p id="t-natalIntroP2"></p>
+        <p id="t-natalIntroP3"></p>
       </div>
 
       <div class="form-section nt-form-wrap">
@@ -851,43 +851,16 @@
       </div>
 
       <section class="nt-faq" aria-labelledby="nt-faq-title">
-        <h2 id="nt-faq-title">Česta pitanja o natalnoj karti</h2>
-        <details class="nt-faq-item">
-          <summary>Što je natalna karta?</summary>
-          <p>Natalna karta (rođenjski horoskop) je astrološki dijagram koji prikazuje točan položaj Sunca, Mjeseca, planeta i drugih astroloških točaka u trenutku tvog rođenja, gledano s mjesta rođenja. Čita se kroz znakove zodijaka, kuće i aspekte i smatra se simboličkim „otiskom" osobnosti i životnih tema.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Je li izrada natalne karte na Alkemijani besplatna?</summary>
-          <p>Da. Izrada natalne karte na alkemijana.com je u potpunosti besplatna i bez registracije. Kartu možeš preuzeti kao PDF poster (A4 do A0) za uokviriti, ili kao radnu A4 verziju sa svim tablicama za iščitavanje.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Što mi treba za izradu natalne karte?</summary>
-          <p>Datum rođenja, što točnije vrijeme rođenja i mjesto rođenja. Ako ne znaš vrijeme, označi „Ne znam vrijeme rođenja" — karta se tada računa za podne, bez kuća, podznaka (ASC) i MC-a. Vremensku zonu i povijesno ljetno/zimsko vrijeme alat sam određuje prema mjestu i datumu.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Koliko je točna ova besplatna natalna karta?</summary>
-          <p>Pozicije planeta računaju se astronomy-engine bibliotekom i verificirane su protiv NASA JPL Horizons efemerida — planeti se slažu unutar približno 5 lučnih sekundi. ASC, MC i Placidus kuće provjereni su geometrijski. Rezultati se poklapaju s Astro-Seekom (isti izvori efemerida).</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Koji sustav kuća koristi karta?</summary>
-          <p>Koristi se Placidus sustav kuća — najrašireniji u modernoj zapadnoj astrologiji. Računa se iterativno iz RAMC-a, geografske širine i prave nagnutosti ekliptike. Placidus nije definiran za polarne širine iznad 66°.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Mogu li izraditi natalnu kartu bez vremena rođenja?</summary>
-          <p>Da. Označi opciju „Ne znam vrijeme rođenja" i karta se računa za podne lokalnog vremena, bez kuća, podznaka (ASC) i MC-a. Pozicije planeta su točne, osim Mjeseca čija se pozicija pomakne i do ±7° tijekom dana.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Što sve mogu vidjeti u natalnoj karti?</summary>
-          <p>Karta prikazuje deset klasičnih planeta (Sunce, Mjesec, Merkur, Venera, Mars, Jupiter, Saturn, Uran, Neptun, Pluton), Mjesečev čvor, Lilith, Kiron, Fortunu i Vertex. Uz to: kuće (Placidus), aspekte (konjunkcija, sekstil, kvadrat, trigon, opozicija), dominante (elementi vatra/zemlja/zrak/voda i kvalitete kardinalni/fiksni/promjenjivi) te Jonesov oblik karte.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Mogu li preuzeti natalnu kartu kao PDF?</summary>
-          <p>Da. Nakon izrade karte dostupna su dva PDF formata: ukrasni <strong>poster</strong> u rezolucijama A4, A3, A2, A1 ili A0 (za uokviriti) i <strong>radna A4 verzija</strong> sa svim tablicama (pozicije planeta, kuće, aspekti, dominante) — pregledan ispis za iščitavanje karte.</p>
-        </details>
-        <details class="nt-faq-item">
-          <summary>Pohranjujete li podatke o rođenju?</summary>
-          <p>Ne. Tvoji podaci (datum, vrijeme, mjesto rođenja, ime) ostaju samo u tvom pregledniku. Za interni brojač izrađenih karata šalje se isključivo jednosmjerni SHA-256 hash unosa — bez imena i bez mogućnosti rekonstrukcije izvornih podataka.</p>
-        </details>
+        <h2 id="t-natalFaqTitle"></h2>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ1"></summary><p id="t-natalFaqA1"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ2"></summary><p id="t-natalFaqA2"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ3"></summary><p id="t-natalFaqA3"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ4"></summary><p id="t-natalFaqA4"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ5"></summary><p id="t-natalFaqA5"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ6"></summary><p id="t-natalFaqA6"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ7"></summary><p id="t-natalFaqA7"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ8"></summary><p id="t-natalFaqA8"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ9"></summary><p id="t-natalFaqA9"></p></details>
       </section>
     </div>
   </section>

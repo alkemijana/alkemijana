@@ -1468,6 +1468,38 @@ const TEXT_GROUPS = [
     }
   },
   {
+    title: 'Natalna karta — uvod (iznad forme)',
+    keys: {
+      natalIntroP1: 'Uvodni paragraf 1',
+      natalIntroP2: 'Uvodni paragraf 2',
+      natalIntroP3: 'Uvodni paragraf 3'
+    }
+  },
+  {
+    title: 'Natalna karta — Česta pitanja (FAQ)',
+    keys: {
+      natalFaqTitle: 'Naslov FAQ sekcije',
+      natalFaqQ1:    '1 — Pitanje',
+      natalFaqA1:    '1 — Odgovor',
+      natalFaqQ2:    '2 — Pitanje',
+      natalFaqA2:    '2 — Odgovor',
+      natalFaqQ3:    '3 — Pitanje',
+      natalFaqA3:    '3 — Odgovor',
+      natalFaqQ4:    '4 — Pitanje',
+      natalFaqA4:    '4 — Odgovor',
+      natalFaqQ5:    '5 — Pitanje',
+      natalFaqA5:    '5 — Odgovor',
+      natalFaqQ6:    '6 — Pitanje',
+      natalFaqA6:    '6 — Odgovor',
+      natalFaqQ7:    '7 — Pitanje',
+      natalFaqA7:    '7 — Odgovor',
+      natalFaqQ8:    '8 — Pitanje',
+      natalFaqA8:    '8 — Odgovor',
+      natalFaqQ9:    '9 — Pitanje',
+      natalFaqA9:    '9 — Odgovor'
+    }
+  },
+  {
     title: 'Kontakt',
     keys: {
       contactTitle:         'Naslov',

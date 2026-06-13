@@ -1065,6 +1065,18 @@ function applyTexts() {
   set('natal-poster-btn',  t.natalPosterBtn);
   set('natal-working-btn', t.natalWorkingBtn);
 
+  // Natalna karta — uvod (3 paragrafa iznad forme, SEO/info sadržaj)
+  set('t-natalIntroP1', t.natalIntroP1);
+  set('t-natalIntroP2', t.natalIntroP2);
+  set('t-natalIntroP3', t.natalIntroP3);
+
+  // Natalna karta — FAQ (naslov + 9 pitanja i odgovora)
+  set('t-natalFaqTitle', t.natalFaqTitle);
+  for (let i = 1; i <= 9; i++) {
+    set('t-natalFaqQ' + i, t['natalFaqQ' + i]);
+    set('t-natalFaqA' + i, t['natalFaqA' + i]);
+  }
+
   // Footer
   set('t-footerTagline', t.footerTagline);
 

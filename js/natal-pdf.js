@@ -87,7 +87,10 @@ function ensureGlyphBBoxes() {
    bboxom skaliraju se gore do iste vidljive veličine; veći ostaju isti. */
 const GLYPH_REF = 19;
 const GLYPH_STROKE = 1.7;   // debljina linije za stroke-glifove pri maxDim=19
-const GLYPH_FILL_STROKE = 0.35; // tanki obrub oko fill-glifova (izjednači težinu)
+// Fill-glifovi (Merkur, Venera, Mars, Uran, Lilith, Kiron, znakovi...) već imaju
+// prirodnu debljinu obrisa DejaVu fonta (mjereno ~1.6–2.2, prosjek blizu 1.7).
+// NE dodajemo dodatni obrub — on ih je činio debljima od stroke-glifova.
+const GLYPH_FILL_STROKE = 0;
 
 /* Vrati <g> s normaliziranim glifom: bbox centriran na (boxCx, boxCy) i
    skaliran tako da maxDim → boxSpan, u koordinatnom prostoru pozivatelja. */
@@ -99,13 +102,13 @@ function glyphGroup(key, boxCx, boxCy, boxSpan, color) {
   const tx = boxCx - (bb.x + bb.w / 2) * scale;
   const ty = boxCy - (bb.y + bb.h / 2) * scale;
   const sw  = (GLYPH_STROKE * bb.max / GLYPH_REF).toFixed(3);
-  const fsw = (GLYPH_FILL_STROKE * bb.max / GLYPH_REF).toFixed(3);
+  const fsw = GLYPH_FILL_STROKE > 0 ? (GLYPH_FILL_STROKE * bb.max / GLYPH_REF).toFixed(3) : 0;
   let out = '<g transform="translate(' + tx.toFixed(3) + ',' + ty.toFixed(3) +
     ') scale(' + scale.toFixed(4) + ')">';
   if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color +
     '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color +
-    '" stroke-width="' + fsw + '" stroke-linejoin="round"/>';
+  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '"' +
+    (fsw > 0 ? ' stroke="' + color + '" stroke-width="' + fsw + '" stroke-linejoin="round"' : '') + '/>';
   return out + '</g>';
 }
 

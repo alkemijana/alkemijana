@@ -51,17 +51,74 @@ function svgToElement(svgStr) {
   return div.firstElementChild;
 }
 
-/* Nacrtaj mali glif (planet/znak/aspekt) u PDF na poziciji bazne linije teksta (x, y).
-   Stroke glifovi (planeti) — debela linija (2.4) → izgledaju boldano.
-   Fill glifovi (zodijak, Lilith, aspekti iz DejaVu) — fill + dodatni stroke iste boje da
-   se vizualno izjednače s boldanim stroke glifovima (inače djeluju tanki / "regular"). */
-async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
+/* ── Normalizacija glifova ──────────────────────────────────────────────
+   Glifovi u GLYPHS imaju RAZLIČITE bounding-boxove unutar 24×24 viewBoxa
+   (npr. Sunce zauzima ~13.6, a Mars/znakovi ~19 jedinica) i nisu svi
+   centrirani. Zato su, crtani "kako jesu", različite veličine i pomaknuti.
+   Mjerimo stvarni bbox svakog glifa (getBBox, jednom, kešira se), pa svaki
+   skaliramo da mu NAJVEĆA dimenzija = ista ciljana vrijednost i centriramo
+   ga. Debljinu linije kompenziramo skaliranjem (stroke-width ∝ maxDim) da
+   vizualna težina ostane jednaka bez obzira na veličinu glifa. */
+let GLYPH_BBOX = null;
+function ensureGlyphBBoxes() {
+  if (GLYPH_BBOX) return GLYPH_BBOX;
+  GLYPH_BBOX = {};
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.style.cssText = 'position:absolute;left:-99999px;top:0;width:240px;height:240px';
+  document.body.appendChild(svg);
+  try {
+    for (const k in GLYPHS) {
+      const g = GLYPHS[k];
+      svg.innerHTML = '';
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', ((g.s || '') + ' ' + (g.f || '')).trim());
+      svg.appendChild(p);
+      const bb = p.getBBox();
+      GLYPH_BBOX[k] = { x: bb.x, y: bb.y, w: bb.width, h: bb.height,
+        max: Math.max(bb.width, bb.height) || 19 };
+    }
+  } finally { svg.remove(); }
+  return GLYPH_BBOX;
+}
+
+/* Referentni maxDim (znakovi/Mars zauzimaju ~19 od 24) — glifovi s manjim
+   bboxom skaliraju se gore do iste vidljive veličine; veći ostaju isti. */
+const GLYPH_REF = 19;
+const GLYPH_STROKE = 1.7;   // debljina linije za stroke-glifove pri maxDim=19
+const GLYPH_FILL_STROKE = 0.35; // tanki obrub oko fill-glifova (izjednači težinu)
+
+/* Vrati <g> s normaliziranim glifom: bbox centriran na (boxCx, boxCy) i
+   skaliran tako da maxDim → boxSpan, u koordinatnom prostoru pozivatelja. */
+function glyphGroup(key, boxCx, boxCy, boxSpan, color) {
   const g = GLYPHS[key];
-  if (!g) return;
-  let inner = '';
-  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.35" stroke-linejoin="round"/>';
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
+  if (!g) return '';
+  const bb = ensureGlyphBBoxes()[key];
+  const scale = boxSpan / bb.max;
+  const tx = boxCx - (bb.x + bb.w / 2) * scale;
+  const ty = boxCy - (bb.y + bb.h / 2) * scale;
+  const sw  = (GLYPH_STROKE * bb.max / GLYPH_REF).toFixed(3);
+  const fsw = (GLYPH_FILL_STROKE * bb.max / GLYPH_REF).toFixed(3);
+  let out = '<g transform="translate(' + tx.toFixed(3) + ',' + ty.toFixed(3) +
+    ') scale(' + scale.toFixed(4) + ')">';
+  if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color +
+    '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color +
+    '" stroke-width="' + fsw + '" stroke-linejoin="round"/>';
+  return out + '</g>';
+}
+
+/* Nacrtaj mali glif (planet/znak/aspekt) u PDF, centriran u kvadratu sizeMm
+   sa središtem na (x + sizeMm/2, baseline-ish). Svi glifovi normalizirani na
+   istu vidljivu veličinu i težinu (vidi glyphGroup). */
+async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
+  if (!GLYPHS[key]) return;
+  // crtamo u 24×24 viewBoxu (mapira se na sizeMm); glif centriran na (12,12),
+  // maxDim → GLYPH_REF (19 od 24) — ista konvencija kao kotač/tablice
+  const inner = glyphGroup(key, 12, 12, GLYPH_REF, color);
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' +
+    sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
   const el = svgToElement(svg);
   document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
   try { await doc.svg(el, { x: x, y: y - sizeMm * 0.78, width: sizeMm, height: sizeMm }); }
@@ -204,21 +261,13 @@ async function downloadPoster() {
 }
 
 /* Radna A4 verzija — karta + tablice za iščitavanje */
-/* SVG inline glyph (za korištenje unutar drugog SVG-a, koord. centra glifa).
-   Težina glifa MORA biti identična kao u drawGlyphPdf (tablice na str. 2) inače
-   se stroke-glifovi (planeti crtani linijom) i fill-glifovi (znakovi/Lilith/Kiron
-   iz DejaVu obrisa) ne poklapaju: stroke=1.7 ≈ debljina obrisa fonta (~1.6 u
-   24-prostoru). Koordinate i stroke-width su u 24-prostoru pa ih scale(sc)
-   skalira jednako kao viewBox u drawGlyphPdf → ista debljina na ispisu.
-   strokeW param se zadržava radi kompatibilnosti potpisa, ali se ne koristi. */
+/* SVG inline glyph (za korištenje unutar drugog SVG-a, koord. CENTRA glifa).
+   Normaliziran preko glyphGroup → svi glifovi iste vidljive veličine, težine i
+   centrirani. `size` = vidljiva veličina (kao prije: glif maxDim=19 zauzima
+   size*19/24, manji se skaliraju gore da se izjednače). strokeW param se
+   zadržava radi kompatibilnosti starih poziva, ali se ne koristi. */
 function inlineGlyph(key, cx, cy, size, color, strokeW) {
-  const g = GLYPHS[key];
-  if (!g) return '';
-  const sc = size / 24;
-  let out = '<g transform="translate(' + (cx - size / 2).toFixed(2) + ',' + (cy - size / 2).toFixed(2) + ') scale(' + sc.toFixed(4) + ')">';
-  if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.35" stroke-linejoin="round"/>';
-  return out + '</g>';
+  return glyphGroup(key, cx, cy, size * GLYPH_REF / 24, color);
 }
 
 /* Astro-Seek aspektna tablica + dominante — SVG (interno mm-jedinice,

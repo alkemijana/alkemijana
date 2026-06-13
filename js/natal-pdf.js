@@ -56,7 +56,7 @@ async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
   const g = GLYPHS[key];
   if (!g) return;
   let inner = '';
-  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
   if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="none"/>';
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
   const el = svgToElement(svg);
@@ -267,11 +267,11 @@ function buildAstroSeekSVG(chart) {
     // — Label dio — u kućici spojenoj s mrežom (rub jednak ćelijama)
     s += '<rect x="0" y="' + ry.toFixed(2) + '" width="' + labW + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.35"/>';
     // glif planeta
-    s += inlineGlyph(p.id, 2.9, ry + cs / 2, 5.0, INK, 0.6);
+    s += inlineGlyph(p.id, 2.9, ry + cs / 2, 5.0, INK, 1.0);
     // ime — vertikalno centrirano (svg2pdf ne poštuje dy pouzdano → eksplicitan baseline)
     s += '<text x="6.2" y="' + (ry + cs / 2 + 1.1).toFixed(2) + '" fill="' + INK + '" font-size="3.15"' + B + ' font-family="Quicksand, sans-serif">' + escHtml(p.name) + '</text>';
     // glif znaka
-    s += inlineGlyph(signKey(p.lon), 26.0, ry + cs / 2, 4.5, elementColor(p.lon, PAL), 0.6);
+    s += inlineGlyph(signKey(p.lon), 26.0, ry + cs / 2, 4.5, elementColor(p.lon, PAL), 1.0);
     // stupanj + R — vertikalno centrirano
     const dm = degMinParts(p.lon);
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
@@ -289,7 +289,7 @@ function buildAstroSeekSVG(chart) {
       if (j === i) {
         // diagonala — glif planeta, ili tekst za ASC/MC (nemaju glif)
         if (GLYPHS[p.id]) {
-          s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 5.0, INK, 0.6);
+          s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 5.0, INK, 1.0);
         } else {
           const lbl = p.id === 'asc' ? 'AC' : 'MC';
           s += '<text x="' + (cx + cs / 2 - tw(lbl, 3.0) / 2).toFixed(2) + '" y="' + (cy + cs / 2 + 1.05).toFixed(2) +
@@ -298,7 +298,7 @@ function buildAstroSeekSVG(chart) {
       } else {
         const ap = byPair[pts[i].id + '|' + pts[j].id];
         if (ap) {
-          s += inlineGlyph(ap.aspect, cx + cs / 2 - 0.9, cy + cs / 2 - 0.6, 4.4, aspectColor(ap.aspect, PAL), 0.6);
+          s += inlineGlyph(ap.aspect, cx + cs / 2 - 0.9, cy + cs / 2 - 0.6, 4.4, aspectColor(ap.aspect, PAL), 1.0);
           const orbTxt = Math.round(ap.orb);
           s += '<text x="' + (cx + cs - 0.5 - tw(orbTxt, 2.95)).toFixed(2) + '" y="' + (cy + cs - 0.7).toFixed(2) +
             '" fill="' + MUT + '" font-size="2.95"' + B + ' font-family="Quicksand, sans-serif">' + orbTxt + '</text>';
@@ -366,7 +366,7 @@ function buildAstroSeekSVG(chart) {
         const px = cx + 1.5 + col * (gsize + gap) + gsize / 2;
         const py = ry + 3.0 + row * (gsize + 1.1) + gsize / 2;
         if (py > ry + rowH - 0.5) break;
-        s += inlineGlyph(cellPts[k].id, px, py, gsize, INK, 0.6);
+        s += inlineGlyph(cellPts[k].id, px, py, gsize, INK, 1.0);
       }
     }
   }

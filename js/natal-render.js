@@ -241,7 +241,7 @@ function buildChartSVG(chart, pal, opts) {
     const [sx, sy] = pt(dispLon, R_SGN);
     s += glyphSvgEl(signKey(p.lon), sx, sy, 21 * ls, elementColor(p.lon, pal), 2.0);
     const [mx, my] = pt(dispLon, R_MIN);
-    s += textC(mx, my, pal.degText, 13.5 * ls, pad2(dm.m) + '′');
+    s += textC(mx, my, pal.degText, 13.5 * ls, pad2(dm.m) + "'");
   }
 
   // viewBox prošireni za labele osi izvan kotača

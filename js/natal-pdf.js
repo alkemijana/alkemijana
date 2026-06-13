@@ -51,13 +51,16 @@ function svgToElement(svgStr) {
   return div.firstElementChild;
 }
 
-/* Nacrtaj mali glif (planet/znak/aspekt) u PDF na poziciji bazne linije teksta (x, y) */
+/* Nacrtaj mali glif (planet/znak/aspekt) u PDF na poziciji bazne linije teksta (x, y).
+   Stroke glifovi (planeti) — debela linija (2.4) → izgledaju boldano.
+   Fill glifovi (zodijak, Lilith, aspekti iz DejaVu) — fill + dodatni stroke iste boje da
+   se vizualno izjednače s boldanim stroke glifovima (inače djeluju tanki / "regular"). */
 async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
   const g = GLYPHS[key];
   if (!g) return;
   let inner = '';
   if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="none"/>';
+  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.7" stroke-linejoin="round"/>';
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
   const el = svgToElement(svg);
   document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
@@ -208,7 +211,7 @@ function inlineGlyph(key, cx, cy, size, color, strokeW) {
   const sc = size / 24;
   let out = '<g transform="translate(' + (cx - size / 2).toFixed(2) + ',' + (cy - size / 2).toFixed(2) + ') scale(' + sc.toFixed(4) + ')">';
   if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="' + (strokeW || 1.5) + '" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="none"/>';
+  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="' + ((strokeW || 1.0) * 0.45) + '" stroke-linejoin="round"/>';
   return out + '</g>';
 }
 

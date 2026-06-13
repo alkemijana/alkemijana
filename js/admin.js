@@ -1388,10 +1388,7 @@ const TEXT_GROUPS = [
       reviewsSub:       'Recenzije — podnaslov',
       blogPreviewTitle: 'Blog pregled — naslov',
       blogPreviewSub:   'Blog pregled — podnaslov',
-      blogPreviewBtn:   'Blog pregled — gumb',
-      homeNatalTitle:   'Natalna karta CTA — naslov',
-      homeNatalText:    'Natalna karta CTA — tekst',
-      homeNatalBtn:     'Natalna karta CTA — gumb'
+      blogPreviewBtn:   'Blog pregled — gumb'
     }
   },
   {
@@ -1525,7 +1522,6 @@ const TEXT_GROUPS = [
   {
     title: 'Footer',
     keys: {
-      footerTagline: 'Tagline ispod naslova',
       footerCopy:    'Copyright redak',
       footerCredit:  'Kredit (Designed by…)'
     }

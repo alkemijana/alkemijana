@@ -1860,6 +1860,41 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   text-shadow: 0 0 16px rgba(196,180,232,0.8), 0 0 4px rgba(20,12,40,1);
 }
 
+/* LIGHT TEMA — CTA gumb i caption se prilagođavaju (svijetla pastelna pozadina) */
+:root[data-theme="light"] .home-live-natal-cta {
+  background: radial-gradient(circle at 50% 45%,
+    rgba(106,78,160,0.32) 0%,
+    rgba(106,78,160,0.22) 55%,
+    rgba(106,78,160,0.06) 88%,
+    rgba(106,78,160,0) 100%);
+}
+:root[data-theme="light"] .home-live-natal-cta-label {
+  color: rgba(46,39,82,0.85);
+  text-shadow: 0 0 10px rgba(244,238,249,0.9), 0 0 3px rgba(244,238,249,0.7);
+}
+:root[data-theme="light"] .home-live-natal-wrap:hover .home-live-natal-cta,
+:root[data-theme="light"] .home-live-natal-wrap:focus-visible .home-live-natal-cta {
+  background: radial-gradient(circle at 50% 45%,
+    rgba(106,78,160,0.68) 0%,
+    rgba(106,78,160,0.50) 60%,
+    rgba(106,78,160,0.12) 90%,
+    rgba(106,78,160,0) 100%);
+}
+:root[data-theme="light"] .home-live-natal-wrap:hover .home-live-natal-cta-label,
+:root[data-theme="light"] .home-live-natal-wrap:focus-visible .home-live-natal-cta-label {
+  color: #1f1638;
+  text-shadow: 0 0 14px rgba(244,238,249,1), 0 0 4px rgba(244,238,249,0.95);
+}
+:root[data-theme="light"] .home-live-natal-svg svg {
+  filter: drop-shadow(0 0 5px rgba(106,78,160,0.18));
+}
+:root[data-theme="light"] .home-live-natal-wrap.lt-loaded .home-live-natal-svg svg {
+  filter: drop-shadow(0 0 5px rgba(106,78,160,0.30));
+}
+:root[data-theme="light"] .home-live-natal-caption {
+  color: rgba(74,63,110,0.7);
+}
+
 .home-live-natal-caption {
   text-align: center;
   /* pomak prema gore — kompenzira praznine unutar SVG-a kotača (viewBox ima ~9% padding) */
@@ -1884,6 +1919,17 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   .home-live-natal-cta-label {
     color: #f5f0ff;
     text-shadow: 0 0 16px rgba(196,180,232,0.8), 0 0 4px rgba(20,12,40,1);
+  }
+  :root[data-theme="light"] .home-live-natal-cta {
+    background: radial-gradient(circle at 50% 45%,
+      rgba(106,78,160,0.68) 0%,
+      rgba(106,78,160,0.50) 60%,
+      rgba(106,78,160,0.12) 90%,
+      rgba(106,78,160,0) 100%);
+  }
+  :root[data-theme="light"] .home-live-natal-cta-label {
+    color: #1f1638;
+    text-shadow: 0 0 14px rgba(244,238,249,1), 0 0 4px rgba(244,238,249,0.95);
   }
 }
 @media (max-width: 720px) {

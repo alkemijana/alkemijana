@@ -1047,11 +1047,6 @@ function applyTexts() {
   set('t-blogPageSub',   t.blogPageSub);
   set('t-relatedTitle',  t.relatedTitle);
 
-  // Početna — CTA za natalnu kartu
-  set('t-homeNatalTitle', t.homeNatalTitle);
-  set('t-homeNatalText',  t.homeNatalText);
-  set('t-homeNatalBtn',   t.homeNatalBtn);
-
   // Natalna karta
   set('t-natalPageTitle',    t.natalPageTitle);
   set('t-natalPageSub',      t.natalPageSub);
@@ -1076,9 +1071,6 @@ function applyTexts() {
     set('t-natalFaqQ' + i, t['natalFaqQ' + i]);
     set('t-natalFaqA' + i, t['natalFaqA' + i]);
   }
-
-  // Footer
-  set('t-footerTagline', t.footerTagline);
 
   // Kontakt naslov — dinamički prema stanju usluga
   const contactEl = document.getElementById('t-contactTitle');

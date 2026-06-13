@@ -11,10 +11,31 @@
   let started = false;
   let timer = null;
 
+  function isLightTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light';
+  }
+
   function mysticalPalette() {
-    const base = (typeof PALETTES !== 'undefined') ? PALETTES.dark : null;
-    if (!base) return null;
-    return Object.assign({}, base, {
+    if (typeof PALETTES === 'undefined') return null;
+    if (isLightTheme()) {
+      // mistični pastelni stil za light temu — tamniji znakovi i planeti, mekše prstenovi
+      return Object.assign({}, PALETTES.light, {
+        ring:     'rgba(106,78,160,0.55)',
+        ringSoft: 'rgba(106,78,160,0.32)',
+        bandA:    'rgba(106,78,160,0.10)',
+        bandB:    'rgba(106,78,160,0.03)',
+        sign:     '#5a4090',
+        tick:     'rgba(74,63,110,0.45)',
+        planet:   '#2a2050',
+        degText:  '#6a5d8c',
+        houseNum: '#8a7dac',
+        conj:     '#7a7494',
+        harm:     '#3f7a54',
+        tense:    '#a05468'
+      });
+    }
+    // tamna mistična paleta
+    return Object.assign({}, PALETTES.dark, {
       ring:     'rgba(196,180,232,0.42)',
       ringSoft: 'rgba(168,144,208,0.22)',
       bandA:    'rgba(168,144,208,0.07)',
@@ -98,4 +119,9 @@
   } else {
     setupObserver();
   }
+
+  // Re-render kotač kad se promijeni tema (paleta ovisi o data-theme)
+  new MutationObserver(() => {
+    if (started) renderOnce();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 })();

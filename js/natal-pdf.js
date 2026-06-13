@@ -204,14 +204,20 @@ async function downloadPoster() {
 }
 
 /* Radna A4 verzija — karta + tablice za iščitavanje */
-/* SVG inline glyph (za korištenje unutar drugog SVG-a, koord. centra glifa) */
+/* SVG inline glyph (za korištenje unutar drugog SVG-a, koord. centra glifa).
+   Težina glifa MORA biti identična kao u drawGlyphPdf (tablice na str. 2) inače
+   se stroke-glifovi (planeti crtani linijom) i fill-glifovi (znakovi/Lilith/Kiron
+   iz DejaVu obrisa) ne poklapaju: stroke=1.7 ≈ debljina obrisa fonta (~1.6 u
+   24-prostoru). Koordinate i stroke-width su u 24-prostoru pa ih scale(sc)
+   skalira jednako kao viewBox u drawGlyphPdf → ista debljina na ispisu.
+   strokeW param se zadržava radi kompatibilnosti potpisa, ali se ne koristi. */
 function inlineGlyph(key, cx, cy, size, color, strokeW) {
   const g = GLYPHS[key];
   if (!g) return '';
   const sc = size / 24;
   let out = '<g transform="translate(' + (cx - size / 2).toFixed(2) + ',' + (cy - size / 2).toFixed(2) + ') scale(' + sc.toFixed(4) + ')">';
-  if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="' + (strokeW || 1.5) + '" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="' + ((strokeW || 1.0) * 0.45) + '" stroke-linejoin="round"/>';
+  if (g.s) out += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (g.f) out += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.35" stroke-linejoin="round"/>';
   return out + '</g>';
 }
 

@@ -1832,7 +1832,10 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   display: flex; align-items: center; justify-content: center;
   text-align: center;
   transition: background 0.45s ease, color 0.35s ease, text-shadow 0.35s ease;
-  pointer-events: none;
+  /* gumb sam hvata hover (zasvjetli tek kad je miš NAD njim, ne nad cijelim
+     kotačem); klik svejedno propušta do <a> roditelja → navigacija radi */
+  pointer-events: auto;
+  cursor: pointer;
 }
 .home-live-natal-cta-label {
   font-family: 'Quicksand', sans-serif;
@@ -1846,7 +1849,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   text-shadow: 0 0 10px rgba(196,180,232,0.4), 0 0 3px rgba(20,12,40,0.7);
   transition: color 0.35s ease, text-shadow 0.35s ease;
 }
-.home-live-natal-wrap:hover .home-live-natal-cta,
+.home-live-natal-cta:hover,
 .home-live-natal-wrap:focus-visible .home-live-natal-cta {
   background: radial-gradient(circle at 50% 45%,
     rgba(18,10,38,0.96) 0%,
@@ -1854,7 +1857,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
     rgba(36,22,68,0.25) 90%,
     rgba(36,22,68,0) 100%);
 }
-.home-live-natal-wrap:hover .home-live-natal-cta-label,
+.home-live-natal-cta:hover .home-live-natal-cta-label,
 .home-live-natal-wrap:focus-visible .home-live-natal-cta-label {
   color: #f5f0ff;
   text-shadow: 0 0 16px rgba(196,180,232,0.8), 0 0 4px rgba(20,12,40,1);
@@ -1872,7 +1875,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   color: rgba(46,39,82,0.85);
   text-shadow: 0 0 10px rgba(244,238,249,0.9), 0 0 3px rgba(244,238,249,0.7);
 }
-:root[data-theme="light"] .home-live-natal-wrap:hover .home-live-natal-cta,
+:root[data-theme="light"] .home-live-natal-cta:hover,
 :root[data-theme="light"] .home-live-natal-wrap:focus-visible .home-live-natal-cta {
   background: radial-gradient(circle at 50% 45%,
     rgba(106,78,160,0.68) 0%,
@@ -1880,7 +1883,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
     rgba(106,78,160,0.12) 90%,
     rgba(106,78,160,0) 100%);
 }
-:root[data-theme="light"] .home-live-natal-wrap:hover .home-live-natal-cta-label,
+:root[data-theme="light"] .home-live-natal-cta:hover .home-live-natal-cta-label,
 :root[data-theme="light"] .home-live-natal-wrap:focus-visible .home-live-natal-cta-label {
   color: #1f1638;
   text-shadow: 0 0 14px rgba(244,238,249,1), 0 0 4px rgba(244,238,249,0.95);

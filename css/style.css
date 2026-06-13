@@ -1696,28 +1696,103 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-wheel { max-width: 740px; margin: 0 auto; }
 .nt-wheel svg { width: 100%; height: auto; display: block; }
 
-/* — Natal CTA kartica na početnoj — */
-#home-natal-section { margin-top: 2.2rem; margin-bottom: 1rem; }
-.home-natal-card {
-  max-width: 880px; margin: 0 auto;
-  background: linear-gradient(135deg, rgba(106,78,160,0.10), rgba(168,144,208,0.04));
-  border: 1px solid rgba(168,144,208,0.32); border-radius: 18px;
-  padding: 1.8rem 2.2rem;
-  display: flex; align-items: center; gap: 1.6rem;
+/* — Živi natalni kotač na početnoj — */
+#home-natal-section { margin-top: 1.4rem; margin-bottom: 2.8rem; }
+.home-live-natal-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  cursor: pointer;
+  outline: none;
 }
-.home-natal-glyph { flex-shrink: 0; color: var(--lavender); opacity: 0.85; line-height: 0; }
-.home-natal-text { flex: 1; min-width: 0; }
-.home-natal-text h3 {
-  font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--lavender);
-  margin: 0 0 0.4rem;
+.home-live-natal-wrap:focus-visible {
+  box-shadow: 0 0 0 3px rgba(168,144,208,0.5);
+  border-radius: 50%;
 }
-.home-natal-text p {
-  font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text);
-  margin: 0 0 1rem; line-height: 1.55;
+.home-live-natal-svg { width: 100%; height: 100%; }
+.home-live-natal-svg svg {
+  display: block; width: 100%; height: 100%;
+  transform-origin: 50% 50%;
+  transform: rotate(-22deg) scale(0.94);
+  opacity: 0.18;
+  transition:
+    transform 1.9s cubic-bezier(.18,.6,.22,1),
+    opacity 1.5s ease-out,
+    filter 1.4s ease-out;
+  filter: drop-shadow(0 0 6px rgba(196,180,232,0));
 }
-@media (max-width: 640px) {
-  .home-natal-card { flex-direction: column; text-align: center; padding: 1.6rem 1.4rem; }
-  .home-natal-glyph svg { width: 54px; height: 54px; }
+.home-live-natal-wrap.lt-loaded .home-live-natal-svg svg {
+  transform: rotate(0) scale(1);
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(196,180,232,0.45));
+}
+/* Aspektne linije malo stišane (mističniji dojam) */
+.home-live-natal-svg svg line[stroke-width="1.8"],
+.home-live-natal-svg svg line[stroke-width="1.5"],
+.home-live-natal-svg svg line[stroke-width="1.2"] { opacity: 0.78; }
+
+/* CTA gumb u sredini kotača */
+.home-live-natal-cta {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 40%; height: 40%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%,
+    rgba(28,18,52,0.92) 0%,
+    rgba(48,32,86,0.78) 55%,
+    rgba(48,32,86,0.15) 88%,
+    rgba(48,32,86,0) 100%);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.home-live-natal-cta-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(0.82rem, 1.6vw, 1.05rem);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f2ecff;
+  line-height: 1.5;
+  padding: 0 10%;
+  text-shadow: 0 0 14px rgba(196,180,232,0.7), 0 0 4px rgba(20,12,40,0.9);
+}
+.home-live-natal-wrap:hover .home-live-natal-cta,
+.home-live-natal-wrap:focus-visible .home-live-natal-cta {
+  opacity: 1;
+}
+
+.home-live-natal-caption {
+  text-align: center;
+  margin-top: 1rem;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  color: rgba(196,180,232,0.55);
+}
+
+/* Mobilni / touch uređaji — CTA uvijek vidljiv (nema hovera) */
+@media (hover: none) {
+  .home-live-natal-cta { opacity: 1; }
+}
+@media (max-width: 720px) {
+  #home-natal-section { margin-top: 0.8rem; margin-bottom: 2rem; }
+  .home-live-natal-wrap { max-width: 92vw; }
+  .home-live-natal-cta { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-live-natal-svg svg {
+    transition: none;
+    transform: none;
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(196,180,232,0.45));
+  }
 }
 
 /* — Kontrole ispod kotača (aspekti, stupnjevi kuća) — */

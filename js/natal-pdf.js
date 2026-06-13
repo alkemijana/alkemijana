@@ -59,8 +59,8 @@ async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
   const g = GLYPHS[key];
   if (!g) return;
   let inner = '';
-  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
-  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.7" stroke-linejoin="round"/>';
+  if (g.s) inner += '<path d="' + g.s + '" fill="none" stroke="' + color + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  if (g.f) inner += '<path d="' + g.f + '" fill="' + color + '" stroke="' + color + '" stroke-width="0.35" stroke-linejoin="round"/>';
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
   const el = svgToElement(svg);
   document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';

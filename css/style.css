@@ -255,12 +255,11 @@ body > svg[viewBox="0 0 1920 1080"] {
 
 /* ---- HERO ---- */
 .hero {
-  min-height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 5rem 2rem 2rem;
 }
 
 .hero h1 {
@@ -1697,11 +1696,13 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-wheel svg { width: 100%; height: auto; display: block; }
 
 /* — Živi natalni kotač na početnoj — */
-#home-natal-section { margin-top: 1.4rem; margin-bottom: 2.8rem; }
+#home-natal-section {
+  padding: 0.4rem 0 2.4rem;
+  margin: 0 auto;
+}
 .home-live-natal-wrap {
   position: relative;
   width: 100%;
-  max-width: 640px;
   margin: 0 auto;
   aspect-ratio: 1 / 1;
   cursor: pointer;
@@ -1733,7 +1734,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .home-live-natal-svg svg line[stroke-width="1.5"],
 .home-live-natal-svg svg line[stroke-width="1.2"] { opacity: 0.78; }
 
-/* CTA gumb u sredini kotača */
+/* CTA gumb u sredini kotača — stalno blago vidljiv, na hover potamni */
 .home-live-natal-cta {
   position: absolute;
   left: 50%; top: 50%;
@@ -1741,30 +1742,39 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 45%,
-    rgba(28,18,52,0.92) 0%,
-    rgba(48,32,86,0.78) 55%,
-    rgba(48,32,86,0.15) 88%,
+    rgba(28,18,52,0.55) 0%,
+    rgba(48,32,86,0.40) 55%,
+    rgba(48,32,86,0.06) 88%,
     rgba(48,32,86,0) 100%);
   display: flex; align-items: center; justify-content: center;
   text-align: center;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: background 0.45s ease, color 0.35s ease, text-shadow 0.35s ease;
   pointer-events: none;
 }
 .home-live-natal-cta-label {
   font-family: 'Quicksand', sans-serif;
-  font-size: clamp(0.82rem, 1.6vw, 1.05rem);
+  font-size: clamp(0.82rem, 1.6vw, 1.15rem);
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #f2ecff;
+  color: rgba(242,236,255,0.78);
   line-height: 1.5;
   padding: 0 10%;
-  text-shadow: 0 0 14px rgba(196,180,232,0.7), 0 0 4px rgba(20,12,40,0.9);
+  text-shadow: 0 0 10px rgba(196,180,232,0.4), 0 0 3px rgba(20,12,40,0.7);
+  transition: color 0.35s ease, text-shadow 0.35s ease;
 }
 .home-live-natal-wrap:hover .home-live-natal-cta,
 .home-live-natal-wrap:focus-visible .home-live-natal-cta {
-  opacity: 1;
+  background: radial-gradient(circle at 50% 45%,
+    rgba(18,10,38,0.96) 0%,
+    rgba(36,22,68,0.88) 60%,
+    rgba(36,22,68,0.25) 90%,
+    rgba(36,22,68,0) 100%);
+}
+.home-live-natal-wrap:hover .home-live-natal-cta-label,
+.home-live-natal-wrap:focus-visible .home-live-natal-cta-label {
+  color: #f5f0ff;
+  text-shadow: 0 0 16px rgba(196,180,232,0.8), 0 0 4px rgba(20,12,40,1);
 }
 
 .home-live-natal-caption {
@@ -1777,14 +1787,22 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   color: rgba(196,180,232,0.55);
 }
 
-/* Mobilni / touch uređaji — CTA uvijek vidljiv (nema hovera) */
+/* Mobilni / touch uređaji — CTA potamnjen (kao na hoveru) jer nema hovera */
 @media (hover: none) {
-  .home-live-natal-cta { opacity: 1; }
+  .home-live-natal-cta {
+    background: radial-gradient(circle at 50% 45%,
+      rgba(18,10,38,0.96) 0%,
+      rgba(36,22,68,0.88) 60%,
+      rgba(36,22,68,0.25) 90%,
+      rgba(36,22,68,0) 100%);
+  }
+  .home-live-natal-cta-label {
+    color: #f5f0ff;
+    text-shadow: 0 0 16px rgba(196,180,232,0.8), 0 0 4px rgba(20,12,40,1);
+  }
 }
 @media (max-width: 720px) {
-  #home-natal-section { margin-top: 0.8rem; margin-bottom: 2rem; }
-  .home-live-natal-wrap { max-width: 92vw; }
-  .home-live-natal-cta { opacity: 1; }
+  #home-natal-section { padding: 0.2rem 0 1.6rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-live-natal-svg svg {

@@ -2004,10 +2004,13 @@ input[type="time"]:disabled { opacity: 0.45; }
 .nt-dl-card {
   background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
   padding: 1.6rem 1.8rem;
+  /* kartice u gridu su jednake visine; redak s gumbom guramo na dno da gumbi
+     (poster i radni PDF) budu poravnati na istoj razini bez obzira na duljinu teksta */
+  display: flex; flex-direction: column;
 }
 .nt-dl-card h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 0.5rem; }
 .nt-dl-card p  { font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5; }
-.nt-dl-row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+.nt-dl-row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; margin-top: auto; }
 .nt-dl-row select {
   background: var(--form-bg); color: var(--text);
   border: 1px solid var(--border); border-radius: 8px;

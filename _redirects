@@ -1,0 +1,11 @@
+# Lijepe URL-keyword rute → natalna karta (302 da kanonski URL ostane "/")
+/natalna-karta              /#natal   302
+/besplatna-natalna-karta    /#natal   302
+/izrada-natalne-karte       /#natal   302
+/natalna-karta-online       /#natal   302
+/izracun-natalne-karte      /#natal   302
+
+# Pretty alias za blog
+/blog                       /#blog    302
+/o-meni                     /#o-meni  302
+/kontakt                    /#kontakt 302

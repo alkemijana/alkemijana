@@ -4,6 +4,56 @@
 
 /* ---- NAVIGACIJA ---- */
 
+/* Per-page SEO meta tagovi — ažuriraju title/description/canonical/OG/Twitter
+   tako da svaka "stranica" u SPA-u ima vlastite tagove (Googlebot to renderira). */
+const PAGE_META = {
+  home: {
+    title: 'Besplatna natalna karta · Izrada s tumačenjem — Alkemijana',
+    desc:  'Besplatna natalna karta online — izračunaj svoju kartu neba na hrvatskom: pozicije planeta, kuće (Placidus), aspekti i dominante. Bez registracije, s PDF posterom i radnom verzijom.',
+    hash:  ''
+  },
+  natal: {
+    title: 'Besplatna natalna karta online — izrada s tumačenjem | Alkemijana',
+    desc:  'Izradi besplatnu natalnu kartu na hrvatskom: pozicije planeta, kuće (Placidus), aspekti, dominante, Jonesov oblik karte. Preuzmi PDF poster (A4–A0) ili radnu A4 verziju. Bez registracije.',
+    hash:  'natal'
+  },
+  blog: {
+    title: 'Blog: tarot, astrologija i samospoznaja — Alkemijana',
+    desc:  'Članci o tarotu, astrologiji, simbolici karata, arhetipovima i samospoznaji. Mudrost koja se dijeli.',
+    hash:  'blog'
+  },
+  'o-meni': {
+    title: 'O meni — Jana, autorica Alkemijane',
+    desc:  'Jana, magistra socijalne pedagogije i autorica Alkemijane. Tarot, astrologija, samospoznaja.',
+    hash:  'o-meni'
+  },
+  kontakt: {
+    title: 'Kontakt — Alkemijana',
+    desc:  'Pošalji upit ili rezerviraj susret. Alkemijana — tarot, astrologija, samospoznaja.',
+    hash:  'kontakt'
+  },
+  usluge: {
+    title: 'Usluge i cjenik — Alkemijana',
+    desc:  'Usluge i cjenik — tarot susreti, astrološka tumačenja, natalna karta.',
+    hash:  'usluge'
+  }
+};
+
+function applyPageMeta(id) {
+  const m = PAGE_META[id]; if (!m) return;
+  const set = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+  document.title = m.title;
+  set('#meta-title',       'content', m.title);  // ako bot čita textContent, on već vidi <title>
+  set('#meta-description', 'content', m.desc);
+  set('#og-title',         'content', m.title);
+  set('#og-description',   'content', m.desc);
+  set('#og-url',           'content', 'https://alkemijana.com/' + (m.hash ? '#' + m.hash : ''));
+  set('#tw-title',         'content', m.title);
+  set('#tw-description',   'content', m.desc);
+  set('#meta-canonical',   'href',    'https://alkemijana.com/' + (m.hash ? '#' + m.hash : ''));
+  document.documentElement.lang = 'hr';
+}
+
 function showPage(id) {
   /* LEGAL: ako usluge nisu uključene u adminu (nema registriranog obrta),
      #usluge stranica je potpuno blokirana — preusmjeri na početnu.
@@ -19,6 +69,8 @@ function showPage(id) {
   });
   document.getElementById('navLinks').classList.remove('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  applyPageMeta(id);
 
   if (id === 'blog')   renderBlogList();
   if (id === 'usluge') renderPricingTable();

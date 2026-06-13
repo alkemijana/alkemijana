@@ -2,7 +2,21 @@ User-agent: *
 Allow: /
 Disallow: /save-data
 Disallow: /verify-pass
-Disallow: /#usluge
+Disallow: /log-natal
+Disallow: /natal-log
+Disallow: /#admin
+
+# Googlebot — eksplicitno dopusti glavne sekcije
+User-agent: Googlebot
+Allow: /
+Allow: /#natal
+Allow: /#blog
+Allow: /#o-meni
+Allow: /#kontakt
+Disallow: /save-data
+Disallow: /verify-pass
+Disallow: /log-natal
+Disallow: /natal-log
 Disallow: /#admin
 
 Sitemap: https://alkemijana.com/sitemap.xml

@@ -259,7 +259,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 5rem 2rem 2rem;
+  padding: 4.5rem 2rem 0.8rem;
 }
 
 .hero h1 {
@@ -1697,7 +1697,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 
 /* — Živi natalni kotač na početnoj — */
 #home-natal-section {
-  padding: 0.4rem 0 2.4rem;
+  padding: 0 0 0.8rem;
   margin: 0 auto;
 }
 .home-live-natal-wrap {
@@ -1779,12 +1779,14 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 
 .home-live-natal-caption {
   text-align: center;
-  margin-top: 1rem;
+  /* pomak prema gore — kompenzira praznine unutar SVG-a kotača (viewBox ima ~9% padding) */
+  margin-top: -6.5%;
   font-family: 'Quicksand', sans-serif;
   font-size: 0.78rem;
   letter-spacing: 0.18em;
   text-transform: lowercase;
   color: rgba(196,180,232,0.55);
+  position: relative;
 }
 
 /* Mobilni / touch uređaji — CTA potamnjen (kao na hoveru) jer nema hovera */
@@ -1803,6 +1805,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 @media (max-width: 720px) {
   #home-natal-section { padding: 0.2rem 0 1.6rem; }
+  .home-live-natal-wrap { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-live-natal-svg svg {

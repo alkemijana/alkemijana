@@ -2,7 +2,7 @@
 // Dodavanje novog provajdera = nova funkcija + unos u callProvider/DEFAULT_MODELS.
 
 export const DEFAULT_MODELS = {
-  gemini:     'gemini-2.0-flash',
+  gemini:     'gemini-2.5-flash',
   cloudflare: '@cf/meta/llama-3.1-8b-instruct',
   openai:     'gpt-4o-mini',
   anthropic:  'claude-haiku-4-5-20251001'

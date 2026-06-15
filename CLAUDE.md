@@ -32,6 +32,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-render.js             ← Natalna karta: SVG kotač + tablice na stranici
 │   ├── natal-pdf.js                ← Natalna karta: PDF eksport (poster A4–A0 + radna A4)
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue — učitava se zadnji)
+│   ├── natal-ai.js                 ← Natalna karta: AI tumačenje (klijent — serializer, fetch, render; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
@@ -39,7 +40,9 @@ ALKEMIJANA WEBSITE/
 │   ├── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 │   ├── verify-pass.js              ← Provjera admin lozinke (env ADMIN_PASS)
 │   ├── log-natal.js                ← Zapisuje izradu natalne karte u KV (binding NATAL_LOG)
-│   └── natal-log.js                ← Admin čitanje/brisanje evidencije karata (X-Admin-Pass)
+│   ├── natal-log.js                ← Admin čitanje/brisanje evidencije karata (X-Admin-Pass)
+│   ├── interpret-natal.js          ← Ruta /interpret-natal (tanki shim — pravi kod je u ai/)
+│   └── ai/                         ← AI tumačenje (server): core.js (cache+limiti+dispatch), providers.js (adapteri), prompt.js
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
 ├── .gitignore
@@ -106,6 +109,30 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
 - Pri izradi karte šalje se anoniman signal na `/log-natal` (samo hash unosa) za brojač — vidi Admin → Brojač karata.
+
+### AI tumačenje karte (opcionalno) — izdvojeno u zaseban modul
+Gumb **"Protumači kartu"** ispod rezultata traži kratko AI tumačenje (10–20 rečenica:
+najvažnije značajke karte + objašnjenje **zašto** su takve, pozivajući se na konkretan
+položaj — npr. "Sunce u Škorpionu na 24° u 9. kući…").
+
+**Cijeli AI dio je izdvojen** (lako za naći/mijenjati/ukloniti):
+- **Klijent:** `js/natal-ai.js` — samostalan modul (`window.AInatal`). Serijalizira kartu u opis
+  (pozicije/aspekti/dominante, **BEZ imena**), računa isti hash kao brojač karata, šalje POST `/interpret-natal`,
+  renderira odgovor. `natal.js` ga samo "okine" s `window.AInatal.setChart(chart)` pri izradi karte.
+- **Server:** `functions/ai/` — `core.js` (cache, rate-limit, dispatch), `providers.js` (adapteri), `prompt.js`.
+  `functions/interpret-natal.js` je tanki shim (mora ostati u `functions/` zbog Cloudflare routinga).
+
+**Provajder/model se mijenjaju BEZ koda — preko env varijabli** (Cloudflare dashboard):
+- `AI_PROVIDER` — `gemini` (default) | `cloudflare` (Workers AI, treba `AI` binding) | `openai` | `anthropic`.
+  Adapter `openai` je OpenAI-kompatibilan pa preko `AI_BASE_URL` pokriva i **Groq / OpenRouter / Mistral / DeepSeek**.
+- `AI_MODEL` (default po provajderu), `AI_API_KEY` (Workers AI ga ne treba), `AI_BASE_URL` (samo `openai`).
+- `AI_IP_DAILY_LIMIT` (default **10**) — max tumačenja po IP-u dnevno; `AI_DAILY_LIMIT` (default 0 = isključeno) — globalni strop.
+
+**Limiti i cache** u istom KV-u `NATAL_LOG`: `ai:<provider>:<model>:<hash>` (tumačenje, 90 dana — **ista karta
+uvijek vraća isti, već generirani tekst** bez novog poziva), `rl:<YYYYMMDD>:<ip>` (po IP-u), `rlg:<YYYYMMDD>` (globalni).
+**Admin izuzetak:** ako je Jana ulogirana (klijent šalje `X-Admin-Pass` iz `sessionStorage.aj_pass`), limiti se zaobilaze (neograničeno).
+Bez env varova / ključa funkcija graciozno vrati grešku, a izrada karte i PDF rade normalno.
+**Privatnost:** šalju se samo pozicije karte (bez imena ni ikakvih osobnih podataka); uz tumačenje stoji napomena korisniku.
 
 ---
 

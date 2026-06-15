@@ -2018,6 +2018,25 @@ input[type="time"]:disabled { opacity: 0.45; }
   padding: 0.65rem 0.9rem; font-family: 'Quicksand', sans-serif; font-size: 0.9rem;
 }
 
+.nt-ai-card {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  padding: 1.6rem 1.8rem; max-width: 860px; margin: 0 auto 2.6rem auto;
+}
+.nt-ai-card h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 0.5rem; }
+.nt-ai-card > p { font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5; }
+.nt-ai-output {
+  margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+  font-family: 'Cormorant Infant', serif; font-size: 1.1rem; line-height: 1.65; color: var(--text);
+}
+.nt-ai-output p { margin: 0 0 0.9rem 0; }
+.nt-ai-output strong { color: var(--lavender); font-weight: 600; }
+.nt-ai-output.nt-ai-loading { color: var(--silver); font-style: italic; }
+.nt-ai-output.nt-ai-error { color: var(--silver); }
+.nt-ai-note {
+  margin-top: 1rem; font-family: 'Quicksand', sans-serif; font-size: 0.8rem;
+  color: var(--silver); opacity: 0.8;
+}
+
 .nt-tables {
   display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.4rem;
   max-width: 860px; margin: 0 auto;

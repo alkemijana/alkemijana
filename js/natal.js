@@ -199,6 +199,8 @@ async function natalSubmit(ev) {
     });
     currentChart = chart;
     renderNatalResult(chart);
+    // nova karta — preda je AI modulu (js/natal-ai.js) i resetira staro tumačenje
+    if (window.AInatal) window.AInatal.setChart(chart);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
     logNatalCreation(chart);
     document.getElementById('natal-result').scrollIntoView({ behavior: 'smooth', block: 'start' });

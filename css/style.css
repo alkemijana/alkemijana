@@ -2024,18 +2024,21 @@ input[type="time"]:disabled { opacity: 0.45; }
 }
 .nt-ai-card h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 0.5rem; }
 .nt-ai-card > p { font-family: 'Cormorant Infant', serif; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5; }
-.nt-ai-output {
-  margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
-  font-family: 'Cormorant Infant', serif; font-size: 1.1rem; line-height: 1.65; color: var(--text);
+.nt-ai-badge {
+  font-family: 'Quicksand', sans-serif; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--lavender); border: 1px solid var(--border); border-radius: 999px;
+  padding: 0.12rem 0.5rem; margin-left: 0.5rem; vertical-align: middle; opacity: 0.85;
 }
-.nt-ai-output p { margin: 0 0 0.9rem 0; }
-.nt-ai-output strong { color: var(--lavender); font-weight: 600; }
-.nt-ai-output.nt-ai-loading { color: var(--silver); font-style: italic; }
-.nt-ai-output.nt-ai-error { color: var(--silver); }
-.nt-ai-note {
-  margin-top: 1rem; font-family: 'Quicksand', sans-serif; font-size: 0.8rem;
-  color: var(--silver); opacity: 0.8;
+.nt-ai-fresh {
+  display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.9rem;
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem; color: var(--silver); cursor: pointer;
 }
+.nt-ai-status {
+  margin-top: 1rem; font-family: 'Quicksand', sans-serif; font-size: 0.88rem; line-height: 1.5; color: var(--silver);
+}
+.nt-ai-status.nt-ai-loading { color: var(--lavender); font-style: italic; }
+.nt-ai-status.nt-ai-ok { color: var(--sage, #9db89a); }
+.nt-ai-status.nt-ai-error { color: #c89; }
 
 .nt-tables {
   display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.4rem;

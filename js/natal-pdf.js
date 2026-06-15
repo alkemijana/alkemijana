@@ -445,9 +445,18 @@ async function downloadWorking() {
   const btn = document.getElementById('natal-working-btn');
   await withBtnSpinner(btn, async () => {
     await ensurePdfLibs();
-    const chart = currentChart;
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     registerFonts(doc);
+    await renderWorkingContent(doc);
+    addFooters(doc);
+    doc.save(pdfFileName('radna-A4'));
+  });
+}
+
+/* Sav sadržaj radnog A4 (karta + tablice) — BEZ podnožja; podnožja dodaje addFooters
+   na kraju, da numeracija stranica ostane točna i kad se dopišu stranice uvida. */
+async function renderWorkingContent(doc) {
+    const chart = currentChart;
     const W = 210, H = 297;
     const INK_PLANET = '#2a2348';
     const INK_MUT    = '#6a5d8c';
@@ -467,19 +476,12 @@ async function downloadWorking() {
       doc.setDrawColor(154, 143, 192); doc.setLineWidth(0.25);
       doc.line(PAGE_M, 26, W - PAGE_M, 26);
     }
-    function pageFooter(pageNum, totalPages) {
-      doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.5); doc.setTextColor(138, 130, 172);
-      doc.text('Alkemijana · alkemijana.com', W / 2, H - 8, { align: 'center' });
-      doc.text(pageNum + ' / ' + totalPages, W - PAGE_M, H - 8, { align: 'right' });
-    }
     async function renderSvgOnDoc(svgStr, x, y, ww, hh) {
       const el = svgToElement(svgStr);
       document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
       try { await doc.svg(el, { x, y, width: ww, height: hh }); }
       finally { el.remove(); }
     }
-
-    const TOTAL_PAGES = 2;
 
     // ===== STRANICA 1: velika karta (lijevo, do margina) + naslov i legenda (desni stupac) =====
     const chartSize = 164;
@@ -554,8 +556,6 @@ async function downloadWorking() {
     const availH = (H - 11) - gridTop;   // ostavlja prostor do podnožja
     const gsc = Math.min(CONTENT_W / a2.viewW, availH / a2.viewH);
     await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
-
-    pageFooter(1, TOTAL_PAGES);
 
     // ===== STRANICA 2: pozicije + kuće + aspekti — sve u tablicama =====
     doc.addPage();
@@ -670,10 +670,109 @@ async function downloadWorking() {
       }
     }
 
-    pageFooter(2, TOTAL_PAGES);
+}
 
-    doc.save(pdfFileName('radna-A4'));
-  });
+/* Podnožja na SVE stranice (s točnim ukupnim brojem stranica). */
+function addFooters(doc) {
+  const W = 210, H = 297, PAGE_M = 5;
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.5); doc.setTextColor(138, 130, 172);
+    doc.text('Alkemijana · alkemijana.com', W / 2, H - 8, { align: 'center' });
+    doc.text(i + ' / ' + total, W - PAGE_M, H - 8, { align: 'right' });
+  }
+}
+
+/* ── AI UVIDI U PDF (Janin radni alat) ──────────────────────────────────
+   Uvidi dolaze s /interpret-natal kao tekst s "## naslov" i "- natuknica".
+   Layout u svijetlom stilu radnog PDF-a, s prelamanjem na više stranica. */
+
+function parseInsights(text) {
+  const lines = String(text || '').replace(/\r/g, '').split('\n');
+  const blocks = [];
+  let para = [];
+  const flush = () => { if (para.length) { blocks.push({ type: 'p', text: para.join(' ').trim() }); para = []; } };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    if (/^#{1,6}\s+/.test(line)) { flush(); blocks.push({ type: 'h', text: line.replace(/^#{1,6}\s+/, '').replace(/\*\*/g, '').trim() }); }
+    else if (/^[-•*]\s+/.test(line)) { flush(); blocks.push({ type: 'bullet', text: line.replace(/^[-•*]\s+/, '').replace(/\*\*/g, '').trim() }); }
+    else { para.push(line.replace(/\*\*/g, '')); }
+  }
+  flush();
+  return blocks;
+}
+
+/* Dodaje stranice s uvidima u postojeći doc (počinje na trenutnoj stranici). */
+function renderInsightsPages(doc, text, chart) {
+  const W = 210, H = 297, L = 16, R = 16, TOP = 16, BOTTOM = H - 14;
+  const maxW = W - L - R;
+  let y;
+  const ensure = space => { if (y + space > BOTTOM) { doc.addPage(); y = TOP; } };
+
+  // zaglavlje (čija je karta + podaci rođenja)
+  doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(16); doc.setTextColor(42, 35, 72);
+  doc.text('AI uvidi — pomoć pri čitanju', W / 2, 15, { align: 'center' });
+  doc.setFont('Quicksand', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 80, 130);
+  const sub = (chart.input.name ? chart.input.name + ' · ' : '') + birthDataLine(chart);
+  const subLines = doc.splitTextToSize(sub, maxW);
+  doc.text(subLines, W / 2, 21, { align: 'center' });
+  doc.setDrawColor(154, 143, 192); doc.setLineWidth(0.25);
+  const dvy = 21 + subLines.length * 3.6 + 1.5;
+  doc.line(L, dvy, W - R, dvy);
+  y = dvy + 7;
+
+  for (const b of parseInsights(text)) {
+    if (b.type === 'h') {
+      ensure(11); y += 2.5;
+      doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(12.5); doc.setTextColor(74, 58, 120);
+      for (const ln of doc.splitTextToSize(b.text, maxW)) { ensure(6); doc.text(ln, L, y); y += 6; }
+      doc.setDrawColor(202, 194, 224); doc.setLineWidth(0.2); doc.line(L, y - 3.4, W - R, y - 3.4);
+      y += 2.2;
+    } else if (b.type === 'bullet') {
+      doc.setFont('Quicksand', 'normal'); doc.setFontSize(9.3);
+      const indent = 4.6;
+      const wrapped = doc.splitTextToSize(b.text, maxW - indent);
+      ensure(4.5);
+      doc.setTextColor(150, 120, 190); doc.text('•', L, y);
+      doc.setTextColor(50, 42, 86);
+      for (let i = 0; i < wrapped.length; i++) { if (i > 0) ensure(4.4); doc.text(wrapped[i], L + indent, y); y += 4.4; }
+      y += 1.3;
+    } else {
+      doc.setFont('Quicksand', 'normal'); doc.setFontSize(9.3); doc.setTextColor(50, 42, 86);
+      for (const ln of doc.splitTextToSize(b.text, maxW)) { ensure(4.6); doc.text(ln, L, y); y += 4.6; }
+      y += 2.3;
+    }
+  }
+
+  ensure(8); y += 3;
+  doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.6); doc.setTextColor(120, 110, 155);
+  for (const ln of doc.splitTextToSize('AI-generirani uvidi kao pomoć u pripremi čitanja — provjeri ih i prosudi sama. Ne predstavljaju gotovo tumačenje.', maxW)) {
+    ensure(3.6); doc.text(ln, L, y); y += 3.6;
+  }
+}
+
+/* Zaseban PDF samo s uvidima (svijetli stil radnog PDF-a). */
+async function downloadInsights(insightsText) {
+  await ensurePdfLibs();
+  const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  registerFonts(doc);
+  renderInsightsPages(doc, insightsText, currentChart);
+  addFooters(doc);
+  doc.save(pdfFileName('uvidi-A4'));
+}
+
+/* Radni PDF (karta + tablice) + stranice s uvidima na kraju. */
+async function downloadWorkingWithInsights(insightsText) {
+  await ensurePdfLibs();
+  const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  registerFonts(doc);
+  await renderWorkingContent(doc);
+  doc.addPage();
+  renderInsightsPages(doc, insightsText, currentChart);
+  addFooters(doc);
+  doc.save(pdfFileName('radna-uvidi-A4'));
 }
 
 function pdfFileName(suffix) {

@@ -800,14 +800,15 @@
           </div>
         </div>
 
-        <div class="nt-ai-card" id="natal-ai-card">
-          <h4 id="t-natalAiTitle">Tumačenje karte (AI)</h4>
-          <p id="t-natalAiText">Zatraži kratko tumačenje svoje karte. Generira ga AI iz pozicija planeta — kao polazište za razmišljanje, ne kao proročanstvo.</p>
+        <div class="nt-ai-card" id="natal-ai-card" style="display:none">
+          <h4>AI uvidi za čitanje <span class="nt-ai-badge">samo Jana</span></h4>
+          <p>Strukturirana analiza karte (ključni položaji, najuži aspekti, teme, napetosti, pitanja za klijenta) kao PDF — pomoć pri čitanju, ne gotovo tumačenje za klijenta.</p>
           <div class="nt-dl-row">
-            <button class="btn" id="natal-ai-btn">Protumači kartu</button>
+            <button class="btn" id="natal-ai-pdf-btn">Uvidi → PDF</button>
+            <button class="btn" id="natal-ai-working-btn">Uvidi → u radni PDF</button>
           </div>
-          <div id="natal-ai-output" class="nt-ai-output" style="display:none"></div>
-          <p class="nt-ai-note" id="natal-ai-disclaimer" style="display:none">Tumačenje generira umjetna inteligencija iz pozicija tvoje karte (bez imena). Astrologija je alat za samorefleksiju i zabavu.</p>
+          <label class="nt-ai-fresh"><input type="checkbox" id="natal-ai-fresh"> Regeneriraj (zaobiđi spremljeno)</label>
+          <div id="natal-ai-status" class="nt-ai-status" style="display:none"></div>
         </div>
 
         <div class="nt-tabs" id="natal-tabs">

@@ -1,34 +1,44 @@
 /* ============================================================================
-   AI TUMAČENJE NATALNE KARTE — klijentska strana (samostalan modul)
+   AI UVIDI ZA ČITANJE NATALNE KARTE — Janin radni alat (klijent, samostalan modul)
    ----------------------------------------------------------------------------
-   Cijela AI logika izdvojena je iz natal.js. Ovaj modul:
-   - serijalizira kartu u tekstualni opis BEZ imena i ikakvih osobnih podataka
-   - šalje POST /interpret-natal (server bira AI provajdera — vidi functions/ai/)
-   - prikazuje tumačenje u kartici #natal-ai-card
-   - ako je Jana ulogirana u admin (sessionStorage aj_pass), šalje X-Admin-Pass
-     pa server zaobilazi dnevni IP-limit
-   Ovisi o globalnim helperima iz natal-data.js / natal-calc.js
-   (signName, fmtDegMin, computeDominants, detectShape) — učitava se nakon njih.
+   - Prikazuje se SAMO kad je Jana ulogirana (sessionStorage aj_pass).
+   - Umjesto teksta na ekranu → generira PDF s uvidima (dva gumba):
+       1) zaseban PDF s uvidima           → downloadInsights(text)
+       2) radni PDF (karta+tablice)+uvidi  → downloadWorkingWithInsights(text)  (oba u natal-pdf.js)
+   - Uvide dohvaća s /interpret-natal (šalje X-Admin-Pass; server je admin-only, bez limita).
+   - Serijalizira kartu BEZ imena i ikakvih osobnih podataka; PDF (Janin dokument) smije
+     sadržavati ime/podatke rođenja koje je upisala.
+   Ovisi o globalnim helperima iz natal-data.js / natal-calc.js / natal-pdf.js.
    ========================================================================== */
 (function () {
   'use strict';
 
   let chart = null;
+  let insightsText = null;   // zadnji dohvaćeni uvidi
+  let insightsHash = null;   // za koju kartu (hash) vrijede
 
   // natal.js pri izradi karte poziva window.AInatal.setChart(chart)
   window.AInatal = {
-    setChart(c) { chart = c; resetUI(); },
-    reset: resetUI
+    setChart(c) { chart = c; insightsText = null; insightsHash = null; resetStatus(); updateVisibility(); }
   };
 
-  function resetUI() {
-    const out = document.getElementById('natal-ai-output');
-    const disc = document.getElementById('natal-ai-disclaimer');
-    if (out) { out.style.display = 'none'; out.innerHTML = ''; out.className = 'nt-ai-output'; }
-    if (disc) disc.style.display = 'none';
+  function isAdmin() { return !!sessionStorage.getItem('aj_pass'); }
+
+  function updateVisibility() {
+    const card = document.getElementById('natal-ai-card');
+    if (card) card.style.display = (chart && isAdmin()) ? '' : 'none';
   }
 
-  /* Tekstualni opis karte za AI — BEZ imena i bez ikakvih osobnih podataka. */
+  function status(msg, kind) {
+    const el = document.getElementById('natal-ai-status');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'nt-ai-status' + (kind ? ' nt-ai-' + kind : '');
+    el.style.display = msg ? 'block' : 'none';
+  }
+  function resetStatus() { status('', null); }
+
+  /* Opis karte za AI — BEZ imena i bez ikakvih osobnih podataka. */
   function serializeChartForAI(c) {
     const L = [];
     L.push(c.noTime
@@ -91,63 +101,54 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  async function requestInterpretation() {
+  /* Dohvati uvide (iz memorije ako su za istu kartu, inače sa servera). */
+  async function ensureInsights(fresh) {
+    const h = await chartHash(chart);
+    if (!fresh && insightsText && insightsHash === h) return insightsText;
+
+    const headers = { 'Content-Type': 'application/json' };
+    const pass = sessionStorage.getItem('aj_pass');
+    if (pass) headers['X-Admin-Pass'] = pass;
+
+    const r = await fetch('/interpret-natal', {
+      method: 'POST', headers,
+      body: JSON.stringify({ h, summary: serializeChartForAI(chart), fresh: !!fresh })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!(data && data.ok && data.text)) {
+      throw new Error((data && data.note) || 'AI uvidi trenutno nisu dostupni. Pokušaj ponovno kasnije.');
+    }
+    insightsText = data.text; insightsHash = h;
+    return insightsText;
+  }
+
+  async function generate(which, btn) {
     if (!chart) return;
-    const btn = document.getElementById('natal-ai-btn');
-    const out = document.getElementById('natal-ai-output');
-    const disc = document.getElementById('natal-ai-disclaimer');
+    const fresh = !!(document.getElementById('natal-ai-fresh') && document.getElementById('natal-ai-fresh').checked);
+    const btns = [document.getElementById('natal-ai-pdf-btn'), document.getElementById('natal-ai-working-btn')];
     const orig = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Tumačim…';
-    out.style.display = 'block';
-    out.className = 'nt-ai-output nt-ai-loading';
-    out.textContent = 'AI čita tvoju kartu… ovo može potrajati nekoliko sekundi.';
-
+    btns.forEach(b => b && (b.disabled = true));
+    status('Generiram uvide… (može potrajati nekoliko sekundi)', 'loading');
     try {
-      const summary = serializeChartForAI(chart);
-      const h = await chartHash(chart);
-
-      const headers = { 'Content-Type': 'application/json' };
-      // ako je Jana ulogirana u admin → server zaobilazi dnevni IP-limit
-      const pass = sessionStorage.getItem('aj_pass');
-      if (pass) headers['X-Admin-Pass'] = pass;
-
-      const r = await fetch('/interpret-natal', {
-        method: 'POST', headers, body: JSON.stringify({ h, summary })
-      });
-      const data = await r.json().catch(() => ({}));
-
-      if (data && data.ok && data.text) {
-        out.className = 'nt-ai-output';
-        out.innerHTML = renderAiText(data.text);
-        disc.style.display = 'block';
-      } else {
-        out.className = 'nt-ai-output nt-ai-error';
-        out.textContent = (data && data.note) ||
-          'Tumačenje trenutno nije dostupno. Pokušaj ponovno kasnije — karta i PDF rade normalno.';
-      }
+      btn.textContent = 'Generiram…';
+      const text = await ensureInsights(fresh);
+      btn.textContent = 'Pripremam PDF…';
+      if (which === 'working') await downloadWorkingWithInsights(text);
+      else await downloadInsights(text);
+      status('PDF je spreman — provjeri preuzimanja.', 'ok');
     } catch (e) {
-      out.className = 'nt-ai-output nt-ai-error';
-      out.textContent = 'Tumačenje trenutno nije dostupno. Pokušaj ponovno kasnije.';
+      status(e.message || 'Greška pri izradi PDF-a.', 'error');
     } finally {
-      btn.disabled = false; btn.textContent = orig;
+      btns.forEach(b => b && (b.disabled = false));
+      btn.textContent = orig;
     }
   }
 
-  /* Lagani render: odlomci + **bold** + _kurziv_, čisti markdown naslove. Bez biblioteka. */
-  function renderAiText(text) {
-    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return text.split(/\n{2,}/).map(block => {
-      const b = esc(block.trim())
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/(?:^|(?<=\s))_(.+?)_(?=\s|$|[.,!?])/g, '<em>$1</em>')
-        .replace(/^#{1,4}\s*/gm, '')
-        .replace(/\n/g, '<br>');
-      return b ? '<p>' + b + '</p>' : '';
-    }).join('');
-  }
-
   window.addEventListener('load', () => {
-    const btn = document.getElementById('natal-ai-btn');
-    if (btn) btn.addEventListener('click', requestInterpretation);
+    const pdfBtn = document.getElementById('natal-ai-pdf-btn');
+    const workBtn = document.getElementById('natal-ai-working-btn');
+    if (pdfBtn) pdfBtn.addEventListener('click', () => generate('standalone', pdfBtn));
+    if (workBtn) workBtn.addEventListener('click', () => generate('working', workBtn));
+    updateVisibility();
   });
 })();

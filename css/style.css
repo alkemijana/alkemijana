@@ -2092,6 +2092,80 @@ input[type="time"]:disabled { opacity: 0.45; }
 .nt-seg-btn.active { background: var(--lavender); color: #1a1430; font-weight: 600; }
 .nt-seg-btn:not(.active):hover { color: var(--text); }
 
+/* — Prekidač: natalna karta (jedna osoba) ↔ sinastrija (dvije osobe) — */
+.nt-mode-row { display: flex; justify-content: center; margin: 0 auto 0.7rem; }
+.nt-mode-seg { font-size: 0.92rem; }
+.nt-mode-seg .nt-seg-btn { padding: 0.6rem 1.7rem; font-size: 0.92rem; letter-spacing: 0.03em; }
+.nt-mode-hint {
+  max-width: 620px; margin: 0 auto; text-align: center;
+  font-family: 'Quicksand', sans-serif; font-size: 0.84rem; color: var(--text-muted);
+  max-height: 0; opacity: 0; overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.35s ease, margin 0.4s ease;
+}
+/* hint vidljiv samo kad je odabran mod sinastrije (klasu postavlja JS na body) */
+body.syn-mode .nt-mode-hint { max-height: 4rem; opacity: 1; margin: 0 auto 1.6rem; }
+
+/* — Osoba 1 / Osoba 2 blokovi — */
+.nt-person-head {
+  display: none; align-items: center; gap: 0.55rem; margin-bottom: 1.2rem;
+  font-family: 'Quicksand', sans-serif; font-size: 0.74rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--lavender);
+}
+.nt-person-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.55rem; height: 1.55rem; border-radius: 999px;
+  background: var(--lavender); color: #1a1430; font-weight: 700; font-size: 0.8rem;
+}
+.nt-form-wrap[data-natal-mode="synastry"] .nt-person-head { display: inline-flex; }
+
+/* Osoba 2 — animirano otvaranje/zatvaranje */
+.nt-person2 {
+  max-height: 0; opacity: 0; overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(.4,0,.2,1), opacity 0.4s ease 0.05s;
+}
+.nt-person2 .nt-person-inner {
+  padding-top: 1.7rem; margin-top: 0.2rem;
+  border-top: 1px dashed var(--border);
+  transform: translateY(-10px);
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.nt-form-wrap[data-natal-mode="synastry"] .nt-person2 {
+  max-height: 640px; opacity: 1; overflow: visible;
+}
+.nt-form-wrap[data-natal-mode="synastry"] .nt-person2 .nt-person-inner { transform: translateY(0); }
+
+/* — Legenda sinastrije (koja je boja koja osoba) — */
+.syn-legend {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1.4rem;
+  margin: 0 auto 1.2rem; font-family: 'Quicksand', sans-serif; font-size: 0.92rem;
+}
+.syn-legend-item { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text); }
+.syn-legend-dot { width: 0.85rem; height: 0.85rem; border-radius: 999px; flex: 0 0 auto; }
+.syn-legend-item strong { font-weight: 600; }
+.syn-legend-item span.syn-legend-meta { color: var(--text-muted); font-size: 0.82rem; }
+.syn-aspect-note { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; font-weight: 400; color: var(--text-muted); }
+.nt-tables-syn { grid-template-columns: 1fr 1fr; }
+
+/* Tablica međuaspekata (popis A — aspekt — B) */
+.syn-asp-table { table-layout: auto; }
+.syn-asp-table th:nth-child(1), .syn-asp-table td:nth-child(1),
+.syn-asp-table th:nth-child(2), .syn-asp-table td:nth-child(2),
+.syn-asp-table th:nth-child(3), .syn-asp-table td:nth-child(3) { width: auto; }
+.syn-asp-table th:nth-child(4), .syn-asp-table td:nth-child(4) { width: 4.5rem; text-align: right; }
+.syn-empty { font-family: 'Quicksand', sans-serif; color: var(--text-muted); text-align: center; padding: 1.2rem 0; }
+
+/* Gumb zamjene unutarnje/vanjske osobe */
+.syn-controls-row { display: flex; justify-content: center; margin: 0 auto 1.3rem; }
+.nt-swap-btn {
+  display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+  padding: 0.5rem 1.3rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
+  color: var(--text); transition: border-color 0.2s, color 0.2s;
+}
+.nt-swap-btn:hover { border-color: var(--lavender); color: var(--lavender); }
+.nt-swap-meta { color: var(--text-muted); font-size: 0.76rem; }
+.nt-swap-btn:hover .nt-swap-meta { color: var(--lavender-soft, var(--lavender)); }
+
 /* — Kartice (Pozicije / Aspektna tablica / Dominante / Oblik) — */
 .nt-tabs {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;

@@ -149,6 +149,44 @@ function computeAspects(points) {
   return out;
 }
 
+/* ============ SINASTRIJA (cross-aspekti dviju karata) ============ */
+
+/* Uži orbisi nego u natalnoj karti — sinastrijska konvencija (manje, ali jasnijih veza). */
+const SYN_ORBS = { conjunction: 7, sextile: 4, square: 6, trine: 6, opposition: 7 };
+
+function synAspectPoints(chart) {
+  const pts = chart.planets
+    .filter(p => p.id !== 'fortune' && p.id !== 'vertex' && p.id !== 'snode')
+    .map(p => ({ id: p.id, lon: p.lon }));
+  if (!chart.noTime) {
+    pts.push({ id: 'asc', lon: chart.asc });
+    pts.push({ id: 'mc',  lon: chart.mc });
+  }
+  return pts;
+}
+
+/* Aspekti planeta (i osi) osobe A naspram planeta (i osi) osobe B.
+   Rezultat: [{ a: idA, b: idB, aspect, aspectName, angle, orb }] sortirano po orbu. */
+function computeSynastryAspects(chartA, chartB) {
+  const A = synAspectPoints(chartA), B = synAspectPoints(chartB);
+  const out = [];
+  for (const a of A) {
+    for (const b of B) {
+      const diff = Math.abs(norm360(a.lon - b.lon + 180) - 180);
+      for (const asp of ASPECT_DEFS) {
+        const orb = Math.abs(diff - asp.angle);
+        const maxOrb = SYN_ORBS[asp.id] != null ? SYN_ORBS[asp.id] : asp.orb;
+        if (orb <= maxOrb) {
+          out.push({ a: a.id, b: b.id, aspect: asp.id, aspectName: asp.name, angle: asp.angle, orb });
+          break;
+        }
+      }
+    }
+  }
+  out.sort((x, y) => x.orb - y.orb);
+  return out;
+}
+
 /* Glavni izračun karte */
 function computeChart(input) {
   // input: { utcDate, lat, lon, noTime, ... }

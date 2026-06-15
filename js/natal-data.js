@@ -180,7 +180,7 @@ const PALETTES = {
     ring: 'rgba(196,192,216,0.55)', ringSoft: 'rgba(168,144,208,0.3)',
     bandA: 'rgba(168,144,208,0.10)', bandB: 'rgba(168,144,208,0.03)',
     sign: '#a890d0', tick: 'rgba(196,192,216,0.4)',
-    planet: '#e4e0f4', degText: '#9d97b8', houseNum: '#8a84a8',
+    planet: '#e4e0f4', planetB: '#8fc6b0', degText: '#9d97b8', houseNum: '#8a84a8',
     cusp: 'rgba(168,144,208,0.4)', axis: '#a890d0', axisText: '#c4c0d8',
     conj: '#9b95b5', harm: '#7fae90', tense: '#c08090', bg: 'none',
     fire: '#c98f9b', earth: '#8ab69b', air: '#b1a0d8', water: '#8fa7d4'
@@ -189,7 +189,7 @@ const PALETTES = {
     ring: 'rgba(74,63,110,0.6)', ringSoft: 'rgba(106,78,160,0.35)',
     bandA: 'rgba(106,78,160,0.10)', bandB: 'rgba(106,78,160,0.03)',
     sign: '#6a4ea0', tick: 'rgba(74,63,110,0.45)',
-    planet: '#2e2752', degText: '#6a5d8c', houseNum: '#8a7dac',
+    planet: '#2e2752', planetB: '#2f7a5e', degText: '#6a5d8c', houseNum: '#8a7dac',
     cusp: 'rgba(106,78,160,0.45)', axis: '#6a4ea0', axisText: '#4a3f6e',
     conj: '#7a7494', harm: '#4f8a64', tense: '#b06478', bg: 'none',
     fire: '#b06478', earth: '#4f8a64', air: '#7a5ab0', water: '#4a6fa8'
@@ -198,7 +198,7 @@ const PALETTES = {
     ring: 'rgba(216,210,238,0.75)', ringSoft: 'rgba(168,144,208,0.45)',
     bandA: 'rgba(168,144,208,0.13)', bandB: 'rgba(168,144,208,0.04)',
     sign: '#b8a2dd', tick: 'rgba(206,200,228,0.5)',
-    planet: '#efeaff', degText: '#a89fc8', houseNum: '#968ebb',
+    planet: '#efeaff', planetB: '#9fd6c0', degText: '#a89fc8', houseNum: '#968ebb',
     cusp: 'rgba(178,156,215,0.5)', axis: '#b8a2dd', axisText: '#d4cdec',
     conj: '#a59ec2', harm: '#8fbe9f', tense: '#cf8fa0', bg: 'none',
     fire: '#cf8fa0', earth: '#8fbe9f', air: '#b8a2dd', water: '#8fa8d8'
@@ -207,7 +207,7 @@ const PALETTES = {
     ring: '#5a4d85', ringSoft: '#9a8fc0',
     bandA: 'rgba(106,78,160,0.09)', bandB: 'rgba(106,78,160,0.02)',
     sign: '#5a4090', tick: '#8a80ab',
-    planet: '#2a2348', degText: '#6a5d8c', houseNum: '#8a7dac',
+    planet: '#2a2348', planetB: '#2f6f4a', degText: '#6a5d8c', houseNum: '#8a7dac',
     cusp: '#a99fd0', axis: '#5a4090', axisText: '#4a3f6e',
     conj: '#7a7494', harm: '#3f7a54', tense: '#a05468', bg: 'none',
     fire: '#a05468', earth: '#3f7a54', air: '#6a4ea0', water: '#3f5e8e'

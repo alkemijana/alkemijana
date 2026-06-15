@@ -718,30 +718,73 @@
         <p id="t-natalIntroP3"></p>
       </div>
 
-      <div class="form-section nt-form-wrap">
+      <!-- Prekidač: natalna karta (jedna osoba) ↔ sinastrija (dvije osobe) -->
+      <div class="nt-mode-row">
+        <div class="nt-seg nt-mode-seg" id="natal-mode-seg" role="tablist" aria-label="Vrsta karte">
+          <button type="button" class="nt-seg-btn active" data-mode="natal" id="natal-mode-natal">Natalna karta</button>
+          <button type="button" class="nt-seg-btn" data-mode="synastry" id="natal-mode-syn">Sinastrija</button>
+        </div>
+      </div>
+      <p class="nt-mode-hint" id="natal-mode-hint">Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.</p>
+
+      <div class="form-section nt-form-wrap" id="natal-form-wrap" data-natal-mode="natal">
         <form id="natal-form">
-          <div class="form-row nt-form-row">
-            <div class="form-group">
-              <label id="t-natalNameLabel">Ime (nije obavezno)</label>
-              <input type="text" id="natal-name" placeholder="npr. Ana Horvat" maxlength="60">
+          <!-- Osoba 1 -->
+          <div class="nt-person" id="natal-person1">
+            <div class="nt-person-head"><span class="nt-person-num">1</span><span>Prva osoba</span></div>
+            <div class="form-row nt-form-row">
+              <div class="form-group">
+                <label id="t-natalNameLabel">Ime (nije obavezno)</label>
+                <input type="text" id="natal-name" placeholder="npr. Ana Horvat" maxlength="60">
+              </div>
+              <div class="form-group nt-place-group">
+                <label><span id="t-natalPlaceLabel">Mjesto rođenja</span> <span id="natal-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
+                <input type="text" id="natal-place" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
+                <div class="nt-dd" id="natal-place-dd"></div>
+              </div>
             </div>
-            <div class="form-group nt-place-group">
-              <label><span id="t-natalPlaceLabel">Mjesto rođenja</span> <span id="natal-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
-              <input type="text" id="natal-place" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
-              <div class="nt-dd" id="natal-place-dd"></div>
+            <div class="form-row nt-form-row">
+              <div class="form-group">
+                <label id="t-natalDateLabel">Datum rođenja</label>
+                <input type="date" id="natal-date" min="1900-01-01" max="2099-12-31">
+              </div>
+              <div class="form-group">
+                <label id="t-natalTimeLabel">Vrijeme rođenja</label>
+                <input type="time" id="natal-time">
+                <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime"><span id="t-natalNoTimeLabel">Ne znam vrijeme rođenja</span></label>
+              </div>
             </div>
           </div>
-          <div class="form-row nt-form-row">
-            <div class="form-group">
-              <label id="t-natalDateLabel">Datum rođenja</label>
-              <input type="date" id="natal-date" min="1900-01-01" max="2099-12-31">
-            </div>
-            <div class="form-group">
-              <label id="t-natalTimeLabel">Vrijeme rođenja</label>
-              <input type="time" id="natal-time">
-              <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime"><span id="t-natalNoTimeLabel">Ne znam vrijeme rođenja</span></label>
+
+          <!-- Osoba 2 — pojavi se animirano u modu sinastrije -->
+          <div class="nt-person nt-person2" id="natal-person2" aria-hidden="true">
+            <div class="nt-person-inner">
+              <div class="nt-person-head"><span class="nt-person-num">2</span><span>Druga osoba</span></div>
+              <div class="form-row nt-form-row">
+                <div class="form-group">
+                  <label>Ime (nije obavezno)</label>
+                  <input type="text" id="natal-name-2" placeholder="npr. Marko Marić" maxlength="60">
+                </div>
+                <div class="form-group nt-place-group">
+                  <label>Mjesto rođenja <span id="natal-place-ok-2" class="nt-place-ok" style="display:none">✓</span></label>
+                  <input type="text" id="natal-place-2" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
+                  <div class="nt-dd" id="natal-place-dd-2"></div>
+                </div>
+              </div>
+              <div class="form-row nt-form-row">
+                <div class="form-group">
+                  <label>Datum rođenja</label>
+                  <input type="date" id="natal-date-2" min="1900-01-01" max="2099-12-31">
+                </div>
+                <div class="form-group">
+                  <label>Vrijeme rođenja</label>
+                  <input type="time" id="natal-time-2">
+                  <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime-2"><span>Ne znam vrijeme rođenja</span></label>
+                </div>
+              </div>
             </div>
           </div>
+
           <div class="nt-options-row">
             <span class="nt-opt-label" id="t-natalNodeLabel">Mjesečev čvor:</span>
             <div class="nt-seg" id="natal-node-seg">
@@ -860,6 +903,88 @@
         </div>
 
         <p class="nt-disclaimer" id="natal-disclaimer">Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · Pravi Mjesečev čvor, srednja Lilith</p>
+      </div>
+
+      <!-- ===== REZULTAT SINASTRIJE (dvije karte) ===== -->
+      <div id="synastry-result" style="display:none">
+        <div class="nt-chart-head">
+          <h3 id="synastry-chart-title"></h3>
+          <div id="synastry-chart-sub"></div>
+        </div>
+
+        <div class="syn-legend" id="synastry-legend"></div>
+        <div class="syn-controls-row">
+          <button type="button" class="nt-swap-btn" id="synastry-swap-btn">⇄ Zamijeni osobe <span class="nt-swap-meta">(prikazuju se kuće unutarnje osobe)</span></button>
+        </div>
+        <div id="synastry-wheel" class="nt-wheel"></div>
+
+        <div class="nt-chart-controls" id="synastry-chart-controls">
+          <div class="nt-cc-group nt-cc-aspects">
+            <span class="nt-cc-lbl">Aspekti:</span>
+            <label class="nt-cc-chip" data-asp="conjunction"><input type="checkbox" data-asp="conjunction" checked><span class="nt-cc-line nt-cc-conj"></span><span>Konjunkcija</span></label>
+            <label class="nt-cc-chip" data-asp="sextile"><input type="checkbox" data-asp="sextile" checked><span class="nt-cc-line nt-cc-sext"></span><span>Sekstil</span></label>
+            <label class="nt-cc-chip" data-asp="square"><input type="checkbox" data-asp="square" checked><span class="nt-cc-line nt-cc-sq"></span><span>Kvadrat</span></label>
+            <label class="nt-cc-chip" data-asp="trine"><input type="checkbox" data-asp="trine" checked><span class="nt-cc-line nt-cc-tri"></span><span>Trigon</span></label>
+            <label class="nt-cc-chip" data-asp="opposition"><input type="checkbox" data-asp="opposition" checked><span class="nt-cc-line nt-cc-opp"></span><span>Opozicija</span></label>
+          </div>
+        </div>
+
+        <div class="nt-downloads">
+          <div class="nt-dl-card">
+            <h4>✦ Poster sinastrije</h4>
+            <p>Bi-wheel obje karte u tamnom dizajnu sa zvijezdama — spremno za ispis i uokviravanje.</p>
+            <div class="nt-dl-row">
+              <select id="synastry-poster-size">
+                <option value="A4">A4 (21 × 29,7 cm)</option>
+                <option value="A3">A3 (29,7 × 42 cm)</option>
+                <option value="A2" selected>A2 (42 × 59,4 cm)</option>
+                <option value="A1">A1 (59,4 × 84,1 cm)</option>
+                <option value="A0">A0 (84,1 × 118,9 cm)</option>
+              </select>
+              <button class="btn" id="synastry-poster-btn">Preuzmi poster (PDF)</button>
+            </div>
+          </div>
+          <div class="nt-dl-card">
+            <h4>☾ Radna verzija</h4>
+            <p>Svijetli A4 za iščitavanje: bi-wheel, tablica međuaspekata i pozicije obje osobe.</p>
+            <div class="nt-dl-row">
+              <button class="btn" id="synastry-working-btn">Preuzmi radni PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="nt-tabs" id="synastry-tabs">
+          <button class="nt-tab active" data-tab="aspekti">Međuaspekti</button>
+          <button class="nt-tab" data-tab="pozicije">Pozicije</button>
+        </div>
+
+        <div class="nt-tabpane" id="synastry-tab-aspekti">
+          <div class="nt-table-card nt-grid-card">
+            <h4>Međuaspekti <span class="syn-aspect-note">— planeti prve osobe naspram druge</span></h4>
+            <div id="synastry-aspects"></div>
+          </div>
+        </div>
+
+        <div class="nt-tabpane" id="synastry-tab-pozicije" style="display:none">
+          <div class="nt-tables nt-tables-syn">
+            <div class="nt-table-card">
+              <h4 id="synastry-pos1-title">Prva osoba</h4>
+              <table class="nt-table">
+                <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
+                <tbody id="synastry-pos1-tbody"></tbody>
+              </table>
+            </div>
+            <div class="nt-table-card">
+              <h4 id="synastry-pos2-title">Druga osoba</h4>
+              <table class="nt-table">
+                <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
+                <tbody id="synastry-pos2-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <p class="nt-disclaimer" id="synastry-disclaimer"></p>
       </div>
 
       <section class="nt-faq" aria-labelledby="nt-faq-title">
@@ -1041,6 +1166,7 @@
 <script src="js/natal-render.js"></script>
 <script src="js/natal-pdf.js"></script>
 <script src="js/natal.js"></script>
+<script src="js/natal-synastry.js"></script>
 <script src="js/natal-ai.js"></script>
 <script src="js/natal-live.js"></script>
 

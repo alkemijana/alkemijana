@@ -13,21 +13,28 @@
 
 /* ============ GEOCODING (Open-Meteo) ============ */
 
-let geoTimer = null;
 let selectedPlace = null;
 
-function initPlaceAutocomplete() {
-  const inp = document.getElementById('natal-place');
-  const dd  = document.getElementById('natal-place-dd');
+/* Autocomplete mjesta (Open-Meteo). Generaliziran da ga može koristiti i forma
+   sinastrije (2. osoba) — primi config:
+     { inputId, ddId, okId, onSelect(place|null) }
+   Bez configa radi za natalnu formu (1. osoba → selectedPlace). */
+function initPlaceAutocomplete(cfg) {
+  cfg = cfg || { inputId: 'natal-place', ddId: 'natal-place-dd', okId: 'natal-place-ok',
+                 onSelect: p => { selectedPlace = p; } };
+  const inp = document.getElementById(cfg.inputId);
+  const dd  = document.getElementById(cfg.ddId);
   if (!inp) return;
+  const okEl = () => document.getElementById(cfg.okId);
+  let timer = null;
 
   inp.addEventListener('input', () => {
-    selectedPlace = null;
-    document.getElementById('natal-place-ok').style.display = 'none';
-    clearTimeout(geoTimer);
+    cfg.onSelect(null);
+    if (okEl()) okEl().style.display = 'none';
+    clearTimeout(timer);
     const q = inp.value.trim();
     if (q.length < 2) { dd.style.display = 'none'; return; }
-    geoTimer = setTimeout(async () => {
+    timer = setTimeout(async () => {
       try {
         const r = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' +
           encodeURIComponent(q) + '&count=6&language=hr&format=json');
@@ -43,14 +50,15 @@ function initPlaceAutocomplete() {
           el.addEventListener('mousedown', (ev) => {
             ev.preventDefault();
             const p = res[+el.dataset.i];
-            selectedPlace = {
+            const place = {
               label: [p.name, p.admin1, p.country].filter(Boolean).join(', '),
               shortLabel: [p.name, p.country].filter(Boolean).join(', '),
               lat: p.latitude, lon: p.longitude, tz: p.timezone
             };
-            inp.value = selectedPlace.label;
+            cfg.onSelect(place);
+            inp.value = place.label;
             dd.style.display = 'none';
-            document.getElementById('natal-place-ok').style.display = 'inline';
+            if (okEl()) okEl().style.display = 'inline';
           });
         });
       } catch (e) {
@@ -167,6 +175,11 @@ function initNatalTabs() {
 
 async function natalSubmit(ev) {
   ev.preventDefault();
+  // u modu sinastrije submit preuzima natal-synastry.js
+  const wrap = document.getElementById('natal-form-wrap');
+  if (wrap && wrap.getAttribute('data-natal-mode') === 'synastry' && typeof synastrySubmit === 'function') {
+    return synastrySubmit(ev);
+  }
   const err = document.getElementById('natal-error');
   err.style.display = 'none';
 

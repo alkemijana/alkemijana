@@ -790,3 +790,299 @@ async function withBtnSpinner(btn, fn) {
   catch (e) { showNatalError('Greška pri izradi PDF-a: ' + e.message); }
   finally { btn.disabled = false; btn.textContent = orig; }
 }
+
+/* ============================================================
+   SINASTRIJA — PDF (poster + radna verzija)
+   Isti pipeline (jsPDF + svg2pdf + ugrađeni fontovi) kao natalna karta.
+   ============================================================ */
+
+function hexToRgbArr(h) {
+  const m = h.replace('#', '');
+  return [parseInt(m.substr(0, 2), 16), parseInt(m.substr(2, 2), 16), parseInt(m.substr(4, 2), 16)];
+}
+
+async function withSynBtnSpinner(btn, fn) {
+  if (!currentSynastry) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Pripremam PDF…';
+  try { await fn(); }
+  catch (e) { showNatalError('Greška pri izradi PDF-a: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+function synPdfFileName(suffix) {
+  const slug = s => (s || '').toLowerCase()
+    .replace(/[čć]/g, 'c').replace(/š/g, 's').replace(/ž/g, 'z').replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const a = slug(currentSynastry.a.input.name) || 'osoba1';
+  const b = slug(currentSynastry.b.input.name) || 'osoba2';
+  return a + '-' + b + '-' + suffix + '.pdf';
+}
+
+/* Bi-wheel SVG za PDF (osoba A baza, osoba B vanjski prsten). */
+function synBiwheelSVG(chartA, chartB, pal, extra) {
+  const opts = Object.assign({
+    showAspects: true,
+    biwheel: { planets: chartB.planets, asc: chartB.asc, mc: chartB.mc, noTime: chartB.noTime, color: pal.planetB },
+    synAspects: (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB)
+  }, extra || {});
+  return buildChartSVG(chartA, pal, opts);
+}
+
+/* ── Poster sinastrije (vektorski, tamni dizajn — kao natalni poster) ── */
+function buildSynastryPosterSVG(chartA, chartB, w, h) {
+  const pal = PALETTES.poster;
+  const cx = w / 2;
+  const chartSize = w * 0.82;
+  const chartX = (w - chartSize) / 2;
+  const chartY = h * 0.205;
+
+  const nameA = chartA.input.name || 'Prva osoba';
+  const nameB = chartB.input.name || 'Druga osoba';
+  const title = nameA + '  &  ' + nameB;
+
+  const inner = synBiwheelSVG(chartA, chartB, pal).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+
+  let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+  s += '<defs><radialGradient id="sgrad" cx="50%" cy="32%" r="85%">' +
+       '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
+       '</radialGradient></defs>';
+  s += '<rect width="' + w + '" height="' + h + '" fill="url(#sgrad)"/>';
+  s += posterStars(w, h, 1483, { x: cx, y: chartY + chartSize / 2, r: chartSize / 2 });
+
+  // ukrasni okvir
+  const m = w * 0.045;
+  s += '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + (h - 2 * m) +
+       '" fill="none" stroke="rgba(168,144,208,0.4)" stroke-width="' + (w * 0.0012) + '"/>';
+  s += '<rect x="' + (m + w * 0.008) + '" y="' + (m + w * 0.008) + '" width="' + (w - 2 * m - w * 0.016) + '" height="' + (h - 2 * m - w * 0.016) +
+       '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0007) + '"/>';
+
+  // naslov (imena)
+  const maxTextW = w * 0.84;
+  const f1 = fitFontSize(title, 'Dancing Script', '700', w * 0.092, maxTextW);
+  s += svgCenteredText(title, cx, h * 0.098, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
+  // linija sa zvjezdicom
+  const ly = h * 0.118, lw = w * 0.3;
+  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
+  // "Sinastrija" + dvije linije podataka rođenja
+  s += svgCenteredText('Sinastrija', cx, h * 0.137, w * 0.019, '#b8a2dd', 'Quicksand', 'Quicksand', null);
+  const fData = fitFontSize(birthDataLine(chartA), 'Playfair Display', null, w * 0.0185, maxTextW);
+  s += svgCenteredText(birthDataLine(chartA), cx, h * 0.158, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(birthDataLine(chartB), cx, h * 0.176, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+
+  // kotač (interne koord. -60..1060 → 1120 jedinica)
+  s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
+
+  // legenda osoba (jedan red, izračunate pozicije — bez text-anchor)
+  const legFs = w * 0.02;
+  const twA = textWidthPx(nameA, 'Quicksand', null, legFs);
+  const twB = textWidthPx(nameB, 'Quicksand', null, legFs);
+  const dot = legFs * 0.42, gap = w * 0.05, padd = legFs * 0.85;
+  const groupW = dot * 2 + padd + twA + gap + dot * 2 + padd + twB;
+  let x0 = cx - groupW / 2;
+  const legY = chartY + chartSize + h * 0.03;
+  s += '<circle cx="' + (x0 + dot).toFixed(2) + '" cy="' + (legY - legFs * 0.32).toFixed(2) + '" r="' + dot.toFixed(2) + '" fill="' + pal.planet + '"/>';
+  s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + pal.planet + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameA) + '</text>';
+  x0 += dot * 2 + padd + twA + gap;
+  s += '<circle cx="' + (x0 + dot).toFixed(2) + '" cy="' + (legY - legFs * 0.32).toFixed(2) + '" r="' + dot.toFixed(2) + '" fill="' + pal.planetB + '"/>';
+  s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + pal.planetB + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameB) + '</text>';
+
+  // podnožje
+  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
+  s += svgCenteredText('alkemijana.com · sinastrija · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  s += '</svg>';
+  return s;
+}
+
+async function downloadSynastryPoster() {
+  const sel = document.getElementById('synastry-poster-size');
+  const size = (sel && sel.value) || 'A2';
+  const btn = document.getElementById('synastry-poster-btn');
+  await withSynBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    const [w, h] = PAGE_MM[size];
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: size.toLowerCase() });
+    registerFonts(doc);
+    const el = svgToElement(buildSynastryPosterSVG(currentSynastry.a, currentSynastry.b, w, h));
+    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
+    finally { el.remove(); }
+    doc.save(synPdfFileName('poster-' + size));
+  });
+}
+
+/* ── Radna A4 verzija sinastrije ── */
+async function downloadSynastryWorking() {
+  const btn = document.getElementById('synastry-working-btn');
+  await withSynBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    registerFonts(doc);
+    await renderSynastryWorkingContent(doc);
+    addFooters(doc);
+    doc.save(synPdfFileName('radna-A4'));
+  });
+}
+
+async function renderSynastryWorkingContent(doc) {
+  const chartA = currentSynastry.a, chartB = currentSynastry.b;
+  const aspects = currentSynastry.aspects || computeSynastryAspects(chartA, chartB);
+  const W = 210, H = 297, PAGE_M = 5;
+  const CONTENT_W = W - 2 * PAGE_M;
+  const INK_PLANET = '#2a2348';
+  const nameA = chartA.input.name || 'Prva osoba';
+  const nameB = chartB.input.name || 'Druga osoba';
+  const nmA = {}; for (const p of chartA.planets) nmA[p.id] = p.name; nmA.asc = 'ASC'; nmA.mc = 'MC';
+  const nmB = {}; for (const p of chartB.planets) nmB[p.id] = p.name; nmB.asc = 'ASC'; nmB.mc = 'MC';
+
+  async function renderSvgOnDoc(svgStr, x, y, ww, hh) {
+    const el = svgToElement(svgStr);
+    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+    try { await doc.svg(el, { x, y, width: ww, height: hh }); }
+    finally { el.remove(); }
+  }
+
+  // ===== STRANICA 1: naslov + bi-wheel + legende =====
+  doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(17); doc.setTextColor(42, 35, 72);
+  doc.text(nameA + '  &  ' + nameB, W / 2, 13, { align: 'center' });
+  doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.4); doc.setTextColor(90, 80, 130);
+  doc.text(doc.splitTextToSize(birthDataLine(chartA), CONTENT_W), W / 2, 18.5, { align: 'center' });
+  doc.text(doc.splitTextToSize(birthDataLine(chartB), CONTENT_W), W / 2, 22.5, { align: 'center' });
+  doc.setDrawColor(154, 143, 192); doc.setLineWidth(0.25); doc.line(PAGE_M, 25.5, W - PAGE_M, 25.5);
+
+  const chartSize = 168, chartY = 28;
+  await renderSvgOnDoc(
+    synBiwheelSVG(chartA, chartB, PALETTES.ink, { linetype: true, labelScale: 1.12 }),
+    (W - chartSize) / 2, chartY, chartSize, chartSize
+  );
+
+  // legenda osoba (dvije bojene točke + imena, centrirano)
+  let ly = chartY + chartSize + 5;
+  doc.setFont('Quicksand', 'normal'); doc.setFontSize(9.5);
+  const wA = doc.getTextWidth(nameA), wB = doc.getTextWidth(nameB);
+  const gap = 14, dotR = 1.5, padd = 3;
+  const grpW = dotR * 2 + padd + wA + gap + dotR * 2 + padd + wB;
+  let gx = W / 2 - grpW / 2;
+  const rgbA = hexToRgbArr(PALETTES.ink.planet), rgbB = hexToRgbArr(PALETTES.ink.planetB);
+  doc.setFillColor(rgbA[0], rgbA[1], rgbA[2]); doc.circle(gx + dotR, ly - 1, dotR, 'F');
+  doc.setTextColor(50, 42, 86); doc.text(nameA + ' (unutra)', gx + dotR * 2 + padd, ly);
+  gx += dotR * 2 + padd + doc.getTextWidth(nameA + ' (unutra)') + gap;
+  doc.setFillColor(rgbB[0], rgbB[1], rgbB[2]); doc.circle(gx + dotR, ly - 1, dotR, 'F');
+  doc.text(nameB + ' (vani)', gx + dotR * 2 + padd, ly);
+
+  // aspektna legenda (debljine/dashevi kao na karti)
+  ly += 8;
+  const chartScale = chartSize / 1120;
+  doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(11); doc.setTextColor(42, 35, 72);
+  doc.text('Aspekti', PAGE_M, ly);
+  ly += 5.5;
+  doc.setFont('Quicksand', 'normal'); doc.setFontSize(8);
+  const legItems = [['conjunction', 'Konjunkcija'], ['sextile', 'Sekstil'], ['square', 'Kvadrat'], ['trine', 'Trigon'], ['opposition', 'Opozicija']];
+  let lx = PAGE_M;
+  for (const [id, label] of legItems) {
+    const rgb = hexToRgbArr(aspectColor(id, PALETTES.ink));
+    doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+    doc.setLineWidth(Math.max(0.12, aspectLineWidth(id) * chartScale));
+    const dash = aspectDashPattern(id);
+    if (dash) doc.setLineDashPattern(dash.split(',').map(v => Number(v) * chartScale), 0);
+    else doc.setLineDashPattern([], 0);
+    doc.line(lx, ly, lx + 12, ly);
+    doc.setLineDashPattern([], 0);
+    doc.setTextColor(60, 50, 100); doc.text(label, lx + 13.5, ly + 1);
+    lx += 13.5 + doc.getTextWidth(label) + 8;
+  }
+
+  // ===== STRANICA 2: pozicije obje osobe + međuaspekti =====
+  doc.addPage();
+  const colGap = 6, halfW = (CONTENT_W - colGap) / 2;
+  const posCols = [30, 33, 22, 12];   // Planet | Znak | Stupanj | Kuća (=97)
+  const headH = 6, rowH = 6;
+
+  function tableFrame(x, y0, colWs, nRows) {
+    const totalW = colWs.reduce((a, b) => a + b, 0);
+    const tableH = headH + nRows * rowH;
+    doc.setFillColor(234, 230, 244); doc.rect(x, y0, totalW, headH, 'F');
+    doc.setDrawColor(120, 108, 160); doc.setLineWidth(0.3);
+    for (let r = 0; r <= nRows; r++) { const yy = y0 + headH + r * rowH; doc.line(x, yy, x + totalW, yy); }
+    doc.line(x, y0, x + totalW, y0);
+    const colX = []; let cxp = x;
+    for (const w of colWs) { colX.push(cxp); doc.line(cxp, y0, cxp, y0 + tableH); cxp += w; }
+    doc.line(cxp, y0, cxp, y0 + tableH); colX.push(cxp);
+    return { colX, bottom: y0 + tableH };
+  }
+  function headLabels(x, y0, colWs, labels) {
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8); doc.setTextColor(70, 60, 110);
+    let cxp = x;
+    labels.forEach((lb, i) => { if (lb) doc.text(lb, cxp + 2, y0 + headH - 1.9); cxp += colWs[i]; });
+  }
+  function posList(chart) {
+    const list = chart.planets.map(p => ({ id: p.id, name: p.name, lon: p.lon, house: p.house, retro: p.retro }));
+    if (!chart.noTime) {
+      list.push({ id: 'asc', name: 'ASC', lon: chart.asc, house: 1 });
+      list.push({ id: 'mc', name: 'MC', lon: chart.mc, house: 10 });
+    }
+    return list;
+  }
+  async function drawPosTable(x0, y0, title, chart) {
+    doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(11.5); doc.setTextColor(42, 35, 72);
+    doc.text(title, x0, y0 - 1.5);
+    const items = posList(chart);
+    const fr = tableFrame(x0, y0, posCols, items.length);
+    headLabels(x0, y0, posCols, ['Planet', 'Znak', 'Stupanj', 'Kuća']);
+    for (let r = 0; r < items.length; r++) {
+      const p = items[r], ry = y0 + headH + r * rowH, midY = ry + rowH / 2 + 1.1;
+      if (GLYPHS[p.id]) await drawGlyphPdf(doc, p.id, fr.colX[0] + 1.6, midY, 3.8, INK_PLANET);
+      doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.4); doc.setTextColor(46, 39, 82);
+      doc.text(p.name, fr.colX[0] + (GLYPHS[p.id] ? 6 : 2), midY);
+      await drawGlyphPdf(doc, signKey(p.lon), fr.colX[1] + 1.6, midY, 3.8, elementColor(p.lon, PALETTES.ink));
+      doc.text(signName(p.lon), fr.colX[1] + 6, midY);
+      doc.setTextColor(70, 60, 110); doc.text(fmtDegMin(p.lon) + (p.retro ? ' R' : ''), fr.colX[2] + 2, midY);
+      if (p.house) { doc.setTextColor(110, 100, 150); doc.text(String(p.house), fr.colX[4] - 2, midY, { align: 'right' }); }
+    }
+    return fr.bottom;
+  }
+
+  doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(15); doc.setTextColor(42, 35, 72);
+  doc.text('Pozicije', W / 2, 15, { align: 'center' });
+  let yTop = 24;
+  const b1 = await drawPosTable(PAGE_M, yTop, nameA, chartA);
+  const b2 = await drawPosTable(PAGE_M + halfW + colGap, yTop, nameB, chartB);
+
+  // ── Međuaspekti (popis u 2 stupca, paginirano) ──
+  let y = Math.max(b1, b2) + 12;
+  doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(13); doc.setTextColor(42, 35, 72);
+  doc.text('Međuaspekti (' + nameA + ' → ' + nameB + ')', PAGE_M, y);
+  y += 6;
+
+  const aRowH = 5.4, colW2 = (CONTENT_W - colGap) / 2;
+  const colXs = [PAGE_M, PAGE_M + colW2 + colGap];
+  let col = 0, rowY = y;
+  const bottomLimit = H - 12;
+
+  async function drawAspectRow(a, x, yy) {
+    let cx = x;
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(8);
+    if (GLYPHS[a.a]) { await drawGlyphPdf(doc, a.a, cx, yy, 3.4, INK_PLANET); cx += 4; }
+    doc.setTextColor(46, 39, 82); doc.text(nmA[a.a] || a.a, cx, yy); cx += doc.getTextWidth(nmA[a.a] || a.a) + 1.8;
+    await drawGlyphPdf(doc, a.aspect, cx, yy, 3.4, aspectColor(a.aspect, PALETTES.ink)); cx += 4;
+    if (GLYPHS[a.b]) { await drawGlyphPdf(doc, a.b, cx, yy, 3.4, INK_PLANET); cx += 4; }
+    doc.setTextColor(46, 39, 82); doc.text(nmB[a.b] || a.b, cx, yy); cx += doc.getTextWidth(nmB[a.b] || a.b) + 1.8;
+    doc.setTextColor(110, 100, 150); doc.text(a.orb.toFixed(1) + '°', colXs[col] + colW2 - 2, yy, { align: 'right' });
+  }
+
+  if (!aspects.length) {
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(9); doc.setTextColor(110, 100, 150);
+    doc.text('Nema značajnih međuaspekata unutar orbisa.', PAGE_M, y);
+  } else {
+    for (let i = 0; i < aspects.length; i++) {
+      await drawAspectRow(aspects[i], colXs[col], rowY);
+      rowY += aRowH;
+      if (rowY > bottomLimit) {
+        if (col === 0) { col = 1; rowY = y; }
+        else { doc.addPage(); col = 0; y = 18; rowY = y; }
+      }
+    }
+  }
+}

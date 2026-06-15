@@ -30,8 +30,9 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-data.js               ← Natalna karta: konstante, glifovi, palete, helperi (norm360, fmtDegMin, glyphSvg...)
 │   ├── natal-calc.js               ← Natalna karta: astronomski izračun (computeChart, Placidus, Kiron, aspekti)
 │   ├── natal-render.js             ← Natalna karta: SVG kotač + tablice na stranici
-│   ├── natal-pdf.js                ← Natalna karta: PDF eksport (poster A4–A0 + radna A4)
-│   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue — učitava se zadnji)
+│   ├── natal-pdf.js                ← Natalna karta + sinastrija: PDF eksport (poster A4–A0 + radna A4)
+│   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
+│   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
@@ -139,6 +140,33 @@ za klijenta. Umjesto teksta na ekranu → **PDF** (svijetli stil radnog PDF-a), 
 Cache u KV-u `NATAL_LOG`: `aiv2:<provider>:<model>:<hash>` (90 dana — ista karta vraća iste uvide; `fresh:true` zaobilazi).
 Bez env varova / bindinga funkcija graciozno vrati grešku, a karta i PDF rade normalno.
 **Privatnost:** AI poziv šalje samo pozicije karte (bez imena); PDF (Janin dokument) smije sadržavati ime/podatke rođenja.
+
+---
+
+## Sinastrija (js/natal-synastry.js)
+
+Usporedba **dviju** karata na istoj stranici **#natal** — besplatno za posjetitelje.
+
+- **Prekidač iznad forme:** „Natalna karta” ↔ „Sinastrija” (`.nt-seg` stil). U modu sinastrije
+  blok **Osoba 2** se animirano otvori (max-height + opacity + slide), pojave se naslovi
+  „Prva/Druga osoba” i hint, a submit gumb postaje „Izračunaj sinastriju”. Mod se pamti
+  (`aj_natal_mode`), unos u `aj_synastry_form`.
+- **Submit:** `natalSubmit` (natal.js) delegira na `synastrySubmit` kad je
+  `#natal-form-wrap[data-natal-mode="synastry"]`. Računaju se dvije karte (`computeChart`),
+  pa `renderSynastryResult`.
+- **Međuaspekti:** `computeSynastryAspects(chartA, chartB)` u natal-calc.js — cross-aspekti
+  planeta/osi osobe A naspram osobe B, uži orbisi (`SYN_ORBS`). Bez fortune/vertexa/J.čvora.
+- **Bi-wheel:** `buildChartSVG` prima `opts.biwheel` (vanjski prsten = osoba B, `pal.planetB`
+  boja) i `opts.synAspects` (linije A↔B). Osoba A je baza (kuće/osi, Placidus); prsten kuća
+  pomaknut prema sredini da stanu dva prstena planeta. Natalni prikaz je **nepromijenjen**
+  (isti `drawRing` helper, identičan izlaz bez `biwheel`).
+- **Prikaz:** `renderSynastryResult` (natal-render.js) → legenda (koja boja koja osoba),
+  bi-wheel, tablica međuaspekata (popis sortiran po orbu), pozicije obje osobe; kontrole
+  aspekata (`SYN_CHART_OPTS`), ponovno iscrtavanje pri promjeni teme (MutationObserver).
+- **PDF (natal-pdf.js):** `downloadSynastryPoster` (poster A4–A0, isti tamni dizajn, bi-wheel,
+  oba imena + legenda) i `downloadSynastryWorking` (radni A4: bi-wheel + aspektna legenda,
+  pa pozicije obje osobe + popis međuaspekata). Isti font/footer pipeline kao natalna karta.
+- **Što NIJE uključeno (zasad):** AI tumačenje sinastrije, composite karta.
 
 ---
 

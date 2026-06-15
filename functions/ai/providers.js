@@ -3,7 +3,7 @@
 
 export const DEFAULT_MODELS = {
   gemini:     'gemini-2.5-flash',
-  cloudflare: '@cf/meta/llama-3.1-8b-instruct',
+  cloudflare: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
   openai:     'gpt-4o-mini',
   anthropic:  'claude-haiku-4-5-20251001'
 };

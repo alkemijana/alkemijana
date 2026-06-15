@@ -33,6 +33,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-pdf.js                ← Natalna karta + sinastrija: PDF eksport (poster A4–A0 + radna A4)
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
 │   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
+│   ├── natal-transit.js            ← Tranziti: kontrola vremena (5 slidera), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
@@ -167,6 +168,34 @@ Usporedba **dviju** karata na istoj stranici **#natal** — besplatno za posjeti
   oba imena + legenda) i `downloadSynastryWorking` (radni A4: bi-wheel + aspektna legenda,
   pa pozicije obje osobe + popis međuaspekata). Isti font/footer pipeline kao natalna karta.
 - **Što NIJE uključeno (zasad):** AI tumačenje sinastrije, composite karta.
+
+---
+
+## Tranziti (js/natal-transit.js)
+
+Treći mod na stranici **#natal** (prekidač: Natalna karta · Sinastrija · **Tranziti**) — besplatno.
+Natalna karta + **tranzitni planeti** za odabrani trenutak, sa **živim klizanjem kroz vrijeme**.
+
+- **Kontrola vremena:** polje **datum-sidro** (+vrijeme, zadano „sada") i **5 slidera**
+  (Sat/Dan/Tjedan/Mjesec/Godina) sa **brojčanim poljima** uz svaki (− je unazad). Svih pet se
+  **zbraja** na sidro; živi prikaz točnog datuma. Gumb „⟳ Sada" resetira sidro i offsete.
+  Mjeseci/godine = kalendarska aritmetika; datum izvan 1900–2099 → Kiron se izostavi (napomena).
+- **Živo, glatko osvježavanje:** natalna karta (baza) se izračuna jednom; pri pomaku slidera
+  računaju se **samo tranzitni položaji** (`computeChart` noTime — geocentrični, neovisni o mjestu)
+  i osvježava se **samo pomični sloj** kotača. Throttle na `requestAnimationFrame`; tablice se
+  osvježavaju debounce-ano (160 ms). Bez mrežnih poziva.
+- **Slojeviti bi-wheel:** `buildChartSVG` `opts.layer`: `'base'` (statična podloga: natalna karta
+  unutra + kuće/osi), `'dynamic'` (samo tranzitni vanjski prsten + aspektne linije, prozirno, isti
+  viewBox). Dva naslagana `<svg>` (`#transit-wheel-base` / `-dyn`) u `.tw-stack`. Natalni i
+  sinastrijski prikaz (`layer:'all'`) su **nepromijenjeni**.
+- **Aspekti tranzit↔natal:** `computeSynastryAspects(natal, tranzit)` (ista funkcija kao sinastrija).
+  Boja tranzitnog prstena = `pal.planetT` (plava; sinastrija koristi `planetB` zelenu).
+- **Prikaz:** `renderTransitResult` / `redrawTransitDynamic` / `renderTransitTables` (natal-render.js),
+  `currentTransit = { natal, transit, aspects, label }`. Kontrole aspekata `TRANSIT_CHART_OPTS`.
+- **PDF:** dijeli parametrizirane sinastrijske funkcije (`buildSynastryPosterSVG` /
+  `renderSynastryWorkingContent` primaju `cfg` = unutarnja/vanjska karta, boja, oznake) preko
+  `downloadTransitPoster` / `downloadTransitWorking` (natal-pdf.js).
+- **Što NIJE uključeno (zasad):** AI tumačenje tranzita, izbor pojedinih tranzitnih tijela, progresije.
 
 ---
 

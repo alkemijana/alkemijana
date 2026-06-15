@@ -10,6 +10,7 @@
 
 let currentChart = null;
 let currentSynastry = null;   // { a: chartA, b: chartB, aspects: [...] } — sinastrija
+let currentTransit = null;    // { natal, transit, aspects } — tranziti (živi bi-wheel)
 
 function currentScreenPalette() {
   return document.documentElement.getAttribute('data-theme') === 'light' ? PALETTES.light : PALETTES.dark;
@@ -61,7 +62,10 @@ function buildChartSVG(chart, pal, opts) {
   const linetype = !!opts.linetype;
   const ls = opts.labelScale || 1;   // množi fontove/glifove (radni PDF — krupnije oznake)
   const noTime = !!chart.noTime;     // bez vremena rođenja: nema kuća/osi, 0° Ovna lijevo
-  const biwheel = opts.biwheel || null;  // sinastrija: vanjski prsten = osoba B (uže kuće)
+  const biwheel = opts.biwheel || null;  // sinastrija/tranziti: vanjski prsten = druga karta (uže kuće)
+  // sloj crtanja (samo bi-wheel): 'all' = sve; 'base' = statika bez vanjskog prstena/aspekata;
+  // 'dynamic' = samo vanjski prsten + aspekti (za živo osvježavanje tranzita preko statične podloge)
+  const layer = biwheel ? (opts.layer || 'all') : 'all';
 
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386;
@@ -117,6 +121,8 @@ function buildChartSVG(chart, pal, opts) {
 
   let s = '';
 
+  // ── STATIČNI SLOJ (zodijak, crtice, kuće, osi) — preskače se na 'dynamic' sloju ──
+  if (layer !== 'dynamic') {
   // zodijački pojas
   for (let k = 0; k < 12; k++) {
     s += arcBand(k * 30, k * 30 + 30, R_ZOD, R_OUT, (k % 2 === 0) ? pal.bandA : pal.bandB);
@@ -184,6 +190,7 @@ function buildChartSVG(chart, pal, opts) {
       s += textC(nx, ny, pal.houseNum, 17 * ls, i);
     }
   }
+  }  // ── kraj statičnog sloja ──
 
   // ── helper: nacrtaj jedan prsten planeta (natalni prikaz = jedan poziv; bi-wheel = dva) ──
   // r: { glyph, deg, sgn, min, tickFrom, minShow, scale }; glyphColor = boja glifa planeta
@@ -241,8 +248,8 @@ function buildChartSVG(chart, pal, opts) {
     return out;
   }
 
-  // aspektne linije
-  if (opts.showAspects !== false) {
+  // aspektne linije (ne crtaju se na 'base' sloju)
+  if (opts.showAspects !== false && layer !== 'base') {
     if (biwheel) {
       // sinastrija: svaka linija spaja točku osobe A i točku osobe B (cross-aspekt)
       const lonA = {}, lonB = {};
@@ -281,9 +288,11 @@ function buildChartSVG(chart, pal, opts) {
 
   // planeti
   if (biwheel) {
-    // unutarnji prsten = osoba A (boja kao natalni planet), vanjski prsten = osoba B (kontrastna boja)
-    s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, sgn: R_A_SGN, tickFrom: R_MID, minShow: false, scale: 0.9 }, pal.planet,    pal.tense);
-    s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, sgn: R_B_SGN, tickFrom: R_ZOD, minShow: false, scale: 0.9 }, biwheel.color, pal.tense);
+    // unutarnji prsten = natalna/osoba A (base+all), vanjski = tranzit/osoba B (dynamic+all)
+    if (layer !== 'dynamic')
+      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, sgn: R_A_SGN, tickFrom: R_MID, minShow: false, scale: 0.9 }, pal.planet,    pal.tense);
+    if (layer !== 'base')
+      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, sgn: R_B_SGN, tickFrom: R_ZOD, minShow: false, scale: 0.9 }, biwheel.color, pal.tense);
   } else {
     s += drawRing(chart.planets, { glyph: R_GLYPH, deg: R_DEG, sgn: R_SGN, min: R_MIN, tickFrom: R_PTICK, minShow: true, scale: 1 }, pal.planet, pal.tense);
   }
@@ -559,6 +568,104 @@ function renderSynastryResult(chartA, chartB) {
   }
 }
 
+/* ============ TRANZITI — natalna karta + tranzitni planeti (živi bi-wheel) ============ */
+
+/* Pozicije tranzitnih planeta (bez kuća — tranzit nema vlastite kuće u ovom prikazu). */
+function transitPositionsRows(chart, pal) {
+  let rows = '';
+  for (const p of chart.planets) {
+    rows += '<tr><td>' + glyphSvgHtml(p.id, 18, pal.sign) + ' ' + p.name + '</td>' +
+      '<td>' + glyphSvgHtml(signKey(p.lon), 16, elementColor(p.lon, pal)) + ' ' + signName(p.lon) + '</td>' +
+      '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td></tr>';
+  }
+  return rows;
+}
+
+/* SVG pomičnog (dinamičnog) sloja: tranzitni planeti + aspektne linije. */
+function transitDynSVG(natalChart, transitChart, aspects, pal) {
+  return buildChartSVG(natalChart, pal, {
+    biwheel: { planets: transitChart.planets, noTime: true, color: pal.planetT },
+    synAspects: aspects,
+    aspectsEnabled: (typeof TRANSIT_CHART_OPTS !== 'undefined') ? TRANSIT_CHART_OPTS.aspectsEnabled : undefined,
+    layer: 'dynamic'
+  });
+}
+
+/* Brzo osvježavanje pomičnog sloja (za klizanje slidera) — bez diranja statične podloge i tablica. */
+function redrawTransitDynamic(transitChart) {
+  if (!currentTransit) return;
+  const pal = currentScreenPalette();
+  const aspects = computeSynastryAspects(currentTransit.natal, transitChart);
+  currentTransit.transit = transitChart;
+  currentTransit.aspects = aspects;
+  const dynEl = document.getElementById('transit-wheel-dyn');
+  if (dynEl) dynEl.innerHTML = transitDynSVG(currentTransit.natal, transitChart, aspects, pal);
+}
+
+/* Osvježavanje tablica tranzita (aspekti + pozicije) — rjeđe (debounce iz transit modula). */
+function renderTransitTables() {
+  if (!currentTransit) return;
+  const pal = currentScreenPalette();
+  const natal = currentTransit.natal, transit = currentTransit.transit, aspects = currentTransit.aspects;
+  const el = document.getElementById('transit-aspects');
+  if (el) {
+    if (!aspects.length) {
+      el.innerHTML = '<p class="syn-empty">Trenutno nema aspekata unutar orbisa za ovaj datum.</p>';
+    } else {
+      const nmN = synNameMap(natal), nmT = synNameMap(transit);
+      let rows = '';
+      for (const a of aspects) {
+        rows += '<tr>' +
+          '<td>' + (GLYPHS[a.a] ? glyphSvgHtml(a.a, 17, pal.planet) + ' ' : '') + (nmN[a.a] || a.a) + '</td>' +
+          '<td class="nt-asp nt-asp-' + a.aspect + '">' + glyphSvgHtml(a.aspect, 16, aspectColor(a.aspect, pal)) + ' ' + a.aspectName + '</td>' +
+          '<td>' + (GLYPHS[a.b] ? glyphSvgHtml(a.b, 17, pal.planetT) + ' ' : '') + (nmT[a.b] || a.b) + '</td>' +
+          '<td class="nt-num">' + a.orb.toFixed(1) + '°</td></tr>';
+      }
+      el.innerHTML = '<table class="nt-table syn-asp-table"><thead><tr>' +
+        '<th>Natal</th><th>Aspekt</th><th>Tranzit</th><th>Orb</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+  }
+  const t1 = document.getElementById('transit-pos-natal-tbody');
+  const t2 = document.getElementById('transit-pos-transit-tbody');
+  if (t1) t1.innerHTML = synPositionsRows(natal, pal);
+  if (t2) t2.innerHTML = transitPositionsRows(transit, pal);
+}
+
+/* Puni prikaz tranzita (pri prvom prikazu i pri promjeni teme). */
+function renderTransitResult(natalChart, transitChart) {
+  const wrap = document.getElementById('transit-result');
+  if (!wrap) return;
+  const aspects = computeSynastryAspects(natalChart, transitChart);
+  currentTransit = { natal: natalChart, transit: transitChart, aspects: aspects };
+
+  const nat = document.getElementById('natal-result'); if (nat) nat.style.display = 'none';
+  const syn = document.getElementById('synastry-result'); if (syn) syn.style.display = 'none';
+  wrap.style.display = 'block';
+
+  const pal = currentScreenPalette();
+  const nameN = natalChart.input.name || 'Natalna karta';
+
+  document.getElementById('transit-chart-title').textContent = 'Tranziti — ' + nameN;
+  document.getElementById('transit-chart-sub').textContent = birthDataLine(natalChart);
+
+  document.getElementById('transit-legend').innerHTML =
+    '<span class="syn-legend-item"><span class="syn-legend-dot" style="background:' + pal.planet + '"></span>' +
+      '<strong>' + escHtml(nameN) + '</strong> <span class="syn-legend-meta">natalna · unutarnji prsten · kuće</span></span>' +
+    '<span class="syn-legend-item"><span class="syn-legend-dot" style="background:' + pal.planetT + '"></span>' +
+      '<strong>Tranziti</strong> <span class="syn-legend-meta">vanjski prsten</span></span>';
+
+  const baseEl = document.getElementById('transit-wheel-base');
+  const dynEl = document.getElementById('transit-wheel-dyn');
+  if (baseEl) baseEl.innerHTML = buildChartSVG(natalChart, pal, { biwheel: { planets: [], color: pal.planetT }, layer: 'base' });
+  if (dynEl) dynEl.innerHTML = transitDynSVG(natalChart, transitChart, aspects, pal);
+
+  renderTransitTables();
+
+  const disc = document.getElementById('transit-disclaimer');
+  if (disc) disc.textContent = 'Bi-wheel: ' + nameN + ' (natalna — unutarnji prsten, Placidus kuće) i tranzitni planeti (vanjski prsten) za odabrani trenutak. ' +
+    'Položaji planeta: NASA JPL efemeride · tropski zodijak.';
+}
+
 /* Ponovno iscrtaj kotač kad se promijeni tema */
 new MutationObserver(() => {
   if (currentChart && document.getElementById('natal-result').style.display !== 'none') {
@@ -567,5 +674,9 @@ new MutationObserver(() => {
   const synEl = document.getElementById('synastry-result');
   if (currentSynastry && synEl && synEl.style.display !== 'none') {
     renderSynastryResult(currentSynastry.a, currentSynastry.b);
+  }
+  const trEl = document.getElementById('transit-result');
+  if (currentTransit && trEl && trEl.style.display !== 'none') {
+    renderTransitResult(currentTransit.natal, currentTransit.transit);
   }
 }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

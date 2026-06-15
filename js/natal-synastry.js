@@ -34,21 +34,32 @@ function setNatalMode(mode, persist) {
   seg.querySelectorAll('.nt-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
   wrap.setAttribute('data-natal-mode', mode);
   document.body.classList.toggle('syn-mode', mode === 'synastry');
+  document.body.classList.toggle('transit-mode', mode === 'transit');
   if (p2) p2.setAttribute('aria-hidden', mode === 'synastry' ? 'false' : 'true');
+
+  // hint tekst po modu
+  const hint = document.getElementById('natal-mode-hint');
+  if (hint) {
+    hint.textContent = mode === 'synastry'
+      ? 'Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.'
+      : mode === 'transit'
+        ? 'Položaji planeta (sada ili za odabrani trenutak) naspram tvoje natalne karte — pomiči slidere kroz vrijeme.'
+        : '';
+  }
 
   // tekst submit gumba
   const btn = document.getElementById('natal-submit');
   if (btn) {
-    btn.textContent = mode === 'synastry'
-      ? '✦ Izračunaj sinastriju'
+    btn.textContent = mode === 'synastry' ? '✦ Izračunaj sinastriju'
+      : mode === 'transit' ? '✦ Prikaži tranzite'
       : (typeof TEXTS !== 'undefined' && TEXTS.natalBtn ? TEXTS.natalBtn : '✦ Izračunaj natalnu kartu');
   }
 
-  // prebaci vidljivi rezultat (da forma i rezultat odgovaraju modu)
-  const nat = document.getElementById('natal-result');
-  const syn = document.getElementById('synastry-result');
-  if (mode === 'synastry') { if (nat) nat.style.display = 'none'; }
-  else { if (syn) syn.style.display = 'none'; }
+  // prikaži samo rezultat koji odgovara modu (ostale sakrij)
+  const results = { natal: 'natal-result', synastry: 'synastry-result', transit: 'transit-result' };
+  for (const k in results) {
+    if (k !== mode) { const el = document.getElementById(results[k]); if (el) el.style.display = 'none'; }
+  }
 
   if (persist) { try { localStorage.setItem('aj_natal_mode', mode); } catch (e) {} }
 }

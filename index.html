@@ -723,9 +723,10 @@
         <div class="nt-seg nt-mode-seg" id="natal-mode-seg" role="tablist" aria-label="Vrsta karte">
           <button type="button" class="nt-seg-btn active" data-mode="natal" id="natal-mode-natal">Natalna karta</button>
           <button type="button" class="nt-seg-btn" data-mode="synastry" id="natal-mode-syn">Sinastrija</button>
+          <button type="button" class="nt-seg-btn" data-mode="transit" id="natal-mode-transit">Tranziti</button>
         </div>
       </div>
-      <p class="nt-mode-hint" id="natal-mode-hint">Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.</p>
+      <p class="nt-mode-hint" id="natal-mode-hint"></p>
 
       <div class="form-section nt-form-wrap" id="natal-form-wrap" data-natal-mode="natal">
         <form id="natal-form">
@@ -987,6 +988,111 @@
         <p class="nt-disclaimer" id="synastry-disclaimer"></p>
       </div>
 
+      <!-- ===== REZULTAT TRANZITA (živi bi-wheel + slideri) ===== -->
+      <div id="transit-result" style="display:none">
+        <div class="nt-chart-head">
+          <h3 id="transit-chart-title"></h3>
+          <div id="transit-chart-sub"></div>
+        </div>
+
+        <!-- Kontrola vremena: datum-sidro + 5 slidera + živi prikaz -->
+        <div class="tr-panel" id="transit-panel">
+          <div class="tr-panel-top">
+            <div class="tr-anchor">
+              <label for="transit-anchor-date">Datum-sidro</label>
+              <input type="date" id="transit-anchor-date" min="1900-01-01" max="2099-12-31">
+              <input type="time" id="transit-anchor-time">
+              <button type="button" class="nt-swap-btn tr-now" id="transit-now-btn">⟳ Sada</button>
+            </div>
+            <div class="tr-readout"><span class="tr-readout-lbl">Trenutak tranzita:</span> <strong id="transit-readout">—</strong></div>
+          </div>
+          <div class="tr-sliders" id="transit-sliders">
+            <div class="tr-row"><span class="tr-lbl">Sat</span><input type="range" class="tr-slider" data-unit="hour" min="-24" max="24" step="1" value="0"><input type="number" class="tr-num" data-unit="hour" value="0" step="1"></div>
+            <div class="tr-row"><span class="tr-lbl">Dan</span><input type="range" class="tr-slider" data-unit="day" min="-31" max="31" step="1" value="0"><input type="number" class="tr-num" data-unit="day" value="0" step="1"></div>
+            <div class="tr-row"><span class="tr-lbl">Tjedan</span><input type="range" class="tr-slider" data-unit="week" min="-52" max="52" step="1" value="0"><input type="number" class="tr-num" data-unit="week" value="0" step="1"></div>
+            <div class="tr-row"><span class="tr-lbl">Mjesec</span><input type="range" class="tr-slider" data-unit="month" min="-12" max="12" step="1" value="0"><input type="number" class="tr-num" data-unit="month" value="0" step="1"></div>
+            <div class="tr-row"><span class="tr-lbl">Godina</span><input type="range" class="tr-slider" data-unit="year" min="-100" max="100" step="1" value="0"><input type="number" class="tr-num" data-unit="year" value="0" step="1"></div>
+          </div>
+          <p class="tr-hint">Pomakni klizač ili upiši broj (− je unazad). Svih pet se zbraja na datum-sidro. Karta se mijenja uživo.</p>
+          <p class="tr-warn" id="transit-warn" style="display:none"></p>
+        </div>
+
+        <div class="syn-legend" id="transit-legend"></div>
+
+        <div id="transit-wheel" class="tw-stack">
+          <div class="tw-layer" id="transit-wheel-base"></div>
+          <div class="tw-layer" id="transit-wheel-dyn"></div>
+        </div>
+
+        <div class="nt-chart-controls" id="transit-chart-controls">
+          <div class="nt-cc-group nt-cc-aspects">
+            <span class="nt-cc-lbl">Aspekti:</span>
+            <label class="nt-cc-chip" data-asp="conjunction"><input type="checkbox" data-asp="conjunction" checked><span class="nt-cc-line nt-cc-conj"></span><span>Konjunkcija</span></label>
+            <label class="nt-cc-chip" data-asp="sextile"><input type="checkbox" data-asp="sextile" checked><span class="nt-cc-line nt-cc-sext"></span><span>Sekstil</span></label>
+            <label class="nt-cc-chip" data-asp="square"><input type="checkbox" data-asp="square" checked><span class="nt-cc-line nt-cc-sq"></span><span>Kvadrat</span></label>
+            <label class="nt-cc-chip" data-asp="trine"><input type="checkbox" data-asp="trine" checked><span class="nt-cc-line nt-cc-tri"></span><span>Trigon</span></label>
+            <label class="nt-cc-chip" data-asp="opposition"><input type="checkbox" data-asp="opposition" checked><span class="nt-cc-line nt-cc-opp"></span><span>Opozicija</span></label>
+          </div>
+        </div>
+
+        <div class="nt-downloads">
+          <div class="nt-dl-card">
+            <h4>✦ Poster tranzita</h4>
+            <p>Natalna karta s tranzitnim planetima za odabrani trenutak — tamni dizajn za ispis.</p>
+            <div class="nt-dl-row">
+              <select id="transit-poster-size">
+                <option value="A4">A4 (21 × 29,7 cm)</option>
+                <option value="A3">A3 (29,7 × 42 cm)</option>
+                <option value="A2" selected>A2 (42 × 59,4 cm)</option>
+                <option value="A1">A1 (59,4 × 84,1 cm)</option>
+                <option value="A0">A0 (84,1 × 118,9 cm)</option>
+              </select>
+              <button class="btn" id="transit-poster-btn">Preuzmi poster (PDF)</button>
+            </div>
+          </div>
+          <div class="nt-dl-card">
+            <h4>☾ Radna verzija</h4>
+            <p>Svijetli A4: bi-wheel, aspekti tranzit→natal i pozicije za odabrani trenutak.</p>
+            <div class="nt-dl-row">
+              <button class="btn" id="transit-working-btn">Preuzmi radni PDF</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="nt-tabs" id="transit-tabs">
+          <button class="nt-tab active" data-tab="aspekti">Aspekti</button>
+          <button class="nt-tab" data-tab="pozicije">Pozicije</button>
+        </div>
+
+        <div class="nt-tabpane" id="transit-tab-aspekti">
+          <div class="nt-table-card nt-grid-card">
+            <h4>Aspekti <span class="syn-aspect-note">— tranzitni planeti naspram natalne karte</span></h4>
+            <div id="transit-aspects"></div>
+          </div>
+        </div>
+
+        <div class="nt-tabpane" id="transit-tab-pozicije" style="display:none">
+          <div class="nt-tables nt-tables-syn">
+            <div class="nt-table-card">
+              <h4 id="transit-pos-natal-title">Natalna karta</h4>
+              <table class="nt-table">
+                <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th><th>Kuća</th></tr></thead>
+                <tbody id="transit-pos-natal-tbody"></tbody>
+              </table>
+            </div>
+            <div class="nt-table-card">
+              <h4>Tranzitni planeti</h4>
+              <table class="nt-table">
+                <thead><tr><th>Planet</th><th>Znak</th><th>Stupanj</th></tr></thead>
+                <tbody id="transit-pos-transit-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <p class="nt-disclaimer" id="transit-disclaimer"></p>
+      </div>
+
       <section class="nt-faq" aria-labelledby="nt-faq-title">
         <h2 id="t-natalFaqTitle"></h2>
         <details class="nt-faq-item"><summary id="t-natalFaqQ1"></summary><p id="t-natalFaqA1"></p></details>
@@ -1167,6 +1273,7 @@
 <script src="js/natal-pdf.js"></script>
 <script src="js/natal.js"></script>
 <script src="js/natal-synastry.js"></script>
+<script src="js/natal-transit.js"></script>
 <script src="js/natal-ai.js"></script>
 <script src="js/natal-live.js"></script>
 

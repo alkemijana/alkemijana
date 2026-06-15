@@ -2102,8 +2102,9 @@ input[type="time"]:disabled { opacity: 0.45; }
   max-height: 0; opacity: 0; overflow: hidden;
   transition: max-height 0.4s ease, opacity 0.35s ease, margin 0.4s ease;
 }
-/* hint vidljiv samo kad je odabran mod sinastrije (klasu postavlja JS na body) */
-body.syn-mode .nt-mode-hint { max-height: 4rem; opacity: 1; margin: 0 auto 1.6rem; }
+/* hint vidljiv kad je odabran sinastrija ili tranziti (klasu postavlja JS na body) */
+body.syn-mode .nt-mode-hint,
+body.transit-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6rem; }
 
 /* — Osoba 1 / Osoba 2 blokovi — */
 .nt-person-head {
@@ -2153,6 +2154,52 @@ body.syn-mode .nt-mode-hint { max-height: 4rem; opacity: 1; margin: 0 auto 1.6re
 .syn-asp-table th:nth-child(3), .syn-asp-table td:nth-child(3) { width: auto; }
 .syn-asp-table th:nth-child(4), .syn-asp-table td:nth-child(4) { width: 4.5rem; text-align: right; }
 .syn-empty { font-family: 'Quicksand', sans-serif; color: var(--text-muted); text-align: center; padding: 1.2rem 0; }
+
+/* ===== TRANZITI — naslagani kotač + kontrola vremena (5 slidera) ===== */
+/* dva sloja: statična podloga (natalna) + pomični sloj (tranzit) — preklopljeni */
+.tw-stack { position: relative; max-width: 740px; margin: 0 auto; aspect-ratio: 1 / 1; }
+.tw-layer { position: absolute; inset: 0; }
+.tw-layer svg { width: 100%; height: 100%; display: block; }
+
+.tr-panel {
+  max-width: 760px; margin: 0 auto 1.6rem; padding: 1.3rem 1.5rem;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+}
+.tr-panel-top {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.8rem 1.4rem; margin-bottom: 1.1rem;
+}
+.tr-anchor { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.tr-anchor label {
+  font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.tr-anchor input[type="date"], .tr-anchor input[type="time"] {
+  background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.4rem 0.6rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
+}
+.tr-now { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+.tr-readout {
+  font-family: 'Quicksand', sans-serif; font-size: 0.95rem; color: var(--text);
+}
+.tr-readout-lbl { color: var(--text-muted); font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.tr-readout strong { color: var(--lavender); font-weight: 600; }
+
+.tr-sliders { display: flex; flex-direction: column; gap: 0.55rem; }
+.tr-row {
+  display: grid; grid-template-columns: 4.4rem 1fr 4.6rem; align-items: center; gap: 0.8rem;
+}
+.tr-lbl {
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem; letter-spacing: 0.04em; color: var(--text);
+}
+.tr-slider { width: 100%; accent-color: var(--lavender); cursor: pointer; }
+.tr-num {
+  background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.35rem 0.4rem; width: 100%;
+  font-family: 'Quicksand', sans-serif; font-size: 0.86rem; text-align: center;
+}
+.tr-hint { margin: 1rem 0 0; font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted); }
+.tr-warn { margin: 0.5rem 0 0; font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: #c89; }
 
 /* Gumb zamjene unutarnje/vanjske osobe */
 .syn-controls-row { display: flex; justify-content: center; margin: 0 auto 1.3rem; }

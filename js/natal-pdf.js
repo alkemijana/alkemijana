@@ -819,18 +819,22 @@ function synPdfFileName(suffix) {
   return a + '-' + b + '-' + suffix + '.pdf';
 }
 
-/* Bi-wheel SVG za PDF (osoba A baza, osoba B vanjski prsten). */
-function synBiwheelSVG(chartA, chartB, pal, extra) {
+/* Bi-wheel SVG za PDF (unutarnja karta = baza, vanjska = drugi prsten).
+   cfg.outerKey = ključ boje vanjskog prstena ('planetB' sinastrija | 'planetT' tranzit);
+   cfg.aspects = lista aspekata (inače iz currentSynastry / izračun). */
+function synBiwheelSVG(chartA, chartB, pal, extra, cfg) {
+  cfg = cfg || {};
   const opts = Object.assign({
     showAspects: true,
-    biwheel: { planets: chartB.planets, asc: chartB.asc, mc: chartB.mc, noTime: chartB.noTime, color: pal.planetB },
-    synAspects: (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB)
+    biwheel: { planets: chartB.planets, asc: chartB.asc, mc: chartB.mc, noTime: chartB.noTime, color: pal[cfg.outerKey || 'planetB'] },
+    synAspects: cfg.aspects || (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB)
   }, extra || {});
   return buildChartSVG(chartA, pal, opts);
 }
 
 /* ── Poster sinastrije (vektorski, tamni dizajn — kao natalni poster) ── */
-function buildSynastryPosterSVG(chartA, chartB, w, h) {
+function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
+  cfg = cfg || {};
   const pal = PALETTES.poster;
   const cx = w / 2;
   const chartSize = w * 0.82;
@@ -838,10 +842,14 @@ function buildSynastryPosterSVG(chartA, chartB, w, h) {
   const chartY = h * 0.205;
 
   const nameA = chartA.input.name || 'Prva osoba';
-  const nameB = chartB.input.name || 'Druga osoba';
-  const title = nameA + '  &  ' + nameB;
+  const nameB = cfg.outerName || chartB.input.name || 'Druga osoba';
+  const title = cfg.title || (nameA + '  &  ' + nameB);
+  const kindLabel = cfg.kindLabel || 'Sinastrija';
+  const subLineB = cfg.outerSubLine || birthDataLine(chartB);
+  const footerKind = cfg.footerKind || 'sinastrija';
+  const outerColor = pal[cfg.outerKey || 'planetB'];
 
-  const inner = synBiwheelSVG(chartA, chartB, pal).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const inner = synBiwheelSVG(chartA, chartB, pal, null, cfg).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
 
   let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
   s += '<defs><radialGradient id="sgrad" cx="50%" cy="32%" r="85%">' +
@@ -867,10 +875,10 @@ function buildSynastryPosterSVG(chartA, chartB, w, h) {
   s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
   s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
   // "Sinastrija" + dvije linije podataka rođenja
-  s += svgCenteredText('Sinastrija', cx, h * 0.137, w * 0.019, '#b8a2dd', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText(kindLabel, cx, h * 0.137, w * 0.019, '#b8a2dd', 'Quicksand', 'Quicksand', null);
   const fData = fitFontSize(birthDataLine(chartA), 'Playfair Display', null, w * 0.0185, maxTextW);
   s += svgCenteredText(birthDataLine(chartA), cx, h * 0.158, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
-  s += svgCenteredText(birthDataLine(chartB), cx, h * 0.176, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(subLineB, cx, h * 0.176, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
 
   // kotač (interne koord. -60..1060 → 1120 jedinica)
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
@@ -886,12 +894,12 @@ function buildSynastryPosterSVG(chartA, chartB, w, h) {
   s += '<circle cx="' + (x0 + dot).toFixed(2) + '" cy="' + (legY - legFs * 0.32).toFixed(2) + '" r="' + dot.toFixed(2) + '" fill="' + pal.planet + '"/>';
   s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + pal.planet + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameA) + '</text>';
   x0 += dot * 2 + padd + twA + gap;
-  s += '<circle cx="' + (x0 + dot).toFixed(2) + '" cy="' + (legY - legFs * 0.32).toFixed(2) + '" r="' + dot.toFixed(2) + '" fill="' + pal.planetB + '"/>';
-  s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + pal.planetB + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameB) + '</text>';
+  s += '<circle cx="' + (x0 + dot).toFixed(2) + '" cy="' + (legY - legFs * 0.32).toFixed(2) + '" r="' + dot.toFixed(2) + '" fill="' + outerColor + '"/>';
+  s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + outerColor + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameB) + '</text>';
 
   // podnožje
   s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
-  s += svgCenteredText('alkemijana.com · sinastrija · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText('alkemijana.com · ' + footerKind + ' · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }
@@ -926,14 +934,21 @@ async function downloadSynastryWorking() {
   });
 }
 
-async function renderSynastryWorkingContent(doc) {
-  const chartA = currentSynastry.a, chartB = currentSynastry.b;
-  const aspects = currentSynastry.aspects || computeSynastryAspects(chartA, chartB);
+async function renderSynastryWorkingContent(doc, cfg) {
+  cfg = cfg || {};
+  const chartA = cfg.inner || currentSynastry.a, chartB = cfg.outer || currentSynastry.b;
+  const aspects = cfg.aspects || (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB);
   const W = 210, H = 297, PAGE_M = 5;
   const CONTENT_W = W - 2 * PAGE_M;
   const INK_PLANET = '#2a2348';
   const nameA = chartA.input.name || 'Prva osoba';
-  const nameB = chartB.input.name || 'Druga osoba';
+  const nameB = cfg.outerName || chartB.input.name || 'Druga osoba';
+  const innerTag = cfg.innerTag || '(unutra)';
+  const outerTag = cfg.outerTag || '(vani)';
+  const outerColorKey = cfg.outerKey || 'planetB';
+  const titleTxt = cfg.title || (nameA + '  &  ' + nameB);
+  const subB = cfg.outerSubLine || birthDataLine(chartB);
+  const aspectsTitle = cfg.aspectsTitle || ('Međuaspekti (' + nameA + ' → ' + nameB + ')');
   const nmA = {}; for (const p of chartA.planets) nmA[p.id] = p.name; nmA.asc = 'ASC'; nmA.mc = 'MC';
   const nmB = {}; for (const p of chartB.planets) nmB[p.id] = p.name; nmB.asc = 'ASC'; nmB.mc = 'MC';
 
@@ -946,31 +961,32 @@ async function renderSynastryWorkingContent(doc) {
 
   // ===== STRANICA 1: naslov + bi-wheel + legende =====
   doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(17); doc.setTextColor(42, 35, 72);
-  doc.text(nameA + '  &  ' + nameB, W / 2, 13, { align: 'center' });
+  doc.text(titleTxt, W / 2, 13, { align: 'center' });
   doc.setFont('Quicksand', 'normal'); doc.setFontSize(8.4); doc.setTextColor(90, 80, 130);
   doc.text(doc.splitTextToSize(birthDataLine(chartA), CONTENT_W), W / 2, 18.5, { align: 'center' });
-  doc.text(doc.splitTextToSize(birthDataLine(chartB), CONTENT_W), W / 2, 22.5, { align: 'center' });
+  doc.text(doc.splitTextToSize(subB, CONTENT_W), W / 2, 22.5, { align: 'center' });
   doc.setDrawColor(154, 143, 192); doc.setLineWidth(0.25); doc.line(PAGE_M, 25.5, W - PAGE_M, 25.5);
 
   const chartSize = 168, chartY = 28;
   await renderSvgOnDoc(
-    synBiwheelSVG(chartA, chartB, PALETTES.ink, { linetype: true, labelScale: 1.12 }),
+    synBiwheelSVG(chartA, chartB, PALETTES.ink, { linetype: true, labelScale: 1.12 }, cfg),
     (W - chartSize) / 2, chartY, chartSize, chartSize
   );
 
   // legenda osoba (dvije bojene točke + imena, centrirano)
   let ly = chartY + chartSize + 5;
   doc.setFont('Quicksand', 'normal'); doc.setFontSize(9.5);
-  const wA = doc.getTextWidth(nameA), wB = doc.getTextWidth(nameB);
+  const lblA = nameA + ' ' + innerTag, lblB = nameB + ' ' + outerTag;
+  const wA = doc.getTextWidth(lblA), wB = doc.getTextWidth(lblB);
   const gap = 14, dotR = 1.5, padd = 3;
   const grpW = dotR * 2 + padd + wA + gap + dotR * 2 + padd + wB;
   let gx = W / 2 - grpW / 2;
-  const rgbA = hexToRgbArr(PALETTES.ink.planet), rgbB = hexToRgbArr(PALETTES.ink.planetB);
+  const rgbA = hexToRgbArr(PALETTES.ink.planet), rgbB = hexToRgbArr(PALETTES.ink[outerColorKey]);
   doc.setFillColor(rgbA[0], rgbA[1], rgbA[2]); doc.circle(gx + dotR, ly - 1, dotR, 'F');
-  doc.setTextColor(50, 42, 86); doc.text(nameA + ' (unutra)', gx + dotR * 2 + padd, ly);
-  gx += dotR * 2 + padd + doc.getTextWidth(nameA + ' (unutra)') + gap;
+  doc.setTextColor(50, 42, 86); doc.text(lblA, gx + dotR * 2 + padd, ly);
+  gx += dotR * 2 + padd + wA + gap;
   doc.setFillColor(rgbB[0], rgbB[1], rgbB[2]); doc.circle(gx + dotR, ly - 1, dotR, 'F');
-  doc.text(nameB + ' (vani)', gx + dotR * 2 + padd, ly);
+  doc.text(lblB, gx + dotR * 2 + padd, ly);
 
   // aspektna legenda (debljine/dashevi kao na karti)
   ly += 8;
@@ -1053,7 +1069,7 @@ async function renderSynastryWorkingContent(doc) {
   // ── Međuaspekti (popis u 2 stupca, paginirano) ──
   let y = Math.max(b1, b2) + 12;
   doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(13); doc.setTextColor(42, 35, 72);
-  doc.text('Međuaspekti (' + nameA + ' → ' + nameB + ')', PAGE_M, y);
+  doc.text(aspectsTitle, PAGE_M, y);
   y += 6;
 
   const aRowH = 5.4, colW2 = (CONTENT_W - colGap) / 2;
@@ -1074,7 +1090,7 @@ async function renderSynastryWorkingContent(doc) {
 
   if (!aspects.length) {
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(9); doc.setTextColor(110, 100, 150);
-    doc.text('Nema značajnih međuaspekata unutar orbisa.', PAGE_M, y);
+    doc.text('Nema značajnih aspekata unutar orbisa.', PAGE_M, y);
   } else {
     for (let i = 0; i < aspects.length; i++) {
       await drawAspectRow(aspects[i], colXs[col], rowY);
@@ -1085,4 +1101,75 @@ async function renderSynastryWorkingContent(doc) {
       }
     }
   }
+}
+
+/* ============================================================
+   TRANZITI — PDF (poster + radna verzija) — koristi parametrizirane
+   sinastrijske funkcije (vanjski prsten = tranzitni planeti, boja planetT).
+   ============================================================ */
+
+async function withTransitBtnSpinner(btn, fn) {
+  if (!currentTransit) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Pripremam PDF…';
+  try { await fn(); }
+  catch (e) { showNatalError('Greška pri izradi PDF-a: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+function transitPdfFileName(suffix) {
+  const slug = s => (s || '').toLowerCase()
+    .replace(/[čć]/g, 'c').replace(/š/g, 's').replace(/ž/g, 'z').replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const a = slug(currentTransit.natal.input.name) || 'natal';
+  return a + '-tranzit-' + suffix + '.pdf';
+}
+
+/* Konfiguracija "para" za tranzit (natalna unutra, tranzitni planeti vani). */
+function transitPdfCfg() {
+  const label = currentTransit.label || '';
+  const nameN = currentTransit.natal.input.name || 'Natalna karta';
+  return {
+    inner: currentTransit.natal,
+    outer: currentTransit.transit,
+    aspects: currentTransit.aspects,
+    outerKey: 'planetT',
+    kindLabel: 'Tranziti',
+    title: nameN + '  ·  tranziti',
+    outerName: 'Tranziti',
+    outerSubLine: label ? ('Tranzit: ' + label) : 'Tranzit',
+    footerKind: 'tranziti',
+    innerTag: '(natal)',
+    outerTag: '(tranzit)',
+    aspectsTitle: 'Aspekti (tranzit → natalna karta)'
+  };
+}
+
+async function downloadTransitPoster() {
+  const sel = document.getElementById('transit-poster-size');
+  const size = (sel && sel.value) || 'A2';
+  const btn = document.getElementById('transit-poster-btn');
+  await withTransitBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    const [w, h] = PAGE_MM[size];
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: size.toLowerCase() });
+    registerFonts(doc);
+    const el = svgToElement(buildSynastryPosterSVG(currentTransit.natal, currentTransit.transit, w, h, transitPdfCfg()));
+    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
+    finally { el.remove(); }
+    doc.save(transitPdfFileName('poster-' + size));
+  });
+}
+
+async function downloadTransitWorking() {
+  const btn = document.getElementById('transit-working-btn');
+  await withTransitBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    registerFonts(doc);
+    await renderSynastryWorkingContent(doc, transitPdfCfg());
+    addFooters(doc);
+    doc.save(transitPdfFileName('radna-A4'));
+  });
 }

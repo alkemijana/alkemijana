@@ -175,11 +175,11 @@ function initNatalTabs() {
 
 async function natalSubmit(ev) {
   ev.preventDefault();
-  // u modu sinastrije submit preuzima natal-synastry.js
+  // u modu sinastrije / tranzita submit preuzimaju drugi moduli
   const wrap = document.getElementById('natal-form-wrap');
-  if (wrap && wrap.getAttribute('data-natal-mode') === 'synastry' && typeof synastrySubmit === 'function') {
-    return synastrySubmit(ev);
-  }
+  const mode = wrap && wrap.getAttribute('data-natal-mode');
+  if (mode === 'synastry' && typeof synastrySubmit === 'function') return synastrySubmit(ev);
+  if (mode === 'transit' && typeof transitSubmit === 'function') return transitSubmit(ev);
   const err = document.getElementById('natal-error');
   err.style.display = 'none';
 

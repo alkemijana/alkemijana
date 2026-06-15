@@ -55,7 +55,7 @@ function aspectLineWidth(aspId) {
 
 function buildChartSVG(chart, pal, opts) {
   opts = opts || {};
-  const aspectsEnabled = opts.aspectsEnabled || { conjunction: false, sextile: true, square: true, trine: true, opposition: true };
+  const aspectsEnabled = opts.aspectsEnabled || { conjunction: true, sextile: true, square: true, trine: true, opposition: true };
   const showCuspDegrees = opts.showCuspDegrees !== false;
   const linetype = !!opts.linetype;
   const ls = opts.labelScale || 1;   // množi fontove/glifove (radni PDF — krupnije oznake)

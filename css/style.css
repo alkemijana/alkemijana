@@ -1967,8 +1967,9 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .nt-cc-chip:hover { border-color: var(--lavender); }
 .nt-cc-chip input[type="checkbox"] {
-  width: 14px; height: 14px; margin: 0; accent-color: var(--lavender); cursor: pointer;
+  width: 14px; height: 14px; margin: 0; accent-color: var(--lavender-soft); cursor: pointer;
 }
+:root[data-theme="light"] .nt-cc-chip input[type="checkbox"] { accent-color: var(--lavender); }
 .nt-cc-chip .nt-cc-line {
   display: inline-block; width: 22px; height: 0; border-top: 2px solid currentColor;
 }

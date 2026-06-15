@@ -97,7 +97,7 @@ function initNodeToggle() {
 /* ============ KONTROLE KOTAČA (aspekti, stupnjevi kuća) ============ */
 
 const NATAL_CHART_OPTS = {
-  aspectsEnabled: { conjunction: false, sextile: true, square: true, trine: true, opposition: true },
+  aspectsEnabled: { conjunction: true, sextile: true, square: true, trine: true, opposition: true },
   showCuspDegrees: true
 };
 
@@ -108,6 +108,12 @@ function initChartControls() {
     if (saved) {
       if (saved.aspectsEnabled) Object.assign(NATAL_CHART_OPTS.aspectsEnabled, saved.aspectsEnabled);
       if (typeof saved.showCuspDegrees === 'boolean') NATAL_CHART_OPTS.showCuspDegrees = saved.showCuspDegrees;
+    }
+    // jednokratna migracija: konjunkcije su prije bile isključene po defaultu — uključi ih
+    if (!localStorage.getItem('aj_natal_conj_migrated')) {
+      NATAL_CHART_OPTS.aspectsEnabled.conjunction = true;
+      localStorage.setItem('aj_natal_conj_migrated', '1');
+      persistChartOpts();
     }
   } catch (e) {}
   // sinkroniziraj checkboxove s NATAL_CHART_OPTS

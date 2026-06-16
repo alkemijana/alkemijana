@@ -2148,11 +2148,13 @@ body.transit-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1
 .nt-tables-syn { grid-template-columns: 1fr 1fr; }
 
 /* Tablica međuaspekata (popis A — aspekt — B) */
-.syn-asp-table { table-layout: auto; }
-.syn-asp-table th:nth-child(1), .syn-asp-table td:nth-child(1),
-.syn-asp-table th:nth-child(2), .syn-asp-table td:nth-child(2),
-.syn-asp-table th:nth-child(3), .syn-asp-table td:nth-child(3) { width: auto; }
-.syn-asp-table th:nth-child(4), .syn-asp-table td:nth-child(4) { width: 4.5rem; text-align: right; }
+/* fiksni layout + omatanje teksta → ORB stupac uvijek stane (ne ispada na mobitelu) */
+.syn-asp-table { table-layout: fixed; width: 100%; }
+.syn-asp-table th, .syn-asp-table td { white-space: normal; overflow-wrap: anywhere; }
+.syn-asp-table th:nth-child(1), .syn-asp-table td:nth-child(1) { width: 30%; }
+.syn-asp-table th:nth-child(2), .syn-asp-table td:nth-child(2) { width: 24%; }
+.syn-asp-table th:nth-child(3), .syn-asp-table td:nth-child(3) { width: 30%; }
+.syn-asp-table th:nth-child(4), .syn-asp-table td:nth-child(4) { width: 16%; text-align: right; }
 .syn-empty { font-family: 'Quicksand', sans-serif; color: var(--text-muted); text-align: center; padding: 1.2rem 0; }
 
 /* ===== TRANZITI — naslagani kotač + kontrola vremena (5 slidera) ===== */

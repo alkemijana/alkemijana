@@ -302,9 +302,9 @@ function buildChartSVG(chart, pal, opts) {
     // unutarnji prsten = natalna/osoba A; vanjski = tranzit/osoba B — krupniji glifovi, bez glifa znaka.
     // aspektne crtice razlikovane: unutarnji tanji, vanjski deblji (uz boju prstena).
     if (layer !== 'dynamic')
-      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, min: R_A_MIN, tickFrom: R_MID, minShow: true, minFont: 11.5, scale: 1.15, aspTickW: 2.2, aspTickLen: 10, retroInline: true }, pal.planet,    pal.tense);
+      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, min: R_A_MIN, tickFrom: R_MID, minShow: true, minFont: 11.5, scale: 1.15, aspTickW: 2.2, aspTickLen: 10 }, pal.planet,    pal.tense);
     if (layer !== 'base')
-      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, min: R_B_MIN, tickFrom: R_ZOD, minShow: true, minFont: 11.5, scale: 1.15, aspTickW: 3.6, aspTickLen: 13, retroInline: true }, biwheel.color, pal.tense);
+      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, min: R_B_MIN, tickFrom: R_ZOD, minShow: true, minFont: 11.5, scale: 1.15, aspTickW: 3.6, aspTickLen: 13 }, biwheel.color, pal.tense);
   } else {
     s += drawRing(chart.planets, { glyph: R_GLYPH, deg: R_DEG, sgn: R_SGN, min: R_MIN, tickFrom: R_PTICK, minShow: true, scale: 1, aspTickW: 1.6, aspTickLen: 9 }, pal.planet, pal.tense);
   }

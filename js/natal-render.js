@@ -70,9 +70,11 @@ function buildChartSVG(chart, pal, opts) {
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386;
   // u bi-wheelu prsten kuća pomaknut prema sredini (mjesta za dva prstena planeta)
-  const R_HOUT = biwheel ? 240 : 256, R_HIN = biwheel ? 220 : 236;
+  // manji unutarnji krug (aspekti) → više prostora za prsten planeta
+  const R_HOUT = 240, R_HIN = 220;
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
-  const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
+  // (radijusi malo razmaknuti da stupanj/znak/minute lijepo stanu na većoj veličini)
+  const R_GLYPH = 360, R_DEG = 324, R_SGN = 294, R_MIN = 266;
   // bi-wheel: dva prstena JEDNAKE širine (vanjski uz zodijak, unutarnji uz kuće) + razdjelnica.
   // samo glif + stupanj (bez glifa znaka) — radi veće čitljivosti i krupnijih simbola.
   const R_MID = 316;
@@ -157,7 +159,7 @@ function buildChartSVG(chart, pal, opts) {
         const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
         s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 21 * ls, elementColor(chart.cusps[i], pal), 1.7);
         // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
-        s += textC(cx, cy + (cy < C ? -18 : 19) * ls, pal.degStrong, 14 * ls, fmtDegMin(chart.cusps[i]), '600');
+        s += textC(cx, cy + (cy < C ? -18 : 19) * ls, pal.degStrong, 14 * ls, fmtDegMin(chart.cusps[i]));
       }
     }
 
@@ -175,7 +177,7 @@ function buildChartSVG(chart, pal, opts) {
       // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
       const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
       s += textC(tx, ty, pal.axisText, 19 * ls, ax.label, '600');
-      s += textC(tx, ty + (ty < C ? -17 : 19) * ls, pal.degStrong, 14.5 * ls, fmtDegMin(ax.lon), '600');
+      s += textC(tx, ty + (ty < C ? -17 : 19) * ls, pal.degStrong, 14.5 * ls, fmtDegMin(ax.lon));
     }
   }
 
@@ -235,12 +237,12 @@ function buildChartSVG(chart, pal, opts) {
       out += line(p.lon, R_HIN, R_HIN - atLen, glyphColor, atW);
       const [gx, gy] = pt(dispLon, r.glyph);
       out += glyphSvgEl(p.id, gx, gy, 30 * ls * sc, glyphColor, 1.8);
-      // retrogradna oznaka — malo R uz glif planeta
-      if (p.retro) out += textC(gx + 14 * ls * sc, gy - 9 * ls * sc, retroColor, 12 * ls * sc, 'R');
-      // stupanj — kontrastna boja (bijela na tamnoj, crna na svijetloj temi) + podebljano
+      // retrogradna oznaka — malo R uz glif planeta (podignuto, da ne dira stupanj ispod)
+      if (p.retro) out += textC(gx + 13 * ls * sc, gy - 11 * ls * sc, retroColor, 11 * ls * sc, 'R');
+      // stupanj — kontrastna boja (bijela na tamnoj, crna na svijetloj temi), obična debljina
       const dm = degMinParts(p.lon);
       const [dx, dy] = pt(dispLon, r.deg);
-      out += textC(dx, dy, pal.degStrong, 16.5 * ls * sc, dm.d + '°', '700');
+      out += textC(dx, dy, pal.degStrong, 16.5 * ls * sc, dm.d + '°');
       // glif znaka (samo natalni prikaz; bi-wheel ga izostavlja radi prostora i krupnoće)
       if (r.sgn != null) {
         const [sx, sy] = pt(dispLon, r.sgn);
@@ -248,7 +250,7 @@ function buildChartSVG(chart, pal, opts) {
       }
       if (r.minShow) {
         const [mx, my] = pt(dispLon, r.min);
-        out += textC(mx, my, pal.degStrong, 14 * ls * sc, pad2(dm.m) + "'", '600');
+        out += textC(mx, my, pal.degStrong, 14 * ls * sc, pad2(dm.m) + "'");
       }
     }
     return out;

@@ -2164,12 +2164,13 @@ body.transit-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1
 .tr-panel {
   margin: 0; padding: 1.3rem 1.5rem;
   background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  display: flex; flex-direction: column; gap: 0.9rem;
 }
 .tr-panel-top {
   display: flex; flex-direction: column; align-items: stretch;
   gap: 0.7rem; margin-bottom: 1rem;
 }
-.tr-anchor { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.tr-anchor { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .tr-anchor label {
   font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--text-muted);
@@ -2218,24 +2219,36 @@ body.transit-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1
   }
 }
 
-/* Tranzit: na mobitelu stupac (karta pa kontrola); na desktopu karta lijevo + kontrola desno */
-.tr-stage-inner { display: flex; flex-direction: column; gap: 1.4rem; }
+/* Tranzit: na mobitelu stupac (karta → slideri → ostalo); na desktopu karta lijevo + panel desno */
+.tr-stage-inner { display: flex; flex-direction: column; gap: 1.2rem; }
 .tr-stage-main { min-width: 0; }
 
+/* mobitel/tablet: slideri odmah ispod karte (da se oboje vidi pri klizanju) */
+@media (max-width: 1039px) {
+  .tr-panel .tr-readout { order: -3; }
+  .tr-panel .tr-sliders { order: -2; }
+  .tr-panel .tr-hint    { order: -1; }
+}
+
 @media (min-width: 1040px) {
-  /* izlazak iz maksimalne širine stranice — landscape raspored */
+  /* izlazak iz maksimalne širine: karta lijevo, panel desno (centriran), legenda ispod karte */
   #transit-result .tr-stage {
     width: 100vw; margin-left: calc(50% - 50vw);
     box-sizing: border-box; padding: 0 clamp(1rem, 3vw, 3rem);
     display: flex; justify-content: center;
   }
   #transit-result .tr-stage-inner {
-    flex-direction: row; align-items: flex-start; gap: 2.6rem;
-    width: 100%; max-width: 1520px;
+    display: grid; grid-template-columns: minmax(0, 1fr) 390px;
+    grid-template-areas: "main panel" "legend .";
+    gap: 1.2rem 2.6rem; align-items: start;
+    width: 100%; max-width: 1500px;
   }
-  #transit-result .tr-stage-main { flex: 1 1 auto; min-width: 0; }
-  #transit-result .tr-stage-main .tw-stack { max-width: min(74vh, 780px); margin: 0 auto; }
-  #transit-result .tr-panel { flex: 0 0 390px; position: sticky; top: 1.5rem; }
+  #transit-result .tr-stage-main { grid-area: main; }
+  #transit-result #transit-legend { grid-area: legend; margin: 0.6rem auto 0; }
+  /* panel zauzima samo redak karte → align-self:center ga centrira točno sa sredinom karte */
+  #transit-result .tr-panel { grid-area: panel; align-self: center; }
+  /* karta u px (ne vh) → normalno se povećava sa zoomom stranice */
+  #transit-result .tr-stage-main .tw-stack { max-width: 640px; margin: 0 auto; }
 }
 
 /* Gumb zamjene unutarnje/vanjske osobe */

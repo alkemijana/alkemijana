@@ -201,17 +201,17 @@ function buildChartSVG(chart, pal, opts) {
     const sc = r.scale || 1;
     const atW = r.aspTickW || 1.6, atLen = r.aspTickLen || 9;  // aspektna crtica: debljina + duljina
     const srt = planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-    // minimalan razmak — glifovi se smiju gotovo dodirivati (krupno i zbijeno)
-    let MIN_SEP = 3.4 * (1 + (ls - 1) * 0.4) * sc;
-    // bi-wheel (sinastrija/tranziti): stupanj/minute su na MANJEM radijusu od glifa pa
-    // ista širina teksta zauzima VEĆI kut → brojevi se preklapaju kod bliskih planeta.
-    // Razmak računamo iz stvarne širine oznake "29°" na njezinom radijusu (font ostaje isti).
-    if (biwheel && r.deg) {
-      const degW  = measureTextPx('29°', 16.5 * ls * sc, 'Quicksand, sans-serif');
-      const labelSep = (degW + 4) / r.deg * 180 / Math.PI;          // da se stupnjevi ne dodiruju
-      const glyphSep = (30 * ls * sc * 0.92) / r.glyph * 180 / Math.PI; // da se glifovi ne preklope
-      MIN_SEP = Math.max(MIN_SEP, labelSep, glyphSep);
-    }
+    // Minimalni razmak: toliko da se najgušća oznaka (minute, na NAJMANJEM radijusu) DODIRUJE
+    // ali NE preklapa. Računa se iz stvarne širine teksta podijeljene s njegovim radijusom —
+    // font ostaje nepromijenjen, planeti se samo razmaknu (poveznica vodi od stvarnog
+    // stupnja do razmaknutog glifa). Vrijedi i za natalnu kartu i za bi-wheel.
+    const sepFor = (txt, font, rad) => rad ? measureTextPx(txt, font * ls * sc, 'Quicksand, sans-serif') / rad * 180 / Math.PI : 0;
+    const MIN_SEP = Math.max(
+      3.4 * (1 + (ls - 1) * 0.4) * sc,                          // donja granica
+      sepFor('29°', 16.5, r.deg),                              // stupnjevi se ne preklapaju
+      r.minShow ? sepFor("29'", r.minFont || 14, r.min) : 0,   // minute se dodiruju, ne preklapaju
+      (30 * ls * sc * 0.92) / r.glyph * 180 / Math.PI          // glifovi se ne preklapaju
+    );
     const adj = srt.map(p => norm360(p.lon - asc));
     for (let it = 0; it < 140; it++) {
       let moved = false;

@@ -70,16 +70,15 @@ function buildChartSVG(chart, pal, opts) {
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386;
   // u bi-wheelu prsten kuća pomaknut prema sredini (mjesta za dva prstena planeta)
-  // manji unutarnji krug (aspekti) → više prostora za prsten planeta
-  const R_HOUT = 240, R_HIN = 220;
+  // natalni krug nepromijenjen; bi-wheel ima MANJI unutarnji (aspektni) krug — mjesta za dva puna prstena
+  const R_HOUT = biwheel ? 186 : 240, R_HIN = biwheel ? 168 : 220;
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
-  // (radijusi malo razmaknuti da stupanj/znak/minute lijepo stanu na većoj veličini)
   const R_GLYPH = 360, R_DEG = 324, R_SGN = 294, R_MIN = 266;
-  // bi-wheel: dva prstena JEDNAKE širine (vanjski uz zodijak, unutarnji uz kuće) + razdjelnica.
-  // samo glif + stupanj (bez glifa znaka) — radi veće čitljivosti i krupnijih simbola.
-  const R_MID = 316;
-  const R_B_GLYPH = 372, R_B_DEG = 340;
-  const R_A_GLYPH = 294, R_A_DEG = 264;
+  // bi-wheel: dva prstena JEDNAKE širine, svaki s glifom + stupanj + glif znaka + minute (kao natal).
+  // unutarnji (A) uz kuće, vanjski (B) uz zodijak; razdjelnica R_MID.
+  const R_MID = 290;
+  const R_B_GLYPH = 379, R_B_DEG = 350, R_B_SGN = 324, R_B_MIN = 300;
+  const R_A_GLYPH = 276, R_A_DEG = 247, R_A_SGN = 221, R_A_MIN = 197;
   const R_PTICK = R_ZOD, R_SIGN = 427;
   // osi izvan kotača — stupanj se slaže prema van (ekranski) da ne dira kružnicu
   const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 34;
@@ -237,8 +236,17 @@ function buildChartSVG(chart, pal, opts) {
       out += line(p.lon, R_HIN, R_HIN - atLen, glyphColor, atW);
       const [gx, gy] = pt(dispLon, r.glyph);
       out += glyphSvgEl(p.id, gx, gy, 30 * ls * sc, glyphColor, 1.8);
-      // retrogradna oznaka — malo R uz glif planeta (podignuto, da ne dira stupanj ispod)
-      if (p.retro) out += textC(gx + 13 * ls * sc, gy - 11 * ls * sc, retroColor, 11 * ls * sc, 'R');
+      // retrogradna oznaka — R. U bi-wheelu uz glif PO LUKU (radijalno, na razini glifa) da ne dira
+      // stupanj koji je prema sredini; u natalnoj (jedan prsten) ostaje kako je bilo.
+      if (p.retro) {
+        if (r.retroRadial) {
+          const angR = (16 * sc) * 57.2958 / r.glyph;
+          const [rrx, rry] = pt(dispLon + angR, r.glyph);
+          out += textC(rrx, rry, retroColor, 11 * ls * sc, 'R');
+        } else {
+          out += textC(gx + 13 * ls * sc, gy - 11 * ls * sc, retroColor, 11 * ls * sc, 'R');
+        }
+      }
       // stupanj — kontrastna boja (bijela na tamnoj, crna na svijetloj temi), obična debljina
       const dm = degMinParts(p.lon);
       const [dx, dy] = pt(dispLon, r.deg);
@@ -299,9 +307,9 @@ function buildChartSVG(chart, pal, opts) {
     // unutarnji prsten = natalna/osoba A; vanjski = tranzit/osoba B — krupniji glifovi, bez glifa znaka.
     // aspektne crtice razlikovane: unutarnji tanji, vanjski deblji (uz boju prstena).
     if (layer !== 'dynamic')
-      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, tickFrom: R_MID, minShow: false, scale: 1.2, aspTickW: 2.2, aspTickLen: 11 }, pal.planet,    pal.tense);
+      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, sgn: R_A_SGN, min: R_A_MIN, tickFrom: R_MID, minShow: true, scale: 0.92, aspTickW: 2.2, aspTickLen: 10, retroRadial: true }, pal.planet,    pal.tense);
     if (layer !== 'base')
-      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, tickFrom: R_ZOD, minShow: false, scale: 1.2, aspTickW: 3.6, aspTickLen: 14 }, biwheel.color, pal.tense);
+      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, sgn: R_B_SGN, min: R_B_MIN, tickFrom: R_ZOD, minShow: true, scale: 0.92, aspTickW: 3.6, aspTickLen: 13, retroRadial: true }, biwheel.color, pal.tense);
   } else {
     s += drawRing(chart.planets, { glyph: R_GLYPH, deg: R_DEG, sgn: R_SGN, min: R_MIN, tickFrom: R_PTICK, minShow: true, scale: 1, aspTickW: 1.6, aspTickLen: 9 }, pal.planet, pal.tense);
   }

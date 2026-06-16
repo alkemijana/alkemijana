@@ -153,6 +153,8 @@ function computeAspects(points) {
 
 /* Uži orbisi nego u natalnoj karti — sinastrijska konvencija (manje, ali jasnijih veza). */
 const SYN_ORBS = { conjunction: 7, sextile: 4, square: 6, trine: 6, opposition: 7 };
+/* Tranziti: vrlo tijesan orb (kao Astro-Seek) — samo stvarno aktivni tranziti, svi aspekti do 2,5°. */
+const TRANSIT_ORB = 2.5;
 
 function synAspectPoints(chart) {
   const pts = chart.planets
@@ -165,9 +167,11 @@ function synAspectPoints(chart) {
   return pts;
 }
 
-/* Aspekti planeta (i osi) osobe A naspram planeta (i osi) osobe B.
+/* Aspekti točaka karte A naspram karte B (sinastrija ili tranziti).
+   orbs: broj (jedinstveni max orb za sve aspekte, npr. tranziti = TRANSIT_ORB),
+         objekt {aspId: orb}, ili undefined (zadano SYN_ORBS).
    Rezultat: [{ a: idA, b: idB, aspect, aspectName, angle, orb }] sortirano po orbu. */
-function computeSynastryAspects(chartA, chartB) {
+function computeSynastryAspects(chartA, chartB, orbs) {
   const A = synAspectPoints(chartA), B = synAspectPoints(chartB);
   const out = [];
   for (const a of A) {
@@ -175,7 +179,10 @@ function computeSynastryAspects(chartA, chartB) {
       const diff = Math.abs(norm360(a.lon - b.lon + 180) - 180);
       for (const asp of ASPECT_DEFS) {
         const orb = Math.abs(diff - asp.angle);
-        const maxOrb = SYN_ORBS[asp.id] != null ? SYN_ORBS[asp.id] : asp.orb;
+        let maxOrb;
+        if (typeof orbs === 'number') maxOrb = orbs;
+        else if (orbs && orbs[asp.id] != null) maxOrb = orbs[asp.id];
+        else maxOrb = (SYN_ORBS[asp.id] != null ? SYN_ORBS[asp.id] : asp.orb);
         if (orb <= maxOrb) {
           out.push({ a: a.id, b: b.id, aspect: asp.id, aspectName: asp.name, angle: asp.angle, orb });
           break;

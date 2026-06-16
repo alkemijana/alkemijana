@@ -913,11 +913,11 @@
           <div id="synastry-chart-sub"></div>
         </div>
 
-        <div class="syn-legend" id="synastry-legend"></div>
         <div class="syn-controls-row">
           <button type="button" class="nt-swap-btn" id="synastry-swap-btn">⇄ Zamijeni osobe <span class="nt-swap-meta">(prikazuju se kuće unutarnje osobe)</span></button>
         </div>
         <div id="synastry-wheel" class="nt-wheel"></div>
+        <div class="syn-legend" id="synastry-legend"></div>
 
         <div class="nt-chart-controls" id="synastry-chart-controls">
           <div class="nt-cc-group nt-cc-aspects">
@@ -995,33 +995,36 @@
           <div id="transit-chart-sub"></div>
         </div>
 
-        <!-- Kontrola vremena: datum-sidro + 5 slidera + živi prikaz -->
-        <div class="tr-panel" id="transit-panel">
-          <div class="tr-panel-top">
-            <div class="tr-anchor">
-              <label for="transit-anchor-date">Datum-sidro</label>
-              <input type="date" id="transit-anchor-date" min="1900-01-01" max="2099-12-31">
-              <input type="time" id="transit-anchor-time">
-              <button type="button" class="nt-swap-btn tr-now" id="transit-now-btn">⟳ Sada</button>
+        <!-- Karta lijevo + kontrola vremena desno (desktop); na mobitelu stupac -->
+        <div class="tr-stage">
+          <div class="tr-stage-inner">
+            <div class="tr-stage-main">
+              <div id="transit-wheel" class="tw-stack">
+                <div class="tw-layer" id="transit-wheel-base"></div>
+                <div class="tw-layer" id="transit-wheel-dyn"></div>
+              </div>
+              <div class="syn-legend" id="transit-legend"></div>
             </div>
-            <div class="tr-readout"><span class="tr-readout-lbl">Trenutak tranzita:</span> <strong id="transit-readout">—</strong></div>
-          </div>
-          <div class="tr-sliders" id="transit-sliders">
-            <div class="tr-row"><span class="tr-lbl">Sat</span><input type="range" class="tr-slider" data-unit="hour" min="-24" max="24" step="1" value="0"><input type="number" class="tr-num" data-unit="hour" value="0" step="1"></div>
-            <div class="tr-row"><span class="tr-lbl">Dan</span><input type="range" class="tr-slider" data-unit="day" min="-31" max="31" step="1" value="0"><input type="number" class="tr-num" data-unit="day" value="0" step="1"></div>
-            <div class="tr-row"><span class="tr-lbl">Tjedan</span><input type="range" class="tr-slider" data-unit="week" min="-52" max="52" step="1" value="0"><input type="number" class="tr-num" data-unit="week" value="0" step="1"></div>
-            <div class="tr-row"><span class="tr-lbl">Mjesec</span><input type="range" class="tr-slider" data-unit="month" min="-12" max="12" step="1" value="0"><input type="number" class="tr-num" data-unit="month" value="0" step="1"></div>
-            <div class="tr-row"><span class="tr-lbl">Godina</span><input type="range" class="tr-slider" data-unit="year" min="-100" max="100" step="1" value="0"><input type="number" class="tr-num" data-unit="year" value="0" step="1"></div>
-          </div>
-          <p class="tr-hint">Pomakni klizač ili upiši broj (− je unazad). Svih pet se zbraja na datum-sidro. Karta se mijenja uživo.</p>
-          <p class="tr-warn" id="transit-warn" style="display:none"></p>
-        </div>
 
-        <div class="syn-legend" id="transit-legend"></div>
-
-        <div id="transit-wheel" class="tw-stack">
-          <div class="tw-layer" id="transit-wheel-base"></div>
-          <div class="tw-layer" id="transit-wheel-dyn"></div>
+            <div class="tr-panel" id="transit-panel">
+              <div class="tr-panel-top">
+                <div class="tr-anchor">
+                  <label for="transit-anchor-date">Datum-sidro</label>
+                  <input type="date" id="transit-anchor-date" min="1900-01-01" max="2099-12-31">
+                  <input type="time" id="transit-anchor-time">
+                  <button type="button" class="nt-swap-btn tr-now" id="transit-now-btn">⟳ Sada</button>
+                </div>
+                <div class="tr-readout"><span class="tr-readout-lbl">Trenutak tranzita:</span> <strong id="transit-readout">—</strong></div>
+              </div>
+              <p class="tr-hint">Pomakni klizač ili upiši broj (− je unazad). Sva tri se zbrajaju na datum-sidro. Karta se mijenja uživo.</p>
+              <div class="tr-sliders" id="transit-sliders">
+                <div class="tr-row"><span class="tr-lbl">Dan</span><input type="range" class="tr-slider" data-unit="day" min="-31" max="31" step="1" value="0"><input type="number" class="tr-num" data-unit="day" value="0" step="1"></div>
+                <div class="tr-row"><span class="tr-lbl">Mjesec</span><input type="range" class="tr-slider" data-unit="month" min="-12" max="12" step="1" value="0"><input type="number" class="tr-num" data-unit="month" value="0" step="1"></div>
+                <div class="tr-row"><span class="tr-lbl">Godina</span><input type="range" class="tr-slider" data-unit="year" min="-100" max="100" step="1" value="0"><input type="number" class="tr-num" data-unit="year" value="0" step="1"></div>
+              </div>
+              <p class="tr-warn" id="transit-warn" style="display:none"></p>
+            </div>
+          </div>
         </div>
 
         <div class="nt-chart-controls" id="transit-chart-controls">

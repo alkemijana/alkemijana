@@ -70,13 +70,14 @@ function buildChartSVG(chart, pal, opts) {
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386;
   // u bi-wheelu prsten kuća pomaknut prema sredini (mjesta za dva prstena planeta)
-  const R_HOUT = biwheel ? 210 : 256, R_HIN = biwheel ? 190 : 236;
+  const R_HOUT = biwheel ? 240 : 256, R_HIN = biwheel ? 220 : 236;
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
   const R_GLYPH = 358, R_DEG = 322, R_SGN = 298, R_MIN = 276;
-  // bi-wheel: dva prstena (B vanjski uz zodijak, A unutarnji) + kružnica razdjelnica
-  const R_MID = 320;
-  const R_B_GLYPH = 374, R_B_DEG = 351, R_B_SGN = 333;
-  const R_A_GLYPH = 298, R_A_DEG = 275, R_A_SGN = 257;
+  // bi-wheel: dva prstena JEDNAKE širine (vanjski uz zodijak, unutarnji uz kuće) + razdjelnica.
+  // samo glif + stupanj (bez glifa znaka) — radi veće čitljivosti i krupnijih simbola.
+  const R_MID = 316;
+  const R_B_GLYPH = 372, R_B_DEG = 340;
+  const R_A_GLYPH = 294, R_A_DEG = 264;
   const R_PTICK = R_ZOD, R_SIGN = 427;
   // osi izvan kotača — stupanj se slaže prema van (ekranski) da ne dira kružnicu
   const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 34;
@@ -156,7 +157,7 @@ function buildChartSVG(chart, pal, opts) {
         const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
         s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 21 * ls, elementColor(chart.cusps[i], pal), 1.7);
         // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
-        s += textC(cx, cy + (cy < C ? -18 : 18) * ls, pal.houseNum, 13 * ls, fmtDegMin(chart.cusps[i]));
+        s += textC(cx, cy + (cy < C ? -18 : 19) * ls, pal.degStrong, 14 * ls, fmtDegMin(chart.cusps[i]), '600');
       }
     }
 
@@ -174,7 +175,7 @@ function buildChartSVG(chart, pal, opts) {
       // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
       const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
       s += textC(tx, ty, pal.axisText, 19 * ls, ax.label, '600');
-      s += textC(tx, ty + (ty < C ? -17 : 18) * ls, pal.degText, 13.5 * ls, fmtDegMin(ax.lon));
+      s += textC(tx, ty + (ty < C ? -17 : 19) * ls, pal.degStrong, 14.5 * ls, fmtDegMin(ax.lon), '600');
     }
   }
 
@@ -197,10 +198,12 @@ function buildChartSVG(chart, pal, opts) {
   function drawRing(planets, r, glyphColor, retroColor) {
     let out = '';
     const sc = r.scale || 1;
+    const atW = r.aspTickW || 1.6, atLen = r.aspTickLen || 9;  // aspektna crtica: debljina + duljina
     const srt = planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
-    const MIN_SEP = 4.5 * (1 + (ls - 1) * 0.6) * sc;
+    // minimalan razmak — glifovi se smiju gotovo dodirivati (krupno i zbijeno)
+    const MIN_SEP = 3.4 * (1 + (ls - 1) * 0.4) * sc;
     const adj = srt.map(p => norm360(p.lon - asc));
-    for (let it = 0; it < 120; it++) {
+    for (let it = 0; it < 140; it++) {
       let moved = false;
       for (let i = 0; i < adj.length; i++) {
         const j = (i + 1) % adj.length;
@@ -219,30 +222,33 @@ function buildChartSVG(chart, pal, opts) {
       const p = srt[i];
       const dispLon = norm360(asc + adj[i]);
       // crtica na stvarnoj poziciji — od ruba prstena prema glifu
-      out += line(p.lon, r.tickFrom, r.glyph + 18 * sc, pal.tick, 1.2);
+      out += line(p.lon, r.tickFrom, r.glyph + 16 * sc, pal.tick, 1.2);
       // poveznica do glifa kad je razmaknut (gust skup simbola) — pokazuje na koji se stupanj odnosi
       const dispDelta = Math.abs(norm360(dispLon - p.lon + 180) - 180);
       if (dispDelta > 1.0) {
-        const [lcx1, lcy1] = pt(p.lon, r.glyph + 18 * sc);
-        const [lcx2, lcy2] = pt(dispLon, r.glyph + 12 * sc);
+        const [lcx1, lcy1] = pt(p.lon, r.glyph + 16 * sc);
+        const [lcx2, lcy2] = pt(dispLon, r.glyph + 10 * sc);
         out += '<line x1="' + lcx1.toFixed(1) + '" y1="' + lcy1.toFixed(1) + '" x2="' + lcx2.toFixed(1) + '" y2="' + lcy2.toFixed(1) +
           '" stroke="' + pal.degText + '" stroke-width="1" opacity="0.85"/>';
       }
-      // crtica s unutarnje strane kružnice — pokazuje gdje počinje aspektna linija
-      out += line(p.lon, R_HIN, R_HIN - 9, glyphColor, 1.4);
+      // aspektna crtica (gdje počinje aspektna linija) — boja i debljina ovise o prstenu
+      out += line(p.lon, R_HIN, R_HIN - atLen, glyphColor, atW);
       const [gx, gy] = pt(dispLon, r.glyph);
       out += glyphSvgEl(p.id, gx, gy, 30 * ls * sc, glyphColor, 1.8);
       // retrogradna oznaka — malo R uz glif planeta
       if (p.retro) out += textC(gx + 14 * ls * sc, gy - 9 * ls * sc, retroColor, 12 * ls * sc, 'R');
-      // stupanj · glif znaka (boja elementa) · minute — kao Astro-Seek
+      // stupanj — kontrastna boja (bijela na tamnoj, crna na svijetloj temi) + podebljano
       const dm = degMinParts(p.lon);
       const [dx, dy] = pt(dispLon, r.deg);
-      out += textC(dx, dy, pal.degText, 15.5 * ls * sc, dm.d + '°');
-      const [sx, sy] = pt(dispLon, r.sgn);
-      out += glyphSvgEl(signKey(p.lon), sx, sy, 21 * ls * sc, elementColor(p.lon, pal), 2.0);
+      out += textC(dx, dy, pal.degStrong, 16.5 * ls * sc, dm.d + '°', '700');
+      // glif znaka (samo natalni prikaz; bi-wheel ga izostavlja radi prostora i krupnoće)
+      if (r.sgn != null) {
+        const [sx, sy] = pt(dispLon, r.sgn);
+        out += glyphSvgEl(signKey(p.lon), sx, sy, 21 * ls * sc, elementColor(p.lon, pal), 2.0);
+      }
       if (r.minShow) {
         const [mx, my] = pt(dispLon, r.min);
-        out += textC(mx, my, pal.degText, 13.5 * ls * sc, pad2(dm.m) + "'");
+        out += textC(mx, my, pal.degStrong, 14 * ls * sc, pad2(dm.m) + "'", '600');
       }
     }
     return out;
@@ -288,13 +294,14 @@ function buildChartSVG(chart, pal, opts) {
 
   // planeti
   if (biwheel) {
-    // unutarnji prsten = natalna/osoba A (base+all), vanjski = tranzit/osoba B (dynamic+all)
+    // unutarnji prsten = natalna/osoba A; vanjski = tranzit/osoba B — krupniji glifovi, bez glifa znaka.
+    // aspektne crtice razlikovane: unutarnji tanji, vanjski deblji (uz boju prstena).
     if (layer !== 'dynamic')
-      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, sgn: R_A_SGN, tickFrom: R_MID, minShow: false, scale: 0.9 }, pal.planet,    pal.tense);
+      s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, tickFrom: R_MID, minShow: false, scale: 1.2, aspTickW: 2.2, aspTickLen: 11 }, pal.planet,    pal.tense);
     if (layer !== 'base')
-      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, sgn: R_B_SGN, tickFrom: R_ZOD, minShow: false, scale: 0.9 }, biwheel.color, pal.tense);
+      s += drawRing(biwheel.planets, { glyph: R_B_GLYPH, deg: R_B_DEG, tickFrom: R_ZOD, minShow: false, scale: 1.2, aspTickW: 3.6, aspTickLen: 14 }, biwheel.color, pal.tense);
   } else {
-    s += drawRing(chart.planets, { glyph: R_GLYPH, deg: R_DEG, sgn: R_SGN, min: R_MIN, tickFrom: R_PTICK, minShow: true, scale: 1 }, pal.planet, pal.tense);
+    s += drawRing(chart.planets, { glyph: R_GLYPH, deg: R_DEG, sgn: R_SGN, min: R_MIN, tickFrom: R_PTICK, minShow: true, scale: 1, aspTickW: 1.6, aspTickLen: 9 }, pal.planet, pal.tense);
   }
 
   // viewBox prošireni za labele osi izvan kotača
@@ -314,10 +321,10 @@ function renderNatalResult(chart) {
   document.getElementById('natal-chart-sub').textContent = birthDataLine(chart);
 
   const chartOpts = (typeof NATAL_CHART_OPTS !== 'undefined') ? {
-    showAspects: true,
+    showAspects: true, labelScale: 1.2,
     aspectsEnabled: NATAL_CHART_OPTS.aspectsEnabled,
     showCuspDegrees: NATAL_CHART_OPTS.showCuspDegrees
-  } : { showAspects: true };
+  } : { showAspects: true, labelScale: 1.2 };
   document.getElementById('natal-wheel').innerHTML =
     buildChartSVG(chart, currentScreenPalette(), chartOpts);
 
@@ -466,9 +473,9 @@ function renderShape(chart) {
 
 /* Kotač sinastrije: osoba A je baza (kuće/osi), osoba B je vanjski prsten. */
 function buildSynastryWheel(chartA, chartB, pal) {
-  const aspects = (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB);
+  const aspects = (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB, TRANSIT_ORB);
   const opts = {
-    showAspects: true,
+    showAspects: true, labelScale: 1.2,
     biwheel: { planets: chartB.planets, asc: chartB.asc, mc: chartB.mc, noTime: chartB.noTime, color: pal.planetB },
     synAspects: aspects
   };
@@ -504,7 +511,7 @@ function synPositionsRows(chart, pal) {
 function renderSynastryAspects(chartA, chartB, pal) {
   const el = document.getElementById('synastry-aspects');
   if (!el) return;
-  const aspects = (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB);
+  const aspects = (currentSynastry && currentSynastry.aspects) || computeSynastryAspects(chartA, chartB, TRANSIT_ORB);
   const nameA = chartA.input.name || 'Prva osoba';
   const nameB = chartB.input.name || 'Druga osoba';
   const nmA = synNameMap(chartA), nmB = synNameMap(chartB);
@@ -530,7 +537,7 @@ function renderSynastryAspects(chartA, chartB, pal) {
 function renderSynastryResult(chartA, chartB) {
   const wrap = document.getElementById('synastry-result');
   if (!wrap) return;
-  currentSynastry = { a: chartA, b: chartB, aspects: computeSynastryAspects(chartA, chartB) };
+  currentSynastry = { a: chartA, b: chartB, aspects: computeSynastryAspects(chartA, chartB, TRANSIT_ORB) };
 
   // prebaci prikaz: sakrij natalni rezultat, pokaži sinastriju
   const nat = document.getElementById('natal-result');
@@ -585,7 +592,7 @@ function transitPositionsRows(chart, pal) {
 function transitDynSVG(natalChart, transitChart, aspects, pal) {
   return buildChartSVG(natalChart, pal, {
     biwheel: { planets: transitChart.planets, noTime: true, color: pal.planetT },
-    synAspects: aspects,
+    synAspects: aspects, labelScale: 1.2,
     aspectsEnabled: (typeof TRANSIT_CHART_OPTS !== 'undefined') ? TRANSIT_CHART_OPTS.aspectsEnabled : undefined,
     layer: 'dynamic'
   });
@@ -595,7 +602,7 @@ function transitDynSVG(natalChart, transitChart, aspects, pal) {
 function redrawTransitDynamic(transitChart) {
   if (!currentTransit) return;
   const pal = currentScreenPalette();
-  const aspects = computeSynastryAspects(currentTransit.natal, transitChart);
+  const aspects = computeSynastryAspects(currentTransit.natal, transitChart, TRANSIT_ORB);
   currentTransit.transit = transitChart;
   currentTransit.aspects = aspects;
   const dynEl = document.getElementById('transit-wheel-dyn');
@@ -635,7 +642,7 @@ function renderTransitTables() {
 function renderTransitResult(natalChart, transitChart) {
   const wrap = document.getElementById('transit-result');
   if (!wrap) return;
-  const aspects = computeSynastryAspects(natalChart, transitChart);
+  const aspects = computeSynastryAspects(natalChart, transitChart, TRANSIT_ORB);
   currentTransit = { natal: natalChart, transit: transitChart, aspects: aspects };
 
   const nat = document.getElementById('natal-result'); if (nat) nat.style.display = 'none';
@@ -656,14 +663,14 @@ function renderTransitResult(natalChart, transitChart) {
 
   const baseEl = document.getElementById('transit-wheel-base');
   const dynEl = document.getElementById('transit-wheel-dyn');
-  if (baseEl) baseEl.innerHTML = buildChartSVG(natalChart, pal, { biwheel: { planets: [], color: pal.planetT }, layer: 'base' });
+  if (baseEl) baseEl.innerHTML = buildChartSVG(natalChart, pal, { biwheel: { planets: [], color: pal.planetT }, labelScale: 1.2, layer: 'base' });
   if (dynEl) dynEl.innerHTML = transitDynSVG(natalChart, transitChart, aspects, pal);
 
   renderTransitTables();
 
   const disc = document.getElementById('transit-disclaimer');
   if (disc) disc.textContent = 'Bi-wheel: ' + nameN + ' (natalna — unutarnji prsten, Placidus kuće) i tranzitni planeti (vanjski prsten) za odabrani trenutak. ' +
-    'Položaji planeta: NASA JPL efemeride · tropski zodijak.';
+    'Prikazani su samo aspekti tranzitnih na natalne točke, orb do 2,5°. Položaji: NASA JPL efemeride · tropski zodijak.';
 }
 
 /* Ponovno iscrtaj kotač kad se promijeni tema */

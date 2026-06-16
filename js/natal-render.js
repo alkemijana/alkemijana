@@ -202,7 +202,16 @@ function buildChartSVG(chart, pal, opts) {
     const atW = r.aspTickW || 1.6, atLen = r.aspTickLen || 9;  // aspektna crtica: debljina + duljina
     const srt = planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
     // minimalan razmak — glifovi se smiju gotovo dodirivati (krupno i zbijeno)
-    const MIN_SEP = 3.4 * (1 + (ls - 1) * 0.4) * sc;
+    let MIN_SEP = 3.4 * (1 + (ls - 1) * 0.4) * sc;
+    // bi-wheel (sinastrija/tranziti): stupanj/minute su na MANJEM radijusu od glifa pa
+    // ista širina teksta zauzima VEĆI kut → brojevi se preklapaju kod bliskih planeta.
+    // Razmak računamo iz stvarne širine oznake "29°" na njezinom radijusu (font ostaje isti).
+    if (biwheel && r.deg) {
+      const degW  = measureTextPx('29°', 16.5 * ls * sc, 'Quicksand, sans-serif');
+      const labelSep = (degW + 4) / r.deg * 180 / Math.PI;          // da se stupnjevi ne dodiruju
+      const glyphSep = (30 * ls * sc * 0.92) / r.glyph * 180 / Math.PI; // da se glifovi ne preklope
+      MIN_SEP = Math.max(MIN_SEP, labelSep, glyphSep);
+    }
     const adj = srt.map(p => norm360(p.lon - asc));
     for (let it = 0; it < 140; it++) {
       let moved = false;

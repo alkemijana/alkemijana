@@ -673,8 +673,14 @@ function renderSeriesNav(p) {
 }
 
 function renderPostSources(raw) {
-  const wrap = document.getElementById('post-sources');
-  const list = document.getElementById('post-sources-list');
+  renderSourcesInto('post-sources', 'post-sources-list', raw);
+}
+
+/* Popis izvora (jedan po retku, URL-ovi postaju linkovi) — dijele ga
+   blog članci i upute za alate. */
+function renderSourcesInto(wrapId, listId, raw) {
+  const wrap = document.getElementById(wrapId);
+  const list = document.getElementById(listId);
   if (!wrap || !list) return;
 
   const text = (raw || '').trim();
@@ -1127,6 +1133,8 @@ function applyTexts() {
   set('t-blogSourcesTitle', t.blogSourcesTitle);
 
   // Natalna karta — forma
+  set('t-natalPerson1Label', t.natalPerson1Label);
+  set('t-natalPerson2Label', t.natalPerson2Label);
   set('t-natalNameLabel',   t.natalNameLabel);
   setPh('natal-name',       t.natalNamePlaceholder);
   set('t-natalPlaceLabel',  t.natalPlaceLabel);
@@ -1137,10 +1145,86 @@ function applyTexts() {
   set('t-natalNodeLabel',   t.natalNodeLabel);
   set('t-natalNodeTrue',    t.natalNodeTrue);
   set('t-natalNodeMean',    t.natalNodeMean);
+  // ista polja za 2. osobu (sinastrija) — dijele tekstove s 1. osobom
+  set('t-natalNameLabel2',   t.natalNameLabel);
+  set('t-natalPlaceLabel2',  t.natalPlaceLabel);
+  setPh('natal-place-2',     t.natalPlacePlaceholder);
+  set('t-natalDateLabel2',   t.natalDateLabel);
+  set('t-natalTimeLabel2',   t.natalTimeLabel);
+  set('t-natalNoTimeLabel2', t.natalNoTimeLabel);
+
+  // Astro alati — prekidač modova (nazivi gumba) + hint/submit po modu
+  set('natal-mode-natal',   t.natalModeNatal);
+  set('natal-mode-syn',     t.natalModeSynastry);
+  set('natal-mode-transit', t.natalModeTransit);
+  set('natal-mode-acg',     t.natalModeAcg);
+  if (window.Synastry && window.Synastry.refreshModeTexts) window.Synastry.refreshModeTexts();
+
+  // Astro alati — upute za korištenje (vodič iznad FAQ-a)
+  set('t-natalGuideTitle', t.natalGuideTitle);
+  renderToolGuide();
 
   // Footer
   set('t-footerCopy',   t.footerCopy);
   set('t-footerCredit', t.footerCredit);
+}
+
+/* ---- UPUTE ZA ALATE (vodič iznad FAQ-a na #natal stranici) ----
+   Sadržaj dolazi iz TOOL_GUIDES (data.js, uređuje se u adminu — tab
+   "Upute za alate"). Prikazuje se vodič za trenutno odabrani mod;
+   setNatalMode (natal-synastry.js) zove renderToolGuide(mode) pri
+   svakoj promjeni prekidača. Arhiviran vodič se ne prikazuje. */
+
+let currentGuideMode = 'natal';
+let lastGuideId = null;
+
+function renderToolGuide(mode) {
+  if (mode) currentGuideMode = mode;
+  const sec = document.getElementById('natal-guide-section');
+  if (!sec) return;
+
+  const guides = (typeof TOOL_GUIDES !== 'undefined' && Array.isArray(TOOL_GUIDES)) ? TOOL_GUIDES : [];
+  const g = guides.find(x => x.mode === currentGuideMode && !x.archived);
+  if (!g || !(g.content || '').trim()) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+
+  const t = (typeof TEXTS !== 'undefined') ? TEXTS : {};
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val == null ? '' : val; };
+
+  setTxt('natal-guide-icon',    g.icon || '✦');
+  setTxt('natal-guide-title',   g.title || '');
+  setTxt('natal-guide-excerpt', g.excerpt || '');
+  setTxt('natal-guide-openlabel',  (t.natalGuideOpenLabel  || 'Pročitaj cijeli vodič') + ' ▾');
+  setTxt('natal-guide-closelabel',  t.natalGuideCloseLabel || 'Zatvori vodič');
+  setTxt('natal-guide-sources-title', t.blogSourcesTitle || 'Izvori');
+
+  const words = (g.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).length;
+  const mins  = Math.max(1, Math.round(words / 200));
+  setTxt('natal-guide-meta', `⏳ ${t.natalGuideReadTime || 'Vrijeme čitanja'}: ${mins} min`);
+
+  const content = document.getElementById('natal-guide-content');
+  if (content) content.innerHTML = g.content || '';
+  renderSourcesInto('natal-guide-sources', 'natal-guide-sources-list', g.sources);
+
+  // promjena vodiča (drugi mod) vraća karticu u zatvoreno stanje;
+  // ponovni render istog vodiča (npr. spremanje tekstova) ne dira stanje
+  if (lastGuideId !== g.id) {
+    lastGuideId = g.id;
+    toggleToolGuide(false, true);
+  }
+}
+
+function toggleToolGuide(open, silent) {
+  const card = document.querySelector('.nt-guide-card');
+  const body = document.getElementById('natal-guide-body');
+  const head = document.getElementById('natal-guide-head');
+  if (!card || !body) return;
+  const willOpen = (typeof open === 'boolean') ? open : body.hidden;
+  body.hidden = !willOpen;
+  card.classList.toggle('open', willOpen);
+  if (head) head.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  // pri zatvaranju gumbom na dnu vrati pogled na vrh kartice
+  if (!willOpen && !silent) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ---- POMOĆNA FUNKCIJA ---- */

@@ -38,26 +38,11 @@ function setNatalMode(mode, persist) {
   document.body.classList.toggle('acg-mode', mode === 'acg');
   if (p2) p2.setAttribute('aria-hidden', mode === 'synastry' ? 'false' : 'true');
 
-  // hint tekst po modu
-  const hint = document.getElementById('natal-mode-hint');
-  if (hint) {
-    hint.textContent = mode === 'synastry'
-      ? 'Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.'
-      : mode === 'transit'
-        ? 'Položaji planeta (sada ili za odabrani trenutak) naspram tvoje natalne karte — pomiči slidere kroz vrijeme.'
-        : mode === 'acg'
-          ? 'Planetarne linije preko karte svijeta — gdje je koji planet na ASC/DSC/MC/IC u trenutku rođenja. Treba točno vrijeme rođenja.'
-          : '';
-  }
+  // hint tekst i submit gumb po modu (tekstovi uredivi u adminu)
+  applyModeTexts(mode);
 
-  // tekst submit gumba
-  const btn = document.getElementById('natal-submit');
-  if (btn) {
-    btn.textContent = mode === 'synastry' ? '✦ Izračunaj sinastriju'
-      : mode === 'transit' ? '✦ Prikaži tranzite'
-      : mode === 'acg' ? '✦ Prikaži astrokartografiju'
-      : (typeof TEXTS !== 'undefined' && TEXTS.natalBtn ? TEXTS.natalBtn : '✦ Izračunaj natalnu kartu');
-  }
+  // vodič "Upute za korištenje" iznad FAQ-a prati odabrani alat
+  if (typeof renderToolGuide === 'function') renderToolGuide(mode);
 
   // prikaži samo rezultat koji odgovara modu (ostale sakrij)
   const results = { natal: 'natal-result', synastry: 'synastry-result', transit: 'transit-result', acg: 'acg-result' };
@@ -66,6 +51,35 @@ function setNatalMode(mode, persist) {
   }
 
   if (persist) { try { localStorage.setItem('aj_natal_mode', mode); } catch (e) {} }
+}
+
+/* Hint ispod prekidača + tekst submit gumba za dani mod — čita TEXTS
+   (uredivo u adminu) s fallbackom na zadane vrijednosti. */
+function applyModeTexts(mode) {
+  const T = (typeof TEXTS !== 'undefined') ? TEXTS : {};
+  const hint = document.getElementById('natal-mode-hint');
+  if (hint) {
+    hint.textContent = mode === 'synastry'
+      ? (T.natalHintSynastry || 'Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.')
+      : mode === 'transit'
+        ? (T.natalHintTransit || 'Položaji planeta (sada ili za odabrani trenutak) naspram tvoje natalne karte — pomiči slidere kroz vrijeme.')
+        : mode === 'acg'
+          ? (T.natalHintAcg || 'Planetarne linije preko karte svijeta — gdje je koji planet na ASC/DSC/MC/IC u trenutku rođenja. Treba točno vrijeme rođenja.')
+          : '';
+  }
+  const btn = document.getElementById('natal-submit');
+  if (btn) {
+    btn.textContent = mode === 'synastry' ? (T.natalBtnSynastry || '✦ Izračunaj sinastriju')
+      : mode === 'transit' ? (T.natalBtnTransit || '✦ Prikaži tranzite')
+      : mode === 'acg' ? (T.natalBtnAcg || '✦ Prikaži astrokartografiju')
+      : (T.natalBtn || '✦ Izračunaj natalnu kartu');
+  }
+}
+
+/* Poziva ga applyTexts (app.js) nakon što admin spremi tekstove —
+   osvježi hint/submit za trenutno aktivni mod. */
+function refreshModeTexts() {
+  applyModeTexts(currentNatalMode());
 }
 
 function initModeToggle() {
@@ -261,4 +275,4 @@ window.addEventListener('load', () => {
 });
 
 /* javno za testiranje */
-window.Synastry = { computeSynastryAspects, synastrySubmit, setNatalMode };
+window.Synastry = { computeSynastryAspects, synastrySubmit, setNatalMode, refreshModeTexts };

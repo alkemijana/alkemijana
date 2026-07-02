@@ -8,8 +8,9 @@
 const ADMIN_USER  = 'jana';
 const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
-let isAdmin       = false;
-let editingPostId = null;
+let isAdmin        = false;
+let editingPostId  = null;
+let editingGuideId = null;
 let editingSvcId  = null;
 let editingRevId  = null;
 
@@ -203,6 +204,7 @@ function switchTab(t) {
   document.getElementById('ap-' + t).classList.add('active');
 
   if (t === 'blog')     renderBlogAdminList();
+  if (t === 'guides')   renderGuidesAdminList();
   if (t === 'services') renderSvcAdmin();
   if (t === 'pricing')  renderPricingAdmin();
   if (t === 'reviews')  renderReviewsAdmin();
@@ -451,8 +453,8 @@ function clearBlogImage() {
    pa ga vratiti kasnije kad ubacujemo sliku. */
 let _savedEditorRange = null;
 
-function saveEditorSelection() {
-  const ed = document.getElementById('blog-content-ed');
+function saveEditorSelection(evt, edId) {
+  const ed = document.getElementById(edId || 'blog-content-ed');
   if (!ed) return;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0) {
@@ -467,8 +469,8 @@ function saveEditorSelection() {
   }
 }
 
-function restoreEditorSelection() {
-  const ed = document.getElementById('blog-content-ed');
+function restoreEditorSelection(edId) {
+  const ed = document.getElementById(edId || 'blog-content-ed');
   if (!ed) return false;
   ed.focus();
   if (!_savedEditorRange) {
@@ -489,11 +491,11 @@ function restoreEditorSelection() {
 
 /* Ubaci sliku u tijelo članka — uploada na ImgBB i umetne <img> točno na
    mjestu gdje je kursor bio kad je user kliknuo gumb. */
-async function insertImageInContent(input) {
+async function insertImageInContent(input, edId) {
   const file = input.files[0];
   if (!file) return;
 
-  restoreEditorSelection();
+  restoreEditorSelection(edId);
   const placeholderId = 'img-ph-' + Date.now();
   document.execCommand('insertHTML', false,
     `<p id="${placeholderId}" style="color:var(--text-muted);font-style:italic">⏳ Uploadam sliku...</p>`);
@@ -695,13 +697,15 @@ function cancelPostEdit() {
     '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi članak za uređivanje ili dodaj novi.</p>';
 }
 
-function eCmd(cmd) {
-  document.getElementById('blog-content-ed').focus();
+/* Rich-text toolbar naredbe — edId je id contenteditable elementa;
+   default 'blog-content-ed' (blog), a vodiči šalju 'guide-content-ed'. */
+function eCmd(cmd, edId) {
+  document.getElementById(edId || 'blog-content-ed').focus();
   document.execCommand(cmd, false);
 }
 
-function wSel(open, close) {
-  const ed  = document.getElementById('blog-content-ed');
+function wSel(open, close, edId) {
+  const ed  = document.getElementById(edId || 'blog-content-ed');
   const sel = window.getSelection();
   ed.focus();
   if (sel && sel.rangeCount) {
@@ -881,6 +885,139 @@ function deletePost(id) {
   renderBlogList();
   renderHomeBlogPreview();
   cancelPostEdit();
+}
+
+/* ============================================================
+   UPUTE ZA ALATE — vodiči na stranici Astro alati (iznad FAQ-a)
+   Fiksna 4 vodiča (po jedan za svaki alat) — uređuju se kao blog
+   članci (isti rich-text editor), arhiviranje ih skriva sa stranice.
+   Ne mogu se dodavati ni brisati (svaki alat ima točno jedan vodič).
+   ============================================================ */
+
+const GUIDE_MODE_LABELS = {
+  natal:    'Natalna karta',
+  synastry: 'Sinastrija',
+  transit:  'Tranziti',
+  acg:      'Astrokartografija'
+};
+
+function guidesData() {
+  return (typeof TOOL_GUIDES !== 'undefined' && Array.isArray(TOOL_GUIDES)) ? TOOL_GUIDES : [];
+}
+
+function renderGuidesAdminList() {
+  const el = document.getElementById('guides-admin-list');
+  if (!el) return;
+  el.innerHTML = guidesData().map(g => `
+    <div class="bpi ${editingGuideId === g.id ? 'sel' : ''} ${g.archived ? 'archived-item' : ''}"
+      onclick="loadGuideEditor('${g.id}')">
+      <div class="bpi-t">${g.archived ? '🗄 ' : ''}${g.icon || '✦'} ${esc(GUIDE_MODE_LABELS[g.mode] || g.mode)}</div>
+      <div class="bpi-m">${esc(g.title)}</div>
+    </div>`
+  ).join('');
+}
+
+function loadGuideEditor(id) {
+  editingGuideId = id;
+  renderGuidesAdminList();
+  showGuideEditor(guidesData().find(g => g.id === id));
+}
+
+function selectGuideEmoji(emoji, el) {
+  document.getElementById('gd-icon').value = emoji;
+  document.getElementById('guide-icon-preview').textContent = emoji;
+  document.querySelectorAll('#guide-editor-col .ep-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showGuideEditor(g) {
+  if (!g) return;
+  const icon = g.icon || '✦';
+
+  document.getElementById('guide-editor-col').innerHTML = `
+    <h3>Upute — ${esc(GUIDE_MODE_LABELS[g.mode] || g.mode)}</h3>
+
+    <div class="af"><label>Naslov vodiča</label>
+      <input id="gd-title" value="${esc(g.title)}"></div>
+
+    <div class="af"><label>Ikona — odabrana: <span id="guide-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
+      <input id="gd-icon" value="${esc(icon)}" style="display:none">
+      ${buildEmojiPicker(icon, 'selectGuideEmoji')}
+    </div>
+
+    <div class="af"><label>Kratki opis (vidljiv na zatvorenoj kartici)</label>
+      <textarea id="gd-exc" rows="2">${esc(g.excerpt || '')}</textarea>
+    </div>
+
+    <div class="af">
+      <label>Sadržaj vodiča</label>
+      <div class="editor-toolbar">
+        <button onclick="eCmd('bold','guide-content-ed')"><b>B</b></button>
+        <button onclick="eCmd('italic','guide-content-ed')"><em>I</em></button>
+        <button onclick="wSel('<h2>','</h2>','guide-content-ed')">Naslov</button>
+        <button onclick="wSel('<h3>','</h3>','guide-content-ed')">Podnaslov</button>
+        <button onclick="wSel('<blockquote>','</blockquote>','guide-content-ed')">❝ Citat</button>
+        <button onclick="wSel('<strong>','</strong>','guide-content-ed')">Masno</button>
+        <button onclick="eCmd('insertParagraph','guide-content-ed')">¶</button>
+        <label class="ed-img-upload" title="Ubaci sliku na mjesto kursora" onmousedown="saveEditorSelection(event,'guide-content-ed')">
+          🖼 Slika
+          <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this,'guide-content-ed')">
+        </label>
+      </div>
+      <div id="guide-content-ed" contenteditable="true" onpaste="handleEditorPaste(event)">
+        ${g.content || '<p>Počni pisati ovdje...</p>'}
+      </div>
+    </div>
+
+    <div class="af">
+      <label>Izvori (opcionalno — pojavljuju se ispod vodiča)</label>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
+        Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
+      </p>
+      <textarea id="gd-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora — &quot;Naslov rada&quot;, Izdavač, 2024.">${esc(g.sources || '')}</textarea>
+    </div>
+
+    <div class="af" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(6,8,15,0.3);border:1px solid var(--border)">
+      <label class="home-toggle">
+        <input type="checkbox" id="gd-archived" ${g.archived ? 'checked' : ''}>
+        <span>🗄 Sakrij sa stranice (vodič se ne prikazuje posjetiteljima)</span>
+      </label>
+    </div>
+
+    <div class="ap-actions">
+      <button class="ap-btn ap-btn-save"   onclick="saveGuide()">Spremi</button>
+      <button class="ap-btn ap-btn-cancel" onclick="cancelGuideEdit()">Odustani</button>
+    </div>`;
+}
+
+function cancelGuideEdit() {
+  editingGuideId = null;
+  renderGuidesAdminList();
+  document.getElementById('guide-editor-col').innerHTML =
+    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi vodič za uređivanje.</p>';
+}
+
+function saveGuide() {
+  const guides = guidesData();
+  const idx = guides.findIndex(g => g.id === editingGuideId);
+  if (idx < 0) return;
+
+  const title = (document.getElementById('gd-title').value || '').trim();
+  if (!title) { alert('Naslov je obavezan.'); return; }
+
+  guides[idx] = {
+    ...guides[idx],
+    title,
+    icon:     (document.getElementById('gd-icon').value || '✦').trim(),
+    excerpt:  (document.getElementById('gd-exc').value || '').trim(),
+    content:  sanitizeContentHtml(document.getElementById('guide-content-ed').innerHTML),
+    sources:  (document.getElementById('gd-sources').value || '').trim(),
+    archived: document.getElementById('gd-archived').checked,
+  };
+
+  renderGuidesAdminList();
+  if (typeof renderToolGuide === 'function') renderToolGuide();
+  alert('Vodič je spremljen! Ne zaboravi kliknuti ↓ Spremi (gore) da promjene odu na stranicu.');
 }
 
 /* ============================================================
@@ -1452,6 +1589,8 @@ const TEXT_GROUPS = [
       natalWorkingTitle: 'Radna verzija — naslov',
       natalWorkingText:  'Radna verzija — opis',
       natalWorkingBtn:   'Radna verzija — gumb',
+      natalPerson1Label: 'Forma — naslov "Prva osoba"',
+      natalPerson2Label: 'Forma — naslov "Druga osoba" (sinastrija)',
       natalNameLabel:    'Forma — Ime (oznaka)',
       natalNamePlaceholder: 'Forma — Ime (placeholder)',
       natalPlaceLabel:   'Forma — Mjesto rođenja (oznaka)',
@@ -1475,6 +1614,30 @@ const TEXT_GROUPS = [
       toolCardTransitDesc:   'Tranziti — opis',
       toolCardAcgTitle:      'Astrokartografija — naslov',
       toolCardAcgDesc:       'Astrokartografija — opis'
+    }
+  },
+  {
+    title: 'Astro alati — prekidač modova (hint i gumb po alatu)',
+    keys: {
+      natalModeNatal:    'Prekidač — "Natalna karta"',
+      natalModeSynastry: 'Prekidač — "Sinastrija"',
+      natalModeTransit:  'Prekidač — "Tranziti"',
+      natalModeAcg:      'Prekidač — "Astrokartografija"',
+      natalHintSynastry: 'Hint ispod prekidača — Sinastrija',
+      natalHintTransit:  'Hint ispod prekidača — Tranziti',
+      natalHintAcg:      'Hint ispod prekidača — Astrokartografija',
+      natalBtnSynastry:  'Gumb za izračun — Sinastrija',
+      natalBtnTransit:   'Gumb za izračun — Tranziti',
+      natalBtnAcg:       'Gumb za izračun — Astrokartografija'
+    }
+  },
+  {
+    title: 'Astro alati — Upute za korištenje (sadržaj vodiča uređuješ u tabu "Upute za alate")',
+    keys: {
+      natalGuideTitle:      'Naslov sekcije (iznad kartice vodiča)',
+      natalGuideReadTime:   'Oznaka "Vrijeme čitanja"',
+      natalGuideOpenLabel:  'Tekst za otvaranje vodiča',
+      natalGuideCloseLabel: 'Tekst gumba za zatvaranje'
     }
   },
   {
@@ -1627,6 +1790,7 @@ async function downloadSite() {
   }
 
   const postsJson    = JSON.stringify(BLOG_POSTS,    null, 2);
+  const guidesJson   = JSON.stringify(guidesData(),  null, 2);
   const svcJson      = JSON.stringify(SERVICES,      null, 2);
   const prJson       = JSON.stringify(PRICING,       null, 2);
   const revJson      = JSON.stringify(REVIEWS,       null, 2);
@@ -1640,6 +1804,11 @@ async function downloadSite() {
 // ===ALKEMIJANA:BLOG_POSTS:START===
 let BLOG_POSTS = ${postsJson};
 // ===ALKEMIJANA:BLOG_POSTS:END===
+
+
+// ===ALKEMIJANA:TOOL_GUIDES:START===
+let TOOL_GUIDES = ${guidesJson};
+// ===ALKEMIJANA:TOOL_GUIDES:END===
 
 
 // ===ALKEMIJANA:SERVICES:START===

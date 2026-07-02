@@ -783,7 +783,7 @@
         <form id="natal-form">
           <!-- Osoba 1 -->
           <div class="nt-person" id="natal-person1">
-            <div class="nt-person-head"><span class="nt-person-num">1</span><span>Prva osoba</span></div>
+            <div class="nt-person-head"><span class="nt-person-num">1</span><span id="t-natalPerson1Label">Prva osoba</span></div>
             <div class="form-row nt-form-row">
               <div class="form-group">
                 <label id="t-natalNameLabel">Ime (nije obavezno)</label>
@@ -811,27 +811,27 @@
           <!-- Osoba 2 — pojavi se animirano u modu sinastrije -->
           <div class="nt-person nt-person2" id="natal-person2" aria-hidden="true">
             <div class="nt-person-inner">
-              <div class="nt-person-head"><span class="nt-person-num">2</span><span>Druga osoba</span></div>
+              <div class="nt-person-head"><span class="nt-person-num">2</span><span id="t-natalPerson2Label">Druga osoba</span></div>
               <div class="form-row nt-form-row">
                 <div class="form-group">
-                  <label>Ime (nije obavezno)</label>
+                  <label id="t-natalNameLabel2">Ime (nije obavezno)</label>
                   <input type="text" id="natal-name-2" placeholder="npr. Marko Marić" maxlength="60">
                 </div>
                 <div class="form-group nt-place-group">
-                  <label>Mjesto rođenja <span id="natal-place-ok-2" class="nt-place-ok" style="display:none">✓</span></label>
+                  <label><span id="t-natalPlaceLabel2">Mjesto rođenja</span> <span id="natal-place-ok-2" class="nt-place-ok" style="display:none">✓</span></label>
                   <input type="text" id="natal-place-2" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
                   <div class="nt-dd" id="natal-place-dd-2"></div>
                 </div>
               </div>
               <div class="form-row nt-form-row">
                 <div class="form-group">
-                  <label>Datum rođenja</label>
+                  <label id="t-natalDateLabel2">Datum rođenja</label>
                   <input type="date" id="natal-date-2" min="1900-01-01" max="2099-12-31">
                 </div>
                 <div class="form-group">
-                  <label>Vrijeme rođenja</label>
+                  <label id="t-natalTimeLabel2">Vrijeme rođenja</label>
                   <input type="time" id="natal-time-2">
-                  <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime-2"><span>Ne znam vrijeme rođenja</span></label>
+                  <label class="nt-cc-chip nt-notime-chip"><input type="checkbox" id="natal-notime-2"><span id="t-natalNoTimeLabel2">Ne znam vrijeme rođenja</span></label>
                 </div>
               </div>
             </div>
@@ -1174,6 +1174,34 @@
         <p class="nt-disclaimer">Linije pokazuju gdje bi planet bio točno na ASC, MC, DSC ili IC u trenutku rođenja. Geocentrični izračun — orbis utjecaja linije je okvirno ±1° zemljopisne dužine/širine.</p>
       </div>
 
+      <!-- Upute za korištenje alata — sadržaj iz TOOL_GUIDES (data.js), prikazuje
+           se vodič za trenutno odabrani mod; uređuje se u adminu (tab "Upute za alate") -->
+      <section class="nt-guide" id="natal-guide-section" style="display:none" aria-labelledby="t-natalGuideTitle">
+        <h2 id="t-natalGuideTitle"></h2>
+        <article class="nt-guide-card">
+          <button type="button" class="nt-guide-head" id="natal-guide-head" aria-expanded="false" aria-controls="natal-guide-body" onclick="toggleToolGuide()">
+            <span class="nt-guide-icon" id="natal-guide-icon">✦</span>
+            <span class="nt-guide-headtext">
+              <span class="nt-guide-title" id="natal-guide-title"></span>
+              <span class="nt-guide-meta" id="natal-guide-meta"></span>
+              <span class="nt-guide-excerpt" id="natal-guide-excerpt"></span>
+              <span class="nt-guide-openlabel" id="natal-guide-openlabel"></span>
+            </span>
+            <span class="nt-guide-arrow" aria-hidden="true">▾</span>
+          </button>
+          <div class="nt-guide-body" id="natal-guide-body" hidden>
+            <div class="post-body nt-guide-content" id="natal-guide-content"></div>
+            <div class="post-sources nt-guide-sources" id="natal-guide-sources" style="display:none">
+              <h3 id="natal-guide-sources-title">Izvori</h3>
+              <ul id="natal-guide-sources-list"></ul>
+            </div>
+            <div class="nt-guide-collapse-wrap">
+              <button type="button" class="nt-guide-collapse" onclick="toggleToolGuide(false)">▴ <span id="natal-guide-closelabel">Zatvori vodič</span></button>
+            </div>
+          </div>
+        </article>
+      </section>
+
       <section class="nt-faq" aria-labelledby="nt-faq-title">
         <h2 id="t-natalFaqTitle"></h2>
         <details class="nt-faq-item"><summary id="t-natalFaqQ1"></summary><p id="t-natalFaqA1"></p></details>
@@ -1237,6 +1265,7 @@
     <div class="ap-header">
       <div class="ap-tabs">
         <button class="ap-tab-btn active" id="tab-blog"     onclick="switchTab('blog')">Blog</button>
+        <button class="ap-tab-btn"        id="tab-guides"   onclick="switchTab('guides')">Upute za alate</button>
         <button class="ap-tab-btn"        id="tab-services" onclick="switchTab('services')">Usluge</button>
         <button class="ap-tab-btn"        id="tab-pricing"  onclick="switchTab('pricing')">Cjenik</button>
         <button class="ap-tab-btn"        id="tab-reviews"  onclick="switchTab('reviews')">Recenzije</button>
@@ -1260,6 +1289,22 @@
         <div class="blog-editor-col" id="blog-editor-col">
           <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">
             Odaberi članak za uređivanje ili dodaj novi.
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB: Upute za alate (vodiči na stranici Astro alati, iznad FAQ-a) -->
+      <div class="ap-tab-content" id="ap-guides">
+        <div class="blog-list-col">
+          <div class="blh">
+            <p>Upute za alate</p>
+            <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.85rem;color:var(--text-muted);margin-top:0.4rem;font-weight:400">Po jedan vodič za svaki alat — prikazuje se na stranici Astro alati, iznad Čestih pitanja, ovisno o odabranom alatu.</p>
+          </div>
+          <div id="guides-admin-list"></div>
+        </div>
+        <div class="blog-editor-col" id="guide-editor-col">
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">
+            Odaberi vodič za uređivanje.
           </p>
         </div>
       </div>

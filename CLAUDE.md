@@ -89,6 +89,18 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   u HTML-u unaprijed (`.nt-faq-item` × 15), `applyTexts()` sakriva stavku
   (`display:none`) ako je pitanje prazno — tako Jana može popuniti manje od 15 preko
   admina bez praznih redaka na stranici.
+- **Upute za korištenje (vodiči):** iznad FAQ-a je sklopiva kartica (`.nt-guide` u
+  index.html) s opsežnim vodičem za trenutno odabrani alat. Sadržaj je u
+  `TOOL_GUIDES` bloku u data.js (markeri `===ALKEMIJANA:TOOL_GUIDES:START/END===`) —
+  fiksna 4 vodiča (`id/mode/title/icon/excerpt/content/sources/archived`), uređuju
+  se u adminu (tab **"Upute za alate"**, isti rich-text editor kao blog; nema
+  dodavanja/brisanja, checkbox "Sakrij sa stranice" = `archived`). Render:
+  `renderToolGuide(mode)` + `toggleToolGuide()` u app.js; `setNatalMode()`
+  (natal-synastry.js) ih zove pri promjeni moda. Naslov sekcije i oznake
+  ("Vrijeme čitanja", otvori/zatvori) su u TEXTS (`natalGuide*`); tekstovi
+  prekidača modova, hintova i submit gumba po modu također su u TEXTS
+  (`natalMode*`, `natalHint*`, `natalBtnSynastry/Transit/Acg` —
+  `applyModeTexts()` u natal-synastry.js).
 
 ## Natalna karta (js/natal.js)
 

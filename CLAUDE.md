@@ -279,6 +279,14 @@ GitHub trigerira Cloudflare Pages deploy → stranica se osvježi za 30 sek.
 | **Web3Forms** | Kontakt forma | Hard-coded `value` u `<input name="access_key">` u index.html |
 | **GoatCounter** | Analytics | Site `alkemijana.goatcounter.com`, javni counter API |
 | **GitHub API** | Auto-save iz admina | Token u Cloudflare env var `GITHUB_TOKEN` |
+| **jsDelivr (Leaflet)** | AstroCartography karta (`natal-acg-render.js`) | Bez ključa, CDN |
+| **OpenStreetMap tiles** | Podloga AstroCartography karte | Bez ključa, javni tile server |
+
+**Napomena — `_headers` (CSP):** korijenski `_headers` file definira Content-Security-Policy
+za cijelu stranicu (Cloudflare Pages headers). Svaki novi vanjski domain (CDN skripta, API,
+slika, font) **mora se dodati u odgovarajuću CSP direktivu** (`script-src`/`style-src`/
+`img-src`/`connect-src`/`font-src`) ili će browser tiho blokirati zahtjev — provjeri
+ovo prvo ako nešto vanjsko "ne radi" bez očite JS greške.
 
 ---
 

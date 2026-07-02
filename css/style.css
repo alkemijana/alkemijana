@@ -1734,16 +1734,44 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .acg-tooltip::before { display: none; }
 
-/* Oznake planeta uz vanjski kraj linije (glif + AC/DC/MC/IC), kao na Astro-Seeku */
+/* Oznake planeta uz vanjski kraj linije (samo glif), kao na Astro-Seeku */
 .acg-label-icon { background: none; border: none; pointer-events: none; }
 .acg-label-badge {
-  display: inline-flex; align-items: center; gap: 0.15rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
   background: var(--card-bg); border: 1px solid; border-radius: 999px;
-  padding: 0.08rem 0.35rem; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-  font-family: 'Quicksand', sans-serif; font-size: 0.62rem; font-weight: 600;
-  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
-.acg-label-badge .nt-glyph { width: 12px; height: 12px; flex: none; }
+.acg-label-badge .nt-glyph { width: 13px; height: 13px; flex: none; }
+
+/* Koordinatna mreža — oznake stupnjeva */
+.acg-grid-label { background: none; border: none; pointer-events: none; }
+.acg-grid-label span {
+  font-family: 'Quicksand', sans-serif; font-size: 0.6rem; font-weight: 600;
+  color: #8a7dac; opacity: 0.85; text-shadow: 0 0 3px var(--bg-deep);
+  display: inline-block; width: 100%; text-align: center;
+}
+
+/* Kutija s GEO koordinatama + ASC/MC pod mišem */
+.acg-coord-box {
+  background: var(--card-bg); color: var(--card-text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.35rem 0.7rem; box-shadow: var(--shadow-glow);
+  font-family: 'Quicksand', sans-serif; font-size: 0.72rem; white-space: nowrap;
+}
+.acg-coord-box strong { color: var(--lavender); font-weight: 700; }
+
+/* Napomena o vrsti linije ispod karte */
+.acg-line-note {
+  max-width: 900px; margin: -0.6rem auto 1.2rem; text-align: center;
+  font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted);
+}
+.acg-line-note strong { color: var(--text); }
+.acg-line-sample {
+  display: inline-block; width: 26px; height: 0; vertical-align: middle;
+  border-top: 2px solid var(--lavender);
+}
+.acg-line-dashed { border-top-style: dashed; }
 
 .acg-legend {
   display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; justify-content: center;

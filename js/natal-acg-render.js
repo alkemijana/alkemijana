@@ -44,14 +44,71 @@ const ACG_BOUNDS = [[-85, -180], [85, 180]];
 function acgInitMap() {
   if (acgMap) return acgMap;
   acgMap = L.map('acg-map', {
-    minZoom: 2, maxZoom: 7, worldCopyJump: false,
+    minZoom: 2, maxZoom: 12, worldCopyJump: false,
     maxBounds: ACG_BOUNDS, maxBoundsViscosity: 1.0
   }).setView([20, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
-    maxZoom: 7, noWrap: true
+  // CARTO Voyager/Positron: nazivi gradova na engleskom/latinici (OSM piše lokalna pisma)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
+    maxZoom: 12, noWrap: true, subdomains: 'abcd'
   }).addTo(acgMap);
+  acgAddGraticule(acgMap);
+  acgAddCoordBox(acgMap);
   return acgMap;
+}
+
+/* Koordinatna mreža: linije svakih 30°, ekvator naglašen, stupnjevi uz ekvator/meridijan. */
+function acgAddGraticule(map) {
+  const g = L.layerGroup();
+  const line = (pts, strong) => L.polyline(pts, {
+    color: '#8a7dac', weight: strong ? 1.3 : 0.6, opacity: strong ? 0.55 : 0.3, interactive: false
+  }).addTo(g);
+  const degLabel = (latlng, text) => L.marker(latlng, {
+    icon: L.divIcon({ className: 'acg-grid-label', html: '<span>' + text + '</span>', iconSize: [40, 14], iconAnchor: [20, 7] }),
+    interactive: false
+  }).addTo(g);
+
+  for (let lat = -60; lat <= 60; lat += 30) {
+    line([[lat, -180], [lat, 180]], lat === 0); // ekvator deblji
+    if (lat !== 0) degLabel([lat, 0], Math.abs(lat) + '°' + (lat > 0 ? 'N' : 'S'));
+  }
+  for (let lon = -180; lon < 180; lon += 30) {
+    line([[-85, lon], [85, lon]], lon === 0);
+    if (lon !== 0) degLabel([0, lon], Math.abs(lon) + '°' + (lon > 0 ? 'E' : 'W'));
+  }
+  degLabel([0, 0], '0°');
+  g.addTo(map);
+}
+
+/* Kutija s GEO koordinatama + ASC/MC za točku pod mišem (kao Astro-Seek). */
+let acgCoordDiv = null;
+
+function fmtGeo(v, posCh, negCh) {
+  const a = Math.abs(v), d = Math.floor(a), m = Math.floor((a - d) * 60);
+  return d + '°' + (m < 10 ? '0' : '') + m + "'" + (v >= 0 ? posCh : negCh);
+}
+
+function acgAddCoordBox(map) {
+  const ctl = L.control({ position: 'bottomleft' });
+  ctl.onAdd = () => {
+    acgCoordDiv = L.DomUtil.create('div', 'acg-coord-box');
+    acgCoordDiv.innerHTML = 'Pomakni miš preko karte…';
+    return acgCoordDiv;
+  };
+  ctl.addTo(map);
+
+  map.on('mousemove', (e) => {
+    if (!acgCoordDiv || !currentAcg) return;
+    const lat = e.latlng.lat, lon = e.latlng.lng;
+    let astro = '';
+    if (Math.abs(lat) < 89) {
+      const am = computeAscMc(norm360(currentAcg.gastDeg + lon), currentAcg.eps, lat);
+      astro = ' &nbsp;·&nbsp; <strong>ASC</strong> ' + fmtDegMin(am.asc) + ' ' + signName(am.asc) +
+              ' &nbsp;·&nbsp; <strong>MC</strong> ' + fmtDegMin(am.mc) + ' ' + signName(am.mc);
+    }
+    acgCoordDiv.innerHTML = fmtGeo(lat, 'N', 'S') + ' ' + fmtGeo(lon, 'E', 'W') + astro;
+  });
+  map.on('mouseout', () => { if (acgCoordDiv) acgCoordDiv.innerHTML = 'Pomakni miš preko karte…'; });
 }
 
 function acgDrawLine(points, color, label, dashed) {
@@ -63,12 +120,12 @@ function acgDrawLine(points, color, label, dashed) {
   return line;
 }
 
-/* Mala oznaka (glif + slovna kratica) uz vanjski kraj linije — kao na Astro-Seeku. */
-function acgAddLabel(group, latlng, color, planetId, tag) {
+/* Mala oznaka (samo glif planeta) uz vanjski kraj linije — kao na Astro-Seeku.
+   Vrsta linije (puna = ASC/MC, isprekidana = DSC/IC) objašnjena je napomenom ispod karte. */
+function acgAddLabel(group, latlng, color, planetId) {
   const html = '<div class="acg-label-badge" style="border-color:' + color + '">' +
-    glyphSvgHtml(planetId, 12, color, 'nt-glyph') +
-    '<span style="color:' + color + '">' + tag + '</span></div>';
-  const icon = L.divIcon({ className: 'acg-label-icon', html, iconSize: [34, 18], iconAnchor: [17, 9] });
+    glyphSvgHtml(planetId, 13, color, 'nt-glyph') + '</div>';
+  const icon = L.divIcon({ className: 'acg-label-icon', html, iconSize: [22, 22], iconAnchor: [11, 11] });
   L.marker(latlng, { icon, interactive: false }).addTo(group);
 }
 
@@ -92,26 +149,26 @@ function renderAcgResult(acg) {
       const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
       const group = L.layerGroup();
 
-      // MC/IC: okomite linije (pol do pol) + oznake na oba ruba karte
+      // MC/IC: okomite linije (pol do pol) + glif-oznake na oba ruba karte
       acgDrawLine([[-85, pl.mc], [85, pl.mc]], color, pl.name + ' — MC').addTo(group);
       acgDrawLine([[-85, pl.ic], [85, pl.ic]], color, pl.name + ' — IC', true).addTo(group);
-      acgAddLabel(group, [85, pl.mc], color, pl.id, 'MC');
-      acgAddLabel(group, [-85, pl.mc], color, pl.id, 'MC');
-      acgAddLabel(group, [85, pl.ic], color, pl.id, 'IC');
-      acgAddLabel(group, [-85, pl.ic], color, pl.id, 'IC');
+      acgAddLabel(group, [85, pl.mc], color, pl.id);
+      acgAddLabel(group, [-85, pl.mc], color, pl.id);
+      acgAddLabel(group, [85, pl.ic], color, pl.id);
+      acgAddLabel(group, [-85, pl.ic], color, pl.id);
 
-      // ASC/DSC: krive linije (segmentirane na antimeridianu) + oznaka na vanjskom kraju krivulje
+      // ASC/DSC: krive linije (segmentirane na antimeridianu) + glif-oznaka na vanjskom kraju krivulje
       pl.ascSegments.forEach(seg => { if (seg.length > 1) acgDrawLine(seg, color, pl.name + ' — ASC').addTo(group); });
       pl.dscSegments.forEach(seg => { if (seg.length > 1) acgDrawLine(seg, color, pl.name + ' — DSC', true).addTo(group); });
       if (pl.ascSegments.length) {
-        acgAddLabel(group, pl.ascSegments[0][0], color, pl.id, 'AC');
+        acgAddLabel(group, pl.ascSegments[0][0], color, pl.id);
         const lastSeg = pl.ascSegments[pl.ascSegments.length - 1];
-        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id, 'AC');
+        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id);
       }
       if (pl.dscSegments.length) {
-        acgAddLabel(group, pl.dscSegments[0][0], color, pl.id, 'DC');
+        acgAddLabel(group, pl.dscSegments[0][0], color, pl.id);
         const lastSeg = pl.dscSegments[pl.dscSegments.length - 1];
-        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id, 'DC');
+        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id);
       }
 
       group.addTo(map);

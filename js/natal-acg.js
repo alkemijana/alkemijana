@@ -98,6 +98,7 @@ async function acgSubmit(ev) {
     const { date: utcDate } = localToUtc(y, mo, d, h, mi, selectedPlace.tz);
     const time = Astronomy.MakeTime(utcDate);
     const gastDeg = Astronomy.SiderealTime(time) * 15;
+    const eps = trueObliquity(time); // za živi ASC/MC pod mišem (computeAscMc)
 
     const lines = ACG_BODIES.map(def => {
       const eq = equOfDate(Astronomy.Body[def.body], time);
@@ -110,7 +111,7 @@ async function acgSubmit(ev) {
       };
     });
 
-    currentAcg = { name, place: selectedPlace, lines, dateV, timeV };
+    currentAcg = { name, place: selectedPlace, lines, dateV, timeV, gastDeg, eps };
     renderAcgResult(currentAcg);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV, noTime: false, place: selectedPlace })); } catch (e) {}
     document.getElementById('acg-result').scrollIntoView({ behavior: 'smooth', block: 'start' });

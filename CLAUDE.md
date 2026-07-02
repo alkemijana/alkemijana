@@ -221,10 +221,17 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   presjeka (cirkumpolarno). `computeChart` u natal-calc.js **nije dirana** — ACG je
   posve odvojen izračun koji koristi iste sirovine (`Astronomy.MakeTime`, `SiderealTime`).
 - **Karta (`natal-acg-render.js`):** Leaflet (lazy-load s CDN-a, `js/lib/` ga ne
-  sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), OSM tile
-  server, stiliziran CSS filterom (`hue-rotate`/`invert`/`sepia` na `.leaflet-tile-pane`)
-  u tonove Alkemijane — različit filter za tamnu/svijetlu temu. 10 ručno biranih boja
-  po planetu u `ACG_PLANET_COLORS` (nedovoljno boja u `PALETTES`, koje ima samo 3).
+  sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), **CARTO
+  light_all tile server** (nazivi gradova na engleskom/latinici; OSM piše lokalna
+  pisma), stiliziran CSS filterom (`hue-rotate`/`invert`/`sepia` na `.leaflet-tile-pane`)
+  u tonove Alkemijane — različit filter za tamnu/svijetlu temu. Zoom 2–12, panning
+  ograničen na svijet (`maxBounds`). 10 ručno biranih boja po planetu u
+  `ACG_PLANET_COLORS` (nedovoljno boja u `PALETTES`, koje ima samo 3).
+  Glif-oznake planeta na krajevima linija (`acgAddLabel`, `L.divIcon`); napomena
+  ispod karte objašnjava punu (ASC/MC) vs. isprekidanu (DSC/IC) liniju.
+  Koordinatna mreža svakih 30° s oznakama stupnjeva (`acgAddGraticule`); kutija
+  dolje-lijevo živo pokazuje GEO koordinate + ASC/MC pod mišem (`acgAddCoordBox`,
+  računa `computeAscMc` iz natal-calc.js s `gastDeg`/`eps` spremljenima u `currentAcg`).
   Legenda ispod karte: boja + glif (`glyphSvgHtml`) + naziv + checkbox za
   uključi/isključi liniju (Leaflet `L.layerGroup` po planetu).
 - **Što NIJE uključeno (zasad):** paranske linije, local space/relokacijska karta,

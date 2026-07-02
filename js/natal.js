@@ -159,15 +159,20 @@ function redrawChartWheel() {
 }
 
 /* Otvori stranicu Astro alati s odabranim modom (natal/synastry/transit/acg) i
-   scrolla do forme — zajednička ulazna točka za kartice alata i kolut na početnoj. */
+   scrolla do prekidača moda (Natalna karta/Sinastrija/...) — zajednička ulazna
+   točka za kartice alata i kolut na početnoj. */
 function openAstroTool(mode) {
   showPage('natal');
   if (window.Synastry && typeof window.Synastry.setNatalMode === 'function') {
     window.Synastry.setNatalMode(mode, true);
   }
   requestAnimationFrame(() => {
-    const wrap = document.getElementById('natal-form-wrap');
-    if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = document.getElementById('natal-mode-seg');
+    if (!target) return;
+    const navEl = document.querySelector('nav');
+    const offset = (navEl ? navEl.offsetHeight : 0) + 16;
+    const y = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   });
 }
 

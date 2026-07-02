@@ -58,7 +58,11 @@ function acgInitMap() {
   if (acgMap) return acgMap;
   acgMap = L.map('acg-map', {
     minZoom: 2, maxZoom: 12, worldCopyJump: false,
-    maxBounds: ACG_WORLD, maxBoundsViscosity: 1.0
+    maxBounds: ACG_WORLD, maxBoundsViscosity: 1.0,
+    // razlomljeni zoom (ne samo cijeli brojevi) — okvir karte je puno širi nego
+    // viši, a "cijeli svijet" je otprilike kvadratan; bez ovoga zaokruživanje na
+    // cijeli zoom ili odsiječe polove ili ostavi ogroman prazan prostor sa strane
+    zoomSnap: 0.25, zoomDelta: 0.75
   }).setView([20, 0], 2);
   // CARTO Voyager/Positron: nazivi gradova na engleskom/latinici (OSM piše lokalna pisma)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -70,19 +74,33 @@ function acgInitMap() {
   return acgMap;
 }
 
-/* Minimalni zoom = onaj na kojem svijet ispuni cijelu širinu okvira (bez bijelih rubova). */
+/* Najveći zoom na kojem cijeli svijet (sve širine i dužine) još uvijek stane unutar
+   okvira u cijelosti (Leaflet getBoundsZoom bez "inside" — suprotno od "inside:true"
+   koje bi tražilo zoom pri kojem SAM POGLED stane unutar svijeta, što kartu čini
+   previše zumiranom i odsijeca polove).
+   Napomena: getBoundsZoom rezultat ograničava na TRENUTNI map.getMinZoom(), pa ga
+   moramo privremeno spustiti na 0 prije računanja — inače je izračun kružno
+   ograničen na staru vrijednost i nikad ne vrati manji (odzumiraniji) zoom. */
+function acgWorldFitZoom() {
+  const prevMin = acgMap.getMinZoom();
+  acgMap.setMinZoom(0);
+  const z = acgMap.getBoundsZoom(L.latLngBounds(ACG_WORLD));
+  acgMap.setMinZoom(prevMin);
+  return z;
+}
+
 function acgFitMinZoom() {
   if (!acgMap) return;
-  const z = acgMap.getBoundsZoom(L.latLngBounds(ACG_WORLD), true); // najmanji zoom da pogled stane U svijet
+  const z = acgWorldFitZoom();
   acgMap.setMinZoom(z);
   if (acgMap.getZoom() < z) acgMap.setView([20, 0], z);
 }
 
-/* Vrati pogled na "cijeli svijet lijepo uklopljen" — pri svakoj novoj izradi karte,
+/* Vrati pogled na "cijeli svijet vidljiv odjednom" — pri svakoj novoj izradi karte,
    bez obzira je li korisnik prije zumirao/pomicao kartu. */
 function acgResetView() {
   if (!acgMap) return;
-  const z = acgMap.getBoundsZoom(L.latLngBounds(ACG_WORLD), true);
+  const z = acgWorldFitZoom();
   acgMap.setMinZoom(z);
   acgMap.setView([20, 0], z);
 }

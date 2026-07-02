@@ -724,6 +724,7 @@
           <button type="button" class="nt-seg-btn active" data-mode="natal" id="natal-mode-natal">Natalna karta</button>
           <button type="button" class="nt-seg-btn" data-mode="synastry" id="natal-mode-syn">Sinastrija</button>
           <button type="button" class="nt-seg-btn" data-mode="transit" id="natal-mode-transit">Tranziti</button>
+          <button type="button" class="nt-seg-btn" data-mode="acg" id="natal-mode-acg">AstroCartography</button>
         </div>
       </div>
       <p class="nt-mode-hint" id="natal-mode-hint"></p>
@@ -1095,6 +1096,22 @@
         <p class="nt-disclaimer" id="transit-disclaimer"></p>
       </div>
 
+      <!-- ===== REZULTAT ASTROCARTOGRAPHY (Leaflet karta + linije) ===== -->
+      <div id="acg-result" style="display:none">
+        <div class="nt-chart-head">
+          <h3 id="acg-chart-title"></h3>
+          <div id="acg-chart-sub"></div>
+        </div>
+
+        <div class="acg-map-wrap">
+          <div id="acg-map" class="acg-map"></div>
+        </div>
+
+        <div class="acg-legend" id="acg-legend"></div>
+
+        <p class="nt-disclaimer">Linije pokazuju gdje bi planet bio točno na ASC, MC, DSC ili IC u trenutku rođenja (klikni na liniju za oznaku). Geocentrični izračun — orbis utjecaja linije je okvirno ±1° zemljopisne dužine/širine.</p>
+      </div>
+
       <section class="nt-faq" aria-labelledby="nt-faq-title">
         <h2 id="t-natalFaqTitle"></h2>
         <details class="nt-faq-item"><summary id="t-natalFaqQ1"></summary><p id="t-natalFaqA1"></p></details>
@@ -1276,6 +1293,8 @@
 <script src="js/natal.js"></script>
 <script src="js/natal-synastry.js"></script>
 <script src="js/natal-transit.js"></script>
+<script src="js/natal-acg.js"></script>
+<script src="js/natal-acg-render.js"></script>
 <script src="js/natal-ai.js"></script>
 <script src="js/natal-live.js"></script>
 

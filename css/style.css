@@ -1707,6 +1707,46 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-intro p { margin: 0 0 0.85rem; }
 .nt-intro strong { color: var(--lavender); font-weight: 600; }
 
+/* — AstroCartography (Leaflet karta) — */
+.acg-map-wrap {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-glow);
+  margin: 0 auto 1.4rem;
+}
+.acg-map { width: 100%; height: 480px; background: var(--bg-deep); }
+/* tamna/lavender tinta preko standardnih OSM tile-ova, umjesto zlatno-plavog izvornika */
+.acg-map .leaflet-tile-pane {
+  filter: grayscale(0.85) invert(0.92) sepia(0.18) hue-rotate(220deg) saturate(1.35) brightness(0.82) contrast(0.95);
+}
+:root[data-theme="light"] .acg-map .leaflet-tile-pane {
+  filter: grayscale(0.7) sepia(0.12) hue-rotate(230deg) saturate(1.1) brightness(1.05) contrast(0.92);
+}
+.acg-map .leaflet-control-attribution {
+  background: var(--card-bg); color: var(--text-muted); font-family: 'Quicksand', sans-serif; font-size: 0.68rem;
+}
+.acg-map .leaflet-control-attribution a { color: var(--lavender); }
+.acg-tooltip {
+  background: var(--card-bg) !important; color: var(--card-text) !important;
+  border: 1px solid var(--border) !important; font-family: 'Quicksand', sans-serif; font-size: 0.78rem;
+  box-shadow: var(--shadow-glow);
+}
+.acg-tooltip::before { display: none; }
+
+.acg-legend {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; justify-content: center;
+  max-width: 900px; margin: 0 auto 1.4rem; padding: 1rem 1.2rem;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--card-bg);
+}
+.acg-legend-item {
+  display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem; color: var(--text);
+}
+.acg-legend-item input[type="checkbox"] { accent-color: var(--lavender); }
+.acg-legend-swatch { width: 0.7rem; height: 0.7rem; border-radius: 999px; display: inline-block; }
+.acg-legend-item .nt-glyph { width: 15px; height: 15px; }
+
 /* — FAQ akordion na natal stranici — */
 .nt-faq {
   max-width: 880px;
@@ -2104,7 +2144,11 @@ input[type="time"]:disabled { opacity: 0.45; }
 }
 /* hint vidljiv kad je odabran sinastrija ili tranziti (klasu postavlja JS na body) */
 body.syn-mode .nt-mode-hint,
-body.transit-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6rem; }
+body.transit-mode .nt-mode-hint,
+body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6rem; }
+
+/* ACG ne koristi "ne znam vrijeme" — RAMC ovisi o točnom vremenu */
+.nt-form-wrap[data-natal-mode="acg"] .nt-notime-chip { display: none; }
 
 /* — Osoba 1 / Osoba 2 blokovi — */
 .nt-person-head {

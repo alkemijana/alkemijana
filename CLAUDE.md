@@ -34,6 +34,8 @@ ALKEMIJANA WEBSITE/
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
 │   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
 │   ├── natal-transit.js            ← Tranziti: kontrola vremena (5 slidera), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
+│   ├── natal-acg.js                ← AstroCartography: submit, izračun MC/IC/ASC/DSC linija po planetu (glue — nakon natal-transit.js)
+│   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
@@ -196,6 +198,37 @@ Natalna karta + **tranzitni planeti** za odabrani trenutak, sa **živim klizanje
   `renderSynastryWorkingContent` primaju `cfg` = unutarnja/vanjska karta, boja, oznake) preko
   `downloadTransitPoster` / `downloadTransitWorking` (natal-pdf.js).
 - **Što NIJE uključeno (zasad):** AI tumačenje tranzita, izbor pojedinih tranzitnih tijela, progresije.
+
+---
+
+## AstroCartography (js/natal-acg.js, js/natal-acg-render.js)
+
+Četvrti mod na stranici **#natal** (prekidač: Natalna karta · Sinastrija · Tranziti ·
+**AstroCartography**) — besplatno. Planetarne linije preko karte svijeta: gdje bi za
+osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
+
+- **Forma:** ista forma kao natalna karta (Osoba 1), ali bez opcije "ne znam vrijeme
+  rođenja" (`.nt-notime-chip` sakriven u ovom modu preko CSS-a) — ACG bez preciznog
+  vremena rođenja nema smisla (RAMC/linije ovise o UTC trenutku).
+- **Izračun (`natal-acg.js`):** za 10 klasičnih tijela (Sunce–Pluton, bez čvorova/
+  Lilith/Kirona) računa se geocentrična ekvatorijalna pozicija "od datuma" (RA/Dec)
+  preko `Astronomy.GeoVector` + `Astronomy.Rotation_EQJ_EQD` + `Astronomy.SphereFromVector`
+  (isti obrazac kao `eclLonOfDate` u natal-calc.js, samo bez rotacije u ekliptiku —
+  **ne koristi se** `Astronomy.Equator`, jer ta funkcija traži Observer i računa
+  topocentričnu, ne geocentričnu poziciju). MC/IC linije = okomiti meridijani
+  (`RA − GAST`); ASC/DSC krivulje = klasična formula izlaska/zalaska
+  (`cos H₀ = −tan(lat)·tan(dec)`) po širinama od −66° do 66°, prekida se gdje nema
+  presjeka (cirkumpolarno). `computeChart` u natal-calc.js **nije dirana** — ACG je
+  posve odvojen izračun koji koristi iste sirovine (`Astronomy.MakeTime`, `SiderealTime`).
+- **Karta (`natal-acg-render.js`):** Leaflet (lazy-load s CDN-a, `js/lib/` ga ne
+  sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), OSM tile
+  server, stiliziran CSS filterom (`hue-rotate`/`invert`/`sepia` na `.leaflet-tile-pane`)
+  u tonove Alkemijane — različit filter za tamnu/svijetlu temu. 10 ručno biranih boja
+  po planetu u `ACG_PLANET_COLORS` (nedovoljno boja u `PALETTES`, koje ima samo 3).
+  Legenda ispod karte: boja + glif (`glyphSvgHtml`) + naziv + checkbox za
+  uključi/isključi liniju (Leaflet `L.layerGroup` po planetu).
+- **Što NIJE uključeno (zasad):** paranske linije, local space/relokacijska karta,
+  reverse (ASC/MC finder), PDF export, klikom prikaz preciznog grada/lokacije.
 
 ---
 

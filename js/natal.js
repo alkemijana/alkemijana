@@ -180,6 +180,7 @@ async function natalSubmit(ev) {
   const mode = wrap && wrap.getAttribute('data-natal-mode');
   if (mode === 'synastry' && typeof synastrySubmit === 'function') return synastrySubmit(ev);
   if (mode === 'transit' && typeof transitSubmit === 'function') return transitSubmit(ev);
+  if (mode === 'acg' && typeof acgSubmit === 'function') return acgSubmit(ev);
   const err = document.getElementById('natal-error');
   err.style.display = 'none';
 

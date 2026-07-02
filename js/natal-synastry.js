@@ -55,7 +55,7 @@ function setNatalMode(mode, persist) {
   if (btn) {
     btn.textContent = mode === 'synastry' ? '✦ Izračunaj sinastriju'
       : mode === 'transit' ? '✦ Prikaži tranzite'
-      : mode === 'acg' ? '✦ Prikaži AstroCartography'
+      : mode === 'acg' ? '✦ Prikaži astrokartografiju'
       : (typeof TEXTS !== 'undefined' && TEXTS.natalBtn ? TEXTS.natalBtn : '✦ Izračunaj natalnu kartu');
   }
 

@@ -321,7 +321,7 @@ function renderAcgResult(acg) {
 
   const title = document.getElementById('acg-chart-title');
   const sub = document.getElementById('acg-chart-sub');
-  if (title) title.textContent = acg.name ? 'AstroCartography — ' + acg.name : 'AstroCartography';
+  if (title) title.textContent = acg.name ? 'Astrokartografija — ' + acg.name : 'Astrokartografija';
   if (sub) sub.textContent = acg.dateV + ' · ' + acg.timeV + ' · ' + (acg.place ? acg.place.label : '');
 
   ensureLeaflet().then(() => {

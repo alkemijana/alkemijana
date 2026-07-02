@@ -150,7 +150,7 @@ async function acgSubmit(ev) {
   const timeV = document.getElementById('natal-time').value;
 
   if (!dateV)         return showNatalError('Upiši datum rođenja.');
-  if (!timeV)         return showNatalError('AstroCartography treba točno vrijeme rođenja (checkbox „ne znam vrijeme” ovdje ne vrijedi).');
+  if (!timeV)         return showNatalError('Astrokartografija treba točno vrijeme rođenja (checkbox „ne znam vrijeme” ovdje ne vrijedi).');
   if (!selectedPlace) return showNatalError('Upiši mjesto rođenja i odaberi ga s popisa.');
 
   const [y, mo, d] = dateV.split('-').map(Number);

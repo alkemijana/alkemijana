@@ -1103,13 +1103,23 @@
           <div id="acg-chart-sub"></div>
         </div>
 
+        <div class="acg-toolbar">
+          <label class="acg-proj-label">Projekcija (Zodio/Mundo):
+            <select id="acg-projection">
+              <option value="mundo">Mundo — s latitudom (astronomska vidljivost)</option>
+              <option value="zodio">Zodiaco — ekliptička projekcija (1:1 s relokacijskom kartom)</option>
+            </select>
+          </label>
+        </div>
+
         <div class="acg-map-wrap">
           <div id="acg-map" class="acg-map"></div>
+          <div id="acg-edge-overlay" class="acg-edge-overlay"></div>
         </div>
 
         <div class="acg-legend" id="acg-legend"></div>
 
-        <p class="acg-line-note"><span class="acg-line-sample acg-line-solid"></span> puna linija = <strong>ASC / MC</strong> &nbsp;·&nbsp; <span class="acg-line-sample acg-line-dashed"></span> isprekidana linija = <strong>DSC / IC</strong> &nbsp;·&nbsp; okomite linije su MC/IC, zakrivljene ASC/DSC. Prijeđi mišem preko linije za naziv.</p>
+        <p class="acg-line-note"><span class="acg-line-sample acg-line-solid"></span> puna linija = <strong>ASC / MC</strong> &nbsp;·&nbsp; <span class="acg-line-sample acg-line-dashed"></span> isprekidana linija = <strong>DSC / IC</strong> &nbsp;·&nbsp; okomite linije su MC/IC, zakrivljene ASC/DSC. Glifovi u okviru oko karte pokazuju koja je linija koja. Prijeđi mišem preko linije za naziv.</p>
         <p class="nt-disclaimer">Linije pokazuju gdje bi planet bio točno na ASC, MC, DSC ili IC u trenutku rođenja. Geocentrični izračun — orbis utjecaja linije je okvirno ±1° zemljopisne dužine/širine.</p>
       </div>
 

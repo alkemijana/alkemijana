@@ -217,25 +217,33 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   **ne koristi se** `Astronomy.Equator`, jer ta funkcija traži Observer i računa
   topocentričnu, ne geocentričnu poziciju). MC/IC linije = okomiti meridijani
   (`RA − GAST`); ASC/DSC krivulje = klasična formula izlaska/zalaska
-  (`cos H₀ = −tan(lat)·tan(dec)`) po širinama od −66° do 66°, prekida se gdje nema
-  presjeka (cirkumpolarno). `computeChart` u natal-calc.js **nije dirana** — ACG je
-  posve odvojen izračun koji koristi iste sirovine (`Astronomy.MakeTime`, `SiderealTime`).
+  (`cos H₀ = −tan(lat)·tan(dec)`) do ±85°. ASC i DSC **dijele krajnje točke** (na
+  granici cirkumpolarnosti H0→0 obje konvergiraju u MC liniju, H0→180 u IC) pa se
+  vizualno spoje kao na Astro-Seeku. `computeChart` u natal-calc.js **nije dirana**.
+- **Projekcija Mundo/Zodiaco (`#acg-projection`):** za svaki planet računaju se **dva**
+  seta linija — **Mundo** (prava RA/Dec s latitudom, astronomska vidljivost) i **Zodiaco**
+  (planet projiciran na ekliptiku, `raDecFromEcliptic(eclLon, eps)` s latitudom 0 — linije
+  1:1 s relokacijskom kartom). Dropdown prebacuje bez ponovnog računanja (`pl.mundo`/`pl.zodio`).
 - **Karta (`natal-acg-render.js`):** Leaflet (lazy-load s CDN-a, `js/lib/` ga ne
   sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), **CARTO
   light_all tile server** (nazivi gradova na engleskom/latinici; OSM piše lokalna
   pisma), stiliziran CSS filterom (`hue-rotate`/`invert`/`sepia` na `.leaflet-tile-pane`)
-  u tonove Alkemijane — različit filter za tamnu/svijetlu temu. Zoom 2–12, panning
-  ograničen na svijet (`maxBounds`). 10 ručno biranih boja po planetu u
-  `ACG_PLANET_COLORS` (nedovoljno boja u `PALETTES`, koje ima samo 3).
-  Glif-oznake planeta na krajevima linija (`acgAddLabel`, `L.divIcon`); napomena
-  ispod karte objašnjava punu (ASC/MC) vs. isprekidanu (DSC/IC) liniju.
-  Koordinatna mreža svakih 30° s oznakama stupnjeva (`acgAddGraticule`); kutija
-  dolje-lijevo živo pokazuje GEO koordinate + ASC/MC pod mišem (`acgAddCoordBox`,
+  u tonove Alkemijane — različit filter + pozadina karte za tamnu/svijetlu temu (nema
+  bijelih rubova). Zoom 2–12, panning ograničen na svijet (`maxBounds`). 10 ručno
+  biranih boja po planetu u `ACG_PLANET_COLORS` (nedovoljno boja u `PALETTES`, koje ima 3).
+  **Glif-oznake u okviru oko karte** (`.acg-map-wrap` ima padding `ACG_GUTTER`=30px;
+  overlay `#acg-edge-overlay`): `updateAcgEdgeLabels` na svakoj promjeni pogleda
+  (`move`/`zoom`, rAF-throttle) projicira svaku liniju u piksele, nađe gdje presijeca
+  rub vidljivog dijela (`acgSegCrossAll`) i stavi glif planeta u okvir na tom rubu —
+  glifovi tako "prate" zoom/pan. Napomena ispod karte objašnjava punu (ASC/MC) vs.
+  isprekidanu (DSC/IC) liniju. Koordinatna mreža svakih 30° s oznakama stupnjeva
+  (`acgAddGraticule`); kutija dolje-lijevo živo pokazuje GEO koordinate + ASC/MC pod
+  mišem (`acgAddCoordBox`,
   računa `computeAscMc` iz natal-calc.js s `gastDeg`/`eps` spremljenima u `currentAcg`).
   Legenda ispod karte: boja + glif (`glyphSvgHtml`) + naziv + checkbox za
   uključi/isključi liniju (Leaflet `L.layerGroup` po planetu).
-- **Što NIJE uključeno (zasad):** paranske linije, local space/relokacijska karta,
-  reverse (ASC/MC finder), PDF export, klikom prikaz preciznog grada/lokacije.
+- **Što NIJE uključeno (zasad):** paranske linije, local space/relokacijska karta
+  (Local Space Map/Azimuth — treći astro-seek način), reverse (ASC/MC finder), PDF export.
 
 ---
 

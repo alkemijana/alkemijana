@@ -11,7 +11,7 @@
 
 'use strict';
 
-let currentAcg = null; // { time, lines: [{ id, name, mc:[...], ic:[...], asc:[[...]], dsc:[[...]] }] }
+let currentAcg = null; // { name, place, lines: [{ id, name, mundo:{...}, zodio:{...} }], gastDeg, eps }
 
 /* Tijela za koje crtamo linije — klasičnih 10, bez čvorova/Lilith/Kirona
    (nemaju smislenu fizičku RA/Dec putanju za ACG u ovom opsegu). */
@@ -32,26 +32,60 @@ function wrapLon180(lon) {
   return x > 180 ? x - 360 : x;
 }
 
+/* Ekvatorijalne koordinate (RA/Dec, °) iz ekliptičke duljine uz latitudu 0 —
+   za "Zodiaco" projekciju (planet projiciran na ekliptiku, kao u relokacijskoj karti). */
+function raDecFromEcliptic(lonDeg, epsDeg) {
+  const l = lonDeg * D2R, e = epsDeg * D2R;
+  const ra = norm360(Math.atan2(Math.sin(l) * Math.cos(e), Math.cos(l)) * R2D);
+  const dec = Math.asin(Math.sin(e) * Math.sin(l)) * R2D;
+  return { ra, dec };
+}
+
+const ACG_LAT_LIMIT = 85; // granica Web Mercator projekcije koju Leaflet prikazuje
+
 /* Za dano RA/Dec planeta izračunaj sve 4 ACG linije.
-   gastDeg = Greenwich apparent sidereal time u stupnjevima (gast*15). */
+   gastDeg = Greenwich apparent sidereal time u stupnjevima (gast*15).
+   ASC i DSC krivulje dijele krajnje točke (na granici cirkumpolarnosti H0→0 obje
+   konvergiraju u MC liniju, H0→180 u IC liniju) pa se vizualno spoje kao na Astro-Seeku. */
 function computeAcgLines(raDeg, decDeg, gastDeg) {
   const lonMC = wrapLon180(raDeg - gastDeg);
   const lonIC = wrapLon180(lonMC + 180);
+  const tdec = Math.tan(decDeg * D2R);
 
-  // Raspon do ±85° (granica Web Mercator projekcije koju Leaflet prikazuje) uz sitan
-  // korak — ASC/DSC krivulje tako stignu skoro do granice cirkumpolarnosti i vizualno
-  // se spoje s MC/IC linijom (matematički: kod H0→0 obje formule konvergiraju u MC),
-  // umjesto da budu naglo odsječene na fiksnoj širini.
-  const asc = [], dsc = [];
-  for (let lat = -85; lat <= 85; lat += 0.5) {
-    const tanProd = Math.tan(lat * D2R) * Math.tan(decDeg * D2R);
-    if (Math.abs(tanProd) >= 1) continue; // cirkumpolarno / nikad ne izlazi na toj širini
-    const h0 = R2D * Math.acos(Math.max(-1, Math.min(1, -tanProd)));
-    asc.push([lat, wrapLon180(raDeg - h0 - gastDeg)]);
-    dsc.push([lat, wrapLon180(raDeg + h0 - gastDeg)]);
+  // Krajnje širine krivulja: tan(lat) = ∓1/tan(dec).
+  //   H0 = 0   → ASC = DSC = MC linija (spoj na dnu/vrhu ovisno o predznaku)
+  //   H0 = 180 → ASC = DSC = IC linija
+  const ends = [];
+  if (Math.abs(tdec) > 1e-9) {
+    const latMC = R2D * Math.atan(-1 / tdec); // spoj na MC longitudi
+    const latIC = R2D * Math.atan(1 / tdec);  // spoj na IC longitudi
+    if (Math.abs(latMC) <= ACG_LAT_LIMIT) ends.push([latMC, lonMC]);
+    if (Math.abs(latIC) <= ACG_LAT_LIMIT) ends.push([latIC, lonIC]);
   }
 
+  const ascSamples = [], dscSamples = [];
+  for (let lat = -ACG_LAT_LIMIT; lat <= ACG_LAT_LIMIT; lat += 0.5) {
+    const tanProd = Math.tan(lat * D2R) * tdec;
+    if (Math.abs(tanProd) >= 1) continue; // cirkumpolarno / nikad ne izlazi na toj širini
+    const h0 = R2D * Math.acos(Math.max(-1, Math.min(1, -tanProd)));
+    ascSamples.push([lat, wrapLon180(raDeg - h0 - gastDeg)]);
+    dscSamples.push([lat, wrapLon180(raDeg + h0 - gastDeg)]);
+  }
+
+  // ubaci zajedničke krajnje točke pa poredaj po širini — tako ASC i DSC dijele krajeve
+  const asc = [...ends, ...ascSamples].sort((a, b) => a[0] - b[0]);
+  const dsc = [...ends, ...dscSamples].sort((a, b) => a[0] - b[0]);
+
   return { mc: lonMC, ic: lonIC, asc, dsc };
+}
+
+/* Spakiraj sirove linije u segmentirane (antimeridian) za crtanje. */
+function packAcgLines(l) {
+  return {
+    mc: l.mc, ic: l.ic,
+    ascSegments: splitAntimeridian(l.asc),
+    dscSegments: splitAntimeridian(l.dsc)
+  };
 }
 
 /* Razdvoji niz [lat,lon] točaka u segmente kad lon "preskoči" preko ±180°
@@ -101,13 +135,14 @@ async function acgSubmit(ev) {
     const eps = trueObliquity(time); // za živi ASC/MC pod mišem (computeAscMc)
 
     const lines = ACG_BODIES.map(def => {
-      const eq = equOfDate(Astronomy.Body[def.body], time);
-      const l = computeAcgLines(eq.ra, eq.dec, gastDeg);
+      const body = Astronomy.Body[def.body];
+      const eqM = equOfDate(body, time);                       // Mundo: prava RA/Dec (s latitudom)
+      const eclLon = eclLonOfDate(body, time);                 // ekliptička duljina planeta
+      const eqZ = raDecFromEcliptic(eclLon, eps);              // Zodiaco: projekcija na ekliptiku (lat 0)
       return {
         id: def.id, name: def.name,
-        mc: l.mc, ic: l.ic,
-        ascSegments: splitAntimeridian(l.asc),
-        dscSegments: splitAntimeridian(l.dsc)
+        mundo: packAcgLines(computeAcgLines(eqM.ra, eqM.dec, gastDeg)),
+        zodio: packAcgLines(computeAcgLines(eqZ.ra, eqZ.dec, gastDeg))
       };
     });
 

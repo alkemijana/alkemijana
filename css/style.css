@@ -1708,14 +1708,47 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-intro strong { color: var(--lavender); font-weight: 600; }
 
 /* — AstroCartography (Leaflet karta) — */
+/* alatna traka iznad karte (izbor projekcije Zodio/Mundo) */
+.acg-toolbar {
+  display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
+  max-width: 900px; margin: 0 auto 1rem;
+}
+.acg-proj-label {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem; color: var(--text);
+}
+.acg-proj-label select {
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem;
+  background: var(--form-bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem;
+}
+
+/* Okvir oko karte (padding = ACG_GUTTER u JS-u) u kojem stoje glif-oznake linija */
 .acg-map-wrap {
+  position: relative;
+  padding: 30px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  overflow: hidden;
   box-shadow: var(--shadow-glow);
+  background: var(--bg-mid);
   margin: 0 auto 1.4rem;
 }
-.acg-map { width: 100%; height: 480px; background: var(--bg-deep); }
+.acg-map { width: 100%; height: 460px; border-radius: 6px; background: var(--bg-deep); }
+.acg-map .leaflet-container { background: var(--bg-deep); }
+:root[data-theme="light"] .acg-map,
+:root[data-theme="light"] .acg-map .leaflet-container { background: var(--bg-mid); }
+
+/* Overlay s glif-oznakama u okviru — prekriva cijeli wrap, ne hvata klikove */
+.acg-edge-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 500; }
+.acg-edge-glyph {
+  position: absolute; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  background: var(--card-bg); border: 1.5px solid; border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+.acg-edge-glyph .nt-glyph { width: 13px; height: 13px; flex: none; }
+
 /* tamna/lavender tinta preko standardnih OSM tile-ova, umjesto zlatno-plavog izvornika */
 .acg-map .leaflet-tile-pane {
   filter: grayscale(0.85) invert(0.92) sepia(0.18) hue-rotate(220deg) saturate(1.35) brightness(0.82) contrast(0.95);
@@ -1733,16 +1766,6 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   box-shadow: var(--shadow-glow);
 }
 .acg-tooltip::before { display: none; }
-
-/* Oznake planeta uz vanjski kraj linije (samo glif), kao na Astro-Seeku */
-.acg-label-icon { background: none; border: none; pointer-events: none; }
-.acg-label-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px;
-  background: var(--card-bg); border: 1px solid; border-radius: 999px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
-}
-.acg-label-badge .nt-glyph { width: 13px; height: 13px; flex: none; }
 
 /* Koordinatna mreža — oznake stupnjeva */
 .acg-grid-label { background: none; border: none; pointer-events: none; }

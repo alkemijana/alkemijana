@@ -88,6 +88,41 @@ function packAcgLines(l) {
   };
 }
 
+/* ---- LOCAL SPACE (azimut) ---- */
+
+/* Točka na velikom krugu: kreni iz (lat1,lon1) u smjeru bearing° za kutnu udaljenost dist°. */
+function greatCirclePoint(lat1, lon1, bearingDeg, distDeg) {
+  const p1 = lat1 * D2R, l1 = lon1 * D2R, th = bearingDeg * D2R, dl = distDeg * D2R;
+  const p2 = Math.asin(Math.sin(p1) * Math.cos(dl) + Math.cos(p1) * Math.sin(dl) * Math.cos(th));
+  const l2 = l1 + Math.atan2(Math.sin(th) * Math.sin(dl) * Math.cos(p1), Math.cos(dl) - Math.sin(p1) * Math.sin(p2));
+  return [p2 * R2D, wrapLon180(l2 * R2D)];
+}
+
+/* Local Space linija planeta: veliki krug iz mjesta rođenja u smjeru azimuta planeta
+   u trenutku rođenja. Azimut iz satnog kuta (H = LST − RA) standardnom formulom. */
+function computeLocalSpaceSegments(lat0, lon0, raDeg, decDeg, gastDeg) {
+  const lstDeg = norm360(gastDeg + lon0);
+  const H = norm360(lstDeg - raDeg) * D2R;      // satni kut (zapad pozitivan)
+  const phi = lat0 * D2R, dec = decDeg * D2R;
+  const aSouth = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) * R2D;
+  const bearing = norm360(aSouth + 180);        // kompasni azimut od sjevera (S=0→N=180 pretvorba)
+
+  // uzorkuj cijeli veliki krug pa prekini na antimeridianu i blizu polova (Mercator granica)
+  const segments = [];
+  let cur = [];
+  for (let dd = 0; dd <= 360; dd += 1) {
+    const p = greatCirclePoint(lat0, lon0, bearing, dd);
+    if (Math.abs(p[0]) > ACG_LAT_LIMIT) { if (cur.length > 1) segments.push(cur); cur = []; continue; }
+    if (cur.length) {
+      const prevLon = cur[cur.length - 1][1];
+      if (Math.abs(p[1] - prevLon) > 180) { if (cur.length > 1) segments.push(cur); cur = []; }
+    }
+    cur.push(p);
+  }
+  if (cur.length > 1) segments.push(cur);
+  return { lsSegments: segments };
+}
+
 /* Razdvoji niz [lat,lon] točaka u segmente kad lon "preskoči" preko ±180°
    (antimeridian) — inače Leaflet povuče ravnu crtu preko cijele karte. */
 function splitAntimeridian(points) {
@@ -142,7 +177,8 @@ async function acgSubmit(ev) {
       return {
         id: def.id, name: def.name,
         mundo: packAcgLines(computeAcgLines(eqM.ra, eqM.dec, gastDeg)),
-        zodio: packAcgLines(computeAcgLines(eqZ.ra, eqZ.dec, gastDeg))
+        zodio: packAcgLines(computeAcgLines(eqZ.ra, eqZ.dec, gastDeg)),
+        local: computeLocalSpaceSegments(selectedPlace.lat, selectedPlace.lon, eqM.ra, eqM.dec, gastDeg)
       };
     });
 

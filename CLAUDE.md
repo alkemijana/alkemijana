@@ -220,10 +220,14 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   (`cos H₀ = −tan(lat)·tan(dec)`) do ±85°. ASC i DSC **dijele krajnje točke** (na
   granici cirkumpolarnosti H0→0 obje konvergiraju u MC liniju, H0→180 u IC) pa se
   vizualno spoje kao na Astro-Seeku. `computeChart` u natal-calc.js **nije dirana**.
-- **Projekcija Mundo/Zodiaco (`#acg-projection`):** za svaki planet računaju se **dva**
-  seta linija — **Mundo** (prava RA/Dec s latitudom, astronomska vidljivost) i **Zodiaco**
+- **Projekcija Mundo/Zodiaco/Local Space (`#acg-projection`):** za svaki planet računaju se **tri**
+  seta linija — **Mundo** (prava RA/Dec s latitudom, astronomska vidljivost), **Zodiaco**
   (planet projiciran na ekliptiku, `raDecFromEcliptic(eclLon, eps)` s latitudom 0 — linije
-  1:1 s relokacijskom kartom). Dropdown prebacuje bez ponovnog računanja (`pl.mundo`/`pl.zodio`).
+  1:1 s relokacijskom kartom) i **Local Space** (`computeLocalSpaceSegments` — jedan veliki
+  krug po planetu iz mjesta rođenja u smjeru azimuta planeta; azimut iz satnog kuta
+  `H = LST − RA`, veliki krug preko `greatCirclePoint`). Dropdown prebacuje bez ponovnog
+  računanja (`pl.mundo`/`pl.zodio`/`pl.local`); Local Space nema ASC/MC vs DSC/IC pa
+  `acgUpdateNote` mijenja napomenu ispod karte.
 - **Karta (`natal-acg-render.js`):** Leaflet (lazy-load s CDN-a, `js/lib/` ga ne
   sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), **CARTO
   light_all tile server** (nazivi gradova na engleskom/latinici; OSM piše lokalna
@@ -242,8 +246,10 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   računa `computeAscMc` iz natal-calc.js s `gastDeg`/`eps` spremljenima u `currentAcg`).
   Legenda ispod karte: boja + glif (`glyphSvgHtml`) + naziv + checkbox za
   uključi/isključi liniju (Leaflet `L.layerGroup` po planetu).
-- **Što NIJE uključeno (zasad):** paranske linije, local space/relokacijska karta
-  (Local Space Map/Azimuth — treći astro-seek način), reverse (ASC/MC finder), PDF export.
+- **Klik na liniju:** fokus-pravokutnik uklonjen (`path.leaflet-interactive:focus{outline:none}`);
+  na hover/fokus se **sama linija podeblja** (CSS `stroke-width`), ne crta se okvir.
+- **Što NIJE uključeno (zasad):** paranske linije, relokacijska karta (numerički prikaz),
+  reverse (ASC/MC finder), PDF export.
 
 ---
 

@@ -1767,6 +1767,12 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .acg-tooltip::before { display: none; }
 
+/* Linije: bez fokus-pravokutnika na klik; podebljaj samu liniju na hover/fokus */
+.acg-map path.leaflet-interactive { transition: stroke-width 0.12s ease; }
+.acg-map path.leaflet-interactive:focus { outline: none; }
+.acg-map path.leaflet-interactive:hover,
+.acg-map path.leaflet-interactive:focus { stroke-width: 4.5; }
+
 /* Koordinatna mreža — oznake stupnjeva */
 .acg-grid-label { background: none; border: none; pointer-events: none; }
 .acg-grid-label span {

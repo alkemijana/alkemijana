@@ -153,28 +153,50 @@ function acgRedraw() {
   currentAcg.lines.forEach(pl => {
     if (enabled[pl.id] === false) return;
     const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
-    const geom = pl[mode] || pl.mundo;
     const group = L.layerGroup();
 
-    // MC/IC: okomite linije (pol do pol)
-    acgDrawLine([[-85, geom.mc], [85, geom.mc]], color, pl.name + ' — MC').addTo(group);
-    acgDrawLine([[-85, geom.ic], [85, geom.ic]], color, pl.name + ' — IC', true).addTo(group);
-    acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.mc], [85, geom.mc]] });
-    acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.ic], [85, geom.ic]] });
+    if (mode === 'local') {
+      // Local Space: jedna linija (veliki krug) po planetu — smjer azimuta iz mjesta rođenja
+      (pl.local.lsSegments || []).forEach(seg => {
+        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — Local Space').addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+      });
+    } else {
+      const geom = pl[mode] || pl.mundo;
+      // MC/IC: okomite linije (pol do pol)
+      acgDrawLine([[-85, geom.mc], [85, geom.mc]], color, pl.name + ' — MC').addTo(group);
+      acgDrawLine([[-85, geom.ic], [85, geom.ic]], color, pl.name + ' — IC', true).addTo(group);
+      acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.mc], [85, geom.mc]] });
+      acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.ic], [85, geom.ic]] });
 
-    // ASC/DSC: zakrivljene linije (segmentirane na antimeridianu)
-    geom.ascSegments.forEach(seg => {
-      if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — ASC').addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
-    });
-    geom.dscSegments.forEach(seg => {
-      if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — DSC', true).addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
-    });
+      // ASC/DSC: zakrivljene linije (segmentirane na antimeridianu)
+      geom.ascSegments.forEach(seg => {
+        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — ASC').addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+      });
+      geom.dscSegments.forEach(seg => {
+        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — DSC', true).addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+      });
+    }
 
     group.addTo(acgMap);
     acgLayerGroups[pl.id] = group;
   });
 
+  acgUpdateNote(mode);
   updateAcgEdgeLabels();
+}
+
+/* Napomena ispod karte ovisi o projekciji (Local Space nema ASC/MC vs DSC/IC). */
+function acgUpdateNote(mode) {
+  const el = document.getElementById('acg-line-note');
+  if (!el) return;
+  if (mode === 'local') {
+    el.innerHTML = 'Local Space: svaka linija je veliki krug iz mjesta rođenja u smjeru azimuta tog planeta. ' +
+      'Glifovi u okviru oko karte pokazuju koja je linija koja. Prijeđi mišem preko linije za naziv.';
+  } else {
+    el.innerHTML = '<span class="acg-line-sample acg-line-solid"></span> puna linija = <strong>ASC / MC</strong> &nbsp;·&nbsp; ' +
+      '<span class="acg-line-sample acg-line-dashed"></span> isprekidana linija = <strong>DSC / IC</strong> &nbsp;·&nbsp; ' +
+      'okomite linije su MC/IC, zakrivljene ASC/DSC. Glifovi u okviru oko karte pokazuju koja je linija koja. Prijeđi mišem preko linije za naziv.';
+  }
 }
 
 /* Svi presjeci dužine a→b s rubovima pravokutnika [0,0,W,H] (0, 1 ili 2 točke). */

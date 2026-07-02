@@ -246,8 +246,15 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   računa `computeAscMc` iz natal-calc.js s `gastDeg`/`eps` spremljenima u `currentAcg`).
   Legenda ispod karte: boja + glif (`glyphSvgHtml`) + naziv + checkbox za
   uključi/isključi liniju (Leaflet `L.layerGroup` po planetu).
-- **Klik na liniju:** fokus-pravokutnik uklonjen (`path.leaflet-interactive:focus{outline:none}`);
-  na hover/fokus se **sama linija podeblja** (CSS `stroke-width`), ne crta se okvir.
+- **Klik/tap na liniju:** svaka linija ima tanku vidljivu + široku prozirnu "hit" liniju
+  (weight 16, lakši tap na mobitelu). Hover podeblja liniju; klik/tap ju **odabere**
+  (`acgSelectLine`: podebljanje na weight 5 + popup s nazivom uz liniju). Fokus-pravokutnik
+  uklonjen (`path.leaflet-interactive:focus{outline:none}`). `acgSelectedVis` pamti odabir.
+- **Bez bijelih rubova:** `acgFitMinZoom` (`getBoundsZoom(world, true)`) postavi minimalni
+  zoom tako da svijet ispuni cijelu širinu; uz to pozadina karte je tema-boja preko
+  `.acg-map.leaflet-container` (specifičnost 0,2,0 nadjačava Leafletov `#ddd` default).
+- **Glif-oznake u okviru:** `updateAcgEdgeLabels` dedupira iste glifove (isti planet blizu,
+  po rubu i globalno u kutovima) da se ne pojave dva identična jedan do drugog.
 - **Što NIJE uključeno (zasad):** paranske linije, relokacijska karta (numerički prikaz),
   reverse (ASC/MC finder), PDF export.
 

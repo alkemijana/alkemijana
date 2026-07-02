@@ -52,11 +52,13 @@ async function ensureLeaflet() {
   return window.L;
 }
 
+const ACG_WORLD = [[-85, -180], [85, 180]];
+
 function acgInitMap() {
   if (acgMap) return acgMap;
   acgMap = L.map('acg-map', {
     minZoom: 2, maxZoom: 12, worldCopyJump: false,
-    maxBounds: [[-85, -180], [85, 180]], maxBoundsViscosity: 1.0
+    maxBounds: ACG_WORLD, maxBoundsViscosity: 1.0
   }).setView([20, 0], 2);
   // CARTO Voyager/Positron: nazivi gradova na engleskom/latinici (OSM piše lokalna pisma)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -66,6 +68,14 @@ function acgInitMap() {
   acgAddGraticule(acgMap);
   acgAddCoordBox(acgMap);
   return acgMap;
+}
+
+/* Minimalni zoom = onaj na kojem svijet ispuni cijelu širinu okvira (bez bijelih rubova). */
+function acgFitMinZoom() {
+  if (!acgMap) return;
+  const z = acgMap.getBoundsZoom(L.latLngBounds(ACG_WORLD), true); // najmanji zoom da pogled stane U svijet
+  acgMap.setMinZoom(z);
+  if (acgMap.getZoom() < z) acgMap.setView([20, 0], z);
 }
 
 /* Koordinatna mreža: linije svakih 30°, ekvator/nulti meridijan naglašeni, stupnjevi. */
@@ -122,13 +132,34 @@ function acgAddCoordBox(map) {
   map.on('mouseout', () => { if (acgCoordDiv) acgCoordDiv.innerHTML = 'Pomakni miš preko karte…'; });
 }
 
-function acgDrawLine(points, color, label, dashed) {
-  const line = L.polyline(points, {
-    color, weight: 2.2, opacity: 0.85,
-    dashArray: dashed ? '5,5' : null
+let acgSelectedVis = null; // trenutno odabrana (podebljana) vidljiva linija
+
+/* Odaberi liniju: podebljaj ju i pokaži oznaku (naziv) uz nju. */
+function acgSelectLine(vis, label, color, latlng) {
+  if (acgSelectedVis && acgSelectedVis !== vis) acgSelectedVis.setStyle({ weight: 2.2 });
+  acgSelectedVis = vis;
+  vis.setStyle({ weight: 5 });
+  L.popup({ className: 'acg-sel-popup', autoPan: false, offset: [0, -2] })
+    .setLatLng(latlng)
+    .setContent('<span class="acg-sel-line" style="color:' + color + '">' + escHtml(label) + '</span>')
+    .openOn(acgMap);
+}
+
+/* Crtaj liniju: tanka vidljiva + široka prozirna "hit" linija (lakši klik/tap, pogotovo mobitel).
+   Hover podeblja, klik/tap odabere (podebljanje + oznaka). */
+function acgDrawLine(group, points, color, label, dashed) {
+  const vis = L.polyline(points, {
+    color, weight: 2.2, opacity: 0.9,
+    dashArray: dashed ? '6,6' : null, interactive: false
   });
-  if (label) line.bindTooltip(label, { sticky: true, className: 'acg-tooltip' });
-  return line;
+  const hit = L.polyline(points, { color: '#ffffff', weight: 16, opacity: 0, interactive: true });
+  hit.bindTooltip(label, { sticky: true, className: 'acg-tooltip' });
+  hit.on('mouseover', () => { if (acgSelectedVis !== vis) vis.setStyle({ weight: 4 }); });
+  hit.on('mouseout',  () => { if (acgSelectedVis !== vis) vis.setStyle({ weight: 2.2 }); });
+  hit.on('click', (e) => { acgSelectLine(vis, label, color, e.latlng); L.DomEvent.stopPropagation(e); });
+  vis.addTo(group);
+  hit.addTo(group);
+  return vis;
 }
 
 /* ---- crtanje linija + priprema geometrije za glif-oznake u okviru ---- */
@@ -149,6 +180,8 @@ function acgRedraw() {
   for (const id in acgLayerGroups) { acgMap.removeLayer(acgLayerGroups[id]); }
   acgLayerGroups = {};
   acgEdgeLines = [];
+  acgSelectedVis = null;
+  acgMap.closePopup();
 
   currentAcg.lines.forEach(pl => {
     if (enabled[pl.id] === false) return;
@@ -158,22 +191,22 @@ function acgRedraw() {
     if (mode === 'local') {
       // Local Space: jedna linija (veliki krug) po planetu — smjer azimuta iz mjesta rođenja
       (pl.local.lsSegments || []).forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — Local Space').addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — Local Space', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
     } else {
       const geom = pl[mode] || pl.mundo;
       // MC/IC: okomite linije (pol do pol)
-      acgDrawLine([[-85, geom.mc], [85, geom.mc]], color, pl.name + ' — MC').addTo(group);
-      acgDrawLine([[-85, geom.ic], [85, geom.ic]], color, pl.name + ' — IC', true).addTo(group);
+      acgDrawLine(group, [[-85, geom.mc], [85, geom.mc]], color, pl.name + ' — MC', false);
+      acgDrawLine(group, [[-85, geom.ic], [85, geom.ic]], color, pl.name + ' — IC', true);
       acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.mc], [85, geom.mc]] });
       acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.ic], [85, geom.ic]] });
 
       // ASC/DSC: zakrivljene linije (segmentirane na antimeridianu)
       geom.ascSegments.forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — ASC').addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — ASC', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
       geom.dscSegments.forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(seg, color, pl.name + ' — DSC', true).addTo(group); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — DSC', true); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
     }
 
@@ -233,27 +266,46 @@ function updateAcgEdgeLabels() {
     keep.forEach(c => buckets[c.edge].push({ id: ln.id, color: ln.color, x: c.x, y: c.y }));
   });
 
-  const spread = (arr, key, min, lo, hi) => {
+  // ukloni dvostruke glifove istog planeta koji padnu na skoro isto mjesto na istom rubu
+  const dedupe = (arr, key) => {
     arr.sort((a, b) => a[key] - b[key]);
+    const out = [];
+    for (const it of arr) {
+      const last = out[out.length - 1];
+      if (last && last.id === it.id && Math.abs(it[key] - last[key]) < 34) continue;
+      out.push(it);
+    }
+    return out;
+  };
+  const spread = (arr, key, min, lo, hi) => {
     for (let i = 0; i < arr.length; i++) {
       if (i > 0 && arr[i][key] - arr[i - 1][key] < min) arr[i][key] = arr[i - 1][key] + min;
       arr[i][key] = Math.max(lo, Math.min(hi, arr[i][key]));
     }
   };
-  spread(buckets.top, 'x', 20, 0, W);
-  spread(buckets.bottom, 'x', 20, 0, W);
-  spread(buckets.left, 'y', 20, 0, H);
-  spread(buckets.right, 'y', 20, 0, H);
+  buckets.top = dedupe(buckets.top, 'x');       spread(buckets.top, 'x', 20, 0, W);
+  buckets.bottom = dedupe(buckets.bottom, 'x'); spread(buckets.bottom, 'x', 20, 0, W);
+  buckets.left = dedupe(buckets.left, 'y');     spread(buckets.left, 'y', 20, 0, H);
+  buckets.right = dedupe(buckets.right, 'y');   spread(buckets.right, 'y', 20, 0, H);
 
-  let html = '';
-  const badge = (px, py, id, color) =>
-    '<div class="acg-edge-glyph" style="left:' + px.toFixed(1) + 'px;top:' + py.toFixed(1) + 'px;border-color:' + color + '">' +
-    glyphSvgHtml(id, 13, color, 'nt-glyph') + '</div>';
-  buckets.top.forEach(o => html += badge(o.x + G, G / 2, o.id, o.color));
-  buckets.bottom.forEach(o => html += badge(o.x + G, H + G + G / 2, o.id, o.color));
-  buckets.left.forEach(o => html += badge(G / 2, o.y + G, o.id, o.color));
-  buckets.right.forEach(o => html += badge(W + G + G / 2, o.y + G, o.id, o.color));
-  acgEdgeOverlay.innerHTML = html;
+  // spoji sve rubove u zajednički popis piksel-pozicija
+  const badges = [];
+  buckets.top.forEach(o => badges.push({ px: o.x + G, py: G / 2, id: o.id, color: o.color }));
+  buckets.bottom.forEach(o => badges.push({ px: o.x + G, py: H + G + G / 2, id: o.id, color: o.color }));
+  buckets.left.forEach(o => badges.push({ px: G / 2, py: o.y + G, id: o.id, color: o.color }));
+  buckets.right.forEach(o => badges.push({ px: W + G + G / 2, py: o.y + G, id: o.id, color: o.color }));
+
+  // završni globalni dedup: isti planet blizu (npr. u kutu, top+left) → jedan glif
+  const kept = [];
+  badges.forEach(b => {
+    if (kept.some(k => k.id === b.id && Math.abs(k.px - b.px) < 26 && Math.abs(k.py - b.py) < 26)) return;
+    kept.push(b);
+  });
+
+  acgEdgeOverlay.innerHTML = kept.map(b =>
+    '<div class="acg-edge-glyph" style="left:' + b.px.toFixed(1) + 'px;top:' + b.py.toFixed(1) + 'px;border-color:' + b.color + '">' +
+    glyphSvgHtml(b.id, 13, b.color, 'nt-glyph') + '</div>'
+  ).join('');
 }
 
 function scheduleEdgeLabels() {
@@ -278,7 +330,9 @@ function renderAcgResult(acg) {
 
     if (!acgListenersBound) {
       map.on('move zoom', scheduleEdgeLabels);
-      map.on('moveend zoomend resize', updateAcgEdgeLabels);
+      map.on('moveend zoomend', updateAcgEdgeLabels);
+      map.on('resize', () => { acgFitMinZoom(); updateAcgEdgeLabels(); });
+      map.on('popupclose', () => { if (acgSelectedVis) { acgSelectedVis.setStyle({ weight: 2.2 }); acgSelectedVis = null; } });
       const sel = document.getElementById('acg-projection');
       if (sel) sel.addEventListener('change', acgRedraw);
       acgListenersBound = true;
@@ -286,7 +340,7 @@ function renderAcgResult(acg) {
 
     renderAcgLegend(acg.lines);
     acgRedraw();
-    setTimeout(() => { map.invalidateSize(); updateAcgEdgeLabels(); }, 60);
+    setTimeout(() => { map.invalidateSize(); acgFitMinZoom(); updateAcgEdgeLabels(); }, 60);
   }).catch(e => {
     showNatalError('Ne mogu učitati kartu: ' + e.message);
   });

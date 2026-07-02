@@ -1733,10 +1733,11 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   background: var(--bg-mid);
   margin: 0 auto 1.4rem;
 }
-.acg-map { width: 100%; height: 460px; border-radius: 6px; background: var(--bg-deep); }
-.acg-map .leaflet-container { background: var(--bg-deep); }
+/* .acg-map i .leaflet-container su ISTI element — zato .acg-map.leaflet-container
+   (specifičnost 0,2,0) da nadjača Leafletov default .leaflet-container{background:#ddd} */
+.acg-map, .acg-map.leaflet-container { width: 100%; height: 460px; border-radius: 6px; background: var(--bg-deep); }
 :root[data-theme="light"] .acg-map,
-:root[data-theme="light"] .acg-map .leaflet-container { background: var(--bg-mid); }
+:root[data-theme="light"] .acg-map.leaflet-container { background: var(--bg-mid); }
 
 /* Overlay s glif-oznakama u okviru — prekriva cijeli wrap, ne hvata klikove */
 .acg-edge-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 500; }
@@ -1767,11 +1768,19 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .acg-tooltip::before { display: none; }
 
-/* Linije: bez fokus-pravokutnika na klik; podebljaj samu liniju na hover/fokus */
+/* Linije: bez fokus-pravokutnika na klik (podebljanje radi JS preko setStyle) */
 .acg-map path.leaflet-interactive { transition: stroke-width 0.12s ease; }
 .acg-map path.leaflet-interactive:focus { outline: none; }
-.acg-map path.leaflet-interactive:hover,
-.acg-map path.leaflet-interactive:focus { stroke-width: 4.5; }
+.acg-map .leaflet-interactive { cursor: pointer; }
+
+/* Oznaka odabrane (podebljane) linije */
+.acg-sel-popup .leaflet-popup-content-wrapper {
+  background: var(--card-bg); color: var(--card-text);
+  border: 1px solid var(--border); box-shadow: var(--shadow-glow);
+}
+.acg-sel-popup .leaflet-popup-tip { background: var(--card-bg); border: 1px solid var(--border); }
+.acg-sel-popup .leaflet-popup-content { margin: 0.4rem 0.7rem; }
+.acg-sel-line { font-family: 'Quicksand', sans-serif; font-size: 0.82rem; font-weight: 700; }
 
 /* Koordinatna mreža — oznake stupnjeva */
 .acg-grid-label { background: none; border: none; pointer-events: none; }

@@ -477,7 +477,7 @@
       <li id="nav-usluge"><a onclick="showPage('usluge')"  data-page="usluge" id="t-navServices">Usluge</a></li>
       <li><a onclick="showPage('o-meni')"  data-page="o-meni" id="t-navAbout">O meni</a></li>
       <li><a onclick="showPage('blog')"    data-page="blog" id="t-navBlog">Blog</a></li>
-      <li><a onclick="showPage('natal')"   data-page="natal" id="t-navNatal">Natalna karta</a></li>
+      <li><a onclick="showPage('natal')"   data-page="natal" id="t-navNatal">Astro alati</a></li>
       <li><a onclick="showPage('kontakt')" data-page="kontakt" id="t-navContact">Kontakt</a></li>
     </ul>
     <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
@@ -500,7 +500,7 @@
     </div>
     <div class="section container" id="home-natal-section">
       <h2 class="visually-hidden">Besplatna natalna karta — izrada online</h2>
-      <a class="home-live-natal-wrap" onclick="showPage('natal'); return false;" href="#natal" role="button" aria-label="Izradi vlastitu besplatnu natalnu kartu" title="Izradi besplatnu natalnu kartu — pozicije planeta, kuće, aspekti">
+      <a class="home-live-natal-wrap" onclick="openAstroTool('natal'); return false;" href="#natal" role="button" aria-label="Izradi vlastitu besplatnu natalnu kartu" title="Izradi besplatnu natalnu kartu — pozicije planeta, kuće, aspekti">
         <div class="home-live-natal-svg" id="home-live-natal-svg" aria-hidden="true"></div>
         <div class="home-live-natal-cta" aria-hidden="true">
           <span class="home-live-natal-cta-label">✦ Izradi vlastitu<br>natalnu kartu</span>
@@ -712,10 +712,60 @@
       <h1 class="section-title" id="t-natalPageTitle">Besplatna natalna karta</h1>
       <p class="section-subtitle" id="t-natalPageSub">Izradi svoju natalnu kartu online — pozicije planeta, kuće, aspekti i dominante.</p>
 
-      <div class="nt-intro">
-        <p id="t-natalIntroP1"></p>
-        <p id="t-natalIntroP2"></p>
-        <p id="t-natalIntroP3"></p>
+      <div class="tool-cards-grid">
+        <button type="button" class="tool-card" onclick="openAstroTool('natal')">
+          <div class="tool-card-icon">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
+              <circle cx="50" cy="50" r="27" fill="none" stroke="var(--lavender)" stroke-width="1.6" opacity="0.55"/>
+              <path d="M50,8 L50,92 M8,50 L92,50" stroke="var(--lavender)" stroke-width="1.4" opacity="0.55"/>
+              <circle cx="50" cy="8"  r="3.4" fill="var(--sage)"/>
+              <circle cx="76" cy="76" r="3.4" fill="var(--lavender)"/>
+              <circle cx="24" cy="68" r="3.4" fill="var(--silver-bright)"/>
+            </svg>
+          </div>
+          <h3 id="t-toolCardNatalTitle"></h3>
+          <p id="t-toolCardNatalDesc"></p>
+        </button>
+
+        <button type="button" class="tool-card" onclick="openAstroTool('synastry')">
+          <div class="tool-card-icon">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="38" cy="50" r="30" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
+              <circle cx="62" cy="50" r="30" fill="none" stroke="var(--sage)" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <h3 id="t-toolCardSynastryTitle"></h3>
+          <p id="t-toolCardSynastryDesc"></p>
+        </button>
+
+        <button type="button" class="tool-card" onclick="openAstroTool('transit')">
+          <div class="tool-card-icon">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--lavender)" stroke-width="2" opacity="0.5"/>
+              <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="var(--sage)" stroke-width="2.2" transform="rotate(-25 50 50)"/>
+              <circle cx="50" cy="50" r="3" fill="var(--lavender)"/>
+              <path d="M50,50 L50,20" stroke="var(--silver-bright)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="83" cy="34" r="3.4" fill="var(--sage)"/>
+            </svg>
+          </div>
+          <h3 id="t-toolCardTransitTitle"></h3>
+          <p id="t-toolCardTransitDesc"></p>
+        </button>
+
+        <button type="button" class="tool-card" onclick="openAstroTool('acg')">
+          <div class="tool-card-icon">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <ellipse cx="50" cy="50" rx="42" ry="42" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
+              <ellipse cx="50" cy="50" rx="18" ry="42" fill="none" stroke="var(--lavender)" stroke-width="1.3" opacity="0.5"/>
+              <path d="M8,50 L92,50" stroke="var(--lavender)" stroke-width="1.3" opacity="0.5"/>
+              <path d="M22,15 C45,45 55,55 78,85" fill="none" stroke="var(--sage)" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M78,15 C55,45 45,55 22,85" fill="none" stroke="var(--sage)" stroke-width="2.2" stroke-linecap="round" opacity="0.55" stroke-dasharray="5,5"/>
+            </svg>
+          </div>
+          <h3 id="t-toolCardAcgTitle"></h3>
+          <p id="t-toolCardAcgDesc"></p>
+        </button>
       </div>
 
       <!-- Prekidač: natalna karta (jedna osoba) ↔ sinastrija (dvije osobe) -->
@@ -1135,6 +1185,12 @@
         <details class="nt-faq-item"><summary id="t-natalFaqQ7"></summary><p id="t-natalFaqA7"></p></details>
         <details class="nt-faq-item"><summary id="t-natalFaqQ8"></summary><p id="t-natalFaqA8"></p></details>
         <details class="nt-faq-item"><summary id="t-natalFaqQ9"></summary><p id="t-natalFaqA9"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ10"></summary><p id="t-natalFaqA10"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ11"></summary><p id="t-natalFaqA11"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ12"></summary><p id="t-natalFaqA12"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ13"></summary><p id="t-natalFaqA13"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ14"></summary><p id="t-natalFaqA14"></p></details>
+        <details class="nt-faq-item"><summary id="t-natalFaqQ15"></summary><p id="t-natalFaqA15"></p></details>
       </section>
     </div>
   </section>

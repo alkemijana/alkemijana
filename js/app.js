@@ -1060,16 +1060,27 @@ function applyTexts() {
   set('natal-poster-btn',  t.natalPosterBtn);
   set('natal-working-btn', t.natalWorkingBtn);
 
-  // Natalna karta — uvod (3 paragrafa iznad forme, SEO/info sadržaj)
-  set('t-natalIntroP1', t.natalIntroP1);
-  set('t-natalIntroP2', t.natalIntroP2);
-  set('t-natalIntroP3', t.natalIntroP3);
+  // Astro alati — kartice iznad forme (naslov + kratki opis po alatu)
+  set('t-toolCardNatalTitle',    t.toolCardNatalTitle);
+  set('t-toolCardNatalDesc',     t.toolCardNatalDesc);
+  set('t-toolCardSynastryTitle', t.toolCardSynastryTitle);
+  set('t-toolCardSynastryDesc',  t.toolCardSynastryDesc);
+  set('t-toolCardTransitTitle',  t.toolCardTransitTitle);
+  set('t-toolCardTransitDesc',   t.toolCardTransitDesc);
+  set('t-toolCardAcgTitle',      t.toolCardAcgTitle);
+  set('t-toolCardAcgDesc',       t.toolCardAcgDesc);
 
-  // Natalna karta — FAQ (naslov + 9 pitanja i odgovora)
+  // Astro alati — FAQ (naslov + do 15 pitanja i odgovora; prazni parovi se sakriju)
   set('t-natalFaqTitle', t.natalFaqTitle);
-  for (let i = 1; i <= 9; i++) {
-    set('t-natalFaqQ' + i, t['natalFaqQ' + i]);
-    set('t-natalFaqA' + i, t['natalFaqA' + i]);
+  for (let i = 1; i <= 15; i++) {
+    const q = t['natalFaqQ' + i], a = t['natalFaqA' + i];
+    set('t-natalFaqQ' + i, q);
+    set('t-natalFaqA' + i, a);
+    const item = document.getElementById('t-natalFaqQ' + i);
+    if (item) {
+      const wrap = item.closest('.nt-faq-item');
+      if (wrap) wrap.style.display = q ? '' : 'none';
+    }
   }
 
   // Kontakt naslov — dinamički prema stanju usluga

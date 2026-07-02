@@ -158,6 +158,19 @@ function redrawChartWheel() {
   });
 }
 
+/* Otvori stranicu Astro alati s odabranim modom (natal/synastry/transit/acg) i
+   scrolla do forme — zajednička ulazna točka za kartice alata i kolut na početnoj. */
+function openAstroTool(mode) {
+  showPage('natal');
+  if (window.Synastry && typeof window.Synastry.setNatalMode === 'function') {
+    window.Synastry.setNatalMode(mode, true);
+  }
+  requestAnimationFrame(() => {
+    const wrap = document.getElementById('natal-form-wrap');
+    if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
 function initNatalTabs() {
   const tabs = document.getElementById('natal-tabs');
   if (!tabs) return;

@@ -71,6 +71,25 @@ ALKEMIJANA WEBSITE/
 
 ---
 
+## Astro alati (stranica #natal) — natalna karta, sinastrija, tranziti, astrokartografija
+
+Stranica **#natal** (nav link "Astro alati") okuplja sve astro alate, birane
+prekidačem `.nt-mode-seg` (natal/synastry/transit/acg — `setNatalMode()` u
+natal-synastry.js). Iznad forme su **4 kartice alata** (`.tool-cards-grid` u
+index.html) — svaka s ručno crtanim SVG motivom (kotač/dvostruki krug/orbita/globus,
+`var(--lavender)`/`var(--sage)` boje, prati temu), naslovom i kratkim opisom;
+tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
+
+- **`openAstroTool(mode)`** (natal.js) — zajednička ulazna točka: `showPage('natal')`
+  + `window.Synastry.setNatalMode(mode, true)` + scroll do forme. Koriste je i
+  4 kartice (`onclick="openAstroTool('natal')"` itd.) i kolut "Izradi vlastitu
+  natalnu kartu" na početnoj (`#home-natal-section`) — klik na kolut uvijek otvara
+  mod `natal`, bez obzira na prethodno odabrani mod spremljen u `aj_natal_mode`.
+- **FAQ (do 15 pitanja):** `natalFaqQ1..15`/`A1..15` u TEXTS, sva pitanja+odgovori
+  u HTML-u unaprijed (`.nt-faq-item` × 15), `applyTexts()` sakriva stavku
+  (`display:none`) ako je pitanje prazno — tako Jana može popuniti manje od 15 preko
+  admina bez praznih redaka na stranici.
+
 ## Natalna karta (js/natal.js)
 
 Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.

@@ -1370,7 +1370,7 @@ const TEXT_GROUPS = [
       navServices: 'Usluge',
       navAbout:    'O meni',
       navBlog:     'Blog',
-      navNatal:    'Natalna karta',
+      navNatal:    'Astro alati',
       navContact:  'Kontakt'
     }
   },
@@ -1440,7 +1440,7 @@ const TEXT_GROUPS = [
     }
   },
   {
-    title: 'Natalna karta',
+    title: 'Astro alati — stranica i forma',
     keys: {
       natalPageTitle:    'Naslov stranice',
       natalPageSub:      'Podnaslov stranice',
@@ -1465,15 +1465,20 @@ const TEXT_GROUPS = [
     }
   },
   {
-    title: 'Natalna karta — uvod (iznad forme)',
+    title: 'Astro alati — kartice (iznad forme)',
     keys: {
-      natalIntroP1: 'Uvodni paragraf 1',
-      natalIntroP2: 'Uvodni paragraf 2',
-      natalIntroP3: 'Uvodni paragraf 3'
+      toolCardNatalTitle:    'Natalna karta — naslov',
+      toolCardNatalDesc:     'Natalna karta — opis',
+      toolCardSynastryTitle: 'Sinastrija — naslov',
+      toolCardSynastryDesc:  'Sinastrija — opis',
+      toolCardTransitTitle:  'Tranziti — naslov',
+      toolCardTransitDesc:   'Tranziti — opis',
+      toolCardAcgTitle:      'Astrokartografija — naslov',
+      toolCardAcgDesc:       'Astrokartografija — opis'
     }
   },
   {
-    title: 'Natalna karta — Česta pitanja (FAQ)',
+    title: 'Astro alati — Česta pitanja (FAQ, do 15; prazno pitanje se ne prikazuje)',
     keys: {
       natalFaqTitle: 'Naslov FAQ sekcije',
       natalFaqQ1:    '1 — Pitanje',
@@ -1493,7 +1498,19 @@ const TEXT_GROUPS = [
       natalFaqQ8:    '8 — Pitanje',
       natalFaqA8:    '8 — Odgovor',
       natalFaqQ9:    '9 — Pitanje',
-      natalFaqA9:    '9 — Odgovor'
+      natalFaqA9:    '9 — Odgovor',
+      natalFaqQ10:   '10 — Pitanje',
+      natalFaqA10:   '10 — Odgovor',
+      natalFaqQ11:   '11 — Pitanje',
+      natalFaqA11:   '11 — Odgovor',
+      natalFaqQ12:   '12 — Pitanje',
+      natalFaqA12:   '12 — Odgovor',
+      natalFaqQ13:   '13 — Pitanje',
+      natalFaqA13:   '13 — Odgovor',
+      natalFaqQ14:   '14 — Pitanje (prazno = ne prikazuje se)',
+      natalFaqA14:   '14 — Odgovor',
+      natalFaqQ15:   '15 — Pitanje (prazno = ne prikazuje se)',
+      natalFaqA15:   '15 — Odgovor'
     }
   },
   {

@@ -38,11 +38,15 @@ function computeAcgLines(raDeg, decDeg, gastDeg) {
   const lonMC = wrapLon180(raDeg - gastDeg);
   const lonIC = wrapLon180(lonMC + 180);
 
+  // Raspon do ±85° (granica Web Mercator projekcije koju Leaflet prikazuje) uz sitan
+  // korak — ASC/DSC krivulje tako stignu skoro do granice cirkumpolarnosti i vizualno
+  // se spoje s MC/IC linijom (matematički: kod H0→0 obje formule konvergiraju u MC),
+  // umjesto da budu naglo odsječene na fiksnoj širini.
   const asc = [], dsc = [];
-  for (let lat = -66; lat <= 66; lat += 1) {
+  for (let lat = -85; lat <= 85; lat += 0.5) {
     const tanProd = Math.tan(lat * D2R) * Math.tan(decDeg * D2R);
     if (Math.abs(tanProd) >= 1) continue; // cirkumpolarno / nikad ne izlazi na toj širini
-    const h0 = R2D * Math.acos(-tanProd);
+    const h0 = R2D * Math.acos(Math.max(-1, Math.min(1, -tanProd)));
     asc.push([lat, wrapLon180(raDeg - h0 - gastDeg)]);
     dsc.push([lat, wrapLon180(raDeg + h0 - gastDeg)]);
   }

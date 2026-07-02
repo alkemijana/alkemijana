@@ -1734,6 +1734,17 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .acg-tooltip::before { display: none; }
 
+/* Oznake planeta uz vanjski kraj linije (glif + AC/DC/MC/IC), kao na Astro-Seeku */
+.acg-label-icon { background: none; border: none; pointer-events: none; }
+.acg-label-badge {
+  display: inline-flex; align-items: center; gap: 0.15rem;
+  background: var(--card-bg); border: 1px solid; border-radius: 999px;
+  padding: 0.08rem 0.35rem; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  font-family: 'Quicksand', sans-serif; font-size: 0.62rem; font-weight: 600;
+  white-space: nowrap;
+}
+.acg-label-badge .nt-glyph { width: 12px; height: 12px; flex: none; }
+
 .acg-legend {
   display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; justify-content: center;
   max-width: 900px; margin: 0 auto 1.4rem; padding: 1rem 1.2rem;

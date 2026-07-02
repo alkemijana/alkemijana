@@ -39,12 +39,17 @@ async function ensureLeaflet() {
   return window.L;
 }
 
+const ACG_BOUNDS = [[-85, -180], [85, 180]];
+
 function acgInitMap() {
   if (acgMap) return acgMap;
-  acgMap = L.map('acg-map', { worldCopyJump: true, minZoom: 1, maxZoom: 7 }).setView([20, 0], 2);
+  acgMap = L.map('acg-map', {
+    minZoom: 2, maxZoom: 7, worldCopyJump: false,
+    maxBounds: ACG_BOUNDS, maxBoundsViscosity: 1.0
+  }).setView([20, 0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>',
-    maxZoom: 7
+    maxZoom: 7, noWrap: true
   }).addTo(acgMap);
   return acgMap;
 }
@@ -56,6 +61,15 @@ function acgDrawLine(points, color, label, dashed) {
   });
   if (label) line.bindTooltip(label, { sticky: true, className: 'acg-tooltip' });
   return line;
+}
+
+/* Mala oznaka (glif + slovna kratica) uz vanjski kraj linije — kao na Astro-Seeku. */
+function acgAddLabel(group, latlng, color, planetId, tag) {
+  const html = '<div class="acg-label-badge" style="border-color:' + color + '">' +
+    glyphSvgHtml(planetId, 12, color, 'nt-glyph') +
+    '<span style="color:' + color + '">' + tag + '</span></div>';
+  const icon = L.divIcon({ className: 'acg-label-icon', html, iconSize: [34, 18], iconAnchor: [17, 9] });
+  L.marker(latlng, { icon, interactive: false }).addTo(group);
 }
 
 function renderAcgResult(acg) {
@@ -78,13 +92,27 @@ function renderAcgResult(acg) {
       const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
       const group = L.layerGroup();
 
-      // MC/IC: okomite linije (pol do pol)
+      // MC/IC: okomite linije (pol do pol) + oznake na oba ruba karte
       acgDrawLine([[-85, pl.mc], [85, pl.mc]], color, pl.name + ' — MC').addTo(group);
       acgDrawLine([[-85, pl.ic], [85, pl.ic]], color, pl.name + ' — IC', true).addTo(group);
+      acgAddLabel(group, [85, pl.mc], color, pl.id, 'MC');
+      acgAddLabel(group, [-85, pl.mc], color, pl.id, 'MC');
+      acgAddLabel(group, [85, pl.ic], color, pl.id, 'IC');
+      acgAddLabel(group, [-85, pl.ic], color, pl.id, 'IC');
 
-      // ASC/DSC: krive linije (segmentirane na antimeridianu)
+      // ASC/DSC: krive linije (segmentirane na antimeridianu) + oznaka na vanjskom kraju krivulje
       pl.ascSegments.forEach(seg => { if (seg.length > 1) acgDrawLine(seg, color, pl.name + ' — ASC').addTo(group); });
       pl.dscSegments.forEach(seg => { if (seg.length > 1) acgDrawLine(seg, color, pl.name + ' — DSC', true).addTo(group); });
+      if (pl.ascSegments.length) {
+        acgAddLabel(group, pl.ascSegments[0][0], color, pl.id, 'AC');
+        const lastSeg = pl.ascSegments[pl.ascSegments.length - 1];
+        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id, 'AC');
+      }
+      if (pl.dscSegments.length) {
+        acgAddLabel(group, pl.dscSegments[0][0], color, pl.id, 'DC');
+        const lastSeg = pl.dscSegments[pl.dscSegments.length - 1];
+        acgAddLabel(group, lastSeg[lastSeg.length - 1], color, pl.id, 'DC');
+      }
 
       group.addTo(map);
       acgLayerGroups[pl.id] = group;

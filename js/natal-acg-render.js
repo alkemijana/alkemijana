@@ -78,6 +78,15 @@ function acgFitMinZoom() {
   if (acgMap.getZoom() < z) acgMap.setView([20, 0], z);
 }
 
+/* Vrati pogled na "cijeli svijet lijepo uklopljen" — pri svakoj novoj izradi karte,
+   bez obzira je li korisnik prije zumirao/pomicao kartu. */
+function acgResetView() {
+  if (!acgMap) return;
+  const z = acgMap.getBoundsZoom(L.latLngBounds(ACG_WORLD), true);
+  acgMap.setMinZoom(z);
+  acgMap.setView([20, 0], z);
+}
+
 /* Koordinatna mreža: linije svakih 30°, ekvator/nulti meridijan naglašeni, stupnjevi. */
 function acgAddGraticule(map) {
   const g = L.layerGroup();
@@ -340,7 +349,7 @@ function renderAcgResult(acg) {
 
     renderAcgLegend(acg.lines);
     acgRedraw();
-    setTimeout(() => { map.invalidateSize(); acgFitMinZoom(); updateAcgEdgeLabels(); }, 60);
+    setTimeout(() => { map.invalidateSize(); acgResetView(); updateAcgEdgeLabels(); }, 60);
   }).catch(e => {
     showNatalError('Ne mogu učitati kartu: ' + e.message);
   });

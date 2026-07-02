@@ -1634,7 +1634,6 @@ const TEXT_GROUPS = [
   {
     title: 'Astro alati — Upute za korištenje (sadržaj vodiča uređuješ u tabu "Upute za alate")',
     keys: {
-      natalGuideTitle:      'Naslov sekcije (iznad kartice vodiča)',
       natalGuideReadTime:   'Oznaka "Vrijeme čitanja"',
       natalGuideOpenLabel:  'Tekst za otvaranje vodiča',
       natalGuideCloseLabel: 'Tekst gumba za zatvaranje'

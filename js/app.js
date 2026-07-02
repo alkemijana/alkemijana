@@ -1161,7 +1161,6 @@ function applyTexts() {
   if (window.Synastry && window.Synastry.refreshModeTexts) window.Synastry.refreshModeTexts();
 
   // Astro alati — upute za korištenje (vodič iznad FAQ-a)
-  set('t-natalGuideTitle', t.natalGuideTitle);
   renderToolGuide();
 
   // Footer

@@ -192,3 +192,12 @@ async function acgSubmit(ev) {
     btn.disabled = false; btn.textContent = origTxt;
   }
 }
+
+/* ============ INIT ============ */
+window.addEventListener('load', () => {
+  if (!document.getElementById('acg-result')) return;
+  const pb = document.getElementById('acg-poster-btn');
+  const wb = document.getElementById('acg-working-btn');
+  if (pb && typeof downloadAcgPoster === 'function')  pb.addEventListener('click', downloadAcgPoster);
+  if (wb && typeof downloadAcgWorking === 'function') wb.addEventListener('click', downloadAcgWorking);
+});

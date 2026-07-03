@@ -672,12 +672,15 @@ async function renderWorkingContent(doc) {
 
 }
 
-/* Podnožja na SVE stranice (s točnim ukupnim brojem stranica). */
+/* Podnožja na SVE stranice (s točnim ukupnim brojem stranica).
+   Dimenzije čitamo po stranici — radi ispravno i za landscape/A4 mješavine. */
 function addFooters(doc) {
-  const W = 210, H = 297, PAGE_M = 5;
+  const PAGE_M = 5;
   const total = doc.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.5); doc.setTextColor(138, 130, 172);
     doc.text('Alkemijana · alkemijana.com', W / 2, H - 8, { align: 'center' });
     doc.text(i + ' / ' + total, W - PAGE_M, H - 8, { align: 'right' });
@@ -1171,5 +1174,267 @@ async function downloadTransitWorking() {
     await renderSynastryWorkingContent(doc, transitPdfCfg());
     addFooters(doc);
     doc.save(transitPdfFileName('radna-A4'));
+  });
+}
+
+/* ============================================================
+   ASTROCARTOGRAPHY — PDF (poster + radna verzija)
+   Landscape SVG mapa svijeta (equirektangularna projekcija) s graticulom
+   i planetarnim linijama — pipeline identičan ostalim alatima (jsPDF+svg2pdf).
+   Ovisi o: currentAcg (natal-acg.js), ACG_PLANET_COLORS (natal-acg-render.js).
+   ============================================================ */
+
+const ACG_PDF_LAT_LIMIT = 85;
+
+const ACG_PROJ_META = {
+  mundo: { label: 'Mundo — s latitudom (astronomska vidljivost)', slug: 'mundo' },
+  zodio: { label: 'Zodiaco — ekliptička projekcija (1:1 s relokacijskom kartom)', slug: 'zodiaco' },
+  local: { label: 'Local Space — velike kružnice iz mjesta rođenja', slug: 'local-space' }
+};
+
+async function withAcgBtnSpinner(btn, fn) {
+  if (!currentAcg) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Pripremam PDF…';
+  try { await fn(); }
+  catch (e) { showNatalError('Greška pri izradi PDF-a: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+function acgPdfFileName(suffix) {
+  const base = ((currentAcg && currentAcg.name) || 'astrokartografija')
+    .toLowerCase().replace(/[čć]/g, 'c').replace(/š/g, 's').replace(/ž/g, 'z').replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'astrokartografija';
+  return base + '-acg-' + suffix + '.pdf';
+}
+
+/* Segmenti linija za jedan planet u zadanoj projekciji — jednolika struktura
+   za crtanje: [{ pts:[[lat,lon],...], dashed:bool, kind:'MC'|'IC'|'ASC'|'DSC'|'LS' }] */
+function acgPlanetSegments(pl, projMode) {
+  const out = [];
+  if (projMode === 'local') {
+    (pl.local.lsSegments || []).forEach(seg => {
+      if (seg.length > 1) out.push({ pts: seg, dashed: false, kind: 'LS' });
+    });
+    return out;
+  }
+  const geom = pl[projMode] || pl.mundo;
+  out.push({ pts: [[-ACG_PDF_LAT_LIMIT, geom.mc], [ACG_PDF_LAT_LIMIT, geom.mc]], dashed: false, kind: 'MC' });
+  out.push({ pts: [[-ACG_PDF_LAT_LIMIT, geom.ic], [ACG_PDF_LAT_LIMIT, geom.ic]], dashed: true,  kind: 'IC' });
+  geom.ascSegments.forEach(seg => { if (seg.length > 1) out.push({ pts: seg, dashed: false, kind: 'ASC' }); });
+  geom.dscSegments.forEach(seg => { if (seg.length > 1) out.push({ pts: seg, dashed: true,  kind: 'DSC' }); });
+  return out;
+}
+
+/* Zajednički generator SVG-a karte za jednu projekciju.
+   theme: 'light' (radni PDF) | 'dark' (poster). w/h u user-jedinicama (mm ili "poster"). */
+function buildAcgMapSVG(acg, projMode, w, h, theme) {
+  const dark = theme === 'dark';
+  const bg      = dark ? '#0e0c24' : '#faf7f2';
+  const mapBg   = dark ? 'rgba(20,16,52,0.55)' : '#eef1f6';
+  const border  = dark ? 'rgba(184,162,221,0.55)' : '#8a7dac';
+  const gridCol = dark ? 'rgba(184,162,221,0.28)' : 'rgba(138,125,172,0.35)';
+  const gridStr = dark ? 'rgba(184,162,221,0.55)' : 'rgba(138,125,172,0.65)';
+  const gridTxt = dark ? '#9d95c0' : '#6a5d8c';
+  const ink     = dark ? '#e4e0f4' : '#2a2348';
+  const mut     = dark ? '#c4c0d8' : '#5a4a86';
+
+  // proporcije: naslov ~ 6% h (min 12), legenda ~ 12% h (min 22)
+  const M      = Math.max(8, w * 0.028);
+  const titleH = Math.max(12, h * 0.075);
+  const legH   = Math.max(22, h * 0.12);
+  const mapX = M, mapY = M + titleH;
+  const mapW = w - 2 * M;
+  const mapH = h - 2 * M - titleH - legH;
+
+  const lonToX = lon => mapX + (lon + 180) / 360 * mapW;
+  const latToY = lat => mapY + (ACG_PDF_LAT_LIMIT - lat) / (2 * ACG_PDF_LAT_LIMIT) * mapH;
+
+  // veličine tipa/glifa skalirane prema širini stranice
+  const fsTitle = Math.max(10, w * 0.028);
+  const fsSub   = Math.max(6,  w * 0.014);
+  const fsGrid  = Math.max(3.2, w * 0.008);
+  const fsLegHead = Math.max(7,  w * 0.017);
+  const fsLegItem = Math.max(5.5, w * 0.013);
+
+  let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+
+  // pozadina
+  if (dark) {
+    s += '<defs><radialGradient id="acggrad" cx="50%" cy="35%" r="90%">' +
+         '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
+         '</radialGradient></defs>';
+    s += '<rect width="' + w + '" height="' + h + '" fill="url(#acggrad)"/>';
+    s += posterStars(w, h, 2411, { x: mapX + mapW / 2, y: mapY + mapH / 2, r: Math.min(mapW, mapH) / 2.4 });
+  } else {
+    s += '<rect width="' + w + '" height="' + h + '" fill="' + bg + '"/>';
+  }
+
+  // Naslov i podnaslov
+  const title = 'Astrokartografija' + (acg.name ? ' — ' + acg.name : '');
+  const projLabel = (ACG_PROJ_META[projMode] || ACG_PROJ_META.mundo).label;
+  const subLine = (acg.dateV || '') + ' · ' + (acg.timeV || '') + ' · ' + (acg.place ? acg.place.label : '');
+  s += '<text x="' + (w / 2) + '" y="' + (M + fsTitle * 0.9) + '" fill="' + ink + '" font-family="' + (dark ? 'DancingScript' : 'PlayfairDisplay') + '"' + (dark ? ' font-weight="bold"' : '') + ' font-size="' + fsTitle + '" text-anchor="middle">' + escHtml(title) + '</text>';
+  s += '<text x="' + (w / 2) + '" y="' + (M + fsTitle * 0.9 + fsSub * 1.3) + '" fill="' + mut + '" font-family="Quicksand" font-size="' + fsSub + '" text-anchor="middle">' + escHtml(projLabel) + '</text>';
+  s += '<text x="' + (w / 2) + '" y="' + (M + fsTitle * 0.9 + fsSub * 2.5) + '" fill="' + mut + '" font-family="Quicksand" font-size="' + fsSub + '" text-anchor="middle">' + escHtml(subLine) + '</text>';
+
+  // Okvir karte
+  s += '<rect x="' + mapX + '" y="' + mapY + '" width="' + mapW + '" height="' + mapH + '" fill="' + mapBg + '" stroke="' + border + '" stroke-width="0.4"/>';
+
+  // Graticula (svakih 30°)
+  for (let lat = -60; lat <= 60; lat += 30) {
+    const y = latToY(lat), strong = lat === 0;
+    s += '<line x1="' + mapX.toFixed(2) + '" y1="' + y.toFixed(2) + '" x2="' + (mapX + mapW).toFixed(2) + '" y2="' + y.toFixed(2) +
+         '" stroke="' + (strong ? gridStr : gridCol) + '" stroke-width="' + (strong ? 0.35 : 0.2) + '"/>';
+    if (lat !== 0) {
+      s += '<text x="' + (mapX + 1.5).toFixed(2) + '" y="' + (y - 1).toFixed(2) + '" fill="' + gridTxt + '" font-family="Quicksand" font-size="' + fsGrid + '">' + Math.abs(lat) + '°' + (lat > 0 ? 'N' : 'S') + '</text>';
+    }
+  }
+  for (let lon = -150; lon <= 150; lon += 30) {
+    const x = lonToX(lon), strong = lon === 0;
+    s += '<line x1="' + x.toFixed(2) + '" y1="' + mapY.toFixed(2) + '" x2="' + x.toFixed(2) + '" y2="' + (mapY + mapH).toFixed(2) +
+         '" stroke="' + (strong ? gridStr : gridCol) + '" stroke-width="' + (strong ? 0.35 : 0.2) + '"/>';
+    if (lon !== 0) {
+      s += '<text x="' + (x + 1).toFixed(2) + '" y="' + (latToY(0) - 1).toFixed(2) + '" fill="' + gridTxt + '" font-family="Quicksand" font-size="' + fsGrid + '">' + Math.abs(lon) + '°' + (lon > 0 ? 'E' : 'W') + '</text>';
+    }
+  }
+
+  // Linije (clip na karti)
+  const clipId = 'acg-clip-' + Math.floor(Math.random() * 1e9);
+  s += '<defs><clipPath id="' + clipId + '"><rect x="' + mapX + '" y="' + mapY + '" width="' + mapW + '" height="' + mapH + '"/></clipPath></defs>';
+  s += '<g clip-path="url(#' + clipId + ')">';
+
+  const lineW = Math.max(0.35, w * 0.0018);
+  const dashLen = (lineW * 4).toFixed(2) + ',' + (lineW * 3).toFixed(2);
+
+  acg.lines.forEach(pl => {
+    const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
+    acgPlanetSegments(pl, projMode).forEach(seg => {
+      if (seg.pts.length < 2) return;
+      let d = '';
+      for (let i = 0; i < seg.pts.length; i++) {
+        d += (i === 0 ? 'M' : 'L') + lonToX(seg.pts[i][1]).toFixed(2) + ',' + latToY(seg.pts[i][0]).toFixed(2);
+      }
+      s += '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="' + lineW.toFixed(2) + '"' +
+           (seg.dashed ? ' stroke-dasharray="' + dashLen + '"' : '') + ' stroke-linecap="round" stroke-linejoin="round"/>';
+    });
+  });
+  s += '</g>';
+
+  // Glifovi planeta na rubovima karte (gdje linije izlaze) — za brzu orijentaciju.
+  // Za MC/IC glif na gornjem rubu iznad vertikalne linije; za ASC/DSC glif tamo
+  // gdje krivulja dodiruje gornji ili donji rub (najbliža točka po lat).
+  const glyphSize = Math.max(3.5, w * 0.011);
+  acg.lines.forEach(pl => {
+    const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
+    if (projMode === 'local') {
+      (pl.local.lsSegments || []).forEach(seg => {
+        if (seg.length < 2) return;
+        const p = seg[0];
+        const x = lonToX(p[1]), y = latToY(p[0]);
+        if (x >= mapX && x <= mapX + mapW && y >= mapY && y <= mapY + mapH) {
+          s += glyphGroup(pl.id, x, y, glyphSize, color);
+        }
+      });
+    } else {
+      const geom = pl[projMode] || pl.mundo;
+      const mcX = lonToX(geom.mc), icX = lonToX(geom.ic);
+      // MC/IC — glif iznad gornjeg ruba
+      s += glyphGroup(pl.id, mcX, mapY - glyphSize * 0.6, glyphSize, color);
+      s += glyphGroup(pl.id, icX, mapY - glyphSize * 0.6, glyphSize, color);
+      // MC/IC oznake na dnu
+      const labelFs = Math.max(2.8, w * 0.007);
+      s += '<text x="' + mcX.toFixed(2) + '" y="' + (mapY + mapH + labelFs * 1.2).toFixed(2) + '" fill="' + color + '" font-family="Quicksand" font-size="' + labelFs + '" text-anchor="middle">MC</text>';
+      s += '<text x="' + icX.toFixed(2) + '" y="' + (mapY + mapH + labelFs * 1.2).toFixed(2) + '" fill="' + color + '" font-family="Quicksand" font-size="' + labelFs + '" text-anchor="middle">IC</text>';
+    }
+  });
+
+  // ── LEGENDA ── (planeti + oznake linija)
+  const legY0 = mapY + mapH + Math.max(6, w * 0.014);
+  s += '<text x="' + mapX + '" y="' + (legY0 + fsLegHead).toFixed(2) + '" fill="' + ink + '" font-family="' + (dark ? 'PlayfairDisplay' : 'PlayfairDisplay') + '" font-size="' + fsLegHead + '">Planeti</text>';
+
+  const cols = 5;
+  const itemW = mapW / cols;
+  const itemH = fsLegItem * 2.1;
+  acg.lines.forEach((pl, i) => {
+    const color = ACG_PLANET_COLORS[pl.id] || '#a890d0';
+    const row = Math.floor(i / cols), col = i % cols;
+    const ix = mapX + col * itemW + 2;
+    const iy = legY0 + fsLegHead + 3 + row * itemH;
+    s += glyphGroup(pl.id, ix + fsLegItem * 0.9, iy + fsLegItem * 0.7, fsLegItem * 1.35, color);
+    s += '<text x="' + (ix + fsLegItem * 2.2).toFixed(2) + '" y="' + (iy + fsLegItem * 1.1).toFixed(2) + '" fill="' + ink + '" font-family="Quicksand" font-size="' + fsLegItem + '">' + escHtml(pl.name) + '</text>';
+  });
+
+  // legenda tipa linije (samo za mundo/zodio)
+  if (projMode !== 'local') {
+    const lnLegY = legY0 + fsLegHead + 3 + Math.ceil(acg.lines.length / cols) * itemH + 2;
+    if (lnLegY + fsLegItem * 1.5 < h - M) {
+      const sampleLen = Math.max(10, w * 0.028);
+      let lx = mapX;
+      s += '<line x1="' + lx.toFixed(2) + '" y1="' + lnLegY.toFixed(2) + '" x2="' + (lx + sampleLen).toFixed(2) + '" y2="' + lnLegY.toFixed(2) + '" stroke="' + mut + '" stroke-width="' + lineW.toFixed(2) + '"/>';
+      lx += sampleLen + 2;
+      s += '<text x="' + lx.toFixed(2) + '" y="' + (lnLegY + fsLegItem * 0.4).toFixed(2) + '" fill="' + mut + '" font-family="Quicksand" font-size="' + fsLegItem + '">puna = ASC / MC</text>';
+      lx += textWidthPx('puna = ASC / MC', 'Quicksand', null, fsLegItem) + 6;
+      s += '<line x1="' + lx.toFixed(2) + '" y1="' + lnLegY.toFixed(2) + '" x2="' + (lx + sampleLen).toFixed(2) + '" y2="' + lnLegY.toFixed(2) + '" stroke="' + mut + '" stroke-width="' + lineW.toFixed(2) + '" stroke-dasharray="' + dashLen + '"/>';
+      lx += sampleLen + 2;
+      s += '<text x="' + lx.toFixed(2) + '" y="' + (lnLegY + fsLegItem * 0.4).toFixed(2) + '" fill="' + mut + '" font-family="Quicksand" font-size="' + fsLegItem + '">isprekidana = DSC / IC</text>';
+    }
+  }
+
+  // Podnožje (samo poster — radni ima addFooters)
+  if (dark) {
+    s += svgCenteredText('Alkemijana', w / 2, h - M - fsSub * 2.4, fsTitle * 1.1, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
+    s += svgCenteredText('alkemijana.com · astrokartografija · tropski zodijak', w / 2, h - M - fsSub * 0.8, fsSub, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+async function downloadAcgPoster() {
+  const sel = document.getElementById('acg-poster-size');
+  const size = (sel && sel.value) || 'A2';
+  const btn = document.getElementById('acg-poster-btn');
+  await withAcgBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    // Poster landscape — mapa je prirodno šira nego viša
+    const [pw, ph] = PAGE_MM[size];
+    const w = Math.max(pw, ph), h = Math.min(pw, ph);
+    const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: size.toLowerCase() });
+    registerFonts(doc);
+    const projMode = (document.getElementById('acg-projection') || {}).value || 'mundo';
+    const el = svgToElement(buildAcgMapSVG(currentAcg, projMode, w, h, 'dark'));
+    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
+    finally { el.remove(); }
+    const projSlug = (ACG_PROJ_META[projMode] || ACG_PROJ_META.mundo).slug;
+    doc.save(acgPdfFileName('poster-' + projSlug + '-' + size));
+  });
+}
+
+async function downloadAcgWorking() {
+  const btn = document.getElementById('acg-working-btn');
+  await withAcgBtnSpinner(btn, async () => {
+    await ensurePdfLibs();
+    // A4 landscape: 297 × 210 mm
+    const W = 297, H = 210;
+    const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    registerFonts(doc);
+
+    async function renderSvgOnDoc(svgStr, x, y, ww, hh) {
+      const el = svgToElement(svgStr);
+      document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+      try { await doc.svg(el, { x, y, width: ww, height: hh }); }
+      finally { el.remove(); }
+    }
+
+    const projections = ['mundo', 'zodio', 'local'];
+    for (let i = 0; i < projections.length; i++) {
+      if (i > 0) doc.addPage('a4', 'landscape');
+      await renderSvgOnDoc(buildAcgMapSVG(currentAcg, projections[i], W, H, 'light'), 0, 0, W, H);
+    }
+
+    addFooters(doc);
+    doc.save(acgPdfFileName('radna-A4'));
   });
 }

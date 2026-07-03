@@ -69,6 +69,20 @@ const TAROT_DECKS = [
     folder: 'marseille',
     ext: 'jpg',
     backClass: 'vtar-back-marseille'
+  },
+  {
+    id: 'lenormand',
+    name: 'Lenormand',
+    shortName: 'Lenormand',
+    backClass: 'vtar-back-lenormand',
+    comingSoon: true
+  },
+  {
+    id: 'oracle',
+    name: 'Oracle',
+    shortName: 'Oracle',
+    backClass: 'vtar-back-oracle',
+    comingSoon: true
   }
 ];
 
@@ -78,15 +92,16 @@ function tarotCardImage(deckId, cardId) {
 }
 
 /* ---- Spreadovi ----
-   GRID model: svaki spread ima `cols`/`rows` i pozicije s koordinatama
-   `gx` (0..cols-1) i `gy` (0..rows-1) = SREDIŠTE karte u toj ćeliji (može biti
-   decimalno, npr. za lukove/kružnice). Renderer skalira karte tako da SVE stane
-   unutar stola (nikad izvan) i da opisi ne izlaze. `rot` (samo Keltski križ,
-   karta 2) rotira karticu 90° (poprijeko). `labelSide` = 'right' stavlja oznaku
-   desno od karte (Čakre), inače ispod. `short` je opis (hover/ispod izbornika),
-   `label` kratka oznaka pozicije, `meaning` par riječi ŠTO pozicija znači
-   (ne tumačenje karte) — prikazuje se uz uključen prekidač "Značenja pozicija".
-   `free:true` = slobodno slaganje (neograničeno karata, bez zadanih pozicija). */
+   GRID model: svaki spread ima `cols`/`rows` (koristi se za mini-ikonu u
+   izborniku) i pozicije s koordinatama `gx`/`gy` = SREDIŠTE karte (može biti
+   decimalno, npr. za lukove/kružnice). Renderer (tarot-render.js computeLayout)
+   računa STVARNI "otisak" pozicija (bounding box) pa karte skalira maksimalno
+   veliko bez preklapanja, uvijek unutar stola. `rot` (samo Keltski križ, karta 2)
+   rotira karticu 90° (poprijeko — primjenjuje se i na prazan placeholder, ne
+   samo na izvučenu kartu). `short` je opis (hover/u izborniku), `label` kratka
+   oznaka pozicije, `meaning` ŠTO pozicija znači (ne tumačenje karte) — prikazuje
+   se samo u legendi ispod stola, nikad na/uz samu kartu. `free:true` = slobodno
+   slaganje (neograničeno karata, bez zadanih pozicija). */
 
 /* helper — 12/6 pozicija u krug unutar cols×rows grida */
 function tarotCirclePositions(cols, rows, count, radius, startDeg, labels, meanings) {
@@ -175,14 +190,14 @@ const TAROT_SPREADS = [
     id: 'relationship',
     name: 'Odnos',
     short: 'Ti · partner · temelj · dinamika · izazovi · ishod.',
-    cols: 3, rows: 5,
+    cols: 3, rows: 4,
     positions: [
       { gx: 0, gy: 0, label: 'Ti', meaning: 'Tvoja uloga, osjećaji i pogled na odnos.' },
       { gx: 2, gy: 0, label: 'Partner', meaning: 'Njegova/njezina uloga, osjećaji i pogled.' },
       { gx: 1, gy: 1, label: 'Temelj', meaning: 'Na čemu odnos počiva.' },
       { gx: 1, gy: 2, label: 'Dinamika', meaning: 'Kako energija teče između vas sada.' },
-      { gx: 1, gy: 3, label: 'Izazovi', meaning: 'Skrivene napetosti ili prepreke.' },
-      { gx: 1, gy: 4, label: 'Ishod', meaning: 'Vjerojatan smjer kojim odnos ide.' }
+      { gx: 0, gy: 3, label: 'Izazovi', meaning: 'Skrivene napetosti ili prepreke.' },
+      { gx: 2, gy: 3, label: 'Ishod', meaning: 'Vjerojatan smjer kojim odnos ide.' }
     ]
   },
   {
@@ -238,7 +253,6 @@ const TAROT_SPREADS = [
     name: 'Čakre',
     short: 'Sedam karata, po jedna za svaku čakru — energija tijela.',
     cols: 1, rows: 7,
-    labelSide: 'right',
     positions: [
       { gx: 0, gy: 6, label: 'Korijenska', meaning: 'Sigurnost, opstanak, uzemljenost.' },
       { gx: 0, gy: 5, label: 'Sakralna', meaning: 'Kreativnost, emocije, senzualnost.' },

@@ -34,9 +34,10 @@ function createTarotEngine() {
     drawSeq: 0
   };
 
-  TAROT_DECKS.forEach((d, i) => {
+  TAROT_DECKS.forEach((d) => {
+    if (d.comingSoon) return; // nema karata za izvlačenje (placeholder špil)
     state.decks[d.id] = {
-      enabled: i < 2, // prva dva špila uključena po defaultu
+      enabled: true, // stvarni špilovi uključeni po defaultu
       remaining: shuffleArray(allCardIds)
     };
   });
@@ -57,7 +58,7 @@ function createTarotEngine() {
   function emit(evt) { listeners.forEach(fn => fn(evt)); }
 
   function enabledDeckIds() {
-    return TAROT_DECKS.filter(d => state.decks[d.id].enabled).map(d => d.id);
+    return TAROT_DECKS.filter(d => state.decks[d.id] && state.decks[d.id].enabled).map(d => d.id);
   }
 
   function setDeckEnabled(deckId, enabled) {
@@ -88,14 +89,6 @@ function createTarotEngine() {
     if (!d) { return; }
     if (d.remaining.length >= 2) d.remaining = shuffleArray(d.remaining);
     emit({ type: 'deck-shuffle', deckId, mode: 'remaining' });
-  }
-
-  function cutDeck(deckId) {
-    const d = state.decks[deckId];
-    if (!d || d.remaining.length < 2) { emit({ type: 'deck-cut', deckId }); return; }
-    const cut = 1 + Math.floor(Math.random() * (d.remaining.length - 1));
-    d.remaining = d.remaining.slice(cut).concat(d.remaining.slice(0, cut));
-    emit({ type: 'deck-cut', deckId });
   }
 
   function nextEmptySlot() {
@@ -179,7 +172,7 @@ function createTarotEngine() {
     state.table.forEach(e => {
       if (e) { const d = state.decks[e.deckId]; if (d) d.remaining.push(e.cardId); }
     });
-    TAROT_DECKS.forEach(dk => { state.decks[dk.id].remaining = shuffleArray(state.decks[dk.id].remaining); });
+    TAROT_DECKS.forEach(dk => { if (state.decks[dk.id]) state.decks[dk.id].remaining = shuffleArray(state.decks[dk.id].remaining); });
     state.spreadId = spreadId;
     resetTableForSpread();
     emit({ type: 'spread', spreadId });
@@ -197,7 +190,6 @@ function createTarotEngine() {
     setDeckEnabled,
     shuffleFull,
     shuffleRemaining,
-    cutDeck,
     drawFromDeck,
     discardSlot,
     discardAllTable,

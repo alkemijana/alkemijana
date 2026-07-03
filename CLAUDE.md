@@ -42,13 +42,16 @@ ALKEMIJANA WEBSITE/
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── tarot/                          ← Virtualni tarot — potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
-│   ├── tarot-data.js               ← 78 kanonskih karata, definicije špilova, 11 spreadova (pozicije+značenja)
+│   ├── tarot-data.js               ← 78 kanonskih karata, definicije špilova, 12 spreadova (pozicije+značenja)
+│   ├── tarot-meanings.js           ← 78 kratkih opisa karata — SAMO za "kartu dana" na početnoj (ne na stolu)
 │   ├── tarot-engine.js             ← Stanje bez DOM-a (špilovi, stol, otpad, postavke) — createTarotEngine()
 │   ├── tarot-render.js             ← DOM izgradnja, animacije (let/flip), desktop+mobilni layout — createTarotUI()
-│   ├── tarot.js                    ← Init (glue) — čita samo #tarot-app
+│   ├── tarot.js                    ← Init (glue) — #tarot-app stol + #vtar-cotd-root karta dana na početnoj
 │   └── assets/decks/
 │       ├── rws/                    ← Rider–Waite–Smith 1909 (Wikimedia Commons, public domain) + back.svg
-│       └── marseille/              ← Tarot de Marseille, Lequart 1890 (Wikimedia Commons, public domain) + back.svg
+│       ├── marseille/              ← Tarot de Marseille, Lequart 1890 (Wikimedia Commons, public domain) + back.svg
+│       ├── lenormand/              ← Samo back.svg — "uskoro" placeholder špil (nema karata)
+│       └── oracle/                 ← Samo back.svg — "uskoro" placeholder špil (nema karata)
 ├── functions/
 │   ├── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 │   ├── verify-pass.js              ← Provjera admin lozinke (env ADMIN_PASS)
@@ -308,79 +311,110 @@ tumačenja značenja**. Namjerno **potpuno izdvojeno** u mapu `tarot/` (vlastiti
 slike) — za izmjene ovdje nije potrebno čitati ostatak stranice, samo taj folder + minimalne
 kuke u `index.html`/`js/app.js` navedene niže.
 
-- **Arhitektura (4 JS filea, učitavaju se tim redom nakon `natal-live.js`):**
-  `tarot-data.js` (čisti podaci, bez ovisnosti) → `tarot-engine.js` (`createTarotEngine()` —
-  stanje bez DOM-a: špilovi/preostalo, stol, otpad, postavke, pub/sub `onChange`) →
-  `tarot-render.js` (`createTarotUI(engine, root)` — gradi cijeli DOM u `#tarot-app` iz JS-a,
-  animacije) → `tarot.js` (glue, poziva `createTarotUI` na `DOMContentLoaded`).
+- **Arhitektura (5 JS filea, učitavaju se tim redom nakon `natal-live.js`):**
+  `tarot-data.js` (čisti podaci, bez ovisnosti) → `tarot-meanings.js` (78 kratkih opisa karata,
+  v. "Karta dana" niže) → `tarot-engine.js` (`createTarotEngine()` — stanje bez DOM-a: špilovi/
+  preostalo, stol, otpad, postavke, pub/sub `onChange`) → `tarot-render.js`
+  (`createTarotUI(engine, root)` — gradi cijeli DOM u `#tarot-app` iz JS-a, animacije) →
+  `tarot.js` (glue: pokreće stol na `DOMContentLoaded` I renderira "kartu dana" na početnoj).
 - **Logika špilova — INVARIJANTA „nikad duplikat":** svaka od 78 karata špila je u točno
   jednom stanju — u špilu (`remaining`), na stolu (`table`) ili u otpadu (`discard`). Sve
   operacije u engineu to održavaju: `drawFromDeck` (remaining→table), `discardSlot`
   (table→discard), `returnDiscardToDecks` (klik na otpad: discard→remaining + promiješaj),
   `shuffleFull` („Promiješaj sve": vrati SVE karte tog špila sa stola i iz otpada natrag u
-  špil i promiješaj svih 78), `shuffleRemaining`/`cutDeck` (permutacija unutar remaining).
-  Tako je duplikat matematički nemoguć. `newSpreadReading`/`setSpread` vraćaju karte sa stola
-  natrag u špilove. (Prije popravka `shuffleFull` je regenerirao svih 78 dok su neke bile na
-  stolu → mogući duplikati; to je izvor bug-a koji je ovom invarijantom riješen.)
+  špil i promiješaj svih 78), `shuffleRemaining` (permutacija unutar remaining). Tako je
+  duplikat matematički nemoguć. `newSpreadReading`/`setSpread` vraćaju karte sa stola natrag
+  u špilove. Nema opcije za "presijeci" (uklonjena — nepotrebna).
 - **CSS prefiks `vtar-`** (namjerno, NE `tr-`) — `tr-` prefiks je već zauzet u `css/style.css`
   za Tranzite (`.tr-panel`, `.tr-slider`, `.tr-hint`...); korištenje `tr-` je izazvalo stvarni
-  layout bug (kolizija imena + `flex-basis` koji se pod `.tr-toprow{flex-direction:column}` na
-  mobitelu tumači kao visina umjesto širine) — otkriveno i popravljeno preimenovanjem u `vtar-`.
-  Pri dodavanju novih klasa u ovaj modul **uvijek koristiti `vtar-` prefiks**.
+  layout bug (kolizija imena + `flex-basis` koji se pod `flex-direction:column` na mobitelu
+  tumači kao visina umjesto širine). Pri dodavanju novih klasa u ovaj modul **uvijek koristiti
+  `vtar-` prefiks**.
 - **Kuke izvan `tarot/` (namjerno minimalne):** `index.html` — `<link>` na `tarot/tarot.css`,
-  4× `<script src="tarot/...">` na dnu, nav link (`showPage('tarot')`), `<section id="tarot">`
-  s praznim `<div id="tarot-app">` (sav sadržaj gradi JS), teaser kartica na početnoj. `js/app.js`
-  — jedan zapis u `PAGE_META.tarot` (SEO). `showPage()` u app.js **nije mijenjan** — generički
-  mehanizam (toggle `.page.active` po id-u) radi bez posebne iznimke za tarot.
-- **Špilovi (proširivo):** `TAROT_DECKS` niz u `tarot-data.js` — trenutno **Rider–Waite–Smith
-  1909** i **Tarot de Marseille** (Lequart 1890, Pariz), oba public domain, preuzeta s Wikimedia
-  Commons (`Category:Rider-Waite tarot deck (Roses & Lilies)` / `Category:Tarot de Marseille
-  (Single Cards)`, filtrirano regexom na točan Lequart set). Slike u `tarot/assets/decks/<folder>/`,
-  imenovane kanonskim id-em karte (npr. `fool.jpg`, `wands-queen.jpg`) — **isti id/naziv za sve
-  špilove** (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika → dodavanje novog špila
-  (Oracle, Lenormand...) = novi objekt u `TAROT_DECKS` + 78 slika s istim imenima, bez diranja
-  ostatka koda. Pozadine karata (`back.svg`) su ručno crtani SVG, različit motiv po špilu
-  (RWS: mandala/kompas; Marseille: rešetkasti uzorak), dark mystical paleta — **ne mijenjaju se
-  s temom** (fizička pozadina karte je konstantna, kao u stvarnosti).
+  5× `<script src="tarot/...">` na dnu, nav link (`showPage('tarot')`), `<section id="tarot">`
+  s praznim `<div id="tarot-app">` (sav sadržaj gradi JS), `<div id="vtar-cotd-root">` na
+  početnoj (karta dana) + teaser kartica `.vtar-home-teaser`. `js/app.js` — jedan zapis u
+  `PAGE_META.tarot` (SEO). `showPage()` u app.js **nije mijenjan** — generički mehanizam
+  (toggle `.page.active` po id-u) radi bez posebne iznimke za tarot.
+- **Špilovi (proširivo):** `TAROT_DECKS` niz u `tarot-data.js` — **Rider–Waite–Smith 1909** i
+  **Tarot de Marseille** (Lequart 1890, Pariz), oba public domain sa Wikimedia Commons, plus
+  dva **"uskoro" placeholdera** (`Lenormand`, `Oracle` — `comingSoon:true`, bez slika/karata,
+  samo vlastiti `back.svg` kao pregled; engine ih preskače pri inicijalizaciji stanja i svugdje
+  gdje se iterira `TAROT_DECKS`, jer `state.decks[id]` za njih ne postoji — provjeri `if
+  (d.comingSoon)`/`if (state.decks[id])` prije dodavanja novih mjesta koja iteriraju špilove).
+  Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr. `fool.jpg`) —
+  isti id/naziv za sve špilove (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika →
+  dodavanje pravog Lenormand/Oracle špila = ukloni `comingSoon`, dodaj `folder`/`ext` + 78 slika.
+  Pozadine karata (`back.svg`, različit motiv po špilu) **ne mijenjaju se s temom**.
+- **Uključi/isključi špil — odvojeno od stola:** `.vtar-deck-switches` (red prekidača, uvijek
+  vidljiv iznad stola, uključuje i "uskoro" špilove kao onemogućene) je JEDINO mjesto za
+  uključivanje špila. `.vtar-rail-left` (stog za izvlačenje + "Promiješaj sve"/"Promiješaj
+  preostale") prikazuje SAMO uključene, stvarne špilove (`renderDeckRail` filtrira
+  `!comingSoon && enabled`) — prazan red ako nijedan nije uključen.
 - **Spreadovi:** `TAROT_SPREADS` u `tarot-data.js` — 12 rasporeda: **Slobodno slaganje**
-  (`free:true` — neograničeno karata, teku u redovima, prvi u izborniku) + Jedna karta, Dva
-  izbora, Tri karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre,
-  Godina pred nama. **GRID model (ne postotci!):** svaki fiksni spread ima `cols`/`rows` i
-  pozicije s `gx`/`gy` (koordinate SREDIŠTA karte u ćeliji, mogu biti decimalne za lukove/
-  kružnice — v. `tarotCirclePositions` helper). `rot` (Keltski križ, karta 2) rotira karticu
-  90°. `labelSide:'right'` (Čakre) stavlja oznaku desno. `label`/`meaning` = kratke HR oznake
-  pozicije (ne tumačenje karte).
-- **Fit-to-container layout (`computeLayout` u render):** iz `cols`/`rows` i stvarne veličine
-  stola (`getBoundingClientRect`) izračuna veličinu karte i px-pozicije tako da **SVE karte i
-  oznake uvijek stanu unutar stola** (nikad izlaze van) — riješilo prijašnji bug gdje su karte
-  i opisi izlazili van na gustim spreadovima. Značenja se prikazuju u **legendi ispod stola**
-  (`.vtar-legend`, numerirano) + kratka oznaka ispod svake karte (pill pozadina radi čitljivosti)
-  — nikad preko slike karte. Relayout je px-baziran pa `renderSlots` ide na `resize` (debounce)
-  i `fullscreenchange`.
-- **Stol — layout:** `.vtar-stage` (fullscreen target) sadrži `.vtar-toolbar` (info + prekidači
-  Obrnute/Značenja + „Novi spread" + „Cijeli zaslon") **tik uz stol** (kontrole blizu, ne treba
-  scrollati), pa `.vtar-layout` = lijeva traka (kontrole špilova + stog) | stol (`.vtar-slots`) |
-  desna traka (otpad), pa `.vtar-hint` i `.vtar-legend`. Klik na stog izvlači u prvu praznu
-  poziciju (fiksni spread) ili na kraj (free); WAAPI „fly + flip" animacija (izmjeri stvarne
-  pozicije, luk od stoga do slota, pa `rotateY` flip).
-- **Fullscreen (desktop):** gumb `#vtar-btn-fs` → `requestFullscreen` na `.vtar-stage`;
-  `fullscreenchange` postavi klasu `.vtar-fs` (stage postane flex-column preko cijelog zaslona,
-  stol se rastegne) i pozove relayout. Skriven na mobitelu (`@media max-width:900px`).
-- **Oznaka „obrnuto":** kad je karta obrnuta (slika `rotate(180deg)`), **chip „⟲ obrnuto" je
-  IZVAN karte** (u `.vtar-caption` ispod slike) — ne prekriva ilustraciju. Prije je bio preko karte.
-- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** fiksni spreadovi postaju
-  jednostavan vertikalan popis (karta + oznaka + značenje); free i dalje teče. Render bira granu
-  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`.
+  (`free:true` — neograničeno karata, teku u redovima, prvi u izborniku, stol dobiva vlastiti
+  scroll umjesto da raste u beskonačnost — v. `.vtar-table-scroll`) + Jedna karta, Dva izbora,
+  Tri karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre, Godina pred
+  nama. **GRID model:** svaki fiksni spread ima `cols`/`rows` (za mini-ikonu u izborniku) i
+  pozicije s `gx`/`gy` (SREDIŠTE karte, decimalno za lukove/kružnice — v.
+  `tarotCirclePositions` helper). `rot` (Keltski križ, karta 2) rotira karticu 90° — **rotira
+  se sam `.vtar-cardbox` (kontejner), ne samo naknadno izvučena karta**, pa se "križanje"
+  vidi već na praznom placeholderu prije izvlačenja (prije popravka su prazna polja 1 i 2
+  izgledala kao da se potpuno preklapaju). `label`/`meaning` = kratke HR oznake pozicije —
+  prikazuju se ISKLJUČIVO u legendi ispod stola, nikad na/uz samu kartu (bilo je zbunjujuće
+  kad su tekst i broj bili i uz kartu i u legendi).
+- **Bounding-box layout (`computeLayout` u render, NE koristi deklarirani `cols`/`rows`
+  izravno):** izračuna stvarni "otisak" (min/max `gx`/`gy`) korištenih pozicija i skalira
+  karte na TAJ prostor, ne na deklarirani grid — spreadovi s puno praznog prostora u gridu
+  (npr. Zvijezda, Karijera) automatski dobiju veće karte bez ručnog podešavanja koordinata.
+  Karte su uvijek maksimalno velike bez preklapanja i uvijek unutar stola. Relayout ide preko
+  `ResizeObserver` na `.vtar-table` (ne `window.resize`) — hvata promjenu veličine elementa
+  bez obzira na uzrok (zoom stranice, fullscreen ulaz/izlaz, promjena prozora), pa je stabilan
+  neovisno o zoomu.
+- **Oznake pokraj karte (nikad preko ilustracije):** `.vtar-badge-order` (mali broj, gornji
+  lijevi kut, UVIJEK vidljiv čim je karta izvučena — pokazuje redoslijed izvlačenja) i
+  `.vtar-badge-rev` (samo glif „⟲", crvene boje, gornji desni kut, SAMO kad je karta obrnuta —
+  bez teksta "obrnuto"). Obje se kontra-rotiraju preko CSS varijable `--vtar-box-rot` da ostanu
+  čitljive i na rotiranoj Keltski-križ kartici. Gumb za odlaganje u otpad premješten je u donji
+  desni kut (hover-only) da ne kolidira s badge-ovima.
+- **Hover-zoom:** `.vtar-cardbox:hover .vtar-card { transform: scale(1.55) }` — stol namjerno
+  **nema `overflow:hidden`** (dekorativna tekstura ima vlastiti `border-radius` na `::before`
+  umjesto da se oslanja na roditeljev overflow-clip) baš da uvećana karta može vizualno "izaći"
+  preko ruba stola bez rezanja.
+- **Izbornik spreadova = dropdown, ne stalno vidljiv red:** `.vtar-spread-dropdown` (gumb s
+  trenutnim spreadom → `.vtar-spread-menu`, `z-index:300`/hover-preview `z-index:320`, viši od
+  svega ostalog) živi UNUTAR `.vtar-toolbar`, koja je UNUTAR `.vtar-stage` (fullscreen target)
+  — bitno, jer je stari vanjski red pickera bio IZVAN fullscreen elementa pa je odabir spreada
+  bio nedostupan u cijelom zaslonu. Isto vrijedi za `.vtar-deck-switches`.
+- **Fullscreen (desktop, gumb `#vtar-btn-fs` → `requestFullscreen` na `.vtar-stage`):**
+  `.vtar-fs` je flex-kolona (`height:100%`) gdje toolbar/deck-switches/hint imaju `flex:0 0
+  auto`, stol `flex:1 1 auto` (uzima sav preostali prostor), a legenda `flex:0 1 auto` s
+  vlastitim `max-height:20vh; overflow-y:auto` — tako se toolbar+stol+legenda UVIJEK uklope u
+  zaslon bez obzira na omjer/veličinu monitora, legenda se sama scrolla umjesto da izgura stol
+  van. Relayout preko istog `ResizeObserver` (ne posebna `fullscreenchange` logika za veličine).
+  Skriven na mobitelu (`@media max-width:900px`).
+- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** fiksni spreadovi
+  postaju jednostavan vertikalan popis; free i dalje teče. Render bira granu
+  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`. Dodatno,
+  **fiksna alatna traka na dnu zaslona** (`.vtar-mobile-drawbar`, `position:fixed`) s gumbom
+  po uključenom špilu za izvlačenje bez scrollanja do vrha — automatski nestaje na drugim
+  stranicama jer je `#tarot section.page:not(.active)` cijela `display:none` (nije trebao
+  poseban JS za sakrivanje).
 - **Postavke (bez perzistencije u localStorage — namjerno, sesijski alat):** uspravno/obrnuto
-  (utječe samo na buduća izvlačenja), prikaži/sakrij značenja, po špilu: uključi/isključi,
-  miješaj sve/preostalo, presijeci. Otpad: klik na izvučenu karticu je odloži; klik na zonu
-  otpada vraća sve odložene karte natrag u špilove.
-- **Card backs:** `back.svg` po špilu (RWS mandala/kompas, Marseille medaljon+rešetka) —
-  moraju imati eksplicitne `width`/`height` uz `viewBox` da se pouzdano renderiraju kao CSS
-  `background-image` (bez toga su na nekim prikazima izgledale prozirno). Dark paleta, **ne
-  mijenjaju se s temom** (fizička pozadina karte je konstantna).
-- **Što NIJE uključeno (namjerno):** tumačenje značenja karata, AI uvidi, spremanje/dijeljenje
-  čitanja, drag-and-drop (samo klik).
+  (utječe samo na buduća izvlačenja), prikaži/sakrij značenja (utječe na legendu). Otpad: klik
+  na izvučenu karticu je odloži; klik na zonu otpada vraća sve odložene karte natrag u špilove.
+- **Card backs:** `back.svg` po špilu (RWS mandala/kompas, Marseille medaljon+rešetka,
+  Lenormand mini-kartice, Oracle polumjesec) — moraju imati eksplicitne `width`/`height` uz
+  `viewBox` da se pouzdano renderiraju kao CSS `background-image` (bez toga izgledaju
+  prozirno). Dark paleta, ne mijenjaju se s temom.
+- **"Karta dana" na početnoj — SVJESNA iznimka od "bez tumačenja":** `tarot-meanings.js`
+  (`TAROT_CARD_MEANINGS`, 78 kratkih HR opisa, 3-4 rečenice) koristi se ISKLJUČIVO za teaser na
+  početnoj (`#vtar-cotd-root`, popunjava `tarot.js`), NIKAD na samom interaktivnom stolu. Dan
+  se računa deterministički preko `Intl.DateTimeFormat` s `timeZone:'Europe/Zagreb'` (mijenja
+  se u ponoć po hrvatskom vremenu, neovisno o zoni posjetitelja) hashiran u indeks 0-77 —
+  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva.
+- **Što NIJE uključeno (namjerno):** tumačenje značenja karata na samom stolu, AI uvidi,
+  spremanje/dijeljenje čitanja, drag-and-drop (samo klik).
 
 ---
 

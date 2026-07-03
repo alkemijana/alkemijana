@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="442" viewBox="0 0 260 442" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="lnBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3a2d52"/>
+      <stop offset="55%" stop-color="#241a38"/>
+      <stop offset="100%" stop-color="#0f0a1a"/>
+    </linearGradient>
+    <linearGradient id="lnSilver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e4e0f4"/>
+      <stop offset="100%" stop-color="#a890d0"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="260" height="442" fill="url(#lnBg)"/>
+  <rect x="12" y="12" width="236" height="418" rx="6" fill="none" stroke="url(#lnSilver)" stroke-width="2.6"/>
+  <rect x="20" y="20" width="220" height="402" rx="3" fill="none" stroke="#c4c0d8" stroke-width="1" opacity="0.5"/>
+
+  <!-- mala kartica-u-kartici mreža (nagovještaj playing-card estetike Lenormanda) -->
+  <g stroke="url(#lnSilver)" stroke-width="1.1" opacity="0.55">
+    <rect x="70" y="90" width="120" height="80" rx="4"/>
+    <rect x="70" y="181" width="120" height="80" rx="4"/>
+    <rect x="70" y="272" width="120" height="80" rx="4"/>
+  </g>
+  <g fill="url(#lnSilver)">
+    <circle cx="130" cy="130" r="4"/>
+    <circle cx="110" cy="221" r="3.4"/><circle cx="130" cy="221" r="3.4"/><circle cx="150" cy="221" r="3.4"/>
+    <circle cx="130" cy="312" r="4"/>
+  </g>
+
+  <g fill="#e4e0f4" opacity="0.85">
+    <circle cx="40" cy="50" r="2.2"/><circle cx="220" cy="50" r="2.2"/>
+    <circle cx="40" cy="392" r="2.2"/><circle cx="220" cy="392" r="2.2"/>
+  </g>
+
+  <text x="130" y="60" text-anchor="middle" font-family="Georgia, serif" font-size="15" letter-spacing="2" fill="url(#lnSilver)" opacity="0.9">?</text>
+  <text x="130" y="415" text-anchor="middle" font-family="Georgia, serif" font-size="9.5" letter-spacing="3.5" fill="#c4c0d8" opacity="0.65">USKORO</text>
+</svg>

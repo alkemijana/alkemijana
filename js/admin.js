@@ -335,6 +335,8 @@ function showPostEditor(p) {
         <button onclick="wSel('<h3>','</h3>')">Podnaslov</button>
         <button onclick="wSel('<blockquote>','</blockquote>')">❝ Citat</button>
         <button onclick="wSel('<strong>','</strong>')">Masno</button>
+        <button onclick="eCmd('insertUnorderedList')">• Popis</button>
+        <button onclick="eCmd('insertOrderedList')">1. Popis</button>
         <button onclick="eCmd('insertParagraph')">¶</button>
         <label class="ed-img-upload" title="Ubaci sliku na mjesto kursora" onmousedown="saveEditorSelection(event)">
           🖼 Slika
@@ -958,6 +960,8 @@ function showGuideEditor(g) {
         <button onclick="wSel('<h3>','</h3>','guide-content-ed')">Podnaslov</button>
         <button onclick="wSel('<blockquote>','</blockquote>','guide-content-ed')">❝ Citat</button>
         <button onclick="wSel('<strong>','</strong>','guide-content-ed')">Masno</button>
+        <button onclick="eCmd('insertUnorderedList','guide-content-ed')">• Popis</button>
+        <button onclick="eCmd('insertOrderedList','guide-content-ed')">1. Popis</button>
         <button onclick="eCmd('insertParagraph','guide-content-ed')">¶</button>
         <label class="ed-img-upload" title="Ubaci sliku na mjesto kursora" onmousedown="saveEditorSelection(event,'guide-content-ed')">
           🖼 Slika

@@ -940,6 +940,16 @@ body > svg[viewBox="0 0 1920 1080"] {
 }
 .post-body em, .post-body i { font-style: italic; color: inherit; }
 .post-body span, .post-body u { color: inherit; }
+/* Globalni reset (* { padding:0 }) briše prostor za marker liste — bez
+   padding-lijevo brojevi/točke vise izvan okvira umjesto uz tekst. */
+.post-body ul, .post-body ol {
+  margin: 0 0 1.4rem;
+  padding-left: 1.5em;
+}
+.post-body li { margin-bottom: 0.6rem; }
+.post-body li:last-child { margin-bottom: 0; }
+.post-body ul ul, .post-body ol ol,
+.post-body ul ol, .post-body ol ul { margin: 0.5rem 0 0; }
 .post-body figure.post-inline-img,
 .post-body img { margin: 2rem auto; display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 .post-body figure.post-inline-img { padding: 0; }
@@ -1469,7 +1479,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 /* Editor je dizajniran da PRELAMA tekst na isti način kao i objavljeni članak:
    ista širina, font, font-size i line-height kao .post-body. Tako autor vidi
    točno gdje će se rečenice prelomiti u finalnoj verziji. */
-#blog-content-ed {
+#blog-content-ed,
+#guide-content-ed {
   min-height: 380px;
   /* OPAQUE pozadina — ranije je bila poluprozirna pa je GPU morao kompozitirati
      zvjezdice iza nje pri svakom tipkanju (sporo na slabijim laptopima). */
@@ -1489,32 +1500,44 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
      ostatak admin panela. */
   contain: layout style paint;
 }
-:root[data-theme="light"] #blog-content-ed { background: #ffffff; color: var(--text); }
-#blog-content-ed:focus { border-color: var(--lavender); }
-#blog-content-ed p { margin-bottom: 1.4rem; }
-#blog-content-ed h2 { font-family: 'Playfair Display', serif; font-size: 1.85rem; color: var(--lavender); line-height: 1.3; margin: 2.5rem 0 1rem; font-weight: 600; }
-#blog-content-ed h3 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); line-height: 1.3; margin: 2rem 0 0.8rem; font-weight: 600; }
-#blog-content-ed blockquote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.35rem; color: var(--silver-light); border-left: 2px solid var(--sage); padding-left: 1.5rem; margin: 2rem 0; }
+:root[data-theme="light"] #blog-content-ed,
+:root[data-theme="light"] #guide-content-ed { background: #ffffff; color: var(--text); }
+#blog-content-ed:focus, #guide-content-ed:focus { border-color: var(--lavender); }
+#blog-content-ed p, #guide-content-ed p { margin-bottom: 1.4rem; }
+#blog-content-ed h2, #guide-content-ed h2 { font-family: 'Playfair Display', serif; font-size: 1.85rem; color: var(--lavender); line-height: 1.3; margin: 2.5rem 0 1rem; font-weight: 600; }
+#blog-content-ed h3, #guide-content-ed h3 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); line-height: 1.3; margin: 2rem 0 0.8rem; font-weight: 600; }
+#blog-content-ed blockquote, #guide-content-ed blockquote { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.35rem; color: var(--silver-light); border-left: 2px solid var(--sage); padding-left: 1.5rem; margin: 2rem 0; }
 #blog-content-ed strong,
 #blog-content-ed b,
 #blog-content-ed em,
 #blog-content-ed i,
 #blog-content-ed u,
-#blog-content-ed span {
+#blog-content-ed span,
+#guide-content-ed strong,
+#guide-content-ed b,
+#guide-content-ed em,
+#guide-content-ed i,
+#guide-content-ed u,
+#guide-content-ed span {
   font-family: inherit !important;
   font-size: inherit !important;
   line-height: inherit !important;
   background: transparent !important;
 }
-#blog-content-ed strong, #blog-content-ed b {
+#blog-content-ed strong, #blog-content-ed b,
+#guide-content-ed strong, #guide-content-ed b {
   font-weight: 700;
   color: var(--silver-bright);
   letter-spacing: 0.01em;
 }
-#blog-content-ed em, #blog-content-ed i { font-style: italic; color: inherit; }
-#blog-content-ed span, #blog-content-ed u { color: inherit; }
+#blog-content-ed em, #blog-content-ed i,
+#guide-content-ed em, #guide-content-ed i { font-style: italic; color: inherit; }
+#blog-content-ed span, #blog-content-ed u,
+#guide-content-ed span, #guide-content-ed u { color: inherit; }
 #blog-content-ed img,
-#blog-content-ed figure.post-inline-img img {
+#blog-content-ed figure.post-inline-img img,
+#guide-content-ed img,
+#guide-content-ed figure.post-inline-img img {
   max-width: 220px;
   max-height: 150px;
   height: auto;
@@ -1524,7 +1547,17 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   border-radius: 3px;
   opacity: 0.85;
 }
-#blog-content-ed figure.post-inline-img { margin: 0.8rem 0; }
+#blog-content-ed figure.post-inline-img,
+#guide-content-ed figure.post-inline-img { margin: 0.8rem 0; }
+/* Isti razlog kao .post-body ul/ol — global reset briše padding pa marker
+   liste vidi izvan okvira editora bez ovoga. */
+#blog-content-ed ul, #blog-content-ed ol,
+#guide-content-ed ul, #guide-content-ed ol {
+  margin: 0 0 1.4rem;
+  padding-left: 1.5em;
+}
+#blog-content-ed li, #guide-content-ed li { margin-bottom: 0.6rem; }
+#blog-content-ed li:last-child, #guide-content-ed li:last-child { margin-bottom: 0; }
 
 .img-preview-thumb { max-width: 100%; max-height: 110px; margin-top: 0.5rem; object-fit: cover; border: 1px solid var(--border); display: none; }
 .emoji-row  { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }

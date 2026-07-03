@@ -32,6 +32,13 @@
   --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.3);
   --transition-cover: #06080f;
   --card-text: #d4cdec;
+  --panel-grad-1: rgba(28, 24, 64, 0.4);
+  --panel-grad-2: rgba(14, 12, 36, 0.6);
+  --search-grad-1: rgba(28, 24, 64, 0.7);
+  --search-grad-2: rgba(14, 12, 36, 0.7);
+  --search-grad-1-focus: rgba(28, 24, 64, 0.85);
+  --search-grad-2-focus: rgba(14, 12, 36, 0.85);
+  --search-text: var(--silver-bright);
 }
 
 /* MISTIČNA SVIJETLA TEMA — pastelni lavender/krem, kao osvjetljen pergament */
@@ -63,6 +70,13 @@
   --shadow-glow: 0 8px 32px rgba(106, 78, 160, 0.15);
   --transition-cover: #f4eef9;
   --card-text: #3a2f5a;
+  --panel-grad-1: rgba(255, 255, 255, 0.55);
+  --panel-grad-2: rgba(237, 228, 245, 0.75);
+  --search-grad-1: rgba(255, 255, 255, 0.8);
+  --search-grad-2: rgba(237, 228, 245, 0.85);
+  --search-grad-1-focus: rgba(255, 255, 255, 0.95);
+  --search-grad-2-focus: rgba(237, 228, 245, 0.95);
+  --search-text: var(--text);
 }
 
 /* Smooth color transitions when theme changes (osim za circular reveal koji
@@ -423,8 +437,8 @@ body > svg[viewBox="0 0 1920 1080"] {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.15rem;
   font-style: italic;
-  color: var(--silver-bright);
-  background: linear-gradient(140deg, rgba(28,24,64,0.7), rgba(14,12,36,0.7));
+  color: var(--search-text);
+  background: linear-gradient(140deg, var(--search-grad-1), var(--search-grad-2));
   backdrop-filter: blur(8px);
   border: 1px solid rgba(168,144,208,0.22);
   border-radius: 999px;
@@ -441,7 +455,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 .blog-search-input:focus {
   border-color: rgba(168,144,208,0.55);
   box-shadow: 0 0 30px rgba(168,144,208,0.18), inset 0 0 18px rgba(168,144,208,0.05);
-  background: linear-gradient(140deg, rgba(28,24,64,0.85), rgba(14,12,36,0.85));
+  background: linear-gradient(140deg, var(--search-grad-1-focus), var(--search-grad-2-focus));
 }
 .blog-search-clear {
   position: absolute;
@@ -716,7 +730,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 
 /* ---- FORMA ---- */
 .form-section {
-  background: linear-gradient(135deg, rgba(28, 24, 64, 0.4), rgba(14, 12, 36, 0.6));
+  background: linear-gradient(135deg, var(--panel-grad-1), var(--panel-grad-2));
   border: 1px solid var(--border);
   padding: 4rem;
   max-width: 800px;

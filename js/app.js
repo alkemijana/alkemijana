@@ -36,6 +36,11 @@ const PAGE_META = {
     title: 'Usluge i cjenik — Alkemijana',
     desc:  'Usluge i cjenik — tarot susreti, astrološka tumačenja, natalna karta.',
     hash:  'usluge'
+  },
+  tarot: {
+    title: 'Virtualni tarot — online izvlačenje karata | Alkemijana',
+    desc:  'Besplatan virtualni tarot stol — izaberi špil (Rider-Waite-Smith ili Marseille), odaberi raspored i izvuci karte online. Bez tumačenja, samo za tvoju intuiciju.',
+    hash:  'tarot'
   }
 };
 

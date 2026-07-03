@@ -1,0 +1,540 @@
+/* ============================================================
+   Virtualni tarot — stilovi (samostalan modul)
+   Koristi CSS varijable teme iz css/style.css (--lavender, --sage,
+   --bg-*, --card-bg, --border, --text...) ali ne ovisi ni o čemu
+   drugom — sigurno ga je mijenjati bez diranja ostatka stranice.
+   ============================================================ */
+
+:root {
+  --vtar-card-w: clamp(52px, 7.4vw, 122px);
+  --vtar-card-ratio: 0.583; /* širina/visina standardne tarot karte */
+}
+
+.vtar-root {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+.vtar-root .section-subtitle { margin-bottom: 2.2rem; }
+
+/* ---- Gornji red: spread picker + globalni prekidači ---- */
+.vtar-toprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.vtar-spread-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.vtar-spread-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.vtar-spread-chip svg { flex-shrink: 0; }
+.vtar-spread-chip:hover { border-color: var(--lavender); color: var(--silver-bright); }
+.vtar-spread-chip.active {
+  background: var(--lavender);
+  border-color: var(--lavender);
+  color: #1a1430;
+  font-weight: 600;
+}
+:root[data-theme="light"] .vtar-spread-chip.active { color: #fff; }
+
+.vtar-spread-hover-preview {
+  display: none;
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  background: var(--bg-light);
+  border: 1px solid var(--lavender);
+  border-radius: 10px;
+  padding: 0.9rem;
+  box-shadow: var(--shadow-glow);
+  text-align: center;
+}
+.vtar-spread-chip:hover .vtar-spread-hover-preview,
+.vtar-spread-chip:focus-visible .vtar-spread-hover-preview { display: block; }
+.vtar-spread-hover-svg svg { width: 100px; height: 100px; }
+.vtar-spread-hover-text strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  color: var(--lavender);
+  margin-bottom: 0.3rem;
+  font-size: 0.95rem;
+}
+.vtar-spread-hover-text p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.vtar-spread-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 1.6rem;
+}
+
+/* ---- Globalni prekidači ---- */
+.vtar-global-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.vtar-switch { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
+.vtar-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.vtar-switch-track {
+  width: 38px; height: 21px;
+  background: var(--border);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.vtar-switch-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 17px; height: 17px;
+  background: var(--silver-bright);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+.vtar-switch input:checked + .vtar-switch-track { background: var(--lavender); }
+.vtar-switch input:checked + .vtar-switch-track .vtar-switch-thumb { transform: translateX(17px); }
+.vtar-switch-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+.vtar-switch-sm .vtar-switch-track { width: 30px; height: 17px; }
+.vtar-switch-sm .vtar-switch-thumb { width: 13px; height: 13px; }
+.vtar-switch-sm input:checked + .vtar-switch-track .vtar-switch-thumb { transform: translateX(13px); }
+
+.vtar-btn {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--lavender);
+  background: transparent;
+  color: var(--lavender);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+.vtar-btn:hover { background: var(--lavender); color: #1a1430; }
+:root[data-theme="light"] .vtar-btn:hover { color: #fff; }
+
+/* ---- Glavni layout: lijeva traka | stol | desna traka ---- */
+.vtar-layout {
+  display: grid;
+  grid-template-columns: minmax(110px, 140px) 1fr minmax(90px, 120px);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.vtar-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* ---- Špil blok (lijeva traka) ---- */
+.vtar-deck-block {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.7rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  transition: opacity 0.2s ease;
+}
+.vtar-deck-disabled { opacity: 0.42; }
+
+.vtar-deck-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+}
+.vtar-deck-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  color: var(--silver-bright);
+}
+
+.vtar-deck-stack-wrap { position: relative; width: 100%; display: flex; justify-content: center; padding: 0.3rem 0; }
+.vtar-deck-stack {
+  position: relative;
+  width: var(--vtar-card-w);
+  aspect-ratio: var(--vtar-card-ratio);
+  cursor: pointer;
+}
+.vtar-deck-disabled .vtar-deck-stack { cursor: not-allowed; pointer-events: none; }
+
+.vtar-deck-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 8%;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  border: 1px solid rgba(0,0,0,0.25);
+  transition: transform 0.2s ease;
+}
+.vtar-deck-card-3 { transform: translate(3px, 3px) rotate(2.5deg); }
+.vtar-deck-card-2 { transform: translate(1.5px, 1.5px) rotate(1.2deg); }
+.vtar-deck-card-1 { transform: translate(0,0) rotate(0deg); }
+.vtar-deck-stack:hover .vtar-deck-card-1 { transform: translateY(-4px); }
+.vtar-deck-stack.vtar-pulse .vtar-deck-card-1 { animation: vtarDeckPulse 0.5s ease; }
+@keyframes vtarDeckPulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.08) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.vtar-back-rws .vtar-deck-card,
+.vtar-back-rws.vtar-card-back,
+.vtar-back-rws .vtar-card-back { background-image: url('assets/decks/rws/back.svg'); background-size: cover; }
+.vtar-back-marseille .vtar-deck-card,
+.vtar-back-marseille.vtar-card-back,
+.vtar-back-marseille .vtar-card-back { background-image: url('assets/decks/marseille/back.svg'); background-size: cover; }
+
+.vtar-deck-count {
+  position: absolute;
+  bottom: -8px; right: -8px;
+  background: var(--lavender);
+  color: #1a1430;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+:root[data-theme="light"] .vtar-deck-count { color: #fff; }
+.vtar-deck-stack.vtar-deck-empty { opacity: 0.35; }
+
+.vtar-deck-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+.vtar-mini-btn {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.68rem;
+  padding: 0.32rem 0.4rem;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.vtar-mini-btn:hover { border-color: var(--sage); color: var(--silver-bright); }
+.vtar-deck-disabled .vtar-mini-btn { pointer-events: none; }
+
+/* ---- Stol ---- */
+.vtar-table {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 38%, var(--body-grad-1) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-mid) 0%, var(--bg-deep) 100%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.45), var(--shadow-glow);
+  min-height: clamp(420px, 62vh, 760px);
+  overflow: hidden;
+}
+:root[data-theme="light"] .vtar-table {
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255,255,255,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-mid) 0%, var(--bg-light) 100%);
+  box-shadow: inset 0 0 50px rgba(106,78,160,0.12), var(--shadow-glow);
+}
+.vtar-table::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, var(--lavender) 0.6px, transparent 0.6px);
+  background-size: 26px 26px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+:root[data-theme="light"] .vtar-table::before { opacity: 0.14; }
+
+.vtar-slots {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: clamp(420px, 62vh, 760px);
+}
+
+.vtar-slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: var(--vtar-card-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.vtar-slot-marker {
+  position: relative;
+  width: var(--vtar-card-w);
+  aspect-ratio: var(--vtar-card-ratio);
+  border: 1.5px dashed var(--border);
+  border-radius: 8%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vtar-slot-marker span {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(0.9rem, 1.6vw, 1.3rem);
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+.vtar-slot-label {
+  margin-top: 0.3rem;
+  font-family: 'Quicksand', sans-serif;
+  font-size: clamp(0.6rem, 0.95vw, 0.76rem);
+  color: var(--silver-bright);
+  text-align: center;
+  letter-spacing: 0.02em;
+  max-width: calc(var(--vtar-card-w) * 1.9);
+}
+.vtar-slot-meaning {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: clamp(0.62rem, 0.9vw, 0.74rem);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: calc(var(--vtar-card-w) * 2.1);
+  line-height: 1.25;
+  margin-top: 0.1rem;
+}
+
+.vtar-slot-card-holder {
+  position: absolute;
+  inset: 0;
+  width: var(--vtar-card-w);
+  aspect-ratio: var(--vtar-card-ratio);
+}
+
+/* ---- Karta na stolu (izvučena) ---- */
+.vtar-card {
+  position: relative;
+  width: var(--vtar-card-w);
+  aspect-ratio: var(--vtar-card-ratio);
+  perspective: 900px;
+}
+.vtar-card-flip {
+  position: relative;
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.3,.2,.2,1);
+}
+.vtar-card-flip.vtar-revealed { transform: rotateY(180deg); }
+
+.vtar-card-face {
+  position: absolute; inset: 0;
+  border-radius: 8%;
+  backface-visibility: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.3);
+}
+.vtar-card-back { transform: rotateY(0deg); background-size: cover; }
+.vtar-card-front { transform: rotateY(180deg); background: #eee6d8; }
+.vtar-card-front-img {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.2s ease;
+}
+.vtar-card.vtar-reversed .vtar-card-front-img { transform: rotate(180deg); }
+
+.vtar-reversed-tag {
+  display: none;
+  position: absolute;
+  top: 3px; left: 3px;
+  background: rgba(20, 15, 40, 0.75);
+  color: #e4e0f4;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.03em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  z-index: 3;
+  pointer-events: none;
+}
+.vtar-card.vtar-reversed .vtar-reversed-tag { display: block; }
+
+.vtar-card-discard-btn {
+  position: absolute;
+  top: -7px; right: -7px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--bg-deep);
+  border: 1px solid var(--lavender);
+  color: var(--silver-bright);
+  font-size: 0.6rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+  z-index: 5;
+}
+.vtar-card:hover .vtar-card-discard-btn,
+.vtar-card:focus-within .vtar-card-discard-btn { opacity: 0.9; }
+.vtar-card-discard-btn:hover { background: var(--lavender); color: #1a1430; }
+
+/* ---- Otpad ---- */
+.vtar-discard-zone { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; }
+.vtar-discard-stack {
+  position: relative;
+  width: calc(var(--vtar-card-w) * 0.8);
+  aspect-ratio: var(--vtar-card-ratio);
+}
+.vtar-discard-card {
+  position: absolute; inset: 0;
+  border-radius: 8%;
+  background-size: cover;
+  border: 1px solid rgba(0,0,0,0.3);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+  transform: translate(calc(var(--i, 0) * 2px), calc(var(--i, 0) * -2px)) rotate(calc(var(--i, 0) * 4deg - 4deg));
+  opacity: 0.85;
+}
+.vtar-discard-empty .vtar-discard-stack {
+  border: 1.5px dashed var(--border);
+  border-radius: 8%;
+  opacity: 0.5;
+}
+.vtar-discard-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.vtar-hint {
+  text-align: center;
+  margin-top: 1rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+.vtar-hint-flash { animation: trHintFlash 1.4s ease; }
+@keyframes trHintFlash { 0% { color: var(--lavender); } 100% { color: var(--text-muted); } }
+
+/* ---- Teaser kartica na početnoj stranici ---- */
+.vtar-home-teaser {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 1.3rem 1.7rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.vtar-home-teaser:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
+.vtar-home-teaser-icon { width: 64px; height: 64px; flex-shrink: 0; }
+.vtar-home-teaser-icon svg { width: 100%; height: 100%; }
+.vtar-home-teaser-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+.vtar-home-teaser-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  color: var(--lavender);
+}
+.vtar-home-teaser-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+@media (max-width: 520px) {
+  .vtar-home-teaser { flex-direction: column; text-align: center; padding: 1.4rem 1.2rem; }
+  .vtar-home-teaser-text { text-align: center; }
+}
+
+/* ============================================================
+   Mobilna verzija — pojednostavljen, vertikalan layout
+   ============================================================ */
+@media (max-width: 900px) {
+  .vtar-layout { grid-template-columns: 1fr; }
+  .vtar-rail { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+  .vtar-rail-left { order: 1; }
+  .vtar-table { order: 2; }
+  .vtar-rail-right { order: 3; }
+  .vtar-deck-block { flex: 1 1 160px; max-width: 220px; }
+}
+
+@media (max-width: 760px) {
+  :root { --vtar-card-w: clamp(64px, 22vw, 100px); }
+  .vtar-toprow { flex-direction: column; }
+  .vtar-global-toggles { width: 100%; justify-content: space-between; }
+  .vtar-spread-picker { gap: 0.4rem; flex-basis: auto; width: 100%; }
+  .vtar-spread-chip span { display: none; }
+  .vtar-spread-chip { padding: 0.4rem; }
+  .vtar-spread-hover-preview { display: none !important; }
+
+  .vtar-table { min-height: auto; border-radius: 14px; }
+  .vtar-slots { min-height: auto; padding: 1.1rem 0.6rem; }
+  .vtar-table.vtar-mobile .vtar-slots {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.3rem;
+  }
+  .vtar-table.vtar-mobile .vtar-slot {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+  }
+  .vtar-table.vtar-mobile .vtar-slot-marker { position: relative; }
+  .vtar-table.vtar-mobile .vtar-slot-card-holder { position: absolute; inset: 0; }
+}

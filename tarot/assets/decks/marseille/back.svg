@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 442">
+  <defs>
+    <linearGradient id="msBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c3830"/>
+      <stop offset="55%" stop-color="#12241f"/>
+      <stop offset="100%" stop-color="#081410"/>
+    </linearGradient>
+    <pattern id="msLattice" width="36" height="36" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="36" height="36" fill="none"/>
+      <path d="M18,0 V36 M0,18 H36" stroke="#9fc4ab" stroke-width="0.7" opacity="0.35"/>
+      <circle cx="18" cy="18" r="3.2" fill="none" stroke="#a890d0" stroke-width="0.8" opacity="0.55"/>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="260" height="442" rx="10" fill="url(#msBg)"/>
+  <rect x="9" y="9" width="242" height="424" fill="url(#msLattice)"/>
+  <rect x="9" y="9" width="242" height="424" fill="none" stroke="#a890d0" stroke-width="2" opacity="0.7"/>
+  <rect x="16" y="16" width="228" height="410" fill="none" stroke="#c4c0d8" stroke-width="0.8" opacity="0.5"/>
+
+  <g fill="none" stroke="#a890d0" stroke-width="1.4" opacity="0.9">
+    <path d="M130,40 L150,70 L130,100 L110,70 Z"/>
+    <path d="M130,342 L150,372 L130,402 L110,372 Z"/>
+    <path d="M40,221 L70,201 L100,221 L70,241 Z"/>
+    <path d="M160,221 L190,201 L220,221 L190,241 Z"/>
+  </g>
+
+  <g fill="#e4e0f4" opacity="0.9">
+    <circle cx="130" cy="70" r="2.6"/>
+    <circle cx="130" cy="372" r="2.6"/>
+    <circle cx="70" cy="221" r="2.6"/>
+    <circle cx="190" cy="221" r="2.6"/>
+  </g>
+
+  <circle cx="130" cy="221" r="46" fill="none" stroke="#a890d0" stroke-width="1.4" opacity="0.85"/>
+  <circle cx="130" cy="221" r="46" fill="#12241f" opacity="0.55"/>
+  <path d="M130,187 L142,213 L170,217 L150,236 L156,264 L130,250 L104,264 L110,236 L90,217 L118,213 Z"
+        fill="none" stroke="#c9b8ec" stroke-width="1.3" opacity="0.85"/>
+
+  <text x="130" y="410" text-anchor="middle" font-family="Georgia, serif" font-size="10" letter-spacing="3.5" fill="#c4c0d8" opacity="0.6">ALKEMIJANA</text>
+</svg>

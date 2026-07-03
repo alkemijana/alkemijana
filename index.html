@@ -186,6 +186,7 @@
 
   <!-- Stilovi -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="tarot/tarot.css">
 </head>
 <body>
 
@@ -478,6 +479,7 @@
       <li><a onclick="showPage('o-meni')"  data-page="o-meni" id="t-navAbout">O meni</a></li>
       <li><a onclick="showPage('blog')"    data-page="blog" id="t-navBlog">Blog</a></li>
       <li><a onclick="showPage('natal')"   data-page="natal" id="t-navNatal">Astro alati</a></li>
+      <li><a onclick="showPage('tarot')"   data-page="tarot" id="t-navTarot">Virtualni tarot</a></li>
       <li><a onclick="showPage('kontakt')" data-page="kontakt" id="t-navContact">Kontakt</a></li>
     </ul>
     <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
@@ -507,6 +509,22 @@
         </div>
       </a>
       <div class="home-live-natal-caption">trenutne pozicije planeta</div>
+    </div>
+
+    <div class="section container">
+      <a class="vtar-home-teaser" onclick="showPage('tarot'); return false;" href="#tarot" role="button" aria-label="Otvori virtualni tarot stol">
+        <div class="vtar-home-teaser-icon" aria-hidden="true">
+          <svg viewBox="0 0 100 100">
+            <rect x="30" y="14" width="28" height="46" rx="4" fill="none" stroke="var(--lavender)" stroke-width="2" transform="rotate(-8 44 37)"/>
+            <rect x="42" y="20" width="28" height="46" rx="4" fill="none" stroke="var(--sage)" stroke-width="2" transform="rotate(8 56 43)"/>
+            <circle cx="56" cy="43" r="3" fill="var(--silver-bright)"/>
+          </svg>
+        </div>
+        <div class="vtar-home-teaser-text">
+          <span class="vtar-home-teaser-title">✦ Virtualni tarot</span>
+          <span class="vtar-home-teaser-sub">Izvuci karte, posloži spread — bez tumačenja, samo za tvoju intuiciju</span>
+        </div>
+      </a>
     </div>
 
     <div class="section container" id="home-services-section">
@@ -1247,6 +1265,13 @@
     </div>
   </section>
 
+  <!-- VIRTUALNI TAROT -->
+  <section class="page" id="tarot">
+    <div class="container">
+      <div id="tarot-app"></div>
+    </div>
+  </section>
+
   <footer>
     <div class="footer-logo">Alkemijana</div>
     <div class="footer-social">
@@ -1434,6 +1459,12 @@
 <script src="js/natal-acg-render.js"></script>
 <script src="js/natal-ai.js"></script>
 <script src="js/natal-live.js"></script>
+
+<!-- Virtualni tarot (samostalan modul, tarot/) -->
+<script src="tarot/tarot-data.js"></script>
+<script src="tarot/tarot-engine.js"></script>
+<script src="tarot/tarot-render.js"></script>
+<script src="tarot/tarot.js"></script>
 
 </body>
 </html>

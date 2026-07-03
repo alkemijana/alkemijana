@@ -40,6 +40,15 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
+├── tarot/                          ← Virtualni tarot — potpuno samostalan modul (v. odjeljak niže)
+│   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
+│   ├── tarot-data.js               ← 78 kanonskih karata, definicije špilova, 11 spreadova (pozicije+značenja)
+│   ├── tarot-engine.js             ← Stanje bez DOM-a (špilovi, stol, otpad, postavke) — createTarotEngine()
+│   ├── tarot-render.js             ← DOM izgradnja, animacije (let/flip), desktop+mobilni layout — createTarotUI()
+│   ├── tarot.js                    ← Init (glue) — čita samo #tarot-app
+│   └── assets/decks/
+│       ├── rws/                    ← Rider–Waite–Smith 1909 (Wikimedia Commons, public domain) + back.svg
+│       └── marseille/              ← Tarot de Marseille, Lequart 1890 (Wikimedia Commons, public domain) + back.svg
 ├── functions/
 │   ├── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 │   ├── verify-pass.js              ← Provjera admin lozinke (env ADMIN_PASS)
@@ -288,6 +297,65 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   po rubu i globalno u kutovima) da se ne pojave dva identična jedan do drugog.
 - **Što NIJE uključeno (zasad):** paranske linije, relokacijska karta (numerički prikaz),
   reverse (ASC/MC finder), PDF export.
+
+---
+
+## Virtualni tarot (mapa `tarot/`)
+
+Stranica **#tarot** (nav link "Virtualni tarot", + teaser kartica na početnoj `.vtar-home-teaser`)
+— besplatan interaktivni tarot stol, **čisto vizualno/interaktivno izvlačenje karata, BEZ
+tumačenja značenja**. Namjerno **potpuno izdvojeno** u mapu `tarot/` (vlastiti CSS/JS, vlastite
+slike) — za izmjene ovdje nije potrebno čitati ostatak stranice, samo taj folder + minimalne
+kuke u `index.html`/`js/app.js` navedene niže.
+
+- **Arhitektura (4 JS filea, učitavaju se tim redom nakon `natal-live.js`):**
+  `tarot-data.js` (čisti podaci, bez ovisnosti) → `tarot-engine.js` (`createTarotEngine()` —
+  stanje bez DOM-a: špilovi/preostalo, stol, otpad, postavke, pub/sub `onChange`) →
+  `tarot-render.js` (`createTarotUI(engine, root)` — gradi cijeli DOM u `#tarot-app` iz JS-a,
+  animacije) → `tarot.js` (glue, poziva `createTarotUI` na `DOMContentLoaded`).
+- **CSS prefiks `vtar-`** (namjerno, NE `tr-`) — `tr-` prefiks je već zauzet u `css/style.css`
+  za Tranzite (`.tr-panel`, `.tr-slider`, `.tr-hint`...); korištenje `tr-` je izazvalo stvarni
+  layout bug (kolizija imena + `flex-basis` koji se pod `.tr-toprow{flex-direction:column}` na
+  mobitelu tumači kao visina umjesto širine) — otkriveno i popravljeno preimenovanjem u `vtar-`.
+  Pri dodavanju novih klasa u ovaj modul **uvijek koristiti `vtar-` prefiks**.
+- **Kuke izvan `tarot/` (namjerno minimalne):** `index.html` — `<link>` na `tarot/tarot.css`,
+  4× `<script src="tarot/...">` na dnu, nav link (`showPage('tarot')`), `<section id="tarot">`
+  s praznim `<div id="tarot-app">` (sav sadržaj gradi JS), teaser kartica na početnoj. `js/app.js`
+  — jedan zapis u `PAGE_META.tarot` (SEO). `showPage()` u app.js **nije mijenjan** — generički
+  mehanizam (toggle `.page.active` po id-u) radi bez posebne iznimke za tarot.
+- **Špilovi (proširivo):** `TAROT_DECKS` niz u `tarot-data.js` — trenutno **Rider–Waite–Smith
+  1909** i **Tarot de Marseille** (Lequart 1890, Pariz), oba public domain, preuzeta s Wikimedia
+  Commons (`Category:Rider-Waite tarot deck (Roses & Lilies)` / `Category:Tarot de Marseille
+  (Single Cards)`, filtrirano regexom na točan Lequart set). Slike u `tarot/assets/decks/<folder>/`,
+  imenovane kanonskim id-em karte (npr. `fool.jpg`, `wands-queen.jpg`) — **isti id/naziv za sve
+  špilove** (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika → dodavanje novog špila
+  (Oracle, Lenormand...) = novi objekt u `TAROT_DECKS` + 78 slika s istim imenima, bez diranja
+  ostatka koda. Pozadine karata (`back.svg`) su ručno crtani SVG, različit motiv po špilu
+  (RWS: mandala/kompas; Marseille: rešetkasti uzorak), dark mystical paleta — **ne mijenjaju se
+  s temom** (fizička pozadina karte je konstantna, kao u stvarnosti).
+- **Spreadovi:** `TAROT_SPREADS` u `tarot-data.js` — 11 rasporeda (Jedna karta, Dva izbora, Tri
+  karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre, Godina pred nama).
+  Pozicije su postotci (x/y, 0–100) unutar stola; `rot` (samo Keltski križ, pozicija 2) rotira
+  karticu 90° za "poprijeko" izgled — primjenjuje se SAMO na desktopu (mobilni raspored je
+  jednostavna vertikalna lista, rotacija bi ondje izgledala čudno). `label`/`meaning` su kratke
+  HR oznake pozicije (ne tumačenje karte) — prikazuju se uz uključen prekidač "Značenja pozicija".
+  Godina pred nama ima 13. poziciju (centar = "Tema godine") generiranu formulom u samom nizu.
+- **Stol — layout:** `.vtar-layout` = lijeva traka (kontrole po špilu + stog za izvlačenje) |
+  stol (`.vtar-slots`, apsolutno pozicionirani `.vtar-slot`-ovi po %) | desna traka (otpad).
+  Klik na stog izvlači sljedeću kartu u prvu praznu poziciju (`nextEmptySlot`); FLIP animacija
+  (izmjeri stvarne `getBoundingClientRect()` pozicije, translatira od stoga do slota, pa
+  flip rotateY) radi identično na desktopu i mobitelu jer koristi stvarno renderirane pozicije.
+- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile` na `#vtar-table`):**
+  `.vtar-slot` prelazi iz `position:absolute` (postotci) u `position:relative` (normalan tok,
+  vertikalna lista) — **JS mora preskočiti postavljanje inline `left/top` stila kad je
+  `isMobile`** (inline stil ima prednost nad CSS-om iz medijskog upita pa ga CSS ne može
+  poništiti) — to je uzrok jednog stvarnog bug-a otkrivenog pri izradi, popravljeno u
+  `renderSlots()` (`if (!isMobile) { slot.style.left = ...; }`).
+- **Postavke (bez perzistencije u localStorage — namjerno, sesijski alat):** uspravno/obrnuto
+  (utječe samo na buduća izvlačenja), prikaži/sakrij značenja, po špilu: uključi/isključi,
+  miješaj sve/preostalo, presijeci. Otpad je opcionalan (klik na izvučenu karticu je odloži).
+- **Što NIJE uključeno (namjerno):** tumačenje značenja karata, AI uvidi, spremanje/dijeljenje
+  čitanja, drag-and-drop (samo klik).
 
 ---
 

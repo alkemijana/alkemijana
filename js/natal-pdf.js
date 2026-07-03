@@ -1293,6 +1293,13 @@ function acgCollectEdgeLabels(acg, projMode, latLim) {
         const lo = seg[0], hi = seg[seg.length - 1];   // sortirano po širini
         if (hi[0] >= latLim - 0.8)  add('top', hi[1], pl, kind);
         if (lo[0] <= -latLim + 0.8) add('bottom', lo[1], pl, kind);
+        // krajevi na antimeridianu (segment presječen na ±180°) → bočne oznake
+        [lo, hi].forEach(p => {
+          if (Math.abs(p[0]) < latLim - 0.8) {
+            if (p[1] >= 179.2)       add('right', p[0], pl, kind);
+            else if (p[1] <= -179.2) add('left', p[0], pl, kind);
+          }
+        });
       });
       ends(geom.ascSegments, 'AC');
       ends(geom.dscSegments, 'DC');
@@ -1427,15 +1434,26 @@ function acgMapBlock(acg, projMode, geom, theme) {
   const labelW = k => glyphS + (k ? 0.5 + kindW(k) : 0);
   const buckets = acgCollectEdgeLabels(acg, projMode, latLim);
 
-  function drawH(items, cy) {
+  // Poveznice (crtice) od točke gdje linija izlazi s karte do razmaknutog
+  // glifa — kao na Astro-Seeku; samo na radnoj (svijetloj) verziji.
+  const drawConn = !dark;
+  const connW = Math.max(0.12, lineW * 0.3).toFixed(2);
+  function connector(x1, y1, x2, y2, color) {
+    if (!drawConn) return '';
+    return '<line x1="' + x1.toFixed(2) + '" y1="' + y1.toFixed(2) + '" x2="' + x2.toFixed(2) +
+           '" y2="' + y2.toFixed(2) + '" stroke="' + color + '" stroke-width="' + connW + '" opacity="0.75"/>';
+  }
+
+  function drawH(items, cy, edgeY, toMap) {
     const laid = acgLayoutEdgeLabels(
-      items.map(o => ({ ...o, pos: lonToX(o.pos) })),
+      items.map(o => { const x = lonToX(o.pos); return { ...o, pos: x, orig: x }; }),
       labelW('MC') + 1.1, mapX + glyphS, mapX + mapW - glyphS
     );
     let out = '';
     for (const o of laid) {
       const lw = labelW(o.kind);
       const gx = o.pos - lw / 2 + glyphS / 2;
+      out += connector(o.orig, edgeY, gx, cy + toMap * glyphS * 0.62, o.color);
       out += glyphGroup(o.id, gx, cy, glyphS, o.color);
       if (o.kind) {
         out += '<text x="' + (gx + glyphS / 2 + 0.5).toFixed(2) + '" y="' + (cy + fsKind * 0.36).toFixed(2) +
@@ -1444,19 +1462,30 @@ function acgMapBlock(acg, projMode, geom, theme) {
     }
     return out;
   }
-  function drawV(items, cx) {
+  // Bočne oznake: glif + vrsta linije (MC/IC/AC/DC) složeni okomito (glif
+  // iznad, slova ispod) da stanu u uski okvir; poveznica do ruba karte.
+  function drawV(items, cx, edgeX, toMap) {
     const laid = acgLayoutEdgeLabels(
-      items.map(o => ({ ...o, pos: latToY(o.pos) })),
-      glyphS + 1.1, mapY + glyphS, mapY + mapH - glyphS
+      items.map(o => { const y = latToY(o.pos); return { ...o, pos: y, orig: y }; }),
+      glyphS + fsKind * 1.05 + 1.0, mapY + glyphS, mapY + mapH - glyphS
     );
     let out = '';
-    for (const o of laid) out += glyphGroup(o.id, cx, o.pos, glyphS, o.color);
+    for (const o of laid) {
+      const gy = o.pos - (o.kind ? fsKind * 0.5 : 0);
+      out += connector(edgeX, o.orig, cx + toMap * glyphS * 0.62, gy, o.color);
+      out += glyphGroup(o.id, cx, gy, glyphS, o.color);
+      if (o.kind) {
+        const kw = kindW(o.kind);
+        out += '<text x="' + (cx - kw / 2).toFixed(2) + '" y="' + (gy + glyphS * 0.62 + fsKind * 0.9).toFixed(2) +
+               '" fill="' + o.color + '" font-family="Quicksand" font-size="' + fsKind.toFixed(2) + '">' + o.kind + '</text>';
+      }
+    }
     return out;
   }
-  s += drawH(buckets.top, mapY - G / 2);
-  s += drawH(buckets.bottom, mapY + mapH + G / 2);
-  s += drawV(buckets.left, mapX - G / 2);
-  s += drawV(buckets.right, mapX + mapW + G / 2);
+  s += drawH(buckets.top,    mapY - G / 2,        mapY,        1);
+  s += drawH(buckets.bottom, mapY + mapH + G / 2, mapY + mapH, -1);
+  s += drawV(buckets.left,   mapX - G / 2,        mapX,        1);
+  s += drawV(buckets.right,  mapX + mapW + G / 2, mapX + mapW, -1);
 
   return s;
 }
@@ -1585,23 +1614,25 @@ function buildAcgPosterSVG(acg, projMode, w, h) {
   s += '<rect x="' + (m + w * 0.006) + '" y="' + (m + w * 0.006) + '" width="' + (w - 2 * m - w * 0.012) + '" height="' + (h - 2 * m - w * 0.012) +
        '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0005) + '"/>';
 
-  // naslov (ime) — Dancing Script kao natalni poster
+  // naslov (ime) — Dancing Script kao natalni poster; baseline spuštena tako
+  // da ni uzlazni potezi rukopisnog fonta ne izlaze iznad ukrasnog okvira
   const title = acg.name || 'Astrokartografija';
   const maxTextW = w * 0.8;
-  const f1 = fitFontSize(title, 'Dancing Script', '700', w * 0.052, maxTextW);
-  s += svgCenteredText(title, cx, h * 0.088, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
+  const f1 = fitFontSize(title, 'Dancing Script', '700', w * 0.046, maxTextW);
+  const titleY = Math.max(h * 0.098, m + f1 * 1.02);
+  s += svgCenteredText(title, cx, titleY, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
 
   // linija sa zvjezdicom
-  const ly = h * 0.108, lw = w * 0.24;
+  const ly = h * 0.118, lw = w * 0.24;
   s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.016) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0008) + '"/>';
   s += '<line x1="' + (cx + w * 0.016) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0008) + '"/>';
   s += acgStarMark(cx, ly, w * 0.003, '#b8a2dd');
 
   // "Astrokartografija · projekcija" + podaci rođenja
-  s += svgCenteredText('Astrokartografija · ' + meta.label, cx, h * 0.133, w * 0.0135, '#b8a2dd', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText('Astrokartografija · ' + meta.label, cx, h * 0.141, w * 0.0135, '#b8a2dd', 'Quicksand', 'Quicksand', null);
   const sub = (acg.dateV || '') + ' · ' + (acg.timeV || '') + ' · ' + (acg.place ? acg.place.label : '');
   const fData = fitFontSize(sub, 'Playfair Display', null, w * 0.016, maxTextW);
-  s += svgCenteredText(sub, cx, h * 0.158, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(sub, cx, h * 0.164, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
 
   // karta
   s += acgMapBlock(acg, projMode, { x: mapX, y: mapY, w: mapW, h: mapH, gutter: G }, 'dark');

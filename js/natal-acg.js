@@ -107,15 +107,25 @@ function computeLocalSpaceSegments(lat0, lon0, raDeg, decDeg, gastDeg) {
   const aSouth = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) * R2D;
   const bearing = norm360(aSouth + 180);        // kompasni azimut od sjevera (S=0→N=180 pretvorba)
 
-  // uzorkuj cijeli veliki krug pa prekini na antimeridianu i blizu polova (Mercator granica)
+  // uzorkuj cijeli veliki krug pa prekini na antimeridianu i blizu polova (Mercator granica);
+  // na antimeridianu ubaci interpoliranu točku na ±180° da linija dođe do samog ruba karte
   const segments = [];
   let cur = [];
   for (let dd = 0; dd <= 360; dd += 1) {
     const p = greatCirclePoint(lat0, lon0, bearing, dd);
     if (Math.abs(p[0]) > ACG_LAT_LIMIT) { if (cur.length > 1) segments.push(cur); cur = []; continue; }
     if (cur.length) {
-      const prevLon = cur[cur.length - 1][1];
-      if (Math.abs(p[1] - prevLon) > 180) { if (cur.length > 1) segments.push(cur); cur = []; }
+      const prev = cur[cur.length - 1];
+      const dl = p[1] - prev[1];
+      if (Math.abs(dl) > 180) {
+        const pU = p[1] - Math.sign(dl) * 360;
+        const edge = dl < 0 ? 180 : -180;
+        const t = (edge - prev[1]) / ((pU - prev[1]) || 1e-9);
+        const latX = prev[0] + t * (p[0] - prev[0]);
+        cur.push([latX, edge]);
+        if (cur.length > 1) segments.push(cur);
+        cur = [[latX, -edge]];
+      }
     }
     cur.push(p);
   }
@@ -124,15 +134,26 @@ function computeLocalSpaceSegments(lat0, lon0, raDeg, decDeg, gastDeg) {
 }
 
 /* Razdvoji niz [lat,lon] točaka u segmente kad lon "preskoči" preko ±180°
-   (antimeridian) — inače Leaflet povuče ravnu crtu preko cijele karte. */
+   (antimeridian) — inače Leaflet povuče ravnu crtu preko cijele karte.
+   Na mjestu prijelaza ubacuje interpoliranu točku na točno ±180° pa oba
+   segmenta dodiruju sam rub karte (bez vizualne rupe lijevo/desno). */
 function splitAntimeridian(points) {
   const segments = [];
   let cur = [];
   for (let i = 0; i < points.length; i++) {
     const p = points[i];
     if (cur.length) {
-      const prevLon = cur[cur.length - 1][1];
-      if (Math.abs(p[1] - prevLon) > 180) { segments.push(cur); cur = []; }
+      const prev = cur[cur.length - 1];
+      const dl = p[1] - prev[1];
+      if (Math.abs(dl) > 180) {
+        const pU = p[1] - Math.sign(dl) * 360;              // p-lon odmotan prema prev
+        const edge = dl < 0 ? 180 : -180;                   // rub na prev strani
+        const t = (edge - prev[1]) / ((pU - prev[1]) || 1e-9);
+        const latX = prev[0] + t * (p[0] - prev[0]);
+        cur.push([latX, edge]);
+        segments.push(cur);
+        cur = [[latX, -edge]];
+      }
     }
     cur.push(p);
   }

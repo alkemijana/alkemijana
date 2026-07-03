@@ -59,7 +59,7 @@ const TAROT_DECKS = [
     year: '1909',
     folder: 'rws',
     ext: 'jpg',
-    backClass: 'tarot-back-rws'
+    backClass: 'vtar-back-rws'
   },
   {
     id: 'marseille',
@@ -68,7 +68,7 @@ const TAROT_DECKS = [
     year: '1890',
     folder: 'marseille',
     ext: 'jpg',
-    backClass: 'tarot-back-marseille'
+    backClass: 'vtar-back-marseille'
   }
 ];
 
@@ -78,155 +78,187 @@ function tarotCardImage(deckId, cardId) {
 }
 
 /* ---- Spreadovi ----
-   Pozicije su postotci (0-100) unutar stola; "rot" je dodatni kut (za
-   Keltski križ karticu #2 koja leži poprijeko). "label" je kratka oznaka
-   pozicije, "meaning" kratko objašnjenje ŠTO pozicija znači (ne tumačenje
-   karte) — prikazuje se kad je uključen prekidač "Značenja pozicija". */
+   GRID model: svaki spread ima `cols`/`rows` i pozicije s koordinatama
+   `gx` (0..cols-1) i `gy` (0..rows-1) = SREDIŠTE karte u toj ćeliji (može biti
+   decimalno, npr. za lukove/kružnice). Renderer skalira karte tako da SVE stane
+   unutar stola (nikad izvan) i da opisi ne izlaze. `rot` (samo Keltski križ,
+   karta 2) rotira karticu 90° (poprijeko). `labelSide` = 'right' stavlja oznaku
+   desno od karte (Čakre), inače ispod. `short` je opis (hover/ispod izbornika),
+   `label` kratka oznaka pozicije, `meaning` par riječi ŠTO pozicija znači
+   (ne tumačenje karte) — prikazuje se uz uključen prekidač "Značenja pozicija".
+   `free:true` = slobodno slaganje (neograničeno karata, bez zadanih pozicija). */
+
+/* helper — 12/6 pozicija u krug unutar cols×rows grida */
+function tarotCirclePositions(cols, rows, count, radius, startDeg, labels, meanings) {
+  const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
+  const out = [];
+  for (let k = 0; k < count; k++) {
+    const a = (startDeg + k * (360 / count)) * Math.PI / 180;
+    out.push({
+      gx: Math.round((cx + radius * Math.cos(a)) * 1000) / 1000,
+      gy: Math.round((cy + radius * Math.sin(a)) * 1000) / 1000,
+      label: labels[k],
+      meaning: meanings[k]
+    });
+  }
+  return out;
+}
 
 const TAROT_SPREADS = [
+  {
+    id: 'free',
+    name: 'Slobodno slaganje',
+    free: true,
+    short: 'Slažeš karte redom, bez zadanih pozicija — koliko god želiš.',
+    cols: 1, rows: 1,
+    positions: []
+  },
   {
     id: 'single',
     name: 'Jedna karta',
     short: 'Dnevna karta — brz uvid u energiju dana ili pitanja.',
+    cols: 1, rows: 1,
     positions: [
-      { x: 50, y: 50, label: 'Karta', meaning: 'Opća energija dana ili odgovor na pitanje.' }
+      { gx: 0, gy: 0, label: 'Karta', meaning: 'Opća energija dana ili odgovor na pitanje.' }
     ]
   },
   {
     id: 'two-choice',
     name: 'Dva izbora',
     short: 'Usporedba dviju opcija i njihovih mogućih ishoda.',
+    cols: 2, rows: 2,
     positions: [
-      { x: 28, y: 68, label: 'A', meaning: 'Energija prve opcije, ako je izabereš.' },
-      { x: 28, y: 34, label: 'A →', meaning: 'Mogući ishod prve opcije.' },
-      { x: 72, y: 68, label: 'B', meaning: 'Energija druge opcije, ako je izabereš.' },
-      { x: 72, y: 34, label: 'B →', meaning: 'Mogući ishod druge opcije.' }
+      { gx: 0, gy: 1, label: 'Opcija A', meaning: 'Energija prve opcije, ako je izabereš.' },
+      { gx: 0, gy: 0, label: 'Ishod A', meaning: 'Mogući ishod prve opcije.' },
+      { gx: 1, gy: 1, label: 'Opcija B', meaning: 'Energija druge opcije, ako je izabereš.' },
+      { gx: 1, gy: 0, label: 'Ishod B', meaning: 'Mogući ishod druge opcije.' }
     ]
   },
   {
     id: 'three-card',
     name: 'Tri karte',
     short: 'Prošlost · Sadašnjost · Budućnost — klasičan pregled toka.',
+    cols: 3, rows: 1,
     positions: [
-      { x: 20, y: 50, label: 'Prošlost', meaning: 'Što je dovelo do sadašnje situacije.' },
-      { x: 50, y: 50, label: 'Sadašnjost', meaning: 'Trenutna energija ili stanje stvari.' },
-      { x: 80, y: 50, label: 'Budućnost', meaning: 'Vjerojatan smjer ako se ništa ne promijeni.' }
+      { gx: 0, gy: 0, label: 'Prošlost', meaning: 'Što je dovelo do sadašnje situacije.' },
+      { gx: 1, gy: 0, label: 'Sadašnjost', meaning: 'Trenutna energija ili stanje stvari.' },
+      { gx: 2, gy: 0, label: 'Budućnost', meaning: 'Vjerojatan smjer ako se ništa ne promijeni.' }
     ]
   },
   {
     id: 'five-card',
     name: 'Pet karata',
     short: 'Situacija · prepreka · savjet · vanjski utjecaj · ishod.',
+    cols: 5, rows: 1,
     positions: [
-      { x: 10, y: 55, label: 'Situacija', meaning: 'Srž trenutnog pitanja.' },
-      { x: 30, y: 55, label: 'Prepreka', meaning: 'Što stoji na putu ili koči napredak.' },
-      { x: 50, y: 55, label: 'Savjet', meaning: 'Preporučen smjer djelovanja.' },
-      { x: 70, y: 55, label: 'Vanjski utjecaj', meaning: 'Okolnosti ili ljudi izvan tvoje kontrole.' },
-      { x: 90, y: 55, label: 'Ishod', meaning: 'Vjerojatan ishod situacije.' }
+      { gx: 0, gy: 0, label: 'Situacija', meaning: 'Srž trenutnog pitanja.' },
+      { gx: 1, gy: 0, label: 'Prepreka', meaning: 'Što stoji na putu ili koči napredak.' },
+      { gx: 2, gy: 0, label: 'Savjet', meaning: 'Preporučen smjer djelovanja.' },
+      { gx: 3, gy: 0, label: 'Vanjski utjecaj', meaning: 'Okolnosti ili ljudi izvan tvoje kontrole.' },
+      { gx: 4, gy: 0, label: 'Ishod', meaning: 'Vjerojatan ishod situacije.' }
     ]
   },
   {
     id: 'career',
     name: 'Karijera',
     short: 'Trenutna uloga · snaga · izazov · akcija · ishod.',
+    cols: 5, rows: 2,
     positions: [
-      { x: 10, y: 55, label: 'Trenutna uloga', meaning: 'Sadašnja energija na poslu ili u karijeri.' },
-      { x: 30, y: 32, label: 'Tvoja snaga', meaning: 'Vještine i prednosti koje nosiš sa sobom.' },
-      { x: 50, y: 55, label: 'Izazov', meaning: 'Što trenutno ograničava napredak.' },
-      { x: 70, y: 32, label: 'Sljedeći korak', meaning: 'Konkretna akcija koja pomiče stvari naprijed.' },
-      { x: 90, y: 55, label: 'Ishod', meaning: 'Kamo ovaj put vodi.' }
+      { gx: 0, gy: 0.85, label: 'Trenutna uloga', meaning: 'Sadašnja energija na poslu ili u karijeri.' },
+      { gx: 1, gy: 0.15, label: 'Tvoja snaga', meaning: 'Vještine i prednosti koje nosiš sa sobom.' },
+      { gx: 2, gy: 0.85, label: 'Izazov', meaning: 'Što trenutno ograničava napredak.' },
+      { gx: 3, gy: 0.15, label: 'Sljedeći korak', meaning: 'Konkretna akcija koja pomiče stvari naprijed.' },
+      { gx: 4, gy: 0.85, label: 'Ishod', meaning: 'Kamo ovaj put vodi.' }
     ]
   },
   {
     id: 'relationship',
     name: 'Odnos',
     short: 'Ti · partner · temelj · dinamika · izazovi · ishod.',
+    cols: 3, rows: 5,
     positions: [
-      { x: 25, y: 16, label: 'Ti', meaning: 'Tvoja uloga, osjećaji i pogled na odnos.' },
-      { x: 75, y: 16, label: 'Partner', meaning: 'Njegova/njezina uloga, osjećaji i pogled.' },
-      { x: 50, y: 38, label: 'Temelj', meaning: 'Na čemu odnos počiva.' },
-      { x: 50, y: 58, label: 'Dinamika', meaning: 'Kako energija teče između vas sada.' },
-      { x: 50, y: 78, label: 'Izazovi', meaning: 'Skrivene napetosti ili prepreke.' },
-      { x: 50, y: 94, label: 'Ishod', meaning: 'Vjerojatan smjer kojim odnos ide.' }
+      { gx: 0, gy: 0, label: 'Ti', meaning: 'Tvoja uloga, osjećaji i pogled na odnos.' },
+      { gx: 2, gy: 0, label: 'Partner', meaning: 'Njegova/njezina uloga, osjećaji i pogled.' },
+      { gx: 1, gy: 1, label: 'Temelj', meaning: 'Na čemu odnos počiva.' },
+      { gx: 1, gy: 2, label: 'Dinamika', meaning: 'Kako energija teče između vas sada.' },
+      { gx: 1, gy: 3, label: 'Izazovi', meaning: 'Skrivene napetosti ili prepreke.' },
+      { gx: 1, gy: 4, label: 'Ishod', meaning: 'Vjerojatan smjer kojim odnos ide.' }
     ]
   },
   {
     id: 'horseshoe',
     name: 'Potkova',
     short: 'Sedam karata u luku — od prošlosti do konačnog ishoda.',
+    cols: 5, rows: 3,
     positions: [
-      { x: 8,  y: 80, label: 'Prošli utjecaji', meaning: 'Događaji koji su oblikovali situaciju.' },
-      { x: 12, y: 52, label: 'Sadašnjost', meaning: 'Trenutna situacija.' },
-      { x: 26, y: 26, label: 'Skriveni utjecaji', meaning: 'Nepoznati ili nesvjesni faktori.' },
-      { x: 50, y: 14, label: 'Prepreke', meaning: 'Glavna prepreka na putu.' },
-      { x: 74, y: 26, label: 'Okolina', meaning: 'Stavovi i utjecaj drugih ljudi.' },
-      { x: 88, y: 52, label: 'Savjet', meaning: 'Preporučen postupak.' },
-      { x: 92, y: 80, label: 'Ishod', meaning: 'Konačan ishod situacije.' }
+      { gx: 0,    gy: 2,    label: 'Prošli utjecaji', meaning: 'Događaji koji su oblikovali situaciju.' },
+      { gx: 0.4,  gy: 1,    label: 'Sadašnjost', meaning: 'Trenutna situacija.' },
+      { gx: 1.2,  gy: 0.2,  label: 'Skriveni utjecaji', meaning: 'Nepoznati ili nesvjesni faktori.' },
+      { gx: 2,    gy: 0,    label: 'Prepreke', meaning: 'Glavna prepreka na putu.' },
+      { gx: 2.8,  gy: 0.2,  label: 'Okolina', meaning: 'Stavovi i utjecaj drugih ljudi.' },
+      { gx: 3.6,  gy: 1,    label: 'Savjet', meaning: 'Preporučen postupak.' },
+      { gx: 4,    gy: 2,    label: 'Ishod', meaning: 'Konačan ishod situacije.' }
     ]
   },
   {
     id: 'star',
     name: 'Zvijezda',
     short: 'Šest karata oko središnje — problem i njegovi utjecaji.',
+    cols: 5, rows: 5,
     positions: [
-      { x: 50, y: 54, label: 'Problem', meaning: 'Srž pitanja oko kojeg se sve vrti.' },
-      { x: 50, y: 16, label: 'Pozitivni utjecaji', meaning: 'Sile koje ti idu u prilog.' },
-      { x: 84, y: 35, label: 'Negativni utjecaji', meaning: 'Sile koje otežavaju situaciju.' },
-      { x: 84, y: 74, label: 'Prošlost', meaning: 'Utjecaj koji polako gubi snagu.' },
-      { x: 50, y: 92, label: 'Sadašnjost', meaning: 'Stanje stvari upravo sada.' },
-      { x: 16, y: 74, label: 'Budućnost', meaning: 'Ono što se nazire ubrzo.' },
-      { x: 16, y: 35, label: 'Konačan ishod', meaning: 'Krajnji rezultat cijele situacije.' }
+      { gx: 2,     gy: 2,    label: 'Problem', meaning: 'Srž pitanja oko kojeg se sve vrti.' },
+      { gx: 2,     gy: 0.1,  label: 'Pozitivni utjecaji', meaning: 'Sile koje ti idu u prilog.' },
+      { gx: 3.645, gy: 1.05, label: 'Negativni utjecaji', meaning: 'Sile koje otežavaju situaciju.' },
+      { gx: 3.645, gy: 2.95, label: 'Prošlost', meaning: 'Utjecaj koji polako gubi snagu.' },
+      { gx: 2,     gy: 3.9,  label: 'Sadašnjost', meaning: 'Stanje stvari upravo sada.' },
+      { gx: 0.355, gy: 2.95, label: 'Budućnost', meaning: 'Ono što se nazire ubrzo.' },
+      { gx: 0.355, gy: 1.05, label: 'Konačan ishod', meaning: 'Krajnji rezultat cijele situacije.' }
     ]
   },
   {
     id: 'celtic-cross',
     name: 'Keltski križ',
     short: 'Deset karata — najdetaljniji klasičan spread.',
+    cols: 5, rows: 4,
     positions: [
-      { x: 32, y: 52, label: '1', meaning: 'Srž situacije, sadašnji trenutak.' },
-      { x: 32, y: 52, rot: 90, label: '2', meaning: 'Izazov koji križa i oblikuje situaciju.' },
-      { x: 32, y: 79, label: '3', meaning: 'Temelj — daleka prošlost ili podsvjesni uzrok.' },
-      { x: 11, y: 52, label: '4', meaning: 'Nedavna prošlost, događaj koji blijedi.' },
-      { x: 32, y: 25, label: '5', meaning: 'Svjesni cilj ili ono čemu težiš.' },
-      { x: 53, y: 52, label: '6', meaning: 'Bliska budućnost, ono što dolazi.' },
-      { x: 82, y: 85, label: '7', meaning: 'Tvoj stav i način na koji pristupaš situaciji.' },
-      { x: 82, y: 64, label: '8', meaning: 'Vanjski utjecaji — okolina, drugi ljudi.' },
-      { x: 82, y: 43, label: '9', meaning: 'Nade i strahovi vezani za ishod.' },
-      { x: 82, y: 21, label: '10', meaning: 'Konačan ishod cijele situacije.' }
+      { gx: 1.5, gy: 1.5,          label: 'Sadašnjost', meaning: 'Srž situacije, sadašnji trenutak.' },
+      { gx: 1.5, gy: 1.5, rot: 90, label: 'Izazov', meaning: 'Izazov koji križa i oblikuje situaciju.' },
+      { gx: 1.5, gy: 2.7,          label: 'Temelj', meaning: 'Daleka prošlost ili podsvjesni uzrok.' },
+      { gx: 0,   gy: 1.5,          label: 'Prošlost', meaning: 'Nedavna prošlost, događaj koji blijedi.' },
+      { gx: 1.5, gy: 0.3,          label: 'Cilj', meaning: 'Svjesni cilj ili ono čemu težiš.' },
+      { gx: 3,   gy: 1.5,          label: 'Budućnost', meaning: 'Bliska budućnost, ono što dolazi.' },
+      { gx: 4,   gy: 3,            label: 'Tvoj stav', meaning: 'Kako pristupaš situaciji.' },
+      { gx: 4,   gy: 2,            label: 'Okolina', meaning: 'Vanjski utjecaji, drugi ljudi.' },
+      { gx: 4,   gy: 1,            label: 'Nade i strahovi', meaning: 'Nade i strahovi vezani za ishod.' },
+      { gx: 4,   gy: 0,            label: 'Ishod', meaning: 'Konačan ishod cijele situacije.' }
     ]
   },
   {
     id: 'chakra',
     name: 'Čakre',
     short: 'Sedam karata, po jedna za svaku čakru — energija tijela.',
+    cols: 1, rows: 7,
+    labelSide: 'right',
     positions: [
-      { x: 50, y: 89, label: 'Korijenska', meaning: 'Sigurnost, opstanak, uzemljenost.' },
-      { x: 50, y: 76, label: 'Sakralna', meaning: 'Kreativnost, emocije, senzualnost.' },
-      { x: 50, y: 63, label: 'Solarni pleksus', meaning: 'Snaga volje, samopouzdanje.' },
-      { x: 50, y: 50, label: 'Srčana', meaning: 'Ljubav, povezanost, suosjećanje.' },
-      { x: 50, y: 37, label: 'Grlena', meaning: 'Komunikacija, izražavanje istine.' },
-      { x: 50, y: 24, label: 'Treće oko', meaning: 'Intuicija, unutarnji uvid.' },
-      { x: 50, y: 11, label: 'Tjemena', meaning: 'Duhovnost, viša svijest.' }
+      { gx: 0, gy: 6, label: 'Korijenska', meaning: 'Sigurnost, opstanak, uzemljenost.' },
+      { gx: 0, gy: 5, label: 'Sakralna', meaning: 'Kreativnost, emocije, senzualnost.' },
+      { gx: 0, gy: 4, label: 'Solarni pleksus', meaning: 'Snaga volje, samopouzdanje.' },
+      { gx: 0, gy: 3, label: 'Srčana', meaning: 'Ljubav, povezanost, suosjećanje.' },
+      { gx: 0, gy: 2, label: 'Grlena', meaning: 'Komunikacija, izražavanje istine.' },
+      { gx: 0, gy: 1, label: 'Treće oko', meaning: 'Intuicija, unutarnji uvid.' },
+      { gx: 0, gy: 0, label: 'Tjemena', meaning: 'Duhovnost, viša svijest.' }
     ]
   },
   {
     id: 'year-ahead',
     name: 'Godina pred nama',
-    short: 'Dvanaest karata, po jedna za svaki mjesec, plus tema godine.',
+    short: 'Dvanaest karata u krug (mjeseci) + tema godine u sredini.',
+    cols: 5, rows: 5,
     positions: (() => {
       const months = ['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'];
-      const cx = 50, cy = 52, rx = 41, ry = 39;
-      const pos = months.map((m, idx) => {
-        const h = idx + 1;
-        const rad = (h * 30 - 90) * Math.PI / 180;
-        return {
-          x: Math.round((cx + rx * Math.cos(rad)) * 10) / 10,
-          y: Math.round((cy + ry * Math.sin(rad)) * 10) / 10,
-          label: m,
-          meaning: `Energija i tema mjeseca ${m.toLowerCase()}.`
-        };
-      });
-      pos.push({ x: cx, y: cy, label: 'Tema godine', meaning: 'Sveukupna tema i lekcija cijele godine.' });
+      const pos = tarotCirclePositions(5, 5, 12, 2, -90, months,
+        months.map(m => `Energija i tema mjeseca ${m.toLowerCase()}.`));
+      pos.push({ gx: 2, gy: 2, label: 'Tema godine', meaning: 'Sveukupna tema i lekcija cijele godine.' });
       return pos;
     })()
   }

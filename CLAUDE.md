@@ -313,6 +313,15 @@ kuke u `index.html`/`js/app.js` navedene niže.
   stanje bez DOM-a: špilovi/preostalo, stol, otpad, postavke, pub/sub `onChange`) →
   `tarot-render.js` (`createTarotUI(engine, root)` — gradi cijeli DOM u `#tarot-app` iz JS-a,
   animacije) → `tarot.js` (glue, poziva `createTarotUI` na `DOMContentLoaded`).
+- **Logika špilova — INVARIJANTA „nikad duplikat":** svaka od 78 karata špila je u točno
+  jednom stanju — u špilu (`remaining`), na stolu (`table`) ili u otpadu (`discard`). Sve
+  operacije u engineu to održavaju: `drawFromDeck` (remaining→table), `discardSlot`
+  (table→discard), `returnDiscardToDecks` (klik na otpad: discard→remaining + promiješaj),
+  `shuffleFull` („Promiješaj sve": vrati SVE karte tog špila sa stola i iz otpada natrag u
+  špil i promiješaj svih 78), `shuffleRemaining`/`cutDeck` (permutacija unutar remaining).
+  Tako je duplikat matematički nemoguć. `newSpreadReading`/`setSpread` vraćaju karte sa stola
+  natrag u špilove. (Prije popravka `shuffleFull` je regenerirao svih 78 dok su neke bile na
+  stolu → mogući duplikati; to je izvor bug-a koji je ovom invarijantom riješen.)
 - **CSS prefiks `vtar-`** (namjerno, NE `tr-`) — `tr-` prefiks je već zauzet u `css/style.css`
   za Tranzite (`.tr-panel`, `.tr-slider`, `.tr-hint`...); korištenje `tr-` je izazvalo stvarni
   layout bug (kolizija imena + `flex-basis` koji se pod `.tr-toprow{flex-direction:column}` na
@@ -333,27 +342,43 @@ kuke u `index.html`/`js/app.js` navedene niže.
   ostatka koda. Pozadine karata (`back.svg`) su ručno crtani SVG, različit motiv po špilu
   (RWS: mandala/kompas; Marseille: rešetkasti uzorak), dark mystical paleta — **ne mijenjaju se
   s temom** (fizička pozadina karte je konstantna, kao u stvarnosti).
-- **Spreadovi:** `TAROT_SPREADS` u `tarot-data.js` — 11 rasporeda (Jedna karta, Dva izbora, Tri
-  karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre, Godina pred nama).
-  Pozicije su postotci (x/y, 0–100) unutar stola; `rot` (samo Keltski križ, pozicija 2) rotira
-  karticu 90° za "poprijeko" izgled — primjenjuje se SAMO na desktopu (mobilni raspored je
-  jednostavna vertikalna lista, rotacija bi ondje izgledala čudno). `label`/`meaning` su kratke
-  HR oznake pozicije (ne tumačenje karte) — prikazuju se uz uključen prekidač "Značenja pozicija".
-  Godina pred nama ima 13. poziciju (centar = "Tema godine") generiranu formulom u samom nizu.
-- **Stol — layout:** `.vtar-layout` = lijeva traka (kontrole po špilu + stog za izvlačenje) |
-  stol (`.vtar-slots`, apsolutno pozicionirani `.vtar-slot`-ovi po %) | desna traka (otpad).
-  Klik na stog izvlači sljedeću kartu u prvu praznu poziciju (`nextEmptySlot`); FLIP animacija
-  (izmjeri stvarne `getBoundingClientRect()` pozicije, translatira od stoga do slota, pa
-  flip rotateY) radi identično na desktopu i mobitelu jer koristi stvarno renderirane pozicije.
-- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile` na `#vtar-table`):**
-  `.vtar-slot` prelazi iz `position:absolute` (postotci) u `position:relative` (normalan tok,
-  vertikalna lista) — **JS mora preskočiti postavljanje inline `left/top` stila kad je
-  `isMobile`** (inline stil ima prednost nad CSS-om iz medijskog upita pa ga CSS ne može
-  poništiti) — to je uzrok jednog stvarnog bug-a otkrivenog pri izradi, popravljeno u
-  `renderSlots()` (`if (!isMobile) { slot.style.left = ...; }`).
+- **Spreadovi:** `TAROT_SPREADS` u `tarot-data.js` — 12 rasporeda: **Slobodno slaganje**
+  (`free:true` — neograničeno karata, teku u redovima, prvi u izborniku) + Jedna karta, Dva
+  izbora, Tri karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre,
+  Godina pred nama. **GRID model (ne postotci!):** svaki fiksni spread ima `cols`/`rows` i
+  pozicije s `gx`/`gy` (koordinate SREDIŠTA karte u ćeliji, mogu biti decimalne za lukove/
+  kružnice — v. `tarotCirclePositions` helper). `rot` (Keltski križ, karta 2) rotira karticu
+  90°. `labelSide:'right'` (Čakre) stavlja oznaku desno. `label`/`meaning` = kratke HR oznake
+  pozicije (ne tumačenje karte).
+- **Fit-to-container layout (`computeLayout` u render):** iz `cols`/`rows` i stvarne veličine
+  stola (`getBoundingClientRect`) izračuna veličinu karte i px-pozicije tako da **SVE karte i
+  oznake uvijek stanu unutar stola** (nikad izlaze van) — riješilo prijašnji bug gdje su karte
+  i opisi izlazili van na gustim spreadovima. Značenja se prikazuju u **legendi ispod stola**
+  (`.vtar-legend`, numerirano) + kratka oznaka ispod svake karte (pill pozadina radi čitljivosti)
+  — nikad preko slike karte. Relayout je px-baziran pa `renderSlots` ide na `resize` (debounce)
+  i `fullscreenchange`.
+- **Stol — layout:** `.vtar-stage` (fullscreen target) sadrži `.vtar-toolbar` (info + prekidači
+  Obrnute/Značenja + „Novi spread" + „Cijeli zaslon") **tik uz stol** (kontrole blizu, ne treba
+  scrollati), pa `.vtar-layout` = lijeva traka (kontrole špilova + stog) | stol (`.vtar-slots`) |
+  desna traka (otpad), pa `.vtar-hint` i `.vtar-legend`. Klik na stog izvlači u prvu praznu
+  poziciju (fiksni spread) ili na kraj (free); WAAPI „fly + flip" animacija (izmjeri stvarne
+  pozicije, luk od stoga do slota, pa `rotateY` flip).
+- **Fullscreen (desktop):** gumb `#vtar-btn-fs` → `requestFullscreen` na `.vtar-stage`;
+  `fullscreenchange` postavi klasu `.vtar-fs` (stage postane flex-column preko cijelog zaslona,
+  stol se rastegne) i pozove relayout. Skriven na mobitelu (`@media max-width:900px`).
+- **Oznaka „obrnuto":** kad je karta obrnuta (slika `rotate(180deg)`), **chip „⟲ obrnuto" je
+  IZVAN karte** (u `.vtar-caption` ispod slike) — ne prekriva ilustraciju. Prije je bio preko karte.
+- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** fiksni spreadovi postaju
+  jednostavan vertikalan popis (karta + oznaka + značenje); free i dalje teče. Render bira granu
+  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`.
 - **Postavke (bez perzistencije u localStorage — namjerno, sesijski alat):** uspravno/obrnuto
   (utječe samo na buduća izvlačenja), prikaži/sakrij značenja, po špilu: uključi/isključi,
-  miješaj sve/preostalo, presijeci. Otpad je opcionalan (klik na izvučenu karticu je odloži).
+  miješaj sve/preostalo, presijeci. Otpad: klik na izvučenu karticu je odloži; klik na zonu
+  otpada vraća sve odložene karte natrag u špilove.
+- **Card backs:** `back.svg` po špilu (RWS mandala/kompas, Marseille medaljon+rešetka) —
+  moraju imati eksplicitne `width`/`height` uz `viewBox` da se pouzdano renderiraju kao CSS
+  `background-image` (bez toga su na nekim prikazima izgledale prozirno). Dark paleta, **ne
+  mijenjaju se s temom** (fizička pozadina karte je konstantna).
 - **Što NIJE uključeno (namjerno):** tumačenje značenja karata, AI uvidi, spremanje/dijeljenje
   čitanja, drag-and-drop (samo klik).
 

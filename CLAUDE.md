@@ -412,7 +412,13 @@ kuke u `index.html`/`js/app.js` navedene niže.
   početnoj (`#vtar-cotd-root`, popunjava `tarot.js`), NIKAD na samom interaktivnom stolu. Dan
   se računa deterministički preko `Intl.DateTimeFormat` s `timeZone:'Europe/Zagreb'` (mijenja
   se u ponoć po hrvatskom vremenu, neovisno o zoni posjetitelja) hashiran u indeks 0-77 —
-  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva.
+  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva. **Izvor teksta:**
+  A. E. Waite, *The Pictorial Key to the Tarot* (1910, javna domena, preuzeto preko
+  en.wikisource.org) — izvorna knjiga napisana UZ sam RWS špil (Waite je ko-autor deck-a), ne
+  generička/moderna tarot literatura. Waiteova izvorna značenja su namjerno viktorijanska i
+  mjestimice tamnija/drukčija od popularnih modernih (npr. Luda kod Waitea = "ludost,
+  pretjerivanje, zanos", ne "nevin novi početak") — ako se ikad ažurira, držati se te iste
+  izvorne knjige radi dosljednosti, ne miješati s modernim izvorima.
 - **Što NIJE uključeno (namjerno):** tumačenje značenja karata na samom stolu, AI uvidi,
   spremanje/dijeljenje čitanja, drag-and-drop (samo klik).
 

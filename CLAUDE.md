@@ -359,10 +359,12 @@ kuke u `index.html`/`js/app.js` navedene niže.
   pozicije s `gx`/`gy` (SREDIŠTE karte, decimalno za lukove/kružnice — v.
   `tarotCirclePositions` helper). `rot` (Keltski križ, karta 2) rotira karticu 90° — **rotira
   se sam `.vtar-cardbox` (kontejner), ne samo naknadno izvučena karta**, pa se "križanje"
-  vidi već na praznom placeholderu prije izvlačenja (prije popravka su prazna polja 1 i 2
-  izgledala kao da se potpuno preklapaju). `label`/`meaning` = kratke HR oznake pozicije —
-  prikazuju se ISKLJUČIVO u legendi ispod stola, nikad na/uz samu kartu (bilo je zbunjujuće
-  kad su tekst i broj bili i uz kartu i u legendi).
+  vidi već na praznom placeholderu prije izvlačenja. `label`/`meaning` = kratke HR oznake
+  pozicije — prikazuju se i kao `.vtar-caption` ISPOD svake karte na stolu (uz prekidač
+  „Značenja") I u legendi ispod stola. Iznimka: karta koja križa (`rot`) NEMA caption ispod
+  (isto je središte kao karta 1 pa bi se dvije oznake preklopile) — ostaje samo u legendi.
+  Caption je ograničen širinom ćelije (`--vtar-cellw`) pa se ne preklapa sa susjedima;
+  `computeLayout` rezervira visinu za caption (`capH`) kad su značenja uključena.
 - **Bounding-box layout (`computeLayout` u render, NE koristi deklarirani `cols`/`rows`
   izravno):** izračuna stvarni "otisak" (min/max `gx`/`gy`) korištenih pozicija i skalira
   karte na TAJ prostor, ne na deklarirani grid — spreadovi s puno praznog prostora u gridu
@@ -371,21 +373,31 @@ kuke u `index.html`/`js/app.js` navedene niže.
   `ResizeObserver` na `.vtar-table` (ne `window.resize`) — hvata promjenu veličine elementa
   bez obzira na uzrok (zoom stranice, fullscreen ulaz/izlaz, promjena prozora), pa je stabilan
   neovisno o zoomu.
-- **Oznake pokraj karte (nikad preko ilustracije):** `.vtar-badge-order` (mali broj, gornji
-  lijevi kut, UVIJEK vidljiv čim je karta izvučena — pokazuje redoslijed izvlačenja) i
-  `.vtar-badge-rev` (samo glif „⟲", crvene boje, gornji desni kut, SAMO kad je karta obrnuta —
-  bez teksta "obrnuto"). Obje se kontra-rotiraju preko CSS varijable `--vtar-box-rot` da ostanu
-  čitljive i na rotiranoj Keltski-križ kartici. Gumb za odlaganje u otpad premješten je u donji
-  desni kut (hover-only) da ne kolidira s badge-ovima.
-- **Hover-zoom:** `.vtar-cardbox:hover .vtar-card { transform: scale(1.55) }` — stol namjerno
-  **nema `overflow:hidden`** (dekorativna tekstura ima vlastiti `border-radius` na `::before`
-  umjesto da se oslanja na roditeljev overflow-clip) baš da uvećana karta može vizualno "izaći"
-  preko ruba stola bez rezanja.
-- **Izbornik spreadova = dropdown, ne stalno vidljiv red:** `.vtar-spread-dropdown` (gumb s
-  trenutnim spreadom → `.vtar-spread-menu`, `z-index:300`/hover-preview `z-index:320`, viši od
-  svega ostalog) živi UNUTAR `.vtar-toolbar`, koja je UNUTAR `.vtar-stage` (fullscreen target)
-  — bitno, jer je stari vanjski red pickera bio IZVAN fullscreen elementa pa je odabir spreada
-  bio nedostupan u cijelom zaslonu. Isto vrijedi za `.vtar-deck-switches`.
+- **Oznake pokraj karte (nikad preko ilustracije), prikazuju se TEK kad je karta postavljena
+  (`orderBadge`/`reversedBadge` dodaju se u `placeCardInSlot`, ne pri crtanju placeholdera):**
+  `.vtar-badge-order` (mali broj, gornji lijevi kut — redoslijed izvlačenja) i `.vtar-badge-rev`
+  (samo glif „⟲", crvene boje, DONJI lijevi kut, SAMO kad je karta obrnuta — bez teksta). Gumb
+  za odlaganje u otpad (`✕`) je u GORNJEM desnom kutu (hover-only). Sve tri se kontra-rotiraju
+  preko `--vtar-box-rot` da ostanu čitljive na rotiranoj Keltski-križ kartici. Prazan
+  placeholder pokazuje samo broj pozicije u sredini (`.vtar-slot-num`).
+- **Klik na kartu → fokus (uvećanje):** klik na izvučenu karticu otvara `.vtar-focus` —
+  modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća preko cijelog prostora,
+  s nazivom karte ispod; klik bilo gdje na overlay ju zatvara. `position:fixed` (ne absolute
+  unutar stola) je namjeran jer pouzdano radi i kad stol scrolla (free spread), u fullscreenu i
+  na mobitelu. Hover na karticu je samo suptilan podizaj (`translateY`), ne veliko uvećanje —
+  glavni "zoom" je klik-fokus. `renderSlots` zove `closeFocus()` na početku (relayout zatvori
+  fokus).
+- **Izbornik spreadova = panel koji se PROŠIRI u toku (ne padajući):** `.vtar-spread-toggle`
+  (gumb s trenutnim spreadom) prebacuje `.vtar-open` na `.vtar-spread-panel` — panel je u
+  NORMALNOM toku (`display:grid`, ne `position:absolute`) pa se otvara ispod gumba i gurne stol
+  prema dolje, bez ikakvog preklapanja/prozirnosti (prije je padajući izbornik + hover-tooltip
+  bio odsječen `overflow:auto`-om i završavao iza stola). Svaki chip nosi mini-ikonu + naziv +
+  opis (nema zasebnog hover-previewa). Toggle i panel su UNUTAR `.vtar-stage` (fullscreen target)
+  pa je odabir dostupan i u cijelom zaslonu (`.vtar-fs .vtar-spread-panel.vtar-open` dobiva
+  `flex:0 0 auto` + vlastiti scroll). Isto vrijedi za `.vtar-deck-switches`.
+- **Stol namjerno nema `overflow:hidden`** (dekorativna tekstura ima vlastiti `border-radius`
+  na `::before`) — nije više nužno zbog hover-zooma (koji je uklonjen), ali ostaje jer klik-fokus
+  je ionako `position:fixed` modal.
 - **Fullscreen (desktop, gumb `#vtar-btn-fs` → `requestFullscreen` na `.vtar-stage`):**
   `.vtar-fs` je flex-kolona (`height:100%`) gdje toolbar/deck-switches/hint imaju `flex:0 0
   auto`, stol `flex:1 1 auto` (uzima sav preostali prostor), a legenda `flex:0 1 auto` s
@@ -412,13 +424,12 @@ kuke u `index.html`/`js/app.js` navedene niže.
   početnoj (`#vtar-cotd-root`, popunjava `tarot.js`), NIKAD na samom interaktivnom stolu. Dan
   se računa deterministički preko `Intl.DateTimeFormat` s `timeZone:'Europe/Zagreb'` (mijenja
   se u ponoć po hrvatskom vremenu, neovisno o zoni posjetitelja) hashiran u indeks 0-77 —
-  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva. **Izvor teksta:**
-  A. E. Waite, *The Pictorial Key to the Tarot* (1910, javna domena, preuzeto preko
-  en.wikisource.org) — izvorna knjiga napisana UZ sam RWS špil (Waite je ko-autor deck-a), ne
-  generička/moderna tarot literatura. Waiteova izvorna značenja su namjerno viktorijanska i
-  mjestimice tamnija/drukčija od popularnih modernih (npr. Luda kod Waitea = "ludost,
-  pretjerivanje, zanos", ne "nevin novi početak") — ako se ikad ažurira, držati se te iste
-  izvorne knjige radi dosljednosti, ne miješati s modernim izvorima.
+  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva. **Ton/izvor teksta:**
+  spoj tradicionalnih RWS značenja (temelj: A. E. Waite, *The Pictorial Key to the Tarot*, 1910,
+  javna domena, preuzeto preko en.wikisource.org) i modernih, toplijih tumačenja. Piše se kao
+  IZRAVAN opis karte — **bez fraza tipa „kaže Waite / prema Waiteu / navodi se…"** (Jana je to
+  izričito tražila) — i uravnoteženog tona (i sjena i svjetlo karte, ne samo mračna viktorijanska
+  strana). Ako se ažurira, zadržati taj stil: bez attribucija u tekstu, blago i čitko.
 - **Što NIJE uključeno (namjerno):** tumačenje značenja karata na samom stolu, AI uvidi,
   spremanje/dijeljenje čitanja, drag-and-drop (samo klik).
 

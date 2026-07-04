@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana — Natalna karta · KONSTANTE I HELPERI
+   Alkemijana - Natalna karta · KONSTANTE I HELPERI
    Učitava se PRVO. Nema vanjskih ovisnosti.
    Definira: SIGNS, SIGN_KEYS, PLANET_DEFS, ASPECT_DEFS, GLYPHS,
    PALETTES, helpere (norm360, fmtDegMin, glyphSvgHtml, ...),
@@ -40,10 +40,10 @@ const ASPECT_DEFS = [
 
 /* ============ GLIFOVI (SVG path, viewBox 0 0 24 24) ============
    s = stroke path-evi, f = fill path-evi. Nacrtani ručno da ne
-   ovise o fontovima — rade identično na ekranu i u PDF-u. */
+   ovise o fontovima - rade identično na ekranu i u PDF-u. */
 
 const GLYPHS = {
-  /* Planeti i točke (viewBox 0 0 24 24). Dio je DejaVu Sans outline (fill) —
+  /* Planeti i točke (viewBox 0 0 24 24). Dio je DejaVu Sans outline (fill) -
      merkur, venera, mars, uran, lilith, kiron; ostali su ručno crtani (stroke)
      na želju vlasnice: sunce, mjesec, jupiter, saturn, neptun, čvorovi, pluton,
      fortuna, vertex. */
@@ -65,7 +65,7 @@ const GLYPHS = {
   fortune: { s:'M12,4 A8,8 0 1,0 12,20 A8,8 0 1,0 12,4 M6.4,6.4 L17.6,17.6 M17.6,6.4 L6.4,17.6' },
   vertex:  { s:'M3.6,5 L8.4,19 L13.2,5 M15.2,12.6 L21,19.4 M21,12.6 L15.2,19.4' },
 
-  /* Zodijački glifovi — DejaVu Sans (slobodni font, izveden iz Bitstream Vera;
+  /* Zodijački glifovi - DejaVu Sans (slobodni font, izveden iz Bitstream Vera;
      bez obveze atribucije na izlazu). Obrisi izvučeni iz fonta i normalizirani
      u viewBox 0 0 24 24 (fill path-evi). */
   aries:       { f:'M12.74,20.63L11.27,20.63Q11.27,13.72 9.62,9.26Q7.97,4.81 6.03,4.81L6.03,4.81Q4.54,4.81 4.34,5.95Q4.15,7.08 4.15,7.47L4.15,7.47Q4.15,8.95 5.12,10.42L5.12,10.42L3.57,10.42Q2.5,8.9 2.5,7.05L2.5,7.05Q2.5,5.52 3.44,4.45Q4.38,3.37 6.06,3.37L6.06,3.37Q10.35,3.37 11.86,12.28L11.86,12.28Q11.95,12.84 12.01,13.3L12.01,13.3Q12.05,12.84 12.14,12.28L12.14,12.28Q13.66,3.37 17.94,3.37L17.94,3.37Q19.63,3.37 20.57,4.45Q21.5,5.52 21.5,7.05L21.5,7.05Q21.5,8.9 20.43,10.42L20.43,10.42L18.88,10.42Q19.86,8.95 19.86,7.46L19.86,7.46Q19.86,7.07 19.67,5.94Q19.47,4.81 17.97,4.81L17.97,4.81Q16.04,4.81 14.39,9.26Q12.74,13.72 12.74,20.63L12.74,20.63Z' },
@@ -81,7 +81,7 @@ const GLYPHS = {
   aquarius:    { f:'M2.5,16.34L2.5,16.31Q6.66,12.84 8.14,12.84L8.14,12.84Q8.71,12.84 8.88,13.35L8.88,13.35Q9.19,14.26 9.91,14.26Q10.62,14.26 11.72,13.35Q12.83,12.44 13.54,12.44L13.54,12.44Q14.24,12.44 14.54,13.35L14.54,13.35Q14.88,14.26 15.61,14.26Q16.34,14.26 17.44,13.35L17.44,13.35Q17.99,12.89 18.51,12.89L18.51,12.89Q20.1,12.89 21.5,16.94L21.5,16.94L20.3,17.59Q19.49,15.22 18.27,15.22L18.27,15.22Q17.62,15.22 16.85,15.9L16.85,15.9Q15.75,16.87 15.03,16.87Q14.31,16.87 13.99,15.91L13.99,15.91Q13.63,14.91 12.88,14.91L12.88,14.91Q12.17,14.91 11.11,15.77L11.11,15.77Q9.99,16.68 9.29,16.68L9.29,16.68Q8.57,16.68 8.25,15.76L8.25,15.76Q7.95,14.86 7.25,14.86L7.25,14.86Q6.55,14.86 4.9,16.23Q3.24,17.59 3.18,17.59L3.18,17.59L2.5,16.34ZM2.5,10.32L2.5,10.28Q6.65,6.83 8.14,6.83L8.14,6.83Q8.7,6.83 8.88,7.33L8.88,7.33Q9.19,8.23 9.91,8.23L9.91,8.23Q10.61,8.23 11.71,7.33L11.71,7.33Q12.83,6.41 13.53,6.41Q14.24,6.41 14.53,7.33L14.53,7.33Q14.88,8.23 15.59,8.23L15.59,8.23Q16.32,8.23 17.43,7.33L17.43,7.33Q17.98,6.88 18.5,6.88L18.5,6.88Q20.1,6.88 21.5,10.92L21.5,10.92L20.3,11.56Q19.49,9.19 18.27,9.19L18.27,9.19Q17.62,9.19 16.85,9.88L16.85,9.88Q15.73,10.87 15.03,10.87L15.03,10.87Q14.31,10.87 13.98,9.89L13.98,9.89Q13.63,8.89 12.88,8.89L12.88,8.89Q12.17,8.89 11.1,9.76L11.1,9.76Q9.99,10.67 9.28,10.67L9.28,10.67Q8.57,10.67 8.25,9.75L8.25,9.75Q7.95,8.83 7.24,8.83Q6.54,8.83 4.89,10.19Q3.24,11.56 3.18,11.56L3.18,11.56L2.5,10.32Z' },
   pisces:      { f:'M13.53,13.09L13.53,13.05L10.47,13.09Q10.06,17.39 6.53,21.46L6.53,21.46L4.44,21.5Q8.34,17.04 8.68,13.09L8.68,13.09L4.92,13.09L4.92,10.91L8.68,10.91Q8.32,6.97 4.42,2.5L4.42,2.5L6.53,2.54Q10.06,6.6 10.47,10.91L10.47,10.91L13.54,10.91Q13.94,6.6 17.48,2.54L17.48,2.54L19.58,2.5Q15.68,6.97 15.33,10.91L15.33,10.91L19.08,10.91L19.07,13.09L15.31,13.09Q15.68,17.04 19.58,21.5L19.58,21.5L17.47,21.46Q13.92,17.39 13.53,13.09L13.53,13.09Z' },
 
-  /* Aspekti — standardni astrološki simboli, DejaVu Sans outline (fill).
+  /* Aspekti - standardni astrološki simboli, DejaVu Sans outline (fill).
      Sekstil (⚹ U+26B9) nema u DejaVu → ručni 6-krak asterisk (stroke). */
   conjunction: { f:'M11.47,10.39 C10.24,10.39 9.2,10.82 8.34,11.67 7.48,12.53 7.05,13.57 7.05,14.8 7.05,16.02 7.48,17.05 8.34,17.91 9.2,18.77 10.24,19.2 11.47,19.2 12.68,19.2 13.72,18.77 14.58,17.91 15.44,17.05 15.87,16.02 15.87,14.8 15.87,13.57 15.44,12.53 14.59,11.67 13.74,10.82 12.7,10.39 11.47,10.39 ZM15.75,9.63 C15.92,9.77 16.07,9.92 16.23,10.08 17.53,11.39 18.18,12.97 18.18,14.82 18.18,16.66 17.52,18.24 16.21,19.54 14.91,20.85 13.32,21.5 11.47,21.5 9.63,21.5 8.06,20.85 6.75,19.54 5.44,18.24 4.78,16.66 4.78,14.82 4.78,12.97 5.43,11.39 6.73,10.08 8.02,8.77 9.6,8.12 11.47,8.12 12.29,8.12 13.06,8.24 13.78,8.49 L17.24,2.5 19.22,3.64 Z' },
   sextile:     { s:'M12,3 L12,21 M4.21,7.5 L19.79,16.5 M19.79,7.5 L4.21,16.5' },
@@ -100,7 +100,7 @@ function degMinParts(lon) {
   const inSign = norm360(lon) % 30;
   const d = Math.floor(inSign);
   // minute se odsijecaju, ne zaokružuju (astrološka konvencija, isto kao Astro-Seek)
-  // — planet na 29°59.9' je na 29°59', nikad na "30°00'"
+  // - planet na 29°59.9' je na 29°59', nikad na "30°00'"
   const m = Math.floor((inSign - d) * 60);
   return { d, m };
 }
@@ -113,7 +113,7 @@ function signName(lon)  { return SIGNS[signIndex(lon)]; }
 function signKey(lon)   { return SIGN_KEYS[signIndex(lon)]; }
 
 /* Širina teksta u px mjerena stvarnim (web) fontom preko canvasa.
-   svg2pdf centrira text-anchor="middle" metrikom helvetice pa tekst "bježi" —
+   svg2pdf centrira text-anchor="middle" metrikom helvetice pa tekst "bježi" -
    zato x računamo sami (isti trik kao kod poster naslova). */
 function measureTextPx(text, sizePx, family, weight) {
   try {

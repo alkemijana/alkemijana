@@ -1,15 +1,15 @@
-// Jezgra AI uvida — neovisna o Cloudflare routingu (route shim je
+// Jezgra AI uvida - neovisna o Cloudflare routingu (route shim je
 // functions/interpret-natal.js). SAMO ADMIN (Jana): radni alat za pripremu čitanja.
 // Bez ikakvih limita; cache po hashu karte (ista karta → isti uvidi).
 //
 // Env varijable (mijenjaju AI servis BEZ diranja koda):
 //   AI_PROVIDER   gemini | cloudflare | openai | anthropic
 //   AI_MODEL      ID modela (default po provajderu)
-//   AI_API_KEY    ključ provajdera (Workers AI ga NE treba — koristi AI binding)
+//   AI_API_KEY    ključ provajdera (Workers AI ga NE treba - koristi AI binding)
 //   AI_BASE_URL   samo za "openai" adapter (Groq/OpenRouter/Mistral/DeepSeek)
-//   ADMIN_PASS    Janina lozinka — pristup samo uz točan X-Admin-Pass header
+//   ADMIN_PASS    Janina lozinka - pristup samo uz točan X-Admin-Pass header
 //
-// KV (binding NATAL_LOG, isti kao brojač karata) — ako ga nema, samo nema cachea:
+// KV (binding NATAL_LOG, isti kao brojač karata) - ako ga nema, samo nema cachea:
 //   aiv2:<provider>:<model>:<hash>  -> spremljeni uvidi (cache, 90 dana)
 
 import { callProvider, DEFAULT_MODELS } from './providers.js';
@@ -22,7 +22,7 @@ export async function handleInterpret({ request, env }) {
   const model = env.AI_MODEL || DEFAULT_MODELS[provider] || '';
   const KV = env.NATAL_LOG;
 
-  // SAMO ADMIN — ovo je Janin radni alat, nije za posjetitelje
+  // SAMO ADMIN - ovo je Janin radni alat, nije za posjetitelje
   if (!checkAdmin(request, env)) {
     return json({ ok: false, error: 'auth', note: 'AI uvidi su dostupni samo prijavljenom adminu.' }, 403);
   }
@@ -36,7 +36,7 @@ export async function handleInterpret({ request, env }) {
   if (!/^[0-9a-f]{16,128}$/.test(h)) return json({ ok: false, error: 'bad hash' }, 400);
   if (summary.length < 20) return json({ ok: false, error: 'prazan opis karte' }, 400);
 
-  // Cache — ista karta vraća iste, već generirane uvide (osim ako se traži fresh)
+  // Cache - ista karta vraća iste, već generirane uvide (osim ako se traži fresh)
   const cacheKey = 'aiv2:' + provider + ':' + model + ':' + h;
   if (KV && !fresh) {
     try {

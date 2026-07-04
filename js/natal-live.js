@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana — Živi natalni kotač na početnoj stranici
+   Alkemijana - Živi natalni kotač na početnoj stranici
    Ovisi o: natal-data.js (PALETTES, loadScript), natal-calc.js (computeChart),
             natal-render.js (buildChartSVG)
    Lazy-load astronomy-engine pri prvom ulasku sekcije u viewport.
@@ -18,7 +18,7 @@
   function mysticalPalette() {
     if (typeof PALETTES === 'undefined') return null;
     if (isLightTheme()) {
-      // mistični pastelni stil za light temu — tamniji znakovi i planeti, mekše prstenovi
+      // mistični pastelni stil za light temu - tamniji znakovi i planeti, mekše prstenovi
       return Object.assign({}, PALETTES.light, {
         ring:     'rgba(106,78,160,0.55)',
         ringSoft: 'rgba(106,78,160,0.32)',
@@ -76,7 +76,7 @@
       });
       wrap.innerHTML = svg;
     } catch (e) {
-      // tiho ignoriraj — sekcija ostane prazna ako ne uspije (npr. offline)
+      // tiho ignoriraj - sekcija ostane prazna ako ne uspije (npr. offline)
       console.warn('[natal-live] render greška:', e && e.message);
     }
   }
@@ -91,7 +91,7 @@
       // mali timeout da CSS transition uhvati promjenu klase nakon mount-a
       requestAnimationFrame(() => requestAnimationFrame(() => wrap.classList.add('lt-loaded')));
     }
-    // Tiho ažuriranje svakih 60 sekundi — gibanje je gotovo nevidljivo,
+    // Tiho ažuriranje svakih 60 sekundi - gibanje je gotovo nevidljivo,
     // ali pozicije ostaju "sad". Pauziramo kad tab nije aktivan.
     timer = setInterval(() => {
       if (!document.hidden) renderOnce();

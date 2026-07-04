@@ -1,7 +1,7 @@
 /* ============================================================
-   Alkemijana — Natalna karta · SVG KOTAČ I TABLICE NA STRANICI
+   Alkemijana - Natalna karta · SVG KOTAČ I TABLICE NA STRANICI
    Ovisi o: natal-data.js (GLYPHS, PALETTES, helperi)
-           natal-calc.js (computeChart rezultat) — samo čita
+           natal-calc.js (computeChart rezultat) - samo čita
    Izvozi: buildChartSVG, renderNatalResult, currentScreenPalette,
            birthDataLine, currentChart (globalna state varijabla)
    ============================================================ */
@@ -9,8 +9,8 @@
 'use strict';
 
 let currentChart = null;
-let currentSynastry = null;   // { a: chartA, b: chartB, aspects: [...] } — sinastrija
-let currentTransit = null;    // { natal, transit, aspects } — tranziti (živi bi-wheel)
+let currentSynastry = null;   // { a: chartA, b: chartB, aspects: [...] } - sinastrija
+let currentTransit = null;    // { natal, transit, aspects } - tranziti (živi bi-wheel)
 
 function currentScreenPalette() {
   return document.documentElement.getAttribute('data-theme') === 'light' ? PALETTES.light : PALETTES.dark;
@@ -28,7 +28,7 @@ function birthDataLine(chart) {
 
 /* ============ SVG KOTAČ ============ */
 
-/* Dasharray uzorci za crno-bijeli ispis — radna verzija (linetype mode).
+/* Dasharray uzorci za crno-bijeli ispis - radna verzija (linetype mode).
    Jedinice su SVG user-units kotača; legenda u PDF-u skalira iste brojeve. */
 function aspectDashPattern(aspId) {
   switch (aspId) {
@@ -41,7 +41,7 @@ function aspectDashPattern(aspId) {
   }
 }
 
-/* Debljina aspektne linije (SVG user-units kotača) — uz boju i dasharray,
+/* Debljina aspektne linije (SVG user-units kotača) - uz boju i dasharray,
    različita debljina dodatno olakšava raspoznavanje. Legenda u PDF-u koristi
    iste vrijednosti (skalirane) pa se uzorci poklapaju s nacrtanim aspektima. */
 function aspectLineWidth(aspId) {
@@ -60,7 +60,7 @@ function buildChartSVG(chart, pal, opts) {
   const aspectsEnabled = opts.aspectsEnabled || { conjunction: true, sextile: true, square: true, trine: true, opposition: true };
   const showCuspDegrees = opts.showCuspDegrees !== false;
   const linetype = !!opts.linetype;
-  const ls = opts.labelScale || 1;   // množi fontove/glifove (radni PDF — krupnije oznake)
+  const ls = opts.labelScale || 1;   // množi fontove/glifove (radni PDF - krupnije oznake)
   const noTime = !!chart.noTime;     // bez vremena rođenja: nema kuća/osi, 0° Ovna lijevo
   const biwheel = opts.biwheel || null;  // sinastrija/tranziti: vanjski prsten = druga karta (uže kuće)
   // sloj crtanja (samo bi-wheel): 'all' = sve; 'base' = statika bez vanjskog prstena/aspekata;
@@ -70,7 +70,7 @@ function buildChartSVG(chart, pal, opts) {
   const C = 500;
   const R_OUT = 458, R_ZOD = 396, R_TICK = 386;
   // u bi-wheelu prsten kuća pomaknut prema sredini (mjesta za dva prstena planeta)
-  // natalni krug nepromijenjen; bi-wheel ima MANJI unutarnji (aspektni) krug — mjesta za dva puna prstena
+  // natalni krug nepromijenjen; bi-wheel ima MANJI unutarnji (aspektni) krug - mjesta za dva puna prstena
   const R_HOUT = biwheel ? 212 : 240, R_HIN = biwheel ? 194 : 220;
   // prsten planeta (širi, kao Astro-Seek): glif planeta, stupanj, glif znaka, minute
   const R_GLYPH = 360, R_DEG = 324, R_SGN = 294, R_MIN = 266;
@@ -80,7 +80,7 @@ function buildChartSVG(chart, pal, opts) {
   const R_B_GLYPH = 374, R_B_DEG = 341, R_B_MIN = 320;
   const R_A_GLYPH = 290, R_A_DEG = 257, R_A_MIN = 234;
   const R_PTICK = R_ZOD, R_SIGN = 427;
-  // osi izvan kotača — stupanj se slaže prema van (ekranski) da ne dira kružnicu
+  // osi izvan kotača - stupanj se slaže prema van (ekranski) da ne dira kružnicu
   const R_AXIS_TICK = R_OUT + 12, R_AXIS_LBL = R_OUT + 34;
   // znak + stupanj cuspsi izvan kotača
   const R_CUSP_SIGN = R_OUT + 22;
@@ -107,7 +107,7 @@ function buildChartSVG(chart, pal, opts) {
       ' L' + x3.toFixed(1) + ',' + y3.toFixed(1) +
       ' A' + rIn + ',' + rIn + ' 0 0,1 ' + x4.toFixed(1) + ',' + y4.toFixed(1) + ' Z" fill="' + fill + '" stroke="none"/>';
   }
-  // centrirani tekst — x i y računamo SAMI canvas metrikom stvarnog fonta,
+  // centrirani tekst - x i y računamo SAMI canvas metrikom stvarnog fonta,
   // jer svg2pdf centrira text-anchor="middle" helvetica metrikom (tekst bježi u PDF-u)
   function textC(x, y, fill, size, content, weight, family) {
     const fam = family || 'Quicksand, sans-serif';
@@ -123,7 +123,7 @@ function buildChartSVG(chart, pal, opts) {
 
   let s = '';
 
-  // ── STATIČNI SLOJ (zodijak, crtice, kuće, osi) — preskače se na 'dynamic' sloju ──
+  // ── STATIČNI SLOJ (zodijak, crtice, kuće, osi) - preskače se na 'dynamic' sloju ──
   if (layer !== 'dynamic') {
   // zodijački pojas
   for (let k = 0; k < 12; k++) {
@@ -144,25 +144,25 @@ function buildChartSVG(chart, pal, opts) {
   s += circle(R_TICK, pal.ringSoft, 0.8);
 
   if (!noTime) {
-    // kuće — vrhovi (osim osi koje crtamo ispod s posebnim izgledom)
+    // kuće - vrhovi (osim osi koje crtamo ispod s posebnim izgledom)
     for (let i = 1; i <= 12; i++) {
       if (i === 1 || i === 4 || i === 7 || i === 10) continue;
       s += line(chart.cusps[i], R_HIN, biwheel ? R_MID : R_ZOD, pal.cusp, 1.1);
     }
 
-    // znak + stupanj cuspsi izvan kotača (stupanj ispod znaka, ekranski — bez preklapanja)
-    // — u bi-wheelu preskačemo (vanjski prsten zauzima taj prostor)
+    // znak + stupanj cuspsi izvan kotača (stupanj ispod znaka, ekranski - bez preklapanja)
+    // - u bi-wheelu preskačemo (vanjski prsten zauzima taj prostor)
     if (showCuspDegrees && !biwheel) {
       for (let i = 1; i <= 12; i++) {
         if (i === 1 || i === 4 || i === 7 || i === 10) continue; // osi imaju svoju oznaku
         const [cx, cy] = pt(chart.cusps[i], R_CUSP_SIGN);
         s += glyphSvgEl(signKey(chart.cusps[i]), cx, cy, 21 * ls, elementColor(chart.cusps[i], pal), 1.7);
-        // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod — ne dira kružnicu
+        // u gornjoj polovici stupanj iznad glifa (prema van), u donjoj ispod - ne dira kružnicu
         s += textC(cx, cy + (cy < C ? -18 : 19) * ls, pal.degStrong, 14 * ls, fmtDegMin(chart.cusps[i]));
       }
     }
 
-    // osi (ASC/DSC/MC/IC) — prekinute u unutarnjoj kružnici (ne smetaju aspektima),
+    // osi (ASC/DSC/MC/IC) - prekinute u unutarnjoj kružnici (ne smetaju aspektima),
     // oznake i stupnjevi IZVAN kotača (item 2)
     const axes = [
       { lon: chart.asc, label: 'ASC' }, { lon: norm360(chart.asc + 180), label: 'DSC' },
@@ -171,9 +171,9 @@ function buildChartSVG(chart, pal, opts) {
     for (const ax of axes) {
       // linija osi unutar kotača (prekinuta u sredini ostaje, aspekti se vide)
       s += line(ax.lon, R_HIN, biwheel ? R_MID : R_ZOD, pal.axis, 2.2);
-      // kratka crtica izvan vanjske kružnice — kao oznaka na "rubu" kotača
+      // kratka crtica izvan vanjske kružnice - kao oznaka na "rubu" kotača
       s += line(ax.lon, R_OUT, R_AXIS_TICK, pal.axis, 2);
-      // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) — ne dira kružnicu
+      // oznaka izvan kotača, stupanj prema van (gore iznad, dolje ispod) - ne dira kružnicu
       const [tx, ty] = pt(ax.lon, R_AXIS_LBL);
       s += textC(tx, ty, pal.axisText, 19 * ls, ax.label, '600');
       s += textC(tx, ty + (ty < C ? -17 : 19) * ls, pal.degStrong, 14.5 * ls, fmtDegMin(ax.lon));
@@ -202,7 +202,7 @@ function buildChartSVG(chart, pal, opts) {
     const atW = r.aspTickW || 1.6, atLen = r.aspTickLen || 9;  // aspektna crtica: debljina + duljina
     const srt = planets.slice().sort((p, q) => norm360(p.lon - asc) - norm360(q.lon - asc));
     // Minimalni razmak: toliko da se najgušća oznaka (minute, na NAJMANJEM radijusu) DODIRUJE
-    // ali NE preklapa. Računa se iz stvarne širine teksta podijeljene s njegovim radijusom —
+    // ali NE preklapa. Računa se iz stvarne širine teksta podijeljene s njegovim radijusom -
     // font ostaje nepromijenjen, planeti se samo razmaknu (poveznica vodi od stvarnog
     // stupnja do razmaknutog glifa). Vrijedi i za natalnu kartu i za bi-wheel.
     const sepFor = (txt, font, rad) => rad ? measureTextPx(txt, font * ls * sc, 'Quicksand, sans-serif') / rad * 180 / Math.PI : 0;
@@ -231,9 +231,9 @@ function buildChartSVG(chart, pal, opts) {
     for (let i = 0; i < srt.length; i++) {
       const p = srt[i];
       const dispLon = norm360(asc + adj[i]);
-      // crtica na stvarnoj poziciji — od ruba prstena prema glifu
+      // crtica na stvarnoj poziciji - od ruba prstena prema glifu
       out += line(p.lon, r.tickFrom, r.glyph + 16 * sc, pal.tick, 1.2);
-      // poveznica do glifa kad je razmaknut (gust skup simbola) — pokazuje na koji se stupanj odnosi
+      // poveznica do glifa kad je razmaknut (gust skup simbola) - pokazuje na koji se stupanj odnosi
       const dispDelta = Math.abs(norm360(dispLon - p.lon + 180) - 180);
       if (dispDelta > 1.0) {
         const [lcx1, lcy1] = pt(p.lon, r.glyph + 16 * sc);
@@ -241,20 +241,20 @@ function buildChartSVG(chart, pal, opts) {
         out += '<line x1="' + lcx1.toFixed(1) + '" y1="' + lcy1.toFixed(1) + '" x2="' + lcx2.toFixed(1) + '" y2="' + lcy2.toFixed(1) +
           '" stroke="' + pal.degText + '" stroke-width="1" opacity="0.85"/>';
       }
-      // aspektna crtica (gdje počinje aspektna linija) — boja i debljina ovise o prstenu
+      // aspektna crtica (gdje počinje aspektna linija) - boja i debljina ovise o prstenu
       out += line(p.lon, R_HIN, R_HIN - atLen, glyphColor, atW);
       const [gx, gy] = pt(dispLon, r.glyph);
       out += glyphSvgEl(p.id, gx, gy, 30 * ls * sc, glyphColor, 1.8);
-      // R za retrogradno: natalna karta — zaseban uz glif (kako je bilo); bi-wheel (retroInline) —
+      // R za retrogradno: natalna karta - zaseban uz glif (kako je bilo); bi-wheel (retroInline) -
       // dopisan uz minute, da NE dira glif planeta ni stupanj.
       if (p.retro && !r.retroInline) {
         out += textC(gx + 13 * ls * sc, gy - 11 * ls * sc, retroColor, 11 * ls * sc, 'R');
       }
-      // stupanj — kontrastna boja (bijela na tamnoj, crna na svijetloj temi), obična debljina
+      // stupanj - kontrastna boja (bijela na tamnoj, crna na svijetloj temi), obična debljina
       const dm = degMinParts(p.lon);
       const [dx, dy] = pt(dispLon, r.deg);
       out += textC(dx, dy, pal.degStrong, 16.5 * ls * sc, dm.d + '°');
-      // glif znaka (samo natalni prikaz; sinastrija/tranziti ga izostavljaju — kao Astro-Seek)
+      // glif znaka (samo natalni prikaz; sinastrija/tranziti ga izostavljaju - kao Astro-Seek)
       if (r.sgn != null) {
         const [sx, sy] = pt(dispLon, r.sgn);
         out += glyphSvgEl(signKey(p.lon), sx, sy, 21 * ls * sc, elementColor(p.lon, pal), 2.0);
@@ -308,7 +308,7 @@ function buildChartSVG(chart, pal, opts) {
 
   // planeti
   if (biwheel) {
-    // unutarnji prsten = natalna/osoba A; vanjski = tranzit/osoba B — krupniji glifovi, bez glifa znaka.
+    // unutarnji prsten = natalna/osoba A; vanjski = tranzit/osoba B - krupniji glifovi, bez glifa znaka.
     // aspektne crtice razlikovane: unutarnji tanji, vanjski deblji (uz boju prstena).
     if (layer !== 'dynamic')
       s += drawRing(chart.planets,   { glyph: R_A_GLYPH, deg: R_A_DEG, min: R_A_MIN, tickFrom: R_MID, minShow: true, minFont: 11.5, scale: 1.15, aspTickW: 2.2, aspTickLen: 10 }, pal.planet,    pal.tense);
@@ -349,7 +349,7 @@ function renderNatalResult(chart) {
     rows += '<tr><td>' + glyphSvgHtml(p.id, 19, pal.sign) + ' ' + p.name + '</td>' +
       '<td>' + glyphSvgHtml(signKey(p.lon), 17, elementColor(p.lon, pal)) + ' ' + signName(p.lon) + '</td>' +
       '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td>' +
-      '<td class="nt-num">' + (p.house ? p.house + '.<span class="nt-kuca"> kuća</span>' : '—') + '</td></tr>';
+      '<td class="nt-num">' + (p.house ? p.house + '.<span class="nt-kuca"> kuća</span>' : '-') + '</td></tr>';
   }
   if (!chart.noTime) {
     rows += '<tr class="nt-angle-row"><td>ASC (podznak)</td><td>' + glyphSvgHtml(signKey(chart.asc), 17, elementColor(chart.asc, pal)) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
@@ -357,7 +357,7 @@ function renderNatalResult(chart) {
   }
   document.getElementById('natal-planets-tbody').innerHTML = rows;
 
-  // Tablica kuća (bez vremena rođenja kuće ne postoje — sakrij karticu)
+  // Tablica kuća (bez vremena rođenja kuće ne postoje - sakrij karticu)
   const housesCard = document.getElementById('natal-houses-card');
   if (housesCard) housesCard.style.display = chart.noTime ? 'none' : '';
   let hrows = '';
@@ -390,7 +390,7 @@ function renderNatalResult(chart) {
   const disc = document.getElementById('natal-disclaimer');
   if (disc) {
     disc.textContent = chart.noTime
-      ? 'Vrijeme rođenja nepoznato — pozicije izračunate za podne. Bez kuća, podznaka (ASC) i MC-a; ' +
+      ? 'Vrijeme rođenja nepoznato - pozicije izračunate za podne. Bez kuća, podznaka (ASC) i MC-a; ' +
         'Mjesec se pomakne do ±7° pa je njegova pozicija približna. Pozicije planeta: NASA JPL efemeride · Tropski zodijak · ' +
         (chart.input.nodeType === 'mean' ? 'Srednji' : 'Pravi') + ' Mjesečev čvor, srednja Lilith'
       : 'Pozicije planeta: NASA JPL efemeride · Sustav kuća: Placidus · Tropski zodijak · ' +
@@ -425,7 +425,7 @@ function renderAspectGrid(chart, pal) {
         h += '<td class="nt-ag-cell nt-ag-empty"></td>';
       }
     }
-    // dijagonala — glif točke
+    // dijagonala - glif točke
     h += '<td class="nt-ag-diag" title="' + escHtml(pts[i].name) + '">' +
       (GLYPHS[pts[i].id] ? glyphSvgHtml(pts[i].id, 17, pal.planet) : '<span class="nt-ag-lbl">' + pts[i].name + '</span>') + '</td>';
     h += '</tr>';
@@ -483,7 +483,7 @@ function renderShape(chart) {
     '</div>';
 }
 
-/* ============ SINASTRIJA — BI-WHEEL + TABLICE ============ */
+/* ============ SINASTRIJA - BI-WHEEL + TABLICE ============ */
 
 /* Kotač sinastrije: osoba A je baza (kuće/osi), osoba B je vanjski prsten. */
 function buildSynastryWheel(chartA, chartB, pal) {
@@ -512,7 +512,7 @@ function synPositionsRows(chart, pal) {
     rows += '<tr><td>' + glyphSvgHtml(p.id, 18, pal.sign) + ' ' + p.name + '</td>' +
       '<td>' + glyphSvgHtml(signKey(p.lon), 16, elementColor(p.lon, pal)) + ' ' + signName(p.lon) + '</td>' +
       '<td class="nt-num">' + fmtDegMin(p.lon) + (p.retro ? ' <span class="nt-retro">R</span>' : '') + '</td>' +
-      '<td class="nt-num">' + (p.house ? p.house + '.' : '—') + '</td></tr>';
+      '<td class="nt-num">' + (p.house ? p.house + '.' : '-') + '</td></tr>';
   }
   if (!chart.noTime) {
     rows += '<tr class="nt-angle-row"><td>ASC</td><td>' + glyphSvgHtml(signKey(chart.asc), 16, elementColor(chart.asc, pal)) + ' ' + signName(chart.asc) + '</td><td class="nt-num">' + fmtDegMin(chart.asc) + '</td><td></td></tr>';
@@ -521,7 +521,7 @@ function synPositionsRows(chart, pal) {
   return rows;
 }
 
-/* Tablica međuaspekata (popis, sortiran po orbu): planet osobe A — aspekt — planet osobe B. */
+/* Tablica međuaspekata (popis, sortiran po orbu): planet osobe A - aspekt - planet osobe B. */
 function renderSynastryAspects(chartA, chartB, pal) {
   const el = document.getElementById('synastry-aspects');
   if (!el) return;
@@ -589,9 +589,9 @@ function renderSynastryResult(chartA, chartB) {
   }
 }
 
-/* ============ TRANZITI — natalna karta + tranzitni planeti (živi bi-wheel) ============ */
+/* ============ TRANZITI - natalna karta + tranzitni planeti (živi bi-wheel) ============ */
 
-/* Pozicije tranzitnih planeta (bez kuća — tranzit nema vlastite kuće u ovom prikazu). */
+/* Pozicije tranzitnih planeta (bez kuća - tranzit nema vlastite kuće u ovom prikazu). */
 function transitPositionsRows(chart, pal) {
   let rows = '';
   for (const p of chart.planets) {
@@ -612,7 +612,7 @@ function transitDynSVG(natalChart, transitChart, aspects, pal) {
   });
 }
 
-/* Brzo osvježavanje pomičnog sloja (za klizanje slidera) — bez diranja statične podloge i tablica. */
+/* Brzo osvježavanje pomičnog sloja (za klizanje slidera) - bez diranja statične podloge i tablica. */
 function redrawTransitDynamic(transitChart) {
   if (!currentTransit) return;
   const pal = currentScreenPalette();
@@ -623,7 +623,7 @@ function redrawTransitDynamic(transitChart) {
   if (dynEl) dynEl.innerHTML = transitDynSVG(currentTransit.natal, transitChart, aspects, pal);
 }
 
-/* Osvježavanje tablica tranzita (aspekti + pozicije) — rjeđe (debounce iz transit modula). */
+/* Osvježavanje tablica tranzita (aspekti + pozicije) - rjeđe (debounce iz transit modula). */
 function renderTransitTables() {
   if (!currentTransit) return;
   const pal = currentScreenPalette();
@@ -666,7 +666,7 @@ function renderTransitResult(natalChart, transitChart) {
   const pal = currentScreenPalette();
   const nameN = natalChart.input.name || 'Natalna karta';
 
-  document.getElementById('transit-chart-title').textContent = 'Tranziti — ' + nameN;
+  document.getElementById('transit-chart-title').textContent = 'Tranziti - ' + nameN;
   document.getElementById('transit-chart-sub').textContent = birthDataLine(natalChart);
 
   document.getElementById('transit-legend').innerHTML =
@@ -683,7 +683,7 @@ function renderTransitResult(natalChart, transitChart) {
   renderTransitTables();
 
   const disc = document.getElementById('transit-disclaimer');
-  if (disc) disc.textContent = 'Bi-wheel: ' + nameN + ' (natalna — unutarnji prsten, Placidus kuće) i tranzitni planeti (vanjski prsten) za odabrani trenutak. ' +
+  if (disc) disc.textContent = 'Bi-wheel: ' + nameN + ' (natalna - unutarnji prsten, Placidus kuće) i tranzitni planeti (vanjski prsten) za odabrani trenutak. ' +
     'Prikazani su samo aspekti tranzitnih na natalne točke, orb do 2,5°. Položaji: NASA JPL efemeride · tropski zodijak.';
 }
 

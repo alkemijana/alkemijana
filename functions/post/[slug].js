@@ -1,4 +1,4 @@
-/* Cloudflare Pages Function — Server-side render Open Graph meta tagova za blog članke.
+/* Cloudflare Pages Function - Server-side render Open Graph meta tagova za blog članke.
    Cilj: WhatsApp / Facebook / Instagram / Twitter scraperi dohvate ovaj URL,
    vide prave meta tagove i pokažu thumbnail preview. Pravi posjetitelji se
    automatski preusmjeravaju na SPA (/#post/<slug>). */
@@ -18,7 +18,7 @@ export async function onRequest(context) {
     }
   } catch (e) { /* fallback na default meta tagove */ }
 
-  const title       = post ? `${post.title} — Alkemijana` : 'Alkemijana — Tarot & Astrologija';
+  const title       = post ? `${post.title} - Alkemijana` : 'Alkemijana - Tarot & Astrologija';
   const description = post
     ? truncate(stripHtml(post.excerpt || post.content || ''), 200)
     : 'Mistični kutak za tarot i astrologiju. Već znaš. Karte samo pokazuju put.';
@@ -59,7 +59,7 @@ ${post && Array.isArray(post.tags) ? post.tags.map(t => `<meta property="article
 <script>
   // Samo pravi posjetitelji (s JS-om) idu na SPA. Social media crawleri
   // (Facebook, WhatsApp, Twitter, LinkedIn) ne izvršavaju JS, ostaju na
-  // ovoj stranici i čitaju OG meta tagove ovdje — to je ono što želimo.
+  // ovoj stranici i čitaju OG meta tagove ovdje - to je ono što želimo.
   window.location.replace(${JSON.stringify(redirect)});
 </script>
 <style>body{font-family:sans-serif;background:#06080f;color:#c0bcce;padding:2rem;text-align:center}a{color:#a890d0}</style>

@@ -1,5 +1,5 @@
 /* ============================================================================
-   AI UVIDI ZA ČITANJE NATALNE KARTE — Janin radni alat (klijent, samostalan modul)
+   AI UVIDI ZA ČITANJE NATALNE KARTE - Janin radni alat (klijent, samostalan modul)
    ----------------------------------------------------------------------------
    - Prikazuje se SAMO kad je Jana ulogirana (sessionStorage aj_pass).
    - Umjesto teksta na ekranu → generira PDF s uvidima (dva gumba):
@@ -38,14 +38,14 @@
   }
   function resetStatus() { status('', null); }
 
-  /* Opis karte za AI — BEZ imena i bez ikakvih osobnih podataka. */
+  /* Opis karte za AI - BEZ imena i bez ikakvih osobnih podataka. */
   function serializeChartForAI(c) {
     const L = [];
     L.push(c.noTime
-      ? 'Karta je izrađena BEZ vremena rođenja — nema kuća, Ascendenta ni MC-a; Mjesec je približan.'
+      ? 'Karta je izrađena BEZ vremena rođenja - nema kuća, Ascendenta ni MC-a; Mjesec je približan.'
       : 'Karta uključuje vrijeme rođenja (kuće po Placidusu, Ascendent i MC).');
 
-    L.push('\nPOZICIJE PLANETA (planet — znak, stupanj' + (c.noTime ? '' : ', kuća') + '):');
+    L.push('\nPOZICIJE PLANETA (planet - znak, stupanj' + (c.noTime ? '' : ', kuća') + '):');
     for (const p of c.planets) {
       let line = '- ' + p.name + ': ' + signName(p.lon) + ' ' + fmtDegMin(p.lon);
       if (!c.noTime && p.house) line += ', ' + p.house + '. kuća';
@@ -87,7 +87,7 @@
     return L.join('\n');
   }
 
-  /* Hash unosa (BEZ imena) — isti kao brojač karata; omogućuje cache na serveru. */
+  /* Hash unosa (BEZ imena) - isti kao brojač karata; omogućuje cache na serveru. */
   async function chartHash(c) {
     const i = c.input;
     const norm = [
@@ -135,7 +135,7 @@
       btn.textContent = 'Pripremam PDF…';
       if (which === 'working') await downloadWorkingWithInsights(text);
       else await downloadInsights(text);
-      status('PDF je spreman — provjeri preuzimanja.', 'ok');
+      status('PDF je spreman - provjeri preuzimanja.', 'ok');
     } catch (e) {
       status(e.message || 'Greška pri izradi PDF-a.', 'error');
     } finally {

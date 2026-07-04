@@ -1,11 +1,11 @@
 /* ============================================================
-   Alkemijana — Natalna karta · FORMA, GEOCODING, INIT
+   Alkemijana - Natalna karta · FORMA, GEOCODING, INIT
    Glavni glue: forma za unos, autocomplete mjesta (Open-Meteo),
    submit handler i inicijalizacija. Ostatak je podijeljen u:
-     natal-data.js   — konstante, glifovi, palete, helperi
-     natal-calc.js   — astronomski izračun
-     natal-render.js — SVG kotač + tablice na stranici
-     natal-pdf.js    — PDF eksport (poster + radna verzija)
+     natal-data.js   - konstante, glifovi, palete, helperi
+     natal-calc.js   - astronomski izračun
+     natal-render.js - SVG kotač + tablice na stranici
+     natal-pdf.js    - PDF eksport (poster + radna verzija)
    Učitava se ZADNJI (ovisi o svemu gore).
    ============================================================ */
 
@@ -16,7 +16,7 @@
 let selectedPlace = null;
 
 /* Autocomplete mjesta (Open-Meteo). Generaliziran da ga može koristiti i forma
-   sinastrije (2. osoba) — primi config:
+   sinastrije (2. osoba) - primi config:
      { inputId, ddId, okId, onSelect(place|null) }
    Bez configa radi za natalnu formu (1. osoba → selectedPlace). */
 function initPlaceAutocomplete(cfg) {
@@ -62,7 +62,7 @@ function initPlaceAutocomplete(cfg) {
           });
         });
       } catch (e) {
-        dd.innerHTML = '<div class="nt-dd-empty">Greška pri pretrazi — provjeri internet vezu.</div>';
+        dd.innerHTML = '<div class="nt-dd-empty">Greška pri pretrazi - provjeri internet vezu.</div>';
         dd.style.display = 'block';
       }
     }, 350);
@@ -93,7 +93,7 @@ function initNodeToggle() {
     seg.querySelectorAll('.nt-seg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     try { localStorage.setItem('aj_natal_node', btn.dataset.node); } catch (e) {}
-    // ako je karta već izračunata — preračunaj s novim tipom čvora
+    // ako je karta već izračunata - preračunaj s novim tipom čvora
     if (currentChart) {
       const inp = Object.assign({}, currentChart.input, { nodeType: btn.dataset.node });
       currentChart = computeChart(inp);
@@ -117,7 +117,7 @@ function initChartControls() {
       if (saved.aspectsEnabled) Object.assign(NATAL_CHART_OPTS.aspectsEnabled, saved.aspectsEnabled);
       if (typeof saved.showCuspDegrees === 'boolean') NATAL_CHART_OPTS.showCuspDegrees = saved.showCuspDegrees;
     }
-    // jednokratna migracija: konjunkcije su prije bile isključene po defaultu — uključi ih
+    // jednokratna migracija: konjunkcije su prije bile isključene po defaultu - uključi ih
     if (!localStorage.getItem('aj_natal_conj_migrated')) {
       NATAL_CHART_OPTS.aspectsEnabled.conjunction = true;
       localStorage.setItem('aj_natal_conj_migrated', '1');
@@ -159,7 +159,7 @@ function redrawChartWheel() {
 }
 
 /* Otvori stranicu Astro alati s odabranim modom (natal/synastry/transit/acg) i
-   scrolla do prekidača moda (Natalna karta/Sinastrija/...) — zajednička ulazna
+   scrolla do prekidača moda (Natalna karta/Sinastrija/...) - zajednička ulazna
    točka za kartice alata i kolut na početnoj. */
 function openAstroTool(mode) {
   showPage('natal');
@@ -231,7 +231,7 @@ async function natalSubmit(ev) {
     });
     currentChart = chart;
     renderNatalResult(chart);
-    // nova karta — preda je AI modulu (js/natal-ai.js) i resetira staro tumačenje
+    // nova karta - preda je AI modulu (js/natal-ai.js) i resetira staro tumačenje
     if (window.AInatal) window.AInatal.setChart(chart);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
     logNatalCreation(chart);
@@ -249,12 +249,12 @@ function showNatalError(msg) {
   err.style.display = 'block';
 }
 
-/* Anoniman brojač izrada — šalje SAMO hash unosa (bez imena i bez ikakvih osobnih
+/* Anoniman brojač izrada - šalje SAMO hash unosa (bez imena i bez ikakvih osobnih
    podataka u čistom obliku). Server broji jedinstvene hasheve. Ne blokira/ne ruši UI. */
 function logNatalCreation(chart) {
   try {
     const i = chart.input;
-    // normaliziran opis unosa (bez imena) — koristi se isključivo za hash
+    // normaliziran opis unosa (bez imena) - koristi se isključivo za hash
     const norm = [
       i.y, i.mo, i.d,
       chart.noTime ? 'NT' : (i.h + ':' + i.mi),
@@ -283,7 +283,7 @@ window.addEventListener('load', () => {
   const form = document.getElementById('natal-form');
   if (!form) return;
   form.addEventListener('submit', natalSubmit);
-  // checkbox "ne znam vrijeme rođenja" — isključuje polje vremena
+  // checkbox "ne znam vrijeme rođenja" - isključuje polje vremena
   const ntCb = document.getElementById('natal-notime');
   ntCb.addEventListener('change', () => {
     document.getElementById('natal-time').disabled = ntCb.checked;

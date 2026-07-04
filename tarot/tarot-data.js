@@ -1,6 +1,6 @@
 /* ============================================================
-   Virtualni tarot — podaci (karte, špilovi, spreadovi)
-   Samostalan modul — ne ovisi o ostatku stranice osim CSS varijabli teme.
+   Virtualni tarot - podaci (karte, špilovi, spreadovi)
+   Samostalan modul - ne ovisi o ostatku stranice osim CSS varijabli teme.
    ============================================================ */
 
 /* ---- 78 kanonskih karata (isti id/naziv za sve špilove; razlikuje se samo slika) ---- */
@@ -49,7 +49,7 @@ function buildCardDefs() {
 
 const TAROT_CARD_DEFS = buildCardDefs(); // 78 kartica
 
-/* ---- Špilovi (proširivo — dodaj novi objekt u ovaj niz za novi špil) ---- */
+/* ---- Špilovi (proširivo - dodaj novi objekt u ovaj niz za novi špil) ---- */
 
 const TAROT_DECKS = [
   {
@@ -97,13 +97,13 @@ function tarotCardImage(deckId, cardId) {
    decimalno, npr. za lukove/kružnice). Renderer (tarot-render.js computeLayout)
    računa STVARNI "otisak" pozicija (bounding box) pa karte skalira maksimalno
    veliko bez preklapanja, uvijek unutar stola. `rot` (samo Keltski križ, karta 2)
-   rotira karticu 90° (poprijeko — primjenjuje se i na prazan placeholder, ne
+   rotira karticu 90° (poprijeko - primjenjuje se i na prazan placeholder, ne
    samo na izvučenu kartu). `short` je opis (hover/u izborniku), `label` kratka
-   oznaka pozicije, `meaning` ŠTO pozicija znači (ne tumačenje karte) — prikazuje
+   oznaka pozicije, `meaning` ŠTO pozicija znači (ne tumačenje karte) - prikazuje
    se samo u legendi ispod stola, nikad na/uz samu kartu. `free:true` = slobodno
    slaganje (neograničeno karata, bez zadanih pozicija). */
 
-/* helper — 12/6 pozicija u krug unutar cols×rows grida */
+/* helper - 12/6 pozicija u krug unutar cols×rows grida */
 function tarotCirclePositions(cols, rows, count, radius, startDeg, labels, meanings) {
   const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
   const out = [];
@@ -124,14 +124,14 @@ const TAROT_SPREADS = [
     id: 'free',
     name: 'Slobodno slaganje',
     free: true,
-    short: 'Slažeš karte redom, bez zadanih pozicija — koliko god želiš.',
+    short: 'Slažeš karte redom, bez zadanih pozicija - koliko god želiš.',
     cols: 1, rows: 1,
     positions: []
   },
   {
     id: 'single',
     name: 'Jedna karta',
-    short: 'Dnevna karta — brz uvid u energiju dana ili pitanja.',
+    short: 'Dnevna karta - brz uvid u energiju dana ili pitanja.',
     cols: 1, rows: 1,
     positions: [
       { gx: 0, gy: 0, label: 'Karta', meaning: 'Opća energija dana ili odgovor na pitanje.' }
@@ -152,7 +152,7 @@ const TAROT_SPREADS = [
   {
     id: 'three-card',
     name: 'Tri karte',
-    short: 'Prošlost · Sadašnjost · Budućnost — klasičan pregled toka.',
+    short: 'Prošlost · Sadašnjost · Budućnost - klasičan pregled toka.',
     cols: 3, rows: 1,
     positions: [
       { gx: 0, gy: 0, label: 'Prošlost', meaning: 'Što je dovelo do sadašnje situacije.' },
@@ -203,7 +203,7 @@ const TAROT_SPREADS = [
   {
     id: 'horseshoe',
     name: 'Potkova',
-    short: 'Sedam karata u luku — od prošlosti do konačnog ishoda.',
+    short: 'Sedam karata u luku - od prošlosti do konačnog ishoda.',
     cols: 5, rows: 3,
     positions: [
       { gx: 0,    gy: 2,    label: 'Prošli utjecaji', meaning: 'Događaji koji su oblikovali situaciju.' },
@@ -218,7 +218,7 @@ const TAROT_SPREADS = [
   {
     id: 'star',
     name: 'Zvijezda',
-    short: 'Šest karata oko središnje — problem i njegovi utjecaji.',
+    short: 'Šest karata oko središnje - problem i njegovi utjecaji.',
     cols: 5, rows: 5,
     positions: [
       { gx: 2,     gy: 2,    label: 'Problem', meaning: 'Srž pitanja oko kojeg se sve vrti.' },
@@ -233,7 +233,7 @@ const TAROT_SPREADS = [
   {
     id: 'celtic-cross',
     name: 'Keltski križ',
-    short: 'Deset karata — najdetaljniji klasičan spread.',
+    short: 'Deset karata - najdetaljniji klasičan spread.',
     cols: 5, rows: 4,
     positions: [
       { gx: 1.5, gy: 1.5,          label: 'Sadašnjost', meaning: 'Srž situacije, sadašnji trenutak.' },
@@ -251,7 +251,7 @@ const TAROT_SPREADS = [
   {
     id: 'chakra',
     name: 'Čakre',
-    short: 'Sedam karata, po jedna za svaku čakru — energija tijela.',
+    short: 'Sedam karata, po jedna za svaku čakru - energija tijela.',
     cols: 1, rows: 7,
     positions: [
       { gx: 0, gy: 6, label: 'Korijenska', meaning: 'Sigurnost, opstanak, uzemljenost.' },

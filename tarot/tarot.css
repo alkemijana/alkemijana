@@ -1,8 +1,8 @@
 /* ============================================================
-   Virtualni tarot — stilovi (samostalan modul)
+   Virtualni tarot - stilovi (samostalan modul)
    Koristi CSS varijable teme iz css/style.css (--lavender, --sage,
    --bg-*, --card-bg, --border, --text...) ali ne ovisi ni o čemu
-   drugom — sigurno ga je mijenjati bez diranja ostatka stranice.
+   drugom - sigurno ga je mijenjati bez diranja ostatka stranice.
    Sve klase su prefiksane `vtar-` (izbjegava koliziju s `tr-`/`nt-`).
    ============================================================ */
 
@@ -41,7 +41,7 @@
 .vtar-spread-toggle-caret { color: var(--text-muted); font-size: 0.75rem; transition: transform .2s ease; flex-shrink: 0; }
 .vtar-spread-toggle[aria-expanded="true"] .vtar-spread-toggle-caret { transform: rotate(180deg); }
 
-/* Panel je u NORMALNOM toku (ne absolute) — proširi se i gurne stol prema dolje,
+/* Panel je u NORMALNOM toku (ne absolute) - proširi se i gurne stol prema dolje,
    pa nema preklapanja/prozirnosti; svaki chip ima ikonu + naziv + opis (bez zasebnog
    hover-tooltipa koji je prije bio odsječen/iza stola). */
 .vtar-spread-panel {
@@ -137,7 +137,7 @@
 .vtar-deck-stack.vtar-pulse .vtar-deck-card-1 { animation: vtarDeckPulse .5s ease; }
 @keyframes vtarDeckPulse { 0% { transform: scale(1); } 35% { transform: scale(1.09) rotate(-3deg); } 100% { transform: scale(1) rotate(0deg); } }
 
-/* Stražnje strane karata (vidljive!) — SVG dizajni po špilu */
+/* Stražnje strane karata (vidljive!) - SVG dizajni po špilu */
 .vtar-back-rws .vtar-deck-card, .vtar-back-rws .vtar-card-back, .vtar-back-rws.vtar-discard-card, .vtar-back-rws.vtar-deck-switch-thumb,
 .vtar-back-rws.vtar-drawbar-swatch { background-image: url('assets/decks/rws/back.svg'); background-size: cover; background-position: center; }
 .vtar-back-marseille .vtar-deck-card, .vtar-back-marseille .vtar-card-back, .vtar-back-marseille.vtar-discard-card, .vtar-back-marseille.vtar-deck-switch-thumb,
@@ -184,7 +184,7 @@
   box-shadow: inset 0 0 60px rgba(106,78,160,0.14), var(--shadow-glow);
 }
 /* suptilna tekstura (vlastiti border-radius, ne oslanja se na overflow:hidden
-   roditelja — stol namjerno NEMA overflow:hidden da bi hover-zoom karte
+   roditelja - stol namjerno NEMA overflow:hidden da bi hover-zoom karte
    mogao "izaći" preko ruba stola bez rezanja) */
 .vtar-table::before {
   content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 20px;
@@ -203,7 +203,7 @@
 
 .vtar-slots { position: relative; width: 100%; height: 100%; min-height: clamp(440px, 64vh, 780px); --vtar-cw: 90px; --vtar-cellw: 160px; }
 
-/* ---- Slot (pozicija) — flex kolona: kartica pa oznaka ispod ---- */
+/* ---- Slot (pozicija) - flex kolona: kartica pa oznaka ispod ---- */
 .vtar-slot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; }
 
 .vtar-cardbox {
@@ -216,20 +216,21 @@
 .vtar-slot-num { font-family: 'Playfair Display', serif; font-size: clamp(0.85rem, 1.5vw, 1.25rem); color: var(--text-muted); opacity: 0.7; }
 .vtar-cardbox.vtar-filled .vtar-slot-num { display: none; }
 
-/* Oznaka pozicije (naziv + kratko značenje) ISPOD karte — poravnata, širina
-   ograničena na ćeliju grida (--vtar-cellw) pa se ne preklapa sa susjednima. */
+/* Oznaka pozicije ISPOD karte - SAMO naziv, jedan red s elipsom; puni opis
+   pozicije je u legendi ispod stola (i u title atributu oznake). Fiksna visina
+   jednog reda ne može prerasti rezervirani prostor i preklopiti karte ispod. */
 .vtar-caption {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  display: flex; justify-content: center;
   max-width: min(calc(var(--vtar-cellw) - 6px), calc(var(--vtar-cw) * 2.1));
-  text-align: center; line-height: 1.12;
+  text-align: center; line-height: 1.15;
 }
-.vtar-cap-label { font-family: 'Quicksand', sans-serif; font-size: clamp(0.6rem, 0.9vw, 0.74rem); font-weight: 600; color: var(--silver-bright); }
-.vtar-cap-meaning {
-  font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: clamp(0.62rem, 0.9vw, 0.76rem);
-  color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+.vtar-cap-label {
+  font-family: 'Quicksand', sans-serif; font-size: clamp(0.6rem, 0.9vw, 0.74rem);
+  font-weight: 600; color: var(--silver-bright); max-width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Oznake pokraj karte — uvijek izvan slike, ne prekrivaju ilustraciju.
+/* Oznake pokraj karte - uvijek izvan slike, ne prekrivaju ilustraciju.
    Kontra-rotiraju se preko --vtar-box-rot (Keltski križ, karta koja križa). */
 .vtar-badge {
   position: absolute; z-index: 4; display: flex; align-items: center; justify-content: center;
@@ -288,6 +289,7 @@
 .vtar-focus.vtar-focus-visible { opacity: 1; pointer-events: auto; }
 .vtar-focus-inner {
   display: flex; align-items: center; gap: 2.2rem; max-width: min(1000px, 92vw); cursor: default;
+  margin: auto; /* centrira kad stane, a dopušta scroll s vrha kad je sadržaj viši od zaslona */
 }
 .vtar-focus-visual { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; flex-shrink: 0; }
 .vtar-focus-card {
@@ -304,13 +306,38 @@
   color: var(--silver-bright); text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,0.6);
 }
 .vtar-focus-meaning {
-  max-width: 360px; max-height: 72vh; overflow-y: auto; cursor: default;
-  font-family: 'Cormorant Garamond', serif; font-size: 1.08rem; line-height: 1.55; color: var(--silver-bright);
+  display: flex; flex-direction: column; gap: 0.7rem;
+  max-width: 400px; max-height: 78vh; overflow-y: auto; cursor: default;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.02rem; line-height: 1.5; color: var(--silver-bright);
+}
+/* Uvijek su prikazana OBA značenja; ono koje odgovara orijentaciji izvučene
+   karte je uokvireno (vtar-focus-m-active), drugo je prigušeno. */
+.vtar-focus-m {
+  padding: 0.65rem 0.85rem; border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px; opacity: 0.62;
+}
+.vtar-focus-m p { margin: 0; }
+.vtar-focus-m-active {
+  border: 2px solid var(--lavender); background: rgba(168,144,208,0.12);
+  box-shadow: 0 0 22px rgba(168,144,208,0.28); opacity: 1;
 }
 .vtar-focus-meaning-label {
-  display: block; font-family: 'Quicksand', sans-serif; font-size: 0.76rem; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); margin-bottom: 0.5rem;
+  display: block; font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); margin-bottom: 0.35rem;
 }
+/* DA / NE / MOŽDA odgovor karte */
+.vtar-focus-yesno { display: flex; align-items: center; gap: 0.6rem; padding: 0 0.2rem; }
+.vtar-focus-yesno-label {
+  font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage);
+}
+.vtar-yn-chip {
+  font-family: 'Quicksand', sans-serif; font-size: 0.82rem; font-weight: 700;
+  letter-spacing: 0.07em; padding: 0.18rem 0.85rem; border-radius: 999px; border: 1px solid;
+}
+.vtar-yn-da    { color: #a8e0b0; border-color: #7fc98d; background: rgba(127,201,141,0.14); }
+.vtar-yn-ne    { color: #ffb3b3; border-color: #ff8484; background: rgba(255,132,132,0.13); }
+.vtar-yn-mozda { color: var(--lavender); border-color: var(--lavender); background: rgba(168,144,208,0.14); }
 .vtar-focus.vtar-focus-no-meaning .vtar-focus-meaning { display: none; }
 
 @media (max-width: 760px) {
@@ -365,7 +392,7 @@
 .vtar-mobile-drawbar { display: none; }
 
 /* ============================================================
-   FULLSCREEN — flex kolona koja se uvijek uklopi u zaslon,
+   FULLSCREEN - flex kolona koja se uvijek uklopi u zaslon,
    neovisno o omjeru/veličini monitora; legenda ima vlastiti scroll
    pa se stol nikad ne izgura izvan vidljivog prostora.
    ============================================================ */
@@ -378,13 +405,19 @@
 .vtar-fs .vtar-toolbar, .vtar-fs .vtar-deck-switches, .vtar-fs .vtar-hint,
 .vtar-fs .vtar-spread-panel.vtar-open { flex: 0 0 auto; margin-bottom: 0; }
 .vtar-fs .vtar-spread-panel.vtar-open { max-height: 40vh; overflow-y: auto; }
-.vtar-fs .vtar-layout { flex: 1 1 auto; min-height: 0; }
+/* Layout ne smije prerasti dodijeljeni prostor (overflow:hidden) - inače bi
+   se, npr. s dva uključena špila na nižim monitorima, lijeva traka i stol
+   prelili PREKO legende. Trake umjesto toga dobivaju vlastiti scroll, a
+   špilovi u fullscreenu kompaktniju širinu vezanu uz visinu zaslona. */
+.vtar-stage.vtar-fs { --vtar-card-w: clamp(48px, 9vh, 104px); }
+.vtar-fs .vtar-layout { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.vtar-fs .vtar-rail { overflow-y: auto; min-height: 0; }
 .vtar-fs .vtar-table, .vtar-fs .vtar-slots { min-height: 0; height: 100%; }
 .vtar-fs .vtar-table.vtar-table-scroll { max-height: 100%; }
 .vtar-fs .vtar-legend { flex: 0 1 auto; max-height: 20vh; overflow-y: auto; margin-top: 0; }
 .vtar-fs .vtar-mobile-drawbar { position: static; }
 
-/* ---- Karta dana na početnoj — jedna klikabilna cjelina, vodi na tarot stol ---- */
+/* ---- Karta dana na početnoj - jedna klikabilna cjelina, vodi na tarot stol ---- */
 .vtar-cotd {
   display: flex; align-items: center; gap: 2rem; max-width: 760px; margin: 0 auto;
   padding: 1.8rem 2.1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px;
@@ -419,34 +452,71 @@
   .vtar-btn-fs { display: none; } /* fullscreen samo na desktopu */
 }
 
+/* ============================================================
+   MOBITEL (≤760px) - redizajn: bočne trake su skrivene, sve akcije
+   (izvlačenje, miješanje, iskorištene karte, novi spread) preuzima fiksna
+   traka na dnu; fiksni spreadovi su kompaktna mreža 3 karte u redu.
+   ============================================================ */
 @media (max-width: 760px) {
   .vtar-toolbar { flex-direction: column; align-items: stretch; }
-  .vtar-toolbar-controls { justify-content: space-between; }
+  /* u koloni je flex-basis VISINA - bez ovoga gumb izbornika naraste na 320px */
+  .vtar-spread-toggle { flex: 0 0 auto; }
+  .vtar-toolbar-controls { justify-content: space-between; gap: 0.6rem 0.8rem; }
   .vtar-spread-panel { grid-template-columns: 1fr; }
 
-  .vtar-table { min-height: auto; border-radius: 16px; overflow: visible; }
-  .vtar-slots { min-height: auto; height: auto; padding: 1.2rem 0.6rem 5.5rem; }
-  .vtar-table.vtar-mobile .vtar-slots {
-    position: static; display: flex; flex-direction: column; align-items: center; gap: 1.4rem;
-  }
-  .vtar-table.vtar-mobile .vtar-slot { position: relative; transform: none; }
-  .vtar-table.vtar-mobile .vtar-cardbox { width: clamp(96px, 42vw, 150px); }
-  .vtar-legend { grid-template-columns: 1fr; margin-bottom: 4.5rem; }
+  /* bočne trake zamjenjuje drawbar na dnu */
+  .vtar-rail-left, .vtar-rail-right { display: none; }
 
-  .vtar-root { padding-bottom: 5rem; }
+  .vtar-table { min-height: auto; border-radius: 16px; overflow: visible; }
+  .vtar-slots { min-height: auto; height: auto; padding: 1rem 0.7rem 1.3rem; }
+
+  /* fiksni spreadovi: mreža 3 u redu, redom izvlačenja (1, 2, 3...) */
+  .vtar-table.vtar-mobile .vtar-slots {
+    position: static; display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1.1rem 0.7rem; align-items: start; justify-items: center;
+  }
+  .vtar-table.vtar-mobile .vtar-slot {
+    position: relative; left: auto; top: auto; transform: none; width: 100%;
+  }
+  .vtar-table.vtar-mobile .vtar-cardbox { width: 100%; max-width: 132px; }
+  /* rotacija karte koja križa (Keltski križ) nema smisla u mreži */
+  .vtar-table.vtar-mobile .vtar-cardbox { transform: none !important; }
+  .vtar-table.vtar-mobile .vtar-badge, .vtar-table.vtar-mobile .vtar-card-discard-btn { transform: none; }
+  /* gumb za odlaganje uvijek vidljiv (na dodirnom zaslonu nema hovera) */
+  .vtar-table.vtar-mobile .vtar-card-discard-btn, .vtar-slots.vtar-free .vtar-card-discard-btn { opacity: 0.85; }
+  .vtar-table.vtar-mobile .vtar-caption { max-width: 100%; }
+
+  .vtar-legend { grid-template-columns: 1fr; margin-bottom: 4.5rem; }
+  .vtar-root { padding-bottom: 5.5rem; }
+
+  /* ---- fiksna traka na dnu ---- */
   .vtar-mobile-drawbar {
     display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 250;
-    gap: 0.5rem; padding: 0.6rem 0.7rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+    gap: 0.45rem; align-items: stretch;
+    padding: 0.55rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
     background: var(--nav-bg); backdrop-filter: blur(10px);
     border-top: 1px solid var(--border); overflow-x: auto;
   }
+  .vtar-drawbar-group { display: flex; flex-shrink: 0; }
   .vtar-drawbar-btn {
     display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
-    padding: 0.4rem 0.7rem 0.4rem 0.4rem; border-radius: 999px;
+    padding: 0.4rem 0.6rem 0.4rem 0.4rem; border-radius: 999px 0 0 999px;
     background: var(--card-bg); border: 1px solid var(--border); color: var(--text);
     font-family: 'Quicksand', sans-serif; font-size: 0.78rem; cursor: pointer;
   }
+  .vtar-drawbar-shuffle {
+    flex-shrink: 0; padding: 0.4rem 0.55rem; border-radius: 0 999px 999px 0;
+    background: var(--card-bg); border: 1px solid var(--border); border-left: none;
+    color: var(--text-muted); font-size: 0.9rem; cursor: pointer;
+  }
+  .vtar-drawbar-used, .vtar-drawbar-new {
+    display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;
+    padding: 0.4rem 0.7rem; border-radius: 999px;
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    font-family: 'Quicksand', sans-serif; font-size: 0.74rem; cursor: pointer;
+  }
+  .vtar-drawbar-new { border-color: var(--lavender); color: var(--lavender); font-size: 0.9rem; }
   .vtar-drawbar-swatch { width: 22px; height: 22px; border-radius: 5px; background-size: cover; background-position: center; flex-shrink: 0; }
-  .vtar-drawbar-name { font-weight: 600; }
+  .vtar-drawbar-name { font-weight: 600; white-space: nowrap; }
   .vtar-drawbar-count { color: var(--text-muted); }
 }

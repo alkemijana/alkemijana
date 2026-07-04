@@ -1,45 +1,45 @@
 /* ============================================================
-   AlkemiJana — Glavna logika aplikacije
+   AlkemiJana - Glavna logika aplikacije
    ============================================================ */
 
 /* ---- NAVIGACIJA ---- */
 
-/* Per-page SEO meta tagovi — ažuriraju title/description/canonical/OG/Twitter
+/* Per-page SEO meta tagovi - ažuriraju title/description/canonical/OG/Twitter
    tako da svaka "stranica" u SPA-u ima vlastite tagove (Googlebot to renderira). */
 const PAGE_META = {
   home: {
-    title: 'Besplatna natalna karta · Izrada s tumačenjem — Alkemijana',
-    desc:  'Besplatna natalna karta online — izračunaj svoju kartu neba na hrvatskom: pozicije planeta, kuće (Placidus), aspekti i dominante. Bez registracije, s PDF posterom i radnom verzijom.',
+    title: 'Besplatna natalna karta · Izrada s tumačenjem - Alkemijana',
+    desc:  'Besplatna natalna karta online - izračunaj svoju kartu neba na hrvatskom: pozicije planeta, kuće (Placidus), aspekti i dominante. Bez registracije, s PDF posterom i radnom verzijom.',
     hash:  ''
   },
   natal: {
-    title: 'Besplatna natalna karta online — izrada s tumačenjem | Alkemijana',
+    title: 'Besplatna natalna karta online - izrada s tumačenjem | Alkemijana',
     desc:  'Izradi besplatnu natalnu kartu na hrvatskom: pozicije planeta, kuće (Placidus), aspekti, dominante, Jonesov oblik karte. Preuzmi PDF poster (A4–A0) ili radnu A4 verziju. Bez registracije.',
     hash:  'natal'
   },
   blog: {
-    title: 'Blog: tarot, astrologija i samospoznaja — Alkemijana',
+    title: 'Blog: tarot, astrologija i samospoznaja - Alkemijana',
     desc:  'Članci o tarotu, astrologiji, simbolici karata, arhetipovima i samospoznaji. Mudrost koja se dijeli.',
     hash:  'blog'
   },
   'o-meni': {
-    title: 'O meni — Jana, autorica Alkemijane',
+    title: 'O meni - Jana, autorica Alkemijane',
     desc:  'Jana, magistra socijalne pedagogije i autorica Alkemijane. Tarot, astrologija, samospoznaja.',
     hash:  'o-meni'
   },
   kontakt: {
-    title: 'Kontakt — Alkemijana',
-    desc:  'Pošalji upit ili rezerviraj susret. Alkemijana — tarot, astrologija, samospoznaja.',
+    title: 'Kontakt - Alkemijana',
+    desc:  'Pošalji upit ili rezerviraj susret. Alkemijana - tarot, astrologija, samospoznaja.',
     hash:  'kontakt'
   },
   usluge: {
-    title: 'Usluge i cjenik — Alkemijana',
-    desc:  'Usluge i cjenik — tarot susreti, astrološka tumačenja, natalna karta.',
+    title: 'Usluge i cjenik - Alkemijana',
+    desc:  'Usluge i cjenik - tarot susreti, astrološka tumačenja, natalna karta.',
     hash:  'usluge'
   },
   tarot: {
-    title: 'Virtualni tarot — online izvlačenje karata | Alkemijana',
-    desc:  'Besplatan virtualni tarot stol — izaberi špil (Rider-Waite-Smith ili Marseille), odaberi raspored i izvuci karte online. Bez tumačenja, samo za tvoju intuiciju.',
+    title: 'Virtualni tarot - online izvlačenje karata | Alkemijana',
+    desc:  'Besplatan virtualni tarot stol - izaberi špil (Rider-Waite-Smith ili Marseille), odaberi raspored i izvuci karte online. Bez tumačenja, samo za tvoju intuiciju.',
     hash:  'tarot'
   }
 };
@@ -61,7 +61,7 @@ function applyPageMeta(id) {
 
 function showPage(id) {
   /* LEGAL: ako usluge nisu uključene u adminu (nema registriranog obrta),
-     #usluge stranica je potpuno blokirana — preusmjeri na početnu.
+     #usluge stranica je potpuno blokirana - preusmjeri na početnu.
      Tako čak ni direktni URL/bookmark ne može prikazati cjenik. */
   if (id === 'usluge' && !SITE_SETTINGS.showServices) {
     id = 'home';
@@ -115,7 +115,7 @@ function toggleTheme(ev) {
     return;
   }
 
-  // Pozicija klika — circle se širi iz te točke
+  // Pozicija klika - circle se širi iz te točke
   let x = window.innerWidth - 60;
   let y = 60;
   if (ev && (ev.clientX || ev.touches)) {
@@ -208,12 +208,12 @@ function renderServices() {
   const sel      = document.getElementById('booking-service-select');
 
   /* LEGAL: kad u adminu showServices=false (nema registriranog obrta),
-     ne smijemo NIŠTA renderirati u DOM — ni opise, ni cijene, ni opcije
+     ne smijemo NIŠTA renderirati u DOM - ni opise, ni cijene, ni opcije
      u <select>-u. Crawleri i View Source tako vide samo prazne kontejnere. */
   if (!SITE_SETTINGS.showServices) {
     if (homeGrid) homeGrid.innerHTML = '';
     if (allGrid)  allGrid.innerHTML  = '';
-    if (sel)      sel.innerHTML      = '<option value="">—</option>';
+    if (sel)      sel.innerHTML      = '<option value="">-</option>';
     return;
   }
 
@@ -292,7 +292,7 @@ let activeBlogCategory  = '';
 let blogCategoriesOpen  = false;
 const BLOG_CHIPS_VISIBLE = 6;
 
-/* Vraća sve tagove za članak — koristi tags array, ali fallback na stari
+/* Vraća sve tagove za članak - koristi tags array, ali fallback na stari
    category field za članke koji još nisu migrirani. */
 function getPostTags(p) {
   if (Array.isArray(p.tags) && p.tags.length) return p.tags;
@@ -440,7 +440,7 @@ function renderHomeBlogPreview() {
 }
 
 function blogCard(p) {
-  // Tagovi se NE prikazuju na kartici početne — samo datum.
+  // Tagovi se NE prikazuju na kartici početne - samo datum.
   // Ako je dio serijala, prikaži suptilni badge ispod naslova.
   const seriesBadge = p.series
     ? `<div class="blog-card-series">✦ ${esc(p.series)}${p.seriesPart ? ' · Dio ' + esc(p.seriesPart) : ''}</div>`
@@ -506,7 +506,7 @@ function openPost(id) {
 /* ---- SEO: dinamički meta tagovi za blog članak ----
    Mijenja title, description, canonical, OG/Twitter te dodaje Article JSON-LD.
    Bot-ovi koji renderiraju JS (Googlebot već neko vrijeme) ovo pokupe;
-   za one koji ne renderiraju JS — server-side meta bi tražio prebacivanje
+   za one koji ne renderiraju JS - server-side meta bi tražio prebacivanje
    s hash-routinga na prave URL-ove (zaseban posao). */
 function setPostMetaTags(p) {
   const baseUrl = 'https://alkemijana.com/';
@@ -514,7 +514,7 @@ function setPostMetaTags(p) {
   const plain   = (p.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const desc    = (p.excerpt && p.excerpt.trim()) || plain.slice(0, 160);
   const img     = safeImgSrc(p.imageUrl) || baseUrl + 'og/home.svg';
-  const title   = `${p.title} — Alkemijana`;
+  const title   = `${p.title} - Alkemijana`;
 
   document.title = title;
   const set = (id, attr, val) => { const el = document.getElementById(id); if (el) el.setAttribute(attr, val); };
@@ -529,7 +529,7 @@ function setPostMetaTags(p) {
   set('tw-description',   'content', desc);
   set('tw-image',         'content', img);
 
-  // Article JSON-LD — ubacujemo/zamjenjujemo poseban <script id="ld-article">
+  // Article JSON-LD - ubacujemo/zamjenjujemo poseban <script id="ld-article">
   let ld = document.getElementById('ld-article');
   if (!ld) {
     ld = document.createElement('script');
@@ -589,7 +589,7 @@ function renderPostTags(p) {
   ).join('');
 }
 
-/* "Možda će ti se svidjeti" — 3 random druga članka (ne ovaj, ne arhivirani,
+/* "Možda će ti se svidjeti" - 3 random druga članka (ne ovaj, ne arhivirani,
    ne oni već prikazani u serijal-nav iznad). Daje ljudima što čitati dalje. */
 function renderRelatedPosts(p) {
   const wrap = document.getElementById('post-related');
@@ -681,7 +681,7 @@ function renderPostSources(raw) {
   renderSourcesInto('post-sources', 'post-sources-list', raw);
 }
 
-/* Popis izvora (jedan po retku, URL-ovi postaju linkovi) — dijele ga
+/* Popis izvora (jedan po retku, URL-ovi postaju linkovi) - dijele ga
    blog članci i upute za alate. */
 function renderSourcesInto(wrapId, listId, raw) {
   const wrap = document.getElementById(wrapId);
@@ -748,7 +748,7 @@ function downloadPostPdf(id) {
 <html lang="hr">
 <head>
 <meta charset="utf-8">
-<title>${titleEsc} — Alkemijana</title>
+<title>${titleEsc} - Alkemijana</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Tangerine:wght@700&display=swap" rel="stylesheet">
@@ -757,7 +757,7 @@ function downloadPostPdf(id) {
     size: A4;
     margin: 18mm 16mm 22mm 16mm;
     @bottom-center {
-      content: "— " counter(page) " / " counter(pages) " —";
+      content: "- " counter(page) " / " counter(pages) " -";
       font-family: 'Playfair Display', Georgia, serif;
       font-size: 9pt;
       color: #666;
@@ -933,7 +933,7 @@ function downloadPostPdf(id) {
   </div>
 
   <script>
-    document.title = ${JSON.stringify(safeFile + ' — Alkemijana')};
+    document.title = ${JSON.stringify(safeFile + ' - Alkemijana')};
     function waitForImages() {
       const imgs = Array.from(document.images || []);
       if (!imgs.length) return Promise.resolve();
@@ -986,7 +986,7 @@ function applySettings() {
   if (svcFormGroup) svcFormGroup.style.display = show ? '' : 'none';
   if (svcFormRow)   svcFormRow.style.gridTemplateColumns = show ? '' : '1fr';
 
-  // Ponovno renderiraj usluge/cjenik — ako je toggle prebačen, ovo
+  // Ponovno renderiraj usluge/cjenik - ako je toggle prebačen, ovo
   // ili napuni grid-ove ili ih očisti (renderServices/renderPricingTable
   // sami provjeravaju showServices stanje).
   renderServices();
@@ -1025,7 +1025,7 @@ function applyTexts() {
   set('t-blogPreviewSub',   t.blogPreviewSub);
   set('t-blogPreviewBtn',   t.blogPreviewBtn);
 
-  // Stranica Usluge — sve tekstove cistimo ako !svc
+  // Stranica Usluge - sve tekstove cistimo ako !svc
   set('t-servicesPageTitle', svc ? t.servicesPageTitle : '');
   set('t-servicesPageSub',   svc ? t.servicesPageSub   : '');
   set('t-pricingTitle',      svc ? t.pricingTitle      : '');
@@ -1071,7 +1071,7 @@ function applyTexts() {
   set('natal-poster-btn',  t.natalPosterBtn);
   set('natal-working-btn', t.natalWorkingBtn);
 
-  // Astro alati — kartice iznad forme (naslov + kratki opis po alatu)
+  // Astro alati - kartice iznad forme (naslov + kratki opis po alatu)
   set('t-toolCardNatalTitle',    t.toolCardNatalTitle);
   set('t-toolCardNatalDesc',     t.toolCardNatalDesc);
   set('t-toolCardSynastryTitle', t.toolCardSynastryTitle);
@@ -1081,7 +1081,7 @@ function applyTexts() {
   set('t-toolCardAcgTitle',      t.toolCardAcgTitle);
   set('t-toolCardAcgDesc',       t.toolCardAcgDesc);
 
-  // Astro alati — FAQ (naslov + do 15 pitanja i odgovora; prazni parovi se sakriju)
+  // Astro alati - FAQ (naslov + do 15 pitanja i odgovora; prazni parovi se sakriju)
   set('t-natalFaqTitle', t.natalFaqTitle);
   for (let i = 1; i <= 15; i++) {
     const q = t['natalFaqQ' + i], a = t['natalFaqA' + i];
@@ -1094,7 +1094,7 @@ function applyTexts() {
     }
   }
 
-  // Kontakt naslov — dinamički prema stanju usluga
+  // Kontakt naslov - dinamički prema stanju usluga
   const contactEl = document.getElementById('t-contactTitle');
   if (contactEl) {
     contactEl.textContent = SITE_SETTINGS.showServices
@@ -1114,7 +1114,7 @@ function applyTexts() {
   set('t-navNatal',    t.navNatal);
   set('t-navContact',  t.navContact);
 
-  // Kontakt — info i forma
+  // Kontakt - info i forma
   set('t-contactEmailLabel',    t.contactEmailLabel);
   set('t-contactPhoneLabel',    t.contactPhoneLabel);
   set('t-contactLocationLabel', t.contactLocationLabel);
@@ -1137,7 +1137,7 @@ function applyTexts() {
   set('t-blogBackBtn',     t.blogBackBtn);
   set('t-blogSourcesTitle', t.blogSourcesTitle);
 
-  // Natalna karta — forma
+  // Natalna karta - forma
   set('t-natalPerson1Label', t.natalPerson1Label);
   set('t-natalPerson2Label', t.natalPerson2Label);
   set('t-natalNameLabel',   t.natalNameLabel);
@@ -1150,7 +1150,7 @@ function applyTexts() {
   set('t-natalNodeLabel',   t.natalNodeLabel);
   set('t-natalNodeTrue',    t.natalNodeTrue);
   set('t-natalNodeMean',    t.natalNodeMean);
-  // ista polja za 2. osobu (sinastrija) — dijele tekstove s 1. osobom
+  // ista polja za 2. osobu (sinastrija) - dijele tekstove s 1. osobom
   set('t-natalNameLabel2',   t.natalNameLabel);
   set('t-natalPlaceLabel2',  t.natalPlaceLabel);
   setPh('natal-place-2',     t.natalPlacePlaceholder);
@@ -1158,14 +1158,14 @@ function applyTexts() {
   set('t-natalTimeLabel2',   t.natalTimeLabel);
   set('t-natalNoTimeLabel2', t.natalNoTimeLabel);
 
-  // Astro alati — prekidač modova (nazivi gumba) + hint/submit po modu
+  // Astro alati - prekidač modova (nazivi gumba) + hint/submit po modu
   set('natal-mode-natal',   t.natalModeNatal);
   set('natal-mode-syn',     t.natalModeSynastry);
   set('natal-mode-transit', t.natalModeTransit);
   set('natal-mode-acg',     t.natalModeAcg);
   if (window.Synastry && window.Synastry.refreshModeTexts) window.Synastry.refreshModeTexts();
 
-  // Astro alati — upute za korištenje (vodič iznad FAQ-a)
+  // Astro alati - upute za korištenje (vodič iznad FAQ-a)
   renderToolGuide();
 
   // Footer
@@ -1174,7 +1174,7 @@ function applyTexts() {
 }
 
 /* ---- UPUTE ZA ALATE (vodič iznad FAQ-a na #natal stranici) ----
-   Sadržaj dolazi iz TOOL_GUIDES (data.js, uređuje se u adminu — tab
+   Sadržaj dolazi iz TOOL_GUIDES (data.js, uređuje se u adminu - tab
    "Upute za alate"). Prikazuje se vodič za trenutno odabrani mod;
    setNatalMode (natal-synastry.js) zove renderToolGuide(mode) pri
    svakoj promjeni prekidača. Arhiviran vodič se ne prikazuje. */
@@ -1240,7 +1240,7 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-/* Vraća URL samo ako je http(s) ili data:image — inače prazan string.
+/* Vraća URL samo ako je http(s) ili data:image - inače prazan string.
    Sprječava da netko stavi javascript: URL u admin polje slike. */
 function safeImgSrc(u) {
   if (!u) return '';

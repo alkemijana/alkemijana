@@ -1,12 +1,12 @@
 /* ============================================================
-   Alkemijana — SINASTRIJA (usporedba dviju karata)
+   Alkemijana - SINASTRIJA (usporedba dviju karata)
    Glue modul: prekidač moda (natalna ↔ sinastrija), forma 2. osobe,
-   submit, kontrole kotača i wiring PDF-ova. Samostalan — ovisi o:
-     natal.js        — initPlaceAutocomplete, currentNodeType, showNatalError, loadScript
-     natal-data.js   — localToUtc
-     natal-calc.js   — computeChart, computeSynastryAspects
-     natal-render.js — renderSynastryResult, buildSynastryWheel, currentSynastry, currentScreenPalette
-     natal-pdf.js    — downloadSynastryPoster, downloadSynastryWorking
+   submit, kontrole kotača i wiring PDF-ova. Samostalan - ovisi o:
+     natal.js        - initPlaceAutocomplete, currentNodeType, showNatalError, loadScript
+     natal-data.js   - localToUtc
+     natal-calc.js   - computeChart, computeSynastryAspects
+     natal-render.js - renderSynastryResult, buildSynastryWheel, currentSynastry, currentScreenPalette
+     natal-pdf.js    - downloadSynastryPoster, downloadSynastryWorking
    Učitava se nakon natal.js.
    ============================================================ */
 
@@ -14,7 +14,7 @@
 
 let selectedPlace2 = null;   // mjesto rođenja 2. osobe
 
-/* Kontrole kotača sinastrije (uključeni aspekti) — neovisne o natalnima. */
+/* Kontrole kotača sinastrije (uključeni aspekti) - neovisne o natalnima. */
 const SYN_CHART_OPTS = {
   aspectsEnabled: { conjunction: true, sextile: true, square: true, trine: true, opposition: true }
 };
@@ -53,18 +53,18 @@ function setNatalMode(mode, persist) {
   if (persist) { try { localStorage.setItem('aj_natal_mode', mode); } catch (e) {} }
 }
 
-/* Hint ispod prekidača + tekst submit gumba za dani mod — čita TEXTS
+/* Hint ispod prekidača + tekst submit gumba za dani mod - čita TEXTS
    (uredivo u adminu) s fallbackom na zadane vrijednosti. */
 function applyModeTexts(mode) {
   const T = (typeof TEXTS !== 'undefined') ? TEXTS : {};
   const hint = document.getElementById('natal-mode-hint');
   if (hint) {
     hint.textContent = mode === 'synastry'
-      ? (T.natalHintSynastry || 'Usporedba dviju karata — kako se planeti dviju osoba međusobno povezuju.')
+      ? (T.natalHintSynastry || 'Usporedba dviju karata - kako se planeti dviju osoba međusobno povezuju.')
       : mode === 'transit'
-        ? (T.natalHintTransit || 'Položaji planeta (sada ili za odabrani trenutak) naspram tvoje natalne karte — pomiči slidere kroz vrijeme.')
+        ? (T.natalHintTransit || 'Položaji planeta (sada ili za odabrani trenutak) naspram tvoje natalne karte - pomiči slidere kroz vrijeme.')
         : mode === 'acg'
-          ? (T.natalHintAcg || 'Planetarne linije preko karte svijeta — gdje je koji planet na ASC/DSC/MC/IC u trenutku rođenja. Treba točno vrijeme rođenja.')
+          ? (T.natalHintAcg || 'Planetarne linije preko karte svijeta - gdje je koji planet na ASC/DSC/MC/IC u trenutku rođenja. Treba točno vrijeme rođenja.')
           : '';
   }
   const btn = document.getElementById('natal-submit');
@@ -76,7 +76,7 @@ function applyModeTexts(mode) {
   }
 }
 
-/* Poziva ga applyTexts (app.js) nakon što admin spremi tekstove —
+/* Poziva ga applyTexts (app.js) nakon što admin spremi tekstove -
    osvježi hint/submit za trenutno aktivni mod. */
 function refreshModeTexts() {
   applyModeTexts(currentNatalMode());
@@ -107,12 +107,12 @@ function readPerson(suffix) {
 }
 
 function validatePerson(p, who) {
-  if (!p.dateV)         return 'Upiši datum rođenja — ' + who + '.';
-  if (!p.timeV)         return 'Upiši vrijeme rođenja ili označi „ne znam” — ' + who + '.';
-  if (!p.place)         return 'Upiši mjesto rođenja i odaberi ga s popisa — ' + who + '.';
+  if (!p.dateV)         return 'Upiši datum rođenja - ' + who + '.';
+  if (!p.timeV)         return 'Upiši vrijeme rođenja ili označi „ne znam” - ' + who + '.';
+  if (!p.place)         return 'Upiši mjesto rođenja i odaberi ga s popisa - ' + who + '.';
   const y = +p.dateV.split('-')[0];
-  if (y < 1900 || y > 2099) return 'Podržane su godine rođenja 1900.–2099. — ' + who + '.';
-  if (!p.noTime && Math.abs(p.place.lat) > 66) return 'Placidus kuće nisu definirane za polarne širine (>66°) — ' + who + '.';
+  if (y < 1900 || y > 2099) return 'Podržane su godine rođenja 1900.–2099. - ' + who + '.';
+  if (!p.noTime && Math.abs(p.place.lat) > 66) return 'Placidus kuće nisu definirane za polarne širine (>66°) - ' + who + '.';
   return null;
 }
 

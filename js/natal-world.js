@@ -1,9 +1,9 @@
 /* ============================================================
-   Alkemijana — OBRISI KONTINENATA za ACG PDF (lazy-load)
+   Alkemijana - OBRISI KONTINENATA za ACG PDF (lazy-load)
    Izvor: world.geo.json (Natural Earth 110m, public domain),
    Douglas-Peucker 0.12°, koordinate na 1 decimalu.
    Format: WORLD_LAND = [ [lon,lat,lon,lat,...], ... ] (prstenovi poligona).
-   GENERIRANO — ne uređivati ručno.
+   GENERIRANO - ne uređivati ručno.
    ============================================================ */
 
 'use strict';

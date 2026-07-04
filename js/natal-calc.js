@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana — Natalna karta · ASTRONOMSKI IZRAČUN
+   Alkemijana - Natalna karta · ASTRONOMSKI IZRAČUN
    Ovisi o: natal-data.js (norm360, D2R, R2D, SIGN/ASPECT defs)
            astronomy-engine (lazy-load preko loadScript)
            natal-chiron.js (CHIRON_EPH efemerida)
@@ -86,7 +86,7 @@ function computeAscMc(ramc, eps, latDeg) {
   return { asc, mc };
 }
 
-/* Placidus kuće — iterativno (vrijedi za |lat| < ~66°) */
+/* Placidus kuće - iterativno (vrijedi za |lat| < ~66°) */
 function placidusCusps(ramc, eps, latDeg, asc, mc) {
   const tanLat = Math.tan(latDeg * D2R);
 
@@ -151,9 +151,9 @@ function computeAspects(points) {
 
 /* ============ SINASTRIJA (cross-aspekti dviju karata) ============ */
 
-/* Uži orbisi nego u natalnoj karti — sinastrijska konvencija (manje, ali jasnijih veza). */
+/* Uži orbisi nego u natalnoj karti - sinastrijska konvencija (manje, ali jasnijih veza). */
 const SYN_ORBS = { conjunction: 7, sextile: 4, square: 6, trine: 6, opposition: 7 };
-/* Tranziti: vrlo tijesan orb (kao Astro-Seek) — samo stvarno aktivni tranziti, svi aspekti do 2,5°. */
+/* Tranziti: vrlo tijesan orb (kao Astro-Seek) - samo stvarno aktivni tranziti, svi aspekti do 2,5°. */
 const TRANSIT_ORB = 2.5;
 
 function synAspectPoints(chart) {
@@ -226,7 +226,7 @@ function computeChart(input) {
       }
     } else if (def.id === 'node') {
       lon = input.nodeType === 'mean' ? meanLunarNode(T) : trueLunarNode(time);
-      retro = true; // čvor se pretežno kreće retrogradno — standardna oznaka
+      retro = true; // čvor se pretežno kreće retrogradno - standardna oznaka
     } else if (def.id === 'snode') {
       lon = norm360((input.nodeType === 'mean' ? meanLunarNode(T) : trueLunarNode(time)) + 180);
       retro = true;
@@ -243,7 +243,7 @@ function computeChart(input) {
     planets.push({ id: def.id, name: def.name, lon: norm360(lon), retro });
   }
 
-  // Fortuna i Vertex ovise o ASC/kućama — bez vremena rođenja ih nema
+  // Fortuna i Vertex ovise o ASC/kućama - bez vremena rođenja ih nema
   if (!noTime) {
     // Fortuna (Pars Fortunae): dnevna karta = ASC + Mjesec − Sunce, noćna obratno
     const sunP = planets.find(p => p.id === 'sun');
@@ -345,22 +345,22 @@ function detectShape(chart) {
   }
 
   if (span <= 135) {
-    return { name: 'Snop (Bundle)', desc: 'Svi planeti su zbijeni unutar trećine kruga — vrlo usredotočena osobnost s uskim, dubokim fokusom interesa i talenata.' };
+    return { name: 'Snop (Bundle)', desc: 'Svi planeti su zbijeni unutar trećine kruga - vrlo usredotočena osobnost s uskim, dubokim fokusom interesa i talenata.' };
   }
   if (span <= 190) {
-    return { name: 'Zdjela (Bowl)', desc: 'Svi planeti zauzimaju polovicu kruga — samostalna, samodostatna osoba; prazna polovica karte pokazuje područje života koje privlači i motivira.' };
+    return { name: 'Zdjela (Bowl)', desc: 'Svi planeti zauzimaju polovicu kruga - samostalna, samodostatna osoba; prazna polovica karte pokazuje područje života koje privlači i motivira.' };
   }
   if (bucket) {
-    return { name: 'Vedro (Bucket)', desc: 'Planeti u polukrugu s jednim izdvojenim planetom nasuprot — "ručkom". Sva se energija usmjerava kroz taj planet.', handle: bucket.name };
+    return { name: 'Vedro (Bucket)', desc: 'Planeti u polukrugu s jednim izdvojenim planetom nasuprot - "ručkom". Sva se energija usmjerava kroz taj planet.', handle: bucket.name };
   }
   if (span <= 250) {
-    return { name: 'Lokomotiva (Locomotive)', desc: 'Planeti zauzimaju dvije trećine kruga — snažan pokretački duh; planet koji "vuče" ostale (prvi u smjeru kazaljke iza praznine) daje ton cijeloj karti.' };
+    return { name: 'Lokomotiva (Locomotive)', desc: 'Planeti zauzimaju dvije trećine kruga - snažan pokretački duh; planet koji "vuče" ostale (prvi u smjeru kazaljke iza praznine) daje ton cijeloj karti.' };
   }
   if (g1.size >= 60 && g2.size >= 60) {
-    return { name: 'Klackalica (Seesaw)', desc: 'Planeti u dvije nasuprotne skupine — život u dijalogu suprotnosti, stalno odvagivanje dviju strana, dar za sagledavanje obje perspektive.' };
+    return { name: 'Klackalica (Seesaw)', desc: 'Planeti u dvije nasuprotne skupine - život u dijalogu suprotnosti, stalno odvagivanje dviju strana, dar za sagledavanje obje perspektive.' };
   }
   if (g1.size < 65) {
-    return { name: 'Raspršeni (Splash)', desc: 'Planeti ravnomjerno raspršeni po cijelom krugu — širok raspon interesa i sposobnosti, univerzalnost, ali i izazov raspršenosti.' };
+    return { name: 'Raspršeni (Splash)', desc: 'Planeti ravnomjerno raspršeni po cijelom krugu - širok raspon interesa i sposobnosti, univerzalnost, ali i izazov raspršenosti.' };
   }
-  return { name: 'Lepeza (Splay)', desc: 'Planeti u nekoliko nepravilno raspoređenih skupina — individualist koji ne pristaje na kalupe, s nekoliko jakih, neovisnih područja djelovanja.' };
+  return { name: 'Lepeza (Splay)', desc: 'Planeti u nekoliko nepravilno raspoređenih skupina - individualist koji ne pristaje na kalupe, s nekoliko jakih, neovisnih područja djelovanja.' };
 }

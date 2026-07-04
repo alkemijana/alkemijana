@@ -1,5 +1,5 @@
 /* ============================================================
-   Virtualni tarot — DOM izgradnja, prikaz i animacije
+   Virtualni tarot - DOM izgradnja, prikaz i animacije
    Sav render ide u kontejner #tarot-app; ništa se ne dira izvan njega.
    ============================================================ */
 
@@ -33,7 +33,7 @@ function trSpreadPreviewSvg(spread, size) {
 }
 
 /* ============================================================
-   Glavni renderer — jedna instanca po stranici
+   Glavni renderer - jedna instanca po stranici
    ============================================================ */
 function createTarotUI(engine, root) {
 
@@ -89,9 +89,9 @@ function createTarotUI(engine, root) {
             </div>
           </div>
           <div class="vtar-rail vtar-rail-right">
-            <div class="vtar-discard-zone vtar-discard-empty" id="vtar-discard-zone" title="Otpad — klikni da vratiš odložene karte u špil">
+            <div class="vtar-discard-zone vtar-discard-empty" id="vtar-discard-zone" title="Iskorištene karte - klikni da ih vratiš u špil">
               <div class="vtar-discard-stack" id="vtar-discard-stack"></div>
-              <div class="vtar-discard-label">Otpad <span id="vtar-discard-count">0</span></div>
+              <div class="vtar-discard-label">Iskorištene karte <span id="vtar-discard-count">0</span></div>
             </div>
           </div>
         </div>
@@ -157,7 +157,7 @@ function createTarotUI(engine, root) {
   document.addEventListener('fullscreenchange', onFsChange);
   document.addEventListener('webkitfullscreenchange', onFsChange);
 
-  /* ---- Spread izbornik — panel koji se PROŠIRI u toku (ne padajući, ne preklapa) ---- */
+  /* ---- Spread izbornik - panel koji se PROŠIRI u toku (ne padajući, ne preklapa) ---- */
   function closeSpreadPanel() {
     els.spreadPanel.classList.remove('vtar-open');
     els.spreadToggle.setAttribute('aria-expanded', 'false');
@@ -230,7 +230,7 @@ function createTarotUI(engine, root) {
       const stackWrap = trEl('div', 'vtar-deck-stack-wrap');
       const stack = trEl('div', `vtar-deck-stack ${deck.backClass}`);
       stack.setAttribute('data-deck', deck.id);
-      stack.title = `${deck.name} — klikni za izvlačenje karte`;
+      stack.title = `${deck.name} - klikni za izvlačenje karte`;
       stack.innerHTML = `
         <div class="vtar-deck-card vtar-deck-card-3"></div>
         <div class="vtar-deck-card vtar-deck-card-2"></div>
@@ -242,7 +242,7 @@ function createTarotUI(engine, root) {
 
       const actions = trEl('div', 'vtar-deck-actions');
       actions.innerHTML = `
-        <button type="button" class="vtar-mini-btn" data-act="shuffle-full" data-deck="${deck.id}" title="Vrati sve karte (i sa stola i iz otpada) u špil i promiješaj">⟲ Promiješaj sve</button>
+        <button type="button" class="vtar-mini-btn" data-act="shuffle-full" data-deck="${deck.id}" title="Vrati sve karte (i sa stola i iz iskorištenih) u špil i promiješaj">⟲ Promiješaj sve</button>
         <button type="button" class="vtar-mini-btn" data-act="shuffle-remaining" data-deck="${deck.id}" title="Promiješaj samo preostale karte u špilu">⟲ Promiješaj preostale</button>
         ${engine.isFree() ? `<button type="button" class="vtar-mini-btn vtar-mini-btn-accent" data-act="draw-all" data-deck="${deck.id}" title="Izvuci sve preostale karte iz ovog špila na stol, po redu">▤ Izvuci sve</button>` : ''}`;
       wrap.appendChild(actions);
@@ -265,17 +265,44 @@ function createTarotUI(engine, root) {
     renderMobileDrawbar(activeDecks);
   }
 
+  /* Mobilna fiksna traka na dnu: po uključenom špilu gumb za izvlačenje +
+     mali ⟲ (promiješaj sve), pa gumb iskorištenih karata (vraća ih u špil)
+     i ✦ novi spread - na mobitelu zamjenjuje bočne trake (skrivene CSS-om). */
   function renderMobileDrawbar(activeDecks) {
     els.mobileBar.innerHTML = '';
     activeDecks.forEach(deck => {
       const dState = engine.state.decks[deck.id];
+      const group = trEl('div', 'vtar-drawbar-group');
       const btn = trEl('button', `vtar-drawbar-btn ${deck.backClass}`);
       btn.type = 'button';
       btn.dataset.deck = deck.id;
       btn.innerHTML = `<span class="vtar-drawbar-swatch"></span><span class="vtar-drawbar-name">${deck.shortName}</span><span class="vtar-drawbar-count">${dState.remaining.length}</span>`;
       btn.addEventListener('click', () => handleDrawClick(deck.id, btn));
-      els.mobileBar.appendChild(btn);
+      const sh = trEl('button', 'vtar-drawbar-shuffle');
+      sh.type = 'button';
+      sh.title = 'Vrati sve karte u špil i promiješaj';
+      sh.setAttribute('aria-label', `Promiješaj špil ${deck.shortName}`);
+      sh.textContent = '⟲';
+      sh.addEventListener('click', () => engine.shuffleFull(deck.id));
+      group.appendChild(btn);
+      group.appendChild(sh);
+      els.mobileBar.appendChild(group);
     });
+    if (activeDecks.length) {
+      const used = trEl('button', 'vtar-drawbar-used');
+      used.type = 'button';
+      used.title = 'Iskorištene karte - klikni da ih vratiš u špil';
+      used.innerHTML = `<span class="vtar-drawbar-name">Iskorištene</span><span class="vtar-drawbar-count" id="vtar-drawbar-used-count">${engine.state.discard.length}</span>`;
+      used.addEventListener('click', () => engine.returnDiscardToDecks());
+      els.mobileBar.appendChild(used);
+      const nw = trEl('button', 'vtar-drawbar-new');
+      nw.type = 'button';
+      nw.title = 'Novi spread';
+      nw.setAttribute('aria-label', 'Novi spread');
+      nw.textContent = '✦';
+      nw.addEventListener('click', () => engine.newSpreadReading());
+      els.mobileBar.appendChild(nw);
+    }
   }
 
   function pulseStack(deckId) {
@@ -305,7 +332,7 @@ function createTarotUI(engine, root) {
         <div class="vtar-card-face vtar-card-back"></div>
         <div class="vtar-card-face vtar-card-front"><div class="vtar-card-front-img"></div></div>
       </div>
-      <button type="button" class="vtar-card-discard-btn" title="Odloži u otpad" aria-label="Odloži kartu u otpad">✕</button>`;
+      <button type="button" class="vtar-card-discard-btn" title="Odloži u iskorištene karte" aria-label="Odloži kartu u iskorištene">✕</button>`;
   }
 
   function buildCardEl(entry, slotIdx) {
@@ -328,34 +355,47 @@ function createTarotUI(engine, root) {
     return cardEl;
   }
 
-  /* Badge s brojem redoslijeda — pokraj karte (gornji lijevi kut) */
+  /* Badge s brojem redoslijeda - pokraj karte (gornji lijevi kut) */
   function orderBadge(n) { return trEl('span', 'vtar-badge vtar-badge-order', n); }
-  /* Glif za obrnutu kartu — crven, pokraj karte (donji lijevi kut) */
+  /* Glif za obrnutu kartu - crven, pokraj karte (donji lijevi kut) */
   function reversedBadge() {
     const b = trEl('span', 'vtar-badge vtar-badge-rev', '⟲');
     b.title = 'Obrnuto';
     return b;
   }
 
-  /* ---- Fokus (klik na kartu → centrirano uvećanje preko stola) ---- */
+  /* ---- Fokus (klik na kartu → centrirano uvećanje preko stola) ----
+     Uvijek se prikazuju OBA značenja (uspravno i obrnuto); ono koje odgovara
+     orijentaciji izvučene karte je uokvireno (vtar-focus-m-active). Uz to se
+     prikazuje i DA/NE/MOŽDA odgovor karte (text.yesno) ako je upisan u adminu. */
   function openFocus(entry) {
     const def = trCardDef(entry.cardId);
     const reversed = entry.orientation === 'reversed';
     const text = (typeof TAROT_CARD_TEXTS !== 'undefined' && TAROT_CARD_TEXTS[entry.deckId] && TAROT_CARD_TEXTS[entry.deckId][entry.cardId]) || null;
     const name = (text && text.name) || (def ? def.name : '');
-    const meaning = text ? (reversed ? text.reversed : text.upright) : '';
+    const upright = (text && text.upright) || '';
+    const revText = (text && text.reversed) || '';
+    const yesno = (text && text.yesno) || '';
 
     els.focusCard.style.backgroundImage = `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
     els.focusCard.classList.toggle('vtar-focus-reversed', reversed);
     els.focusName.textContent = name + (reversed ? ' · obrnuto' : '');
 
-    if (meaning) {
-      els.focusMeaning.innerHTML = `<span class="vtar-focus-meaning-label">${reversed ? 'Značenje — obrnuto' : 'Značenje — uspravno'}</span><p>${meaning}</p>`;
-      els.focus.classList.remove('vtar-focus-no-meaning');
-    } else {
-      els.focusMeaning.innerHTML = '';
-      els.focus.classList.add('vtar-focus-no-meaning');
+    let html = '';
+    if (yesno) {
+      const cls = yesno === 'DA' ? 'vtar-yn-da' : (yesno === 'NE' ? 'vtar-yn-ne' : 'vtar-yn-mozda');
+      html += `<div class="vtar-focus-yesno"><span class="vtar-focus-yesno-label">Odgovor karte</span><span class="vtar-yn-chip ${cls}">${yesno}</span></div>`;
     }
+    if (upright) {
+      html += `<div class="vtar-focus-m${!reversed ? ' vtar-focus-m-active' : ''}">
+        <span class="vtar-focus-meaning-label">Uspravno${!reversed ? ' · izvučeno' : ''}</span><p>${upright}</p></div>`;
+    }
+    if (revText) {
+      html += `<div class="vtar-focus-m${reversed ? ' vtar-focus-m-active' : ''}">
+        <span class="vtar-focus-meaning-label">Obrnuto${reversed ? ' · izvučeno' : ''}</span><p>${revText}</p></div>`;
+    }
+    els.focusMeaning.innerHTML = html;
+    els.focus.classList.toggle('vtar-focus-no-meaning', !html);
     els.focus.classList.add('vtar-focus-visible');
     els.focus.setAttribute('aria-hidden', 'false');
   }
@@ -383,13 +423,18 @@ function createTarotUI(engine, root) {
     updateHint();
   }
 
+  /* Oznaka ispod karte: SAMO kratki naziv pozicije (jedan red) - puni opis
+     značenja pozicije je u legendi ispod stola. Tako oznake nikad ne mogu
+     prerasti rezervirani prostor i preklopiti se s kartama u redu ispod,
+     a karte dobivaju maksimalnu veličinu. */
   function captionEl(pos) {
     const cap = trEl('div', 'vtar-caption');
-    cap.innerHTML = `<span class="vtar-cap-label">${pos.label}</span><span class="vtar-cap-meaning">${pos.meaning}</span>`;
+    cap.innerHTML = `<span class="vtar-cap-label">${pos.label}</span>`;
+    cap.title = `${pos.label} - ${pos.meaning}`;
     return cap;
   }
 
-  /* Fiksni spread, desktop — bounding-box fit izračun (karte što veće, uvijek unutar stola) */
+  /* Fiksni spread, desktop - bounding-box fit izračun (karte što veće, uvijek unutar stola) */
   function renderDesktopSlots(spread) {
     const showCap = engine.state.showMeanings;
     const L = computeLayout(spread, showCap);
@@ -408,7 +453,7 @@ function createTarotUI(engine, root) {
       box.innerHTML = `<span class="vtar-slot-num">${idx + 1}</span>`;
       if (pos.rot) { box.style.transform = `rotate(${pos.rot}deg)`; box.style.setProperty('--vtar-box-rot', pos.rot + 'deg'); }
       slot.appendChild(box);
-      // preskoči oznaku ispod karte koja križa (isto središte kao karta 1) — ostaje u legendi
+      // preskoči oznaku ispod karte koja križa (isto središte kao karta 1) - ostaje u legendi
       if (showCap && !pos.rot) slot.appendChild(captionEl(pos));
       els.slots.appendChild(slot);
 
@@ -417,7 +462,7 @@ function createTarotUI(engine, root) {
     });
   }
 
-  /* Fiksni spread, mobitel — jednostavan vertikalan popis */
+  /* Fiksni spread, mobitel - jednostavan vertikalan popis */
   function renderMobileSlots(spread) {
     els.slots.style.removeProperty('--vtar-cw');
     els.slots.style.removeProperty('--vtar-cellw');
@@ -435,7 +480,7 @@ function createTarotUI(engine, root) {
     });
   }
 
-  /* Slobodno slaganje — karte teku u redovima, bez zadanih pozicija, stol scrolla */
+  /* Slobodno slaganje - karte teku u redovima, bez zadanih pozicija, stol scrolla */
   function renderFreeSlots() {
     els.slots.style.removeProperty('--vtar-cw');
     els.slots.style.removeProperty('--vtar-cellw');
@@ -470,7 +515,7 @@ function createTarotUI(engine, root) {
     const cellW = (W - 2 * pad) / effCols;
     const cellH = (H - 2 * pad) / effRows;
 
-    const capH = showCap ? Math.min(52, Math.max(30, cellH * 0.24)) : 0;
+    const capH = showCap ? 20 : 0; // jedan red naziva pozicije ispod karte
     const gapV = 4;
     let ch = cellH - capH - gapV;
     let cw = ch * VTAR_RATIO;
@@ -484,7 +529,7 @@ function createTarotUI(engine, root) {
 
   function updateHint() {
     if (engine.isFree()) {
-      els.hint.textContent = 'Klikni na špil — karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.';
+      els.hint.textContent = 'Klikni na špil - karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.';
     } else if (engine.isSpreadFull()) {
       els.hint.textContent = 'Raspored je pun. Klik na kartu ju poveća; „✦ Novi spread" za novo čitanje.';
     } else {
@@ -500,7 +545,7 @@ function createTarotUI(engine, root) {
     spread.positions.forEach((pos, idx) => {
       const item = trEl('div', 'vtar-legend-item');
       item.innerHTML = `<span class="vtar-legend-num">${idx + 1}</span>
-        <span class="vtar-legend-text"><strong>${pos.label}</strong> — ${pos.meaning}</span>`;
+        <span class="vtar-legend-text"><strong>${pos.label}</strong> - ${pos.meaning}</span>`;
       els.legend.appendChild(item);
     });
   }
@@ -556,6 +601,8 @@ function createTarotUI(engine, root) {
   function renderDiscard() {
     const n = engine.state.discard.length;
     els.discardCount.textContent = n;
+    const barUsed = els.mobileBar.querySelector('#vtar-drawbar-used-count');
+    if (barUsed) barUsed.textContent = n;
     els.discardStack.innerHTML = '';
     engine.state.discard.slice(-3).forEach((entry, i) => {
       const c = trEl('div', 'vtar-discard-card ' + trDeckDef(entry.deckId).backClass);
@@ -569,8 +616,8 @@ function createTarotUI(engine, root) {
   function handleDrawClick(deckId, stackEl) {
     const dState = engine.state.decks[deckId];
     if (!dState || !dState.enabled) return;
-    if (engine.isSpreadFull()) { flashHint('Raspored je pun — klikni „Novi spread".'); return; }
-    if (dState.remaining.length === 0) { flashHint('Špil je prazan — „Promiješaj sve".'); return; }
+    if (engine.isSpreadFull()) { flashHint('Raspored je pun - klikni „Novi spread".'); return; }
+    if (dState.remaining.length === 0) { flashHint('Špil je prazan - „Promiješaj sve".'); return; }
     const result = engine.drawFromDeck(deckId);
     if (!result) return;
     if (engine.isFree()) {
@@ -585,12 +632,15 @@ function createTarotUI(engine, root) {
     updateHint();
   }
 
-  /* Slobodno slaganje: "Izvuci sve" — izlista sve preostale karte iz špila na
+  /* Slobodno slaganje: "Izvuci sve" - izlista sve preostale karte iz špila na
      stol, po redu, s malim razmakom između svake (kaskadna animacija), i stol
      automatski scrolla prema dolje da se uvijek vidi gdje se karte slažu. */
   function handleDrawAllClick(deckId, stackEl) {
     const dState = engine.state.decks[deckId];
     if (!dState || !dState.enabled || !engine.isFree()) return;
+    // karte izlaze kanonskim redom: velika arkana 0-21, pa štapovi, pehari,
+    // mačevi, pentakli (As, 2-10, Paž, Vitez, Kraljica, Kralj)
+    engine.sortRemaining(deckId);
     const step = () => {
       if (dState.remaining.length === 0) return;
       const result = engine.drawFromDeck(deckId);
@@ -642,7 +692,7 @@ function createTarotUI(engine, root) {
     }
   });
 
-  /* Relayout na promjenu veličine stola — ResizeObserver hvata i promjenu
+  /* Relayout na promjenu veličine stola - ResizeObserver hvata i promjenu
      zooma stranice i ulaz/izlaz iz fullscreena, ne samo promjenu prozora. */
   let rt = null;
   const scheduleRelayout = () => { clearTimeout(rt); rt = setTimeout(() => { renderSlots(); }, 120); };

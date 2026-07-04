@@ -1,5 +1,5 @@
 /* ============================================================
-   Virtualni tarot — inicijalizacija (glue)
+   Virtualni tarot - inicijalizacija (glue)
    Samostalan modul: čita samo #tarot-app / #vtar-cotd-root kontejnere,
    ne dira ostatak stranice.
    ============================================================ */
@@ -15,9 +15,9 @@
     renderCardOfDay();
   }
 
-  /* "Karta dana" na početnoj — deterministički odabir po datumu u
+  /* "Karta dana" na početnoj - deterministički odabir po datumu u
      hrvatskoj (Europe/Zagreb) vremenskoj zoni, mijenja se u ponoć.
-     Izolirana iznimka od "bez tumačenja" pravila interaktivnog stola —
+     Izolirana iznimka od "bez tumačenja" pravila interaktivnog stola -
      v. CLAUDE.md. */
   function tarotZagrebDateString() {
     return new Intl.DateTimeFormat('en-CA', {
@@ -43,7 +43,7 @@
     const desc = (text && text.upright) || '';
     const img = tarotCardImage('rws', def.id);
     root.innerHTML = `
-      <a class="vtar-cotd" href="#tarot" onclick="showPage('tarot'); return false;" aria-label="Karta dana — otvori virtualni tarot i izvuci vlastite karte">
+      <a class="vtar-cotd" href="#tarot" onclick="showPage('tarot'); return false;" aria-label="Karta dana - otvori virtualni tarot i izvuci vlastite karte">
         <div class="vtar-cotd-visual"><img class="vtar-cotd-img" src="${img}" alt="Karta dana: ${name}" loading="lazy"></div>
         <div class="vtar-cotd-text">
           <span class="vtar-cotd-eyebrow">✦ Karta dana</span>

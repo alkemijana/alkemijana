@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana — Natalna karta · PDF EKSPORT
+   Alkemijana - Natalna karta · PDF EKSPORT
    Ovisi o: natal-data.js (GLYPHS, PALETTES, loadScript, escHtml)
            natal-render.js (buildChartSVG, birthDataLine, currentChart)
            jsPDF + svg2pdf (lazy-load preko ensurePdfLibs)
@@ -39,7 +39,7 @@ function registerFonts(doc) {
     doc.addFileToVFS(vfsName, fontsB64[f.name]);
     doc.addFont(vfsName, f.name, f.style);
   }
-  // Quicksand i kao "bold" (koristimo Medium fajl) — da font-weight:bold u SVG-u
+  // Quicksand i kao "bold" (koristimo Medium fajl) - da font-weight:bold u SVG-u
   // (aspektna tablica/dominante) ostane u Quicksandu umjesto helvetica fallbacka.
   doc.addFont('Quicksand.ttf', 'Quicksand', 'bold');
 }
@@ -83,13 +83,13 @@ function ensureGlyphBBoxes() {
   return GLYPH_BBOX;
 }
 
-/* Referentni maxDim (znakovi/Mars zauzimaju ~19 od 24) — glifovi s manjim
+/* Referentni maxDim (znakovi/Mars zauzimaju ~19 od 24) - glifovi s manjim
    bboxom skaliraju se gore do iste vidljive veličine; veći ostaju isti. */
 const GLYPH_REF = 19;
 const GLYPH_STROKE = 1.7;   // debljina linije za stroke-glifove pri maxDim=19
 // Fill-glifovi (Merkur, Venera, Mars, Uran, Lilith, Kiron, znakovi...) već imaju
 // prirodnu debljinu obrisa DejaVu fonta (mjereno ~1.6–2.2, prosjek blizu 1.7).
-// NE dodajemo dodatni obrub — on ih je činio debljima od stroke-glifova.
+// NE dodajemo dodatni obrub - on ih je činio debljima od stroke-glifova.
 const GLYPH_FILL_STROKE = 0;
 
 /* Vrati <g> s normaliziranim glifom: bbox centriran na (boxCx, boxCy) i
@@ -118,7 +118,7 @@ function glyphGroup(key, boxCx, boxCy, boxSpan, color) {
 async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
   if (!GLYPHS[key]) return;
   // crtamo u 24×24 viewBoxu (mapira se na sizeMm); glif centriran na (12,12),
-  // maxDim → GLYPH_REF (19 od 24) — ista konvencija kao kotač/tablice
+  // maxDim → GLYPH_REF (19 od 24) - ista konvencija kao kotač/tablice
   const inner = glyphGroup(key, 12, 12, GLYPH_REF, color);
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' +
     sizeMm + '" height="' + sizeMm + '">' + inner + '</svg>';
@@ -131,7 +131,7 @@ async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
 const PAGE_MM = { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] };
 
 /* Zvjezdano nebo za poster (deterministički pseudo-random).
-   avoid = {x, y, r} — krug kotača u kojem ne crtamo veće ✦ iskre. */
+   avoid = {x, y, r} - krug kotača u kojem ne crtamo veće ✦ iskre. */
 function posterStars(w, h, seed, avoid) {
   let s = seed;
   const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
@@ -143,7 +143,7 @@ function posterStars(w, h, seed, avoid) {
     const op = (0.25 + rnd() * 0.6).toFixed(2);
     out += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#cfc8e8" opacity="' + op + '"/>';
   }
-  // nekoliko ✦ iskri — izvan kotača da ne smetaju karti
+  // nekoliko ✦ iskri - izvan kotača da ne smetaju karti
   let placed = 0, guard = 0;
   const want = Math.round(n / 40);
   while (placed < want && guard++ < want * 30) {
@@ -187,7 +187,7 @@ function svgCenteredText(text, cx, y, sizePx, fill, pdfFamily, cssFamily, weight
   return '<text x="' + cx + '" y="' + y + '"' + attrs + ' text-anchor="middle">' + escHtml(text) + '</text>';
 }
 
-/* Poster SVG — dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
+/* Poster SVG - dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
 function buildPosterSVG(chart, w, h) {
   const pal = PALETTES.poster;
   const cx = w / 2;
@@ -206,7 +206,7 @@ function buildPosterSVG(chart, w, h) {
     .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
 
   let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-  // pozadina — duboko ljubičasti gradijent
+  // pozadina - duboko ljubičasti gradijent
   s += '<defs><radialGradient id="pgrad" cx="50%" cy="32%" r="85%">' +
        '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
        '</radialGradient></defs>';
@@ -220,7 +220,7 @@ function buildPosterSVG(chart, w, h) {
   s += '<rect x="' + (m + w * 0.008) + '" y="' + (m + w * 0.008) + '" width="' + (w - 2 * m - w * 0.016) + '" height="' + (h - 2 * m - w * 0.016) +
        '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0007) + '"/>';
 
-  // naslov — font koji prikazuje sva slova (č, ć, š, ž, đ), suzi se ako je predugačak
+  // naslov - font koji prikazuje sva slova (č, ć, š, ž, đ), suzi se ako je predugačak
   const maxTextW = w * 0.84;
   const f1 = fitFontSize(name, 'Dancing Script', '700', w * 0.105, maxTextW);
   s += svgCenteredText(name, cx, h * 0.105, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
@@ -263,7 +263,7 @@ async function downloadPoster() {
   });
 }
 
-/* Radna A4 verzija — karta + tablice za iščitavanje */
+/* Radna A4 verzija - karta + tablice za iščitavanje */
 /* SVG inline glyph (za korištenje unutar drugog SVG-a, koord. CENTRA glifa).
    Normaliziran preko glyphGroup → svi glifovi iste vidljive veličine, težine i
    centrirani. `size` = vidljiva veličina (kao prije: glif maxDim=19 zauzima
@@ -273,12 +273,12 @@ function inlineGlyph(key, cx, cy, size, color, strokeW) {
   return glyphGroup(key, cx, cy, size * GLYPH_REF / 24, color);
 }
 
-/* Astro-Seek aspektna tablica + dominante — SVG (interno mm-jedinice,
+/* Astro-Seek aspektna tablica + dominante - SVG (interno mm-jedinice,
    pozivatelj skalira po potrebi). Vraća { svg, viewW, viewH }. */
 function buildAstroSeekSVG(chart) {
   const PAL = PALETTES.ink;
   const INK = '#1c1638';       // tamnije za jasniji ispis
-  const MUT = '#473b70';       // tamnije (orb brojevi, kuće) — bolje vidljivo na A4
+  const MUT = '#473b70';       // tamnije (orb brojevi, kuće) - bolje vidljivo na A4
   const BORDER = '#675a92';    // tamniji obrub tablice
 
   // Kraći nazivi da stanu u label stupac
@@ -300,10 +300,10 @@ function buildAstroSeekSVG(chart) {
   for (const a of chart.aspects) { byPair[a.a + '|' + a.b] = a; byPair[a.b + '|' + a.a] = a; }
 
   // Layout (sve u mm, viewBox točno po sadržaju). Legenda aspekata je sada
-  // pokraj karte (desno) u downloadWorking — ovdje je nema.
+  // pokraj karte (desno) u downloadWorking - ovdje je nema.
   const cs   = 6.8;            // veličina ćelije
   const labW = 47;             // širina label dijela (glif + ime + znak + stupanj + kuća)
-  const domW = 62;             // širina dominantnog bloka (veće — ima mjesta)
+  const domW = 62;             // širina dominantnog bloka (veće - ima mjesta)
   const gx0  = labW;           // x grida
   const gy0  = 7;              // y grida (nakon naslova)
   const n    = pts.length;
@@ -318,37 +318,37 @@ function buildAstroSeekSVG(chart) {
 
   let s = '';
 
-  // Naslov sekcije (Playfair, normal — da ne padne na helvetica fallback)
+  // Naslov sekcije (Playfair, normal - da ne padne na helvetica fallback)
   s += '<text x="0" y="3.6" fill="' + INK + '" font-size="4.6" font-family="PlayfairDisplay, serif">Aspektna tablica</text>';
 
   for (let i = 0; i < n; i++) {
     const p  = pts[i];
     const ry = gy0 + i * cs;
 
-    // — Label dio — u kućici spojenoj s mrežom (rub jednak ćelijama)
+    // - Label dio - u kućici spojenoj s mrežom (rub jednak ćelijama)
     s += '<rect x="0" y="' + ry.toFixed(2) + '" width="' + labW + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.35"/>';
     // glif planeta
     s += inlineGlyph(p.id, 2.9, ry + cs / 2, 5.0, INK, 0.7);
-    // ime — vertikalno centrirano (svg2pdf ne poštuje dy pouzdano → eksplicitan baseline)
+    // ime - vertikalno centrirano (svg2pdf ne poštuje dy pouzdano → eksplicitan baseline)
     s += '<text x="6.2" y="' + (ry + cs / 2 + 1.1).toFixed(2) + '" fill="' + INK + '" font-size="3.15"' + B + ' font-family="Quicksand, sans-serif">' + escHtml(p.name) + '</text>';
     // glif znaka
     s += inlineGlyph(signKey(p.lon), 26.0, ry + cs / 2, 4.5, elementColor(p.lon, PAL), 0.7);
-    // stupanj + R — vertikalno centrirano
+    // stupanj + R - vertikalno centrirano
     const dm = degMinParts(p.lon);
     const dmTxt = dm.d + '°' + pad2(dm.m) + "'" + (p.retro ? ' R' : '');
     s += '<text x="28.8" y="' + (ry + cs / 2 + 1.05).toFixed(2) + '" fill="' + INK + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif">' + dmTxt + '</text>';
-    // kuća (desno poravnato — x računamo sami, svg2pdf ne centrira pouzdano)
+    // kuća (desno poravnato - x računamo sami, svg2pdf ne centrira pouzdano)
     if (p.house) {
       s += '<text x="' + (labW - 1.6 - tw(p.house, 3.0)).toFixed(2) + '" y="' + (ry + cs / 2 + 1.05).toFixed(2) + '" fill="' + MUT + '" font-size="3.0"' + B + ' font-family="Quicksand, sans-serif">' + p.house + '</text>';
     }
 
-    // — Cells: 0..i (diagonal at i)
+    // - Cells: 0..i (diagonal at i)
     for (let j = 0; j <= i; j++) {
       const cx = gx0 + j * cs;
       const cy = ry;
       s += '<rect x="' + cx.toFixed(2) + '" y="' + cy.toFixed(2) + '" width="' + cs + '" height="' + cs + '" fill="none" stroke="' + BORDER + '" stroke-width="0.35"/>';
       if (j === i) {
-        // diagonala — glif planeta, ili tekst za ASC/MC (nemaju glif)
+        // diagonala - glif planeta, ili tekst za ASC/MC (nemaju glif)
         if (GLYPHS[p.id]) {
           s += inlineGlyph(p.id, cx + cs / 2, cy + cs / 2, 5.0, INK, 0.7);
         } else {
@@ -368,7 +368,7 @@ function buildAstroSeekSVG(chart) {
     }
   }
 
-  // ====== DOMINANTE ====== (desno od grida — veće, ima vertikalnog mjesta)
+  // ====== DOMINANTE ====== (desno od grida - veće, ima vertikalnog mjesta)
   const domX = gx0 + n * cs + 5;
 
   // izračun
@@ -419,7 +419,7 @@ function buildAstroSeekSVG(chart) {
       s += '<rect x="' + cx.toFixed(2) + '" y="' + ry.toFixed(2) + '" width="' + (qcW - 0.5).toFixed(2) + '" height="' + rowH +
         '" fill="none" stroke="' + BORDER + '" stroke-width="0.4"/>';
       const cellPts = bucket[e][q];
-      // glifovi planeta u ćeliji — veći da se vide na ispisu
+      // glifovi planeta u ćeliji - veći da se vide na ispisu
       const gsize = 5.0, gap = 0.8;
       const perRow = Math.max(1, Math.floor((qcW - 1.5) / (gsize + gap)));
       for (let k = 0; k < cellPts.length; k++) {
@@ -453,7 +453,7 @@ async function downloadWorking() {
   });
 }
 
-/* Sav sadržaj radnog A4 (karta + tablice) — BEZ podnožja; podnožja dodaje addFooters
+/* Sav sadržaj radnog A4 (karta + tablice) - BEZ podnožja; podnožja dodaje addFooters
    na kraju, da numeracija stranica ostane točna i kad se dopišu stranice uvida. */
 async function renderWorkingContent(doc) {
     const chart = currentChart;
@@ -498,7 +498,7 @@ async function renderWorkingContent(doc) {
       chartX, chartY, chartSize, chartSize
     );
 
-    // — Desni stupac: naslov (ime + podaci rođenja) gore, pa legenda aspekata.
+    // - Desni stupac: naslov (ime + podaci rođenja) gore, pa legenda aspekata.
     const rightX = chartX + chartSize + 4;
     const rightW = (W - PAGE_M) - rightX;
     const title1 = chart.input.name || 'Natalna karta';
@@ -511,7 +511,7 @@ async function renderWorkingContent(doc) {
     const bdLines = doc.splitTextToSize(birthDataLine(chart), rightW);
     doc.text(bdLines, rightX, 15.5);
 
-    // Legenda aspekata — debljina linije i dasharray skalirani identično kao na
+    // Legenda aspekata - debljina linije i dasharray skalirani identično kao na
     // karti (chartScale) → potpuno konzistentno s linijama na natalnoj karti.
     const chartScale = chartSize / 1120;
     const hexToRgb = h => { const m = h.replace('#', ''); return [parseInt(m.substr(0, 2), 16), parseInt(m.substr(2, 2), 16), parseInt(m.substr(4, 2), 16)]; };
@@ -545,11 +545,11 @@ async function renderWorkingContent(doc) {
     let ly = chartY + chartSize + 1;
     if (chart.noTime) {
       doc.setFont('Quicksand', 'normal'); doc.setFontSize(8); doc.setTextColor(110, 100, 150);
-      doc.text('Vrijeme rođenja nepoznato — pozicije za podne, bez kuća, podznaka (ASC) i MC-a. Pozicija Mjeseca je približna (±7°).', PAGE_M, ly + 4);
+      doc.text('Vrijeme rođenja nepoznato - pozicije za podne, bez kuća, podznaka (ASC) i MC-a. Pozicija Mjeseca je približna (±7°).', PAGE_M, ly + 4);
       ly += 5;
     }
 
-    // — Aspektna tablica + dominante ispod karte (puna širina).
+    // - Aspektna tablica + dominante ispod karte (puna širina).
     //   Sve tri stavke (karta, aspektna tablica, dominante) stanu na 1. stranicu.
     const a2 = buildAstroSeekSVG(chart);
     const gridTop = ly + 2;
@@ -557,7 +557,7 @@ async function renderWorkingContent(doc) {
     const gsc = Math.min(CONTENT_W / a2.viewW, availH / a2.viewH);
     await renderSvgOnDoc(a2.svg, (W - a2.viewW * gsc) / 2, gridTop, a2.viewW * gsc, a2.viewH * gsc);
 
-    // ===== STRANICA 2: pozicije + kuće + aspekti — sve u tablicama =====
+    // ===== STRANICA 2: pozicije + kuće + aspekti - sve u tablicama =====
     doc.addPage();
     pageHeader('Pozicije, kuće i aspekti', chart.input.name || '');
 
@@ -592,7 +592,7 @@ async function renderWorkingContent(doc) {
       doc.text(t, PAGE_M, y0);
     }
 
-    // — Pozicije planeta (2 tablice jedna do druge) — Stupanj i Kuća u zasebnim
+    // - Pozicije planeta (2 tablice jedna do druge) - Stupanj i Kuća u zasebnim
     //   ćelijama pa se R i broj kuće nikad ne preklapaju.
     let y = 33;
     sectionTitle('Pozicije planeta', y); y += 3;
@@ -624,7 +624,7 @@ async function renderWorkingContent(doc) {
     }
     y += posHeadH + posHalf * posRowH + 8;
 
-    // — Kuće (Placidus) — 2 tablice po 6
+    // - Kuće (Placidus) - 2 tablice po 6
     if (!chart.noTime) {
       sectionTitle('Kuće (Placidus)', y); y += 3;
       const hCols = [14, 47, 30];               // Kuća | Znak | Stupanj  (=91)
@@ -646,7 +646,7 @@ async function renderWorkingContent(doc) {
       y += hHeadH + 6 * hRowH + 8;
     }
 
-    // — Aspekti (2 tablice) — opis aspekta u jednoj ćeliji, orb u drugoj
+    // - Aspekti (2 tablice) - opis aspekta u jednoj ćeliji, orb u drugoj
     sectionTitle('Aspekti', y); y += 3;
     const aCols = [73, 18], aHeadH = 6, aRowH = 5.7;   // Aspekt | Orb  (=91)
     const aHalf = Math.ceil(chart.aspects.length / 2);
@@ -673,7 +673,7 @@ async function renderWorkingContent(doc) {
 }
 
 /* Podnožja na SVE stranice (s točnim ukupnim brojem stranica).
-   Dimenzije čitamo po stranici — radi ispravno i za landscape/A4 mješavine. */
+   Dimenzije čitamo po stranici - radi ispravno i za landscape/A4 mješavine. */
 function addFooters(doc) {
   const PAGE_M = 5;
   const total = doc.getNumberOfPages();
@@ -716,7 +716,7 @@ function renderInsightsPages(doc, text, chart) {
 
   // zaglavlje (čija je karta + podaci rođenja)
   doc.setFont('PlayfairDisplay', 'normal'); doc.setFontSize(16); doc.setTextColor(42, 35, 72);
-  doc.text('AI uvidi — pomoć pri čitanju', W / 2, 15, { align: 'center' });
+  doc.text('AI uvidi - pomoć pri čitanju', W / 2, 15, { align: 'center' });
   doc.setFont('Quicksand', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 80, 130);
   const sub = (chart.input.name ? chart.input.name + ' · ' : '') + birthDataLine(chart);
   const subLines = doc.splitTextToSize(sub, maxW);
@@ -751,7 +751,7 @@ function renderInsightsPages(doc, text, chart) {
 
   ensure(8); y += 3;
   doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.6); doc.setTextColor(120, 110, 155);
-  for (const ln of doc.splitTextToSize('AI-generirani uvidi kao pomoć u pripremi čitanja — provjeri ih i prosudi sama. Ne predstavljaju gotovo tumačenje.', maxW)) {
+  for (const ln of doc.splitTextToSize('AI-generirani uvidi kao pomoć u pripremi čitanja - provjeri ih i prosudi sama. Ne predstavljaju gotovo tumačenje.', maxW)) {
     ensure(3.6); doc.text(ln, L, y); y += 3.6;
   }
 }
@@ -795,7 +795,7 @@ async function withBtnSpinner(btn, fn) {
 }
 
 /* ============================================================
-   SINASTRIJA — PDF (poster + radna verzija)
+   SINASTRIJA - PDF (poster + radna verzija)
    Isti pipeline (jsPDF + svg2pdf + ugrađeni fontovi) kao natalna karta.
    ============================================================ */
 
@@ -835,7 +835,7 @@ function synBiwheelSVG(chartA, chartB, pal, extra, cfg) {
   return buildChartSVG(chartA, pal, opts);
 }
 
-/* ── Poster sinastrije (vektorski, tamni dizajn — kao natalni poster) ── */
+/* ── Poster sinastrije (vektorski, tamni dizajn - kao natalni poster) ── */
 function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
   cfg = cfg || {};
   const pal = PALETTES.poster;
@@ -886,7 +886,7 @@ function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
   // kotač (interne koord. -60..1060 → 1120 jedinica)
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
 
-  // legenda osoba (jedan red, izračunate pozicije — bez text-anchor)
+  // legenda osoba (jedan red, izračunate pozicije - bez text-anchor)
   const legFs = w * 0.02;
   const twA = textWidthPx(nameA, 'Quicksand', null, legFs);
   const twB = textWidthPx(nameB, 'Quicksand', null, legFs);
@@ -1107,7 +1107,7 @@ async function renderSynastryWorkingContent(doc, cfg) {
 }
 
 /* ============================================================
-   TRANZITI — PDF (poster + radna verzija) — koristi parametrizirane
+   TRANZITI - PDF (poster + radna verzija) - koristi parametrizirane
    sinastrijske funkcije (vanjski prsten = tranzitni planeti, boja planetT).
    ============================================================ */
 
@@ -1178,18 +1178,18 @@ async function downloadTransitWorking() {
 }
 
 /* ============================================================
-   ASTROCARTOGRAPHY — PDF (poster + radna verzija)
+   ASTROCARTOGRAPHY - PDF (poster + radna verzija)
    Landscape SVG mapa svijeta (equirektangularna projekcija) s graticulom
-   i planetarnim linijama — pipeline identičan ostalim alatima (jsPDF+svg2pdf).
+   i planetarnim linijama - pipeline identičan ostalim alatima (jsPDF+svg2pdf).
    Ovisi o: currentAcg (natal-acg.js), ACG_PLANET_COLORS (natal-acg-render.js).
    ============================================================ */
 
 const ACG_PDF_LAT_LIMIT = 85;
 
 const ACG_PROJ_META = {
-  mundo: { label: 'Mundo — s latitudom (astronomska vidljivost)', slug: 'mundo' },
-  zodio: { label: 'Zodiaco — ekliptička projekcija (1:1 s relokacijskom kartom)', slug: 'zodiaco' },
-  local: { label: 'Local Space — velike kružnice iz mjesta rođenja', slug: 'local-space' }
+  mundo: { label: 'Mundo - s latitudom (astronomska vidljivost)', slug: 'mundo' },
+  zodio: { label: 'Zodiaco - ekliptička projekcija (1:1 s relokacijskom kartom)', slug: 'zodiaco' },
+  local: { label: 'Local Space - velike kružnice iz mjesta rođenja', slug: 'local-space' }
 };
 
 async function withAcgBtnSpinner(btn, fn) {
@@ -1208,7 +1208,7 @@ function acgPdfFileName(suffix) {
   return base + '-acg-' + suffix + '.pdf';
 }
 
-/* Segmenti linija za jedan planet u zadanoj projekciji — jednolika struktura
+/* Segmenti linija za jedan planet u zadanoj projekciji - jednolika struktura
    za crtanje: [{ pts:[[lat,lon],...], dashed:bool, kind:'MC'|'IC'|'ASC'|'DSC'|'LS' }] */
 function acgPlanetSegments(pl, projMode) {
   const out = [];
@@ -1226,7 +1226,7 @@ function acgPlanetSegments(pl, projMode) {
   return out;
 }
 
-/* Kopno (WORLD_LAND, js/natal-world.js) — lazy-load kao ostale ACG ovisnosti. */
+/* Kopno (WORLD_LAND, js/natal-world.js) - lazy-load kao ostale ACG ovisnosti. */
 async function ensureWorldLand() {
   if (typeof WORLD_LAND === 'undefined') {
     try { await loadScript('js/natal-world.js'); } catch (e) {}
@@ -1236,7 +1236,7 @@ async function ensureWorldLand() {
 
 /* SVG path svih kopnenih poligona u zadanoj projekciji (equirektangularna).
    Prstenovi koji prelaze antimeridian se "odmotaju" (lon kontinuiran) pa se
-   po potrebi nacrtaju i pomaknuti za ±360° — clip na okvir karte reže višak. */
+   po potrebi nacrtaju i pomaknuti za ±360° - clip na okvir karte reže višak. */
 function acgLandPath(land, lonToX, latToY, latLim) {
   let d = '';
   for (const ring of land) {
@@ -1339,7 +1339,7 @@ function acgStarMark(x, y, scale, color) {
 /* ── Karta jedne projekcije kao SVG blok ────────────────────────────────
    Crta okvir + kopno + graticulu + linije + glif-oznake u okviru + ✦ mjesto
    rođenja. Vraća string; koordinate su u prostoru pozivatelja (mm).
-   geom: { x, y, w, h, gutter } — x/y/w/h su UNUTARNJI okvir karte (bez guttera). */
+   geom: { x, y, w, h, gutter } - x/y/w/h su UNUTARNJI okvir karte (bez guttera). */
 function acgMapBlock(acg, projMode, geom, theme) {
   const dark = theme === 'dark';
   const latLim = ACG_PDF_LAT_LIMIT;
@@ -1387,7 +1387,7 @@ function acgMapBlock(acg, projMode, geom, theme) {
     s += '<line x1="' + x.toFixed(2) + '" y1="' + mapY + '" x2="' + x.toFixed(2) + '" y2="' + (mapY + mapH) +
          '" stroke="' + (lon === 0 ? gridStr : gridCol) + '" stroke-width="' + (lon === 0 ? lineW * 0.55 : lineW * 0.3).toFixed(2) + '"/>';
   }
-  // oznake stupnjeva — sitno, uz lijevi i donji rub, ispod linija
+  // oznake stupnjeva - sitno, uz lijevi i donji rub, ispod linija
   for (let lat = -60; lat <= 60; lat += 30) {
     if (lat === 0) continue;
     s += '<text x="' + (mapX + fsGrid * 0.5).toFixed(2) + '" y="' + (latToY(lat) - fsGrid * 0.35).toFixed(2) +
@@ -1435,7 +1435,7 @@ function acgMapBlock(acg, projMode, geom, theme) {
   const buckets = acgCollectEdgeLabels(acg, projMode, latLim);
 
   // Poveznice (crtice) od točke gdje linija izlazi s karte do razmaknutog
-  // glifa — kao na Astro-Seeku; samo na radnoj (svijetloj) verziji.
+  // glifa - kao na Astro-Seeku; samo na radnoj (svijetloj) verziji.
   const drawConn = !dark;
   const connW = Math.max(0.12, lineW * 0.3).toFixed(2);
   function connector(x1, y1, x2, y2, color) {
@@ -1534,7 +1534,7 @@ function acgLegendBlock(acg, projMode, cx, y0, maxW, theme) {
   return { svg: s, bottom: ny + noteFs };
 }
 
-/* ── RADNA A4 (landscape) — jedna projekcija po stranici, svijetli stil ── */
+/* ── RADNA A4 (landscape) - jedna projekcija po stranici, svijetli stil ── */
 function buildAcgWorkingPageSVG(acg, projMode) {
   const w = 297, h = 210;
   const INK = '#2a2348', MUT = '#5a4a86', ACC = '#6a5d8c';
@@ -1544,7 +1544,7 @@ function buildAcgWorkingPageSVG(acg, projMode) {
   s += '<rect width="' + w + '" height="' + h + '" fill="#ffffff"/>';
 
   // zaglavlje
-  const title = 'Astrokartografija' + (acg.name ? ' — ' + acg.name : '');
+  const title = 'Astrokartografija' + (acg.name ? ' - ' + acg.name : '');
   const sub = (acg.dateV || '') + ' · ' + (acg.timeV || '') + ' · ' + (acg.place ? acg.place.label : '');
   s += svgCenteredText(title, w / 2, 11.5, 7, INK, 'PlayfairDisplay', 'Playfair Display', null);
   s += svgCenteredText(sub, w / 2, 17, 3.4, MUT, 'Quicksand', 'Quicksand', null);
@@ -1614,7 +1614,7 @@ function buildAcgPosterSVG(acg, projMode, w, h) {
   s += '<rect x="' + (m + w * 0.006) + '" y="' + (m + w * 0.006) + '" width="' + (w - 2 * m - w * 0.012) + '" height="' + (h - 2 * m - w * 0.012) +
        '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0005) + '"/>';
 
-  // naslov (ime) — Dancing Script kao natalni poster; baseline spuštena tako
+  // naslov (ime) - Dancing Script kao natalni poster; baseline spuštena tako
   // da ni uzlazni potezi rukopisnog fonta ne izlaze iznad ukrasnog okvira
   const title = acg.name || 'Astrokartografija';
   const maxTextW = w * 0.8;

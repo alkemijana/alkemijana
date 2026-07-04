@@ -1,13 +1,13 @@
 /* ============================================================
-   Alkemijana — TRANZITI (natalna karta + tranzitni planeti, živi bi-wheel)
+   Alkemijana - TRANZITI (natalna karta + tranzitni planeti, živi bi-wheel)
    Glue modul: treći mod, kontrola vremena (datum-sidro + 5 slidera
    Sat/Dan/Tjedan/Mjesec/Godina), živo osvježavanje (rAF), submit, PDF.
    Ovisi o:
-     natal.js        — currentNodeType, showNatalError, loadScript, selectedPlace
-     natal-synastry.js — readPerson, validatePerson, personToChart, serializePerson, fillPersonFields, setNatalMode
-     natal-calc.js   — computeChart, computeSynastryAspects
-     natal-render.js — renderTransitResult, redrawTransitDynamic, renderTransitTables, currentTransit
-     natal-pdf.js    — downloadTransitPoster, downloadTransitWorking
+     natal.js        - currentNodeType, showNatalError, loadScript, selectedPlace
+     natal-synastry.js - readPerson, validatePerson, personToChart, serializePerson, fillPersonFields, setNatalMode
+     natal-calc.js   - computeChart, computeSynastryAspects
+     natal-render.js - renderTransitResult, redrawTransitDynamic, renderTransitTables, currentTransit
+     natal-pdf.js    - downloadTransitPoster, downloadTransitWorking
    Učitava se nakon natal-synastry.js.
    ============================================================ */
 
@@ -41,7 +41,7 @@ function transitLabel(d) {
     pad2(d.getHours()) + ':' + pad2(d.getMinutes());
 }
 
-/* tranzitni planeti za zadani trenutak (bez kuća — položaji su geocentrični) */
+/* tranzitni planeti za zadani trenutak (bez kuća - položaji su geocentrični) */
 function computeTransitChart(d) {
   const n = transitNatalChart;
   return computeChart({
@@ -77,7 +77,7 @@ function checkTransitRange(d) {
   if (!warn) return;
   const y = d.getFullYear();
   if (y < 1900 || y > 2099) {
-    warn.textContent = 'Izvan razdoblja 1900.–2099. — Kiron se ne prikazuje (nema efemeride), ostali planeti rade normalno.';
+    warn.textContent = 'Izvan razdoblja 1900.–2099. - Kiron se ne prikazuje (nema efemeride), ostali planeti rade normalno.';
     warn.style.display = 'block';
   } else {
     warn.style.display = 'none';

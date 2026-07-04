@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana — ASTROCARTOGRAPHY: LEAFLET KARTA
+   Alkemijana - ASTROCARTOGRAPHY: LEAFLET KARTA
    Lazy-load Leaflet (CDN, isti obrazac kao ensurePdfLibs u natal-pdf.js),
    crtanje MC/IC/ASC/DSC linija po planetu, glif-oznake u okviru oko karte
    (prate zoom/pan), koordinatna mreža, živi GEO/ASC/MC prikaz, projekcija Mundo/Zodiaco.
@@ -10,7 +10,7 @@
 
 'use strict';
 
-/* 10 razlučivih boja unutar tonske obitelji Alkemijane (bez zlatne) —
+/* 10 razlučivih boja unutar tonske obitelji Alkemijane (bez zlatne) -
    PALETTES u natal-data.js ima samo 3 boje (planet/planetB/planetT), nedovoljno. */
 const ACG_PLANET_COLORS = {
   sun:     '#c98f9b',
@@ -25,11 +25,11 @@ const ACG_PLANET_COLORS = {
   pluto:   '#8a7dac'
 };
 
-const ACG_GUTTER = 30; // px — širina okvira oko karte (mora se poklapati s CSS paddingom .acg-map-wrap)
+const ACG_GUTTER = 30; // px - širina okvira oko karte (mora se poklapati s CSS paddingom .acg-map-wrap)
 
 let acgMap = null;
 let acgLayerGroups = {};   // id -> L.layerGroup (linije)
-let acgEdgeLines = [];     // [{ id, color, pts:[[lat,lon]...] }] — za glif-oznake u okviru
+let acgEdgeLines = [];     // [{ id, color, pts:[[lat,lon]...] }] - za glif-oznake u okviru
 let acgEdgeOverlay = null; // div preko okvira gdje se crtaju glif-oznake
 let acgListenersBound = false;
 let acgRafPending = false;
@@ -59,7 +59,7 @@ function acgInitMap() {
   acgMap = L.map('acg-map', {
     minZoom: 2, maxZoom: 12, worldCopyJump: false,
     maxBounds: ACG_WORLD, maxBoundsViscosity: 1.0,
-    // razlomljeni zoom (ne samo cijeli brojevi) — okvir karte je puno širi nego
+    // razlomljeni zoom (ne samo cijeli brojevi) - okvir karte je puno širi nego
     // viši, a "cijeli svijet" je otprilike kvadratan; bez ovoga zaokruživanje na
     // cijeli zoom ili odsiječe polove ili ostavi ogroman prazan prostor sa strane
     zoomSnap: 0.25, zoomDelta: 0.75
@@ -75,11 +75,11 @@ function acgInitMap() {
 }
 
 /* Najveći zoom na kojem cijeli svijet (sve širine i dužine) još uvijek stane unutar
-   okvira u cijelosti (Leaflet getBoundsZoom bez "inside" — suprotno od "inside:true"
+   okvira u cijelosti (Leaflet getBoundsZoom bez "inside" - suprotno od "inside:true"
    koje bi tražilo zoom pri kojem SAM POGLED stane unutar svijeta, što kartu čini
    previše zumiranom i odsijeca polove).
    Napomena: getBoundsZoom rezultat ograničava na TRENUTNI map.getMinZoom(), pa ga
-   moramo privremeno spustiti na 0 prije računanja — inače je izračun kružno
+   moramo privremeno spustiti na 0 prije računanja - inače je izračun kružno
    ograničen na staru vrijednost i nikad ne vrati manji (odzumiraniji) zoom. */
 function acgWorldFitZoom() {
   const prevMin = acgMap.getMinZoom();
@@ -96,7 +96,7 @@ function acgFitMinZoom() {
   if (acgMap.getZoom() < z) acgMap.setView([20, 0], z);
 }
 
-/* Vrati pogled na "cijeli svijet vidljiv odjednom" — pri svakoj novoj izradi karte,
+/* Vrati pogled na "cijeli svijet vidljiv odjednom" - pri svakoj novoj izradi karte,
    bez obzira je li korisnik prije zumirao/pomicao kartu. */
 function acgResetView() {
   if (!acgMap) return;
@@ -216,24 +216,24 @@ function acgRedraw() {
     const group = L.layerGroup();
 
     if (mode === 'local') {
-      // Local Space: jedna linija (veliki krug) po planetu — smjer azimuta iz mjesta rođenja
+      // Local Space: jedna linija (veliki krug) po planetu - smjer azimuta iz mjesta rođenja
       (pl.local.lsSegments || []).forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — Local Space', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' - Local Space', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
     } else {
       const geom = pl[mode] || pl.mundo;
       // MC/IC: okomite linije (pol do pol)
-      acgDrawLine(group, [[-85, geom.mc], [85, geom.mc]], color, pl.name + ' — MC', false);
-      acgDrawLine(group, [[-85, geom.ic], [85, geom.ic]], color, pl.name + ' — IC', true);
+      acgDrawLine(group, [[-85, geom.mc], [85, geom.mc]], color, pl.name + ' - MC', false);
+      acgDrawLine(group, [[-85, geom.ic], [85, geom.ic]], color, pl.name + ' - IC', true);
       acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.mc], [85, geom.mc]] });
       acgEdgeLines.push({ id: pl.id, color, pts: [[-85, geom.ic], [85, geom.ic]] });
 
       // ASC/DSC: zakrivljene linije (segmentirane na antimeridianu)
       geom.ascSegments.forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — ASC', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' - ASC', false); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
       geom.dscSegments.forEach(seg => {
-        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' — DSC', true); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
+        if (seg.length > 1) { acgDrawLine(group, seg, color, pl.name + ' - DSC', true); acgEdgeLines.push({ id: pl.id, color, pts: seg }); }
       });
     }
 
@@ -348,7 +348,7 @@ function renderAcgResult(acg) {
 
   const title = document.getElementById('acg-chart-title');
   const sub = document.getElementById('acg-chart-sub');
-  if (title) title.textContent = acg.name ? 'Astrokartografija — ' + acg.name : 'Astrokartografija';
+  if (title) title.textContent = acg.name ? 'Astrokartografija - ' + acg.name : 'Astrokartografija';
   if (sub) sub.textContent = acg.dateV + ' · ' + acg.timeV + ' · ' + (acg.place ? acg.place.label : '');
 
   ensureLeaflet().then(() => {

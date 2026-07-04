@@ -1,4 +1,4 @@
-// Statistika izrađenih karata — SAMO admin (X-Admin-Pass). Čita samo nazive ključeva
+// Statistika izrađenih karata - SAMO admin (X-Admin-Pass). Čita samo nazive ključeva
 // (datum je u nazivu), pa ne troši po-ključ dohvate. POST {action:'reset'} briše brojač.
 
 export async function onRequestGet({ request, env }) {
@@ -6,7 +6,7 @@ export async function onRequestGet({ request, env }) {
   if (unauth) return unauth;
 
   const KV = env.NATAL_LOG;
-  if (!KV) return json({ ok: true, total: 0, last30: 0, last7: 0, note: 'KV (NATAL_LOG) nije konfiguriran — vidi CLAUDE.md za postavljanje.' }, 200);
+  if (!KV) return json({ ok: true, total: 0, last30: 0, last7: 0, note: 'KV (NATAL_LOG) nije konfiguriran - vidi CLAUDE.md za postavljanje.' }, 200);
 
   try {
     const now = Date.now();

@@ -1,4 +1,4 @@
-/* Cloudflare Pages Function — Dinamički generira Open Graph SVG sliku
+/* Cloudflare Pages Function - Dinamički generira Open Graph SVG sliku
    za blog članak: mistična ljubičasta pozadina + zvjezdice + emoji ikona
    članka + naslov i kategorija. Koristi se kao og:image kad članak nema
    uploadanu sliku. */

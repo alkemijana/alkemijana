@@ -1,11 +1,11 @@
 /* ============================================================
-   Alkemijana — ASTROCARTOGRAPHY (planetarne linije preko karte svijeta)
+   Alkemijana - ASTROCARTOGRAPHY (planetarne linije preko karte svijeta)
    Glue modul: submit, astronomski izračun linija (MC/IC/ASC/DSC po planetu).
    Ovisi o:
-     natal.js          — selectedPlace, showNatalError, loadScript
-     natal-data.js      — norm360, D2R, R2D, PLANET_DEFS, loadScript
-     natal-synastry.js  — setNatalMode (mod 'acg' već dodan ondje)
-     natal-acg-render.js — renderAcgResult (Leaflet karta + legenda)
+     natal.js          - selectedPlace, showNatalError, loadScript
+     natal-data.js      - norm360, D2R, R2D, PLANET_DEFS, loadScript
+     natal-synastry.js  - setNatalMode (mod 'acg' već dodan ondje)
+     natal-acg-render.js - renderAcgResult (Leaflet karta + legenda)
    Učitava se nakon natal-transit.js.
    ============================================================ */
 
@@ -13,11 +13,11 @@
 
 let currentAcg = null; // { name, place, lines: [{ id, name, mundo:{...}, zodio:{...} }], gastDeg, eps }
 
-/* Tijela za koje crtamo linije — klasičnih 10, bez čvorova/Lilith/Kirona
+/* Tijela za koje crtamo linije - klasičnih 10, bez čvorova/Lilith/Kirona
    (nemaju smislenu fizičku RA/Dec putanju za ACG u ovom opsegu). */
 const ACG_BODIES = PLANET_DEFS.filter(p => p.body);
 
-/* Geocentrična ekvatorijalna pozicija "od datuma" (RA/Dec u stupnjevima) —
+/* Geocentrična ekvatorijalna pozicija "od datuma" (RA/Dec u stupnjevima) -
    isti obrazac kao eclLonOfDate() u natal-calc.js, samo bez rotacije u ekliptiku. */
 function equOfDate(body, time) {
   const vec = Astronomy.GeoVector(body, time, true);
@@ -32,7 +32,7 @@ function wrapLon180(lon) {
   return x > 180 ? x - 360 : x;
 }
 
-/* Ekvatorijalne koordinate (RA/Dec, °) iz ekliptičke duljine uz latitudu 0 —
+/* Ekvatorijalne koordinate (RA/Dec, °) iz ekliptičke duljine uz latitudu 0 -
    za "Zodiaco" projekciju (planet projiciran na ekliptiku, kao u relokacijskoj karti). */
 function raDecFromEcliptic(lonDeg, epsDeg) {
   const l = lonDeg * D2R, e = epsDeg * D2R;
@@ -72,7 +72,7 @@ function computeAcgLines(raDeg, decDeg, gastDeg) {
     dscSamples.push([lat, wrapLon180(raDeg + h0 - gastDeg)]);
   }
 
-  // ubaci zajedničke krajnje točke pa poredaj po širini — tako ASC i DSC dijele krajeve
+  // ubaci zajedničke krajnje točke pa poredaj po širini - tako ASC i DSC dijele krajeve
   const asc = [...ends, ...ascSamples].sort((a, b) => a[0] - b[0]);
   const dsc = [...ends, ...dscSamples].sort((a, b) => a[0] - b[0]);
 
@@ -134,7 +134,7 @@ function computeLocalSpaceSegments(lat0, lon0, raDeg, decDeg, gastDeg) {
 }
 
 /* Razdvoji niz [lat,lon] točaka u segmente kad lon "preskoči" preko ±180°
-   (antimeridian) — inače Leaflet povuče ravnu crtu preko cijele karte.
+   (antimeridian) - inače Leaflet povuče ravnu crtu preko cijele karte.
    Na mjestu prijelaza ubacuje interpoliranu točku na točno ±180° pa oba
    segmenta dodiruju sam rub karte (bez vizualne rupe lijevo/desno). */
 function splitAntimeridian(points) {

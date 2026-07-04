@@ -1,8 +1,8 @@
 /* ============================================================
-   AlkemiJana — Admin panel
+   AlkemiJana - Admin panel
    Pristup: AlkemiJana.html#admin  (ili index.html#admin)
    Korisničko ime : jana
-   Lozinka        : (provjerava se preko /verify-pass — env var ADMIN_PASS)
+   Lozinka        : (provjerava se preko /verify-pass - env var ADMIN_PASS)
    ============================================================ */
 
 const ADMIN_USER  = 'jana';
@@ -168,8 +168,8 @@ function syncToggleBtns() {
     el.classList.toggle('is-on', on);
   };
   setItem('toggle-services-btn',      SITE_SETTINGS.showServices,     'Usluge');
-  setItem('toggle-reviews-btn',       SITE_SETTINGS.showReviews,      'Recenzije — Početna');
-  setItem('toggle-about-reviews-btn', SITE_SETTINGS.showAboutReviews, 'Recenzije — O meni');
+  setItem('toggle-reviews-btn',       SITE_SETTINGS.showReviews,      'Recenzije - Početna');
+  setItem('toggle-about-reviews-btn', SITE_SETTINGS.showAboutReviews, 'Recenzije - O meni');
 }
 
 function toggleAdminMenu() {
@@ -185,7 +185,7 @@ document.addEventListener('click', e => {
 });
 
 /* ============================================================
-   ADMIN PANEL — otvaranje / zatvaranje / tabovi
+   ADMIN PANEL - otvaranje / zatvaranje / tabovi
    ============================================================ */
 
 function openAdmin(tab) {
@@ -239,7 +239,7 @@ function buildEmojiPicker(currentIcon, onSelectFn) {
 }
 
 /* ============================================================
-   BLOG — admin lista i editor
+   BLOG - admin lista i editor
    ============================================================ */
 
 function renderBlogAdminList() {
@@ -278,7 +278,7 @@ function showPostEditor(p) {
         <input id="ed-date" value="${p ? esc(p.date) : ''}"></div>
     </div>
     <div class="af-2">
-      <div class="af"><label>Ikona — odabrana: <span id="blog-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
+      <div class="af"><label>Ikona - odabrana: <span id="blog-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
         <input id="ed-icon" value="${icon}" style="display:none">
         ${buildEmojiPicker(icon, 'selectBlogEmoji')}
       </div>
@@ -309,7 +309,7 @@ function showPostEditor(p) {
           📁 Odaberi s računala
           <input type="file" accept="image/*" style="display:none" onchange="handleBlogImageUpload(this)">
         </label>
-        <button type="button" class="ap-btn ap-btn-cancel" onclick="generateCoverFromIcon()" title="Generiraj mističnu naslovnu sliku iz odabrane ikone — radi na WhatsAppu, Facebooku, itd.">
+        <button type="button" class="ap-btn ap-btn-cancel" onclick="generateCoverFromIcon()" title="Generiraj mističnu naslovnu sliku iz odabrane ikone - radi na WhatsAppu, Facebooku, itd.">
           ✨ Generiraj iz ikone
         </button>
         <span id="img-filename" style="font-family:'Cormorant Infant',serif;color:var(--text-muted);font-size:0.9rem">
@@ -350,11 +350,11 @@ function showPostEditor(p) {
     </div>
 
     <div class="af">
-      <label>Izvori (opcionalno — pojavljuje se ispod članka samo ako napišeš)</label>
+      <label>Izvori (opcionalno - pojavljuje se ispod članka samo ako napišeš)</label>
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
         Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
       </p>
-      <textarea id="ed-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora — &quot;Naslov rada&quot;, Časopis, 2024.">${p && p.sources ? esc(p.sources) : ''}</textarea>
+      <textarea id="ed-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora - &quot;Naslov rada&quot;, Časopis, 2024.">${p && p.sources ? esc(p.sources) : ''}</textarea>
     </div>
 
     <div class="af" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(6,8,15,0.3);border:1px solid var(--border)">
@@ -441,7 +441,7 @@ async function handleBlogImageUpload(input) {
     document.getElementById('img-prev').style.display = 'block';
     document.getElementById('img-filename').textContent = '✅ ' + file.name;
   } catch(e) {
-    document.getElementById('img-filename').textContent = '❌ Greška — pokušaj ponovo';
+    document.getElementById('img-filename').textContent = '❌ Greška - pokušaj ponovo';
   }
 }
 
@@ -477,7 +477,7 @@ function restoreEditorSelection(edId) {
   if (!ed) return false;
   ed.focus();
   if (!_savedEditorRange) {
-    // Nije bilo kursora u editoru — stavi na kraj
+    // Nije bilo kursora u editoru - stavi na kraj
     const range = document.createRange();
     range.selectNodeContents(ed);
     range.collapse(false);
@@ -492,7 +492,7 @@ function restoreEditorSelection(edId) {
   return true;
 }
 
-/* Ubaci sliku u tijelo članka — uploada na ImgBB i umetne <img> točno na
+/* Ubaci sliku u tijelo članka - uploada na ImgBB i umetne <img> točno na
    mjestu gdje je kursor bio kad je user kliknuo gumb. */
 async function insertImageInContent(input, edId) {
   const file = input.files[0];
@@ -521,7 +521,7 @@ async function insertImageInContent(input, edId) {
 /* Generira mističnu PNG naslovnu sliku iz odabrane ikone + naslova članka.
    Renderira se na canvasu u browseru (besplatno, neograničeno), uploada na
    ImgBB i URL ide u članak. Dobiveni PNG radi kao OG preview na WhatsAppu,
-   Facebooku, Instagramu — svuda gdje SVG previewi ne rade pouzdano. */
+   Facebooku, Instagramu - svuda gdje SVG previewi ne rade pouzdano. */
 async function generateCoverFromIcon() {
   const icon  = (document.getElementById('ed-icon').value  || '✦').trim();
   const title = (document.getElementById('ed-title').value || 'Alkemijana').trim();
@@ -549,11 +549,11 @@ async function generateCoverFromIcon() {
     filenameEl.textContent = '✅ Slika generirana iz ikone';
   } catch (e) {
     console.error(e);
-    filenameEl.textContent = '❌ Greška pri generiranju — pokušaj ponovo';
+    filenameEl.textContent = '❌ Greška pri generiranju - pokušaj ponovo';
   }
 }
 
-/* Dohvati Apple-stil emoji sliku s emojicdn.elk.sh — radi za sve emoji unicode.
+/* Dohvati Apple-stil emoji sliku s emojicdn.elk.sh - radi za sve emoji unicode.
    Vraća HTMLImageElement koji se može nacrtati na canvas. */
 function loadAppleEmojiImage(emoji) {
   return new Promise((resolve, reject) => {
@@ -700,7 +700,7 @@ function cancelPostEdit() {
     '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi članak za uređivanje ili dodaj novi.</p>';
 }
 
-/* Rich-text toolbar naredbe — edId je id contenteditable elementa;
+/* Rich-text toolbar naredbe - edId je id contenteditable elementa;
    default 'blog-content-ed' (blog), a vodiči šalju 'guide-content-ed'. */
 function eCmd(cmd, edId) {
   document.getElementById(edId || 'blog-content-ed').focus();
@@ -726,7 +726,7 @@ function sanitizeContentHtml(html) {
   tmp.innerHTML = html;
 
   const allowedTags = new Set(['P','H2','H3','H4','STRONG','B','EM','I','U','BR','BLOCKQUOTE','FIGURE','IMG','A','UL','OL','LI','DIV','SPAN']);
-  // Per-tag whitelist atributa — sve ostalo (uključujući on* event handleri) se briše
+  // Per-tag whitelist atributa - sve ostalo (uključujući on* event handleri) se briše
   const allowedAttrs = {
     A:      ['href','title','target','rel'],
     IMG:    ['src','alt','title','width','height'],
@@ -740,7 +740,7 @@ function sanitizeContentHtml(html) {
   const safeUrl = (val, kind) => {
     if (!val) return false;
     const raw = String(val).toLowerCase();
-    // Ukloni sve kontrolne znakove i whitespace prije provjere — sprječava
+    // Ukloni sve kontrolne znakove i whitespace prije provjere - sprječava
     // bypass tipa "java[tab]script:" ili "java script:"
     let clean = '';
     for (let i = 0; i < raw.length; i++) {
@@ -807,7 +807,7 @@ function sanitizeContentHtml(html) {
           child.removeAttribute('style');
         }
       }
-      // SPAN bez stila je suvišan — unwrap
+      // SPAN bez stila je suvišan - unwrap
       if (tag === 'SPAN' && !child.hasAttribute('style')) {
         while (child.firstChild) child.parentNode.insertBefore(child.firstChild, child);
         child.parentNode.removeChild(child);
@@ -820,7 +820,7 @@ function sanitizeContentHtml(html) {
   return tmp.innerHTML;
 }
 
-/* Paste handler — ubaci samo plain text (ili minimalno očišćen HTML),
+/* Paste handler - ubaci samo plain text (ili minimalno očišćen HTML),
    bez Word/Docs inline stilova. */
 function handleEditorPaste(e) {
   e.preventDefault();
@@ -891,8 +891,8 @@ function deletePost(id) {
 }
 
 /* ============================================================
-   UPUTE ZA ALATE — vodiči na stranici Astro alati (iznad FAQ-a)
-   Fiksna 4 vodiča (po jedan za svaki alat) — uređuju se kao blog
+   UPUTE ZA ALATE - vodiči na stranici Astro alati (iznad FAQ-a)
+   Fiksna 4 vodiča (po jedan za svaki alat) - uređuju se kao blog
    članci (isti rich-text editor), arhiviranje ih skriva sa stranice.
    Ne mogu se dodavati ni brisati (svaki alat ima točno jedan vodič).
    ============================================================ */
@@ -938,12 +938,12 @@ function showGuideEditor(g) {
   const icon = g.icon || '✦';
 
   document.getElementById('guide-editor-col').innerHTML = `
-    <h3>Upute — ${esc(GUIDE_MODE_LABELS[g.mode] || g.mode)}</h3>
+    <h3>Upute - ${esc(GUIDE_MODE_LABELS[g.mode] || g.mode)}</h3>
 
     <div class="af"><label>Naslov vodiča</label>
       <input id="gd-title" value="${esc(g.title)}"></div>
 
-    <div class="af"><label>Ikona — odabrana: <span id="guide-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
+    <div class="af"><label>Ikona - odabrana: <span id="guide-icon-preview" style="font-size:1.3rem;vertical-align:middle">${icon}</span></label>
       <input id="gd-icon" value="${esc(icon)}" style="display:none">
       ${buildEmojiPicker(icon, 'selectGuideEmoji')}
     </div>
@@ -975,11 +975,11 @@ function showGuideEditor(g) {
     </div>
 
     <div class="af">
-      <label>Izvori (opcionalno — pojavljuju se ispod vodiča)</label>
+      <label>Izvori (opcionalno - pojavljuju se ispod vodiča)</label>
       <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
         Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
       </p>
-      <textarea id="gd-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora — &quot;Naslov rada&quot;, Izdavač, 2024.">${esc(g.sources || '')}</textarea>
+      <textarea id="gd-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora - &quot;Naslov rada&quot;, Izdavač, 2024.">${esc(g.sources || '')}</textarea>
     </div>
 
     <div class="af" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(6,8,15,0.3);border:1px solid var(--border)">
@@ -1102,7 +1102,7 @@ function showServiceEditor(s) {
       </div>
     </div>
     <div class="af">
-      <label>Ikona — odabrana: <span id="svc-icon-preview" style="font-size:1.4rem;vertical-align:middle">${icon}</span></label>
+      <label>Ikona - odabrana: <span id="svc-icon-preview" style="font-size:1.4rem;vertical-align:middle">${icon}</span></label>
       <input id="svc-icon-input" value="${icon}" style="display:none">
       ${buildEmojiPicker(icon, 'selectSvcEmoji')}
     </div>
@@ -1210,7 +1210,7 @@ function renderReviewsAdmin() {
   document.getElementById('rev-admin-list').innerHTML = REVIEWS.map(r => `
     <div class="bpi ${editingRevId === r.id ? 'sel' : ''} ${r.archived ? 'archived-item' : ''}"
       onclick="loadReviewEditor('${r.id}')">
-      <div class="bpi-t">${r.archived ? '🗄 ' : ''}${r.author}${r.location ? ' — ' + r.location : ''}</div>
+      <div class="bpi-t">${r.archived ? '🗄 ' : ''}${r.author}${r.location ? ' - ' + r.location : ''}</div>
       <div class="bpi-m">${r.section === 'home' ? 'Početna' : 'O meni'}</div>
     </div>`
   ).join('');
@@ -1309,7 +1309,7 @@ function deleteReview(id) {
 }
 
 /* ============================================================
-   NATALNE KARTE — anoniman brojač izrada (samo admin, KV)
+   NATALNE KARTE - anoniman brojač izrada (samo admin, KV)
    ============================================================ */
 
 async function loadNatalLog() {
@@ -1318,11 +1318,11 @@ async function loadNatalLog() {
   el.innerHTML = '<p style="color:var(--text-muted);font-style:italic;text-align:center;padding:2rem">Učitavam…</p>';
 
   const pass = sessionStorage.getItem('aj_pass') || '';
-  if (!pass) { el.innerHTML = '<p style="color:var(--text-muted)">Sesija je istekla — prijavi se ponovo.</p>'; return; }
+  if (!pass) { el.innerHTML = '<p style="color:var(--text-muted)">Sesija je istekla - prijavi se ponovo.</p>'; return; }
 
   try {
     const res = await fetch('/natal-log?cb=' + Date.now(), { headers: { 'X-Admin-Pass': pass } });
-    if (res.status === 403) { sessionStorage.removeItem('aj_pass'); el.innerHTML = '<p style="color:#c08090">Pogrešna lozinka — prijavi se ponovo.</p>'; return; }
+    if (res.status === 403) { sessionStorage.removeItem('aj_pass'); el.innerHTML = '<p style="color:#c08090">Pogrešna lozinka - prijavi se ponovo.</p>'; return; }
     const data = await res.json();
     if (!data.ok) { el.innerHTML = '<p style="color:#c08090">Greška: ' + esc(data.error || 'nepoznata') + '</p>'; return; }
 
@@ -1454,7 +1454,7 @@ async function loadStats() {
 
     // === BLOK 5: Info kartica ===
     html += `<div style="background:rgba(168,144,208,0.05);border:1px solid var(--border);padding:1.2rem;font-family:'Cormorant Garamond',serif;color:var(--text-muted);font-size:0.95rem;line-height:1.6;font-style:italic">
-      💡 Posjete se bilježe automatski preko GoatCounter analitike (bez kolačića). Brojevi se ažuriraju jednom dnevno. Za detaljniji pregled — geografska lokacija posjetitelja, izvori prometa, uređaji — koristi gumb ispod.
+      💡 Posjete se bilježe automatski preko GoatCounter analitike (bez kolačića). Brojevi se ažuriraju jednom dnevno. Za detaljniji pregled - geografska lokacija posjetitelja, izvori prometa, uređaji - koristi gumb ispod.
     </div>`;
 
     el.innerHTML = html;
@@ -1502,7 +1502,7 @@ function getDateStr(daysOffset) {
    TEKSTOVI
    ============================================================ */
 
-/* Tekstovi grupirani po sekciji stranice — lakše za pronaći u admin panelu.
+/* Tekstovi grupirani po sekciji stranice - lakše za pronaći u admin panelu.
    Svaki ključ mora postojati i u TEXTS (data.js) i u applyTexts() (app.js). */
 const TEXT_GROUPS = [
   {
@@ -1519,18 +1519,18 @@ const TEXT_GROUPS = [
   {
     title: 'Početna',
     keys: {
-      heroSub:          'Hero — podnaslov',
-      heroDesc:         'Hero — opis',
-      servicesTitle:    'Usluge — naslov',
-      servicesSub:      'Usluge — podnaslov',
-      ctaTitle:         'CTA — naslov',
-      ctaText:          'CTA — tekst',
-      ctaBtn:           'CTA — gumb',
-      reviewsTitle:     'Recenzije — naslov',
-      reviewsSub:       'Recenzije — podnaslov',
-      blogPreviewTitle: 'Blog pregled — naslov',
-      blogPreviewSub:   'Blog pregled — podnaslov',
-      blogPreviewBtn:   'Blog pregled — gumb'
+      heroSub:          'Hero - podnaslov',
+      heroDesc:         'Hero - opis',
+      servicesTitle:    'Usluge - naslov',
+      servicesSub:      'Usluge - podnaslov',
+      ctaTitle:         'CTA - naslov',
+      ctaText:          'CTA - tekst',
+      ctaBtn:           'CTA - gumb',
+      reviewsTitle:     'Recenzije - naslov',
+      reviewsSub:       'Recenzije - podnaslov',
+      blogPreviewTitle: 'Blog pregled - naslov',
+      blogPreviewSub:   'Blog pregled - podnaslov',
+      blogPreviewBtn:   'Blog pregled - gumb'
     }
   },
   {
@@ -1538,11 +1538,11 @@ const TEXT_GROUPS = [
     keys: {
       servicesPageTitle: 'Naslov stranice',
       servicesPageSub:   'Podnaslov stranice',
-      pricingTitle:      'Cjenik — naslov',
-      pricingSub:        'Cjenik — podnaslov',
-      servicesCtaTitle:  'CTA — naslov',
-      servicesCtaText:   'CTA — tekst',
-      servicesCtaBtn:    'CTA — gumb'
+      pricingTitle:      'Cjenik - naslov',
+      pricingSub:        'Cjenik - podnaslov',
+      servicesCtaTitle:  'CTA - naslov',
+      servicesCtaText:   'CTA - tekst',
+      servicesCtaBtn:    'CTA - gumb'
     }
   },
   {
@@ -1555,19 +1555,19 @@ const TEXT_GROUPS = [
       aboutP4:           'Odlomak 4',
       aboutQuote:        'Citat (između odlomaka)',
       aboutP5:           'Odlomak 5 (nakon citata)',
-      aboutReviewsTitle: 'Recenzije — naslov'
+      aboutReviewsTitle: 'Recenzije - naslov'
     }
   },
   {
     title: 'Moja filozofija',
     keys: {
       philosophyTitle:      'Naslov sekcije',
-      valueDiscretionTitle: 'Vrijednost 1 — naslov',
-      valueDiscretionText:  'Vrijednost 1 — opis',
-      valueHonestyTitle:    'Vrijednost 2 — naslov',
-      valueHonestyText:     'Vrijednost 2 — opis',
-      valueFreedomTitle:    'Vrijednost 3 — naslov',
-      valueFreedomText:     'Vrijednost 3 — opis'
+      valueDiscretionTitle: 'Vrijednost 1 - naslov',
+      valueDiscretionText:  'Vrijednost 1 - opis',
+      valueHonestyTitle:    'Vrijednost 2 - naslov',
+      valueHonestyText:     'Vrijednost 2 - opis',
+      valueFreedomTitle:    'Vrijednost 3 - naslov',
+      valueFreedomText:     'Vrijednost 3 - opis'
     }
   },
   {
@@ -1576,68 +1576,68 @@ const TEXT_GROUPS = [
       blogPageTitle:        'Naslov stranice',
       blogPageSub:          'Podnaslov stranice',
       relatedTitle:         '"Možda će ti se svidjeti" naslov',
-      blogSearchPlaceholder: 'Tražilica — placeholder',
+      blogSearchPlaceholder: 'Tražilica - placeholder',
       blogBackBtn:          'Gumb "Povratak na blog"',
       blogSourcesTitle:     'Naslov "Izvori"'
     }
   },
   {
-    title: 'Astro alati — stranica i forma',
+    title: 'Astro alati - stranica i forma',
     keys: {
       natalPageTitle:    'Naslov stranice',
       natalPageSub:      'Podnaslov stranice',
       natalBtn:          'Gumb za izračun',
       natalNote:         'Napomena ispod gumba',
-      natalPosterTitle:  'Poster kartica — naslov',
-      natalPosterText:   'Poster kartica — opis',
-      natalPosterBtn:    'Poster kartica — gumb',
-      natalWorkingTitle: 'Radna verzija — naslov',
-      natalWorkingText:  'Radna verzija — opis',
-      natalWorkingBtn:   'Radna verzija — gumb',
-      natalPerson1Label: 'Forma — naslov "Prva osoba"',
-      natalPerson2Label: 'Forma — naslov "Druga osoba" (sinastrija)',
-      natalNameLabel:    'Forma — Ime (oznaka)',
-      natalNamePlaceholder: 'Forma — Ime (placeholder)',
-      natalPlaceLabel:   'Forma — Mjesto rođenja (oznaka)',
-      natalPlacePlaceholder: 'Forma — Mjesto rođenja (placeholder)',
-      natalDateLabel:    'Forma — Datum rođenja',
-      natalTimeLabel:    'Forma — Vrijeme rođenja',
-      natalNoTimeLabel:  'Forma — "Ne znam vrijeme rođenja"',
-      natalNodeLabel:    'Forma — "Mjesečev čvor:"',
-      natalNodeTrue:     'Forma — čvor "Pravi"',
-      natalNodeMean:     'Forma — čvor "Srednji"'
+      natalPosterTitle:  'Poster kartica - naslov',
+      natalPosterText:   'Poster kartica - opis',
+      natalPosterBtn:    'Poster kartica - gumb',
+      natalWorkingTitle: 'Radna verzija - naslov',
+      natalWorkingText:  'Radna verzija - opis',
+      natalWorkingBtn:   'Radna verzija - gumb',
+      natalPerson1Label: 'Forma - naslov "Prva osoba"',
+      natalPerson2Label: 'Forma - naslov "Druga osoba" (sinastrija)',
+      natalNameLabel:    'Forma - Ime (oznaka)',
+      natalNamePlaceholder: 'Forma - Ime (placeholder)',
+      natalPlaceLabel:   'Forma - Mjesto rođenja (oznaka)',
+      natalPlacePlaceholder: 'Forma - Mjesto rođenja (placeholder)',
+      natalDateLabel:    'Forma - Datum rođenja',
+      natalTimeLabel:    'Forma - Vrijeme rođenja',
+      natalNoTimeLabel:  'Forma - "Ne znam vrijeme rođenja"',
+      natalNodeLabel:    'Forma - "Mjesečev čvor:"',
+      natalNodeTrue:     'Forma - čvor "Pravi"',
+      natalNodeMean:     'Forma - čvor "Srednji"'
     }
   },
   {
-    title: 'Astro alati — kartice (iznad forme)',
+    title: 'Astro alati - kartice (iznad forme)',
     keys: {
-      toolCardNatalTitle:    'Natalna karta — naslov',
-      toolCardNatalDesc:     'Natalna karta — opis',
-      toolCardSynastryTitle: 'Sinastrija — naslov',
-      toolCardSynastryDesc:  'Sinastrija — opis',
-      toolCardTransitTitle:  'Tranziti — naslov',
-      toolCardTransitDesc:   'Tranziti — opis',
-      toolCardAcgTitle:      'Astrokartografija — naslov',
-      toolCardAcgDesc:       'Astrokartografija — opis'
+      toolCardNatalTitle:    'Natalna karta - naslov',
+      toolCardNatalDesc:     'Natalna karta - opis',
+      toolCardSynastryTitle: 'Sinastrija - naslov',
+      toolCardSynastryDesc:  'Sinastrija - opis',
+      toolCardTransitTitle:  'Tranziti - naslov',
+      toolCardTransitDesc:   'Tranziti - opis',
+      toolCardAcgTitle:      'Astrokartografija - naslov',
+      toolCardAcgDesc:       'Astrokartografija - opis'
     }
   },
   {
-    title: 'Astro alati — prekidač modova (hint i gumb po alatu)',
+    title: 'Astro alati - prekidač modova (hint i gumb po alatu)',
     keys: {
-      natalModeNatal:    'Prekidač — "Natalna karta"',
-      natalModeSynastry: 'Prekidač — "Sinastrija"',
-      natalModeTransit:  'Prekidač — "Tranziti"',
-      natalModeAcg:      'Prekidač — "Astrokartografija"',
-      natalHintSynastry: 'Hint ispod prekidača — Sinastrija',
-      natalHintTransit:  'Hint ispod prekidača — Tranziti',
-      natalHintAcg:      'Hint ispod prekidača — Astrokartografija',
-      natalBtnSynastry:  'Gumb za izračun — Sinastrija',
-      natalBtnTransit:   'Gumb za izračun — Tranziti',
-      natalBtnAcg:       'Gumb za izračun — Astrokartografija'
+      natalModeNatal:    'Prekidač - "Natalna karta"',
+      natalModeSynastry: 'Prekidač - "Sinastrija"',
+      natalModeTransit:  'Prekidač - "Tranziti"',
+      natalModeAcg:      'Prekidač - "Astrokartografija"',
+      natalHintSynastry: 'Hint ispod prekidača - Sinastrija',
+      natalHintTransit:  'Hint ispod prekidača - Tranziti',
+      natalHintAcg:      'Hint ispod prekidača - Astrokartografija',
+      natalBtnSynastry:  'Gumb za izračun - Sinastrija',
+      natalBtnTransit:   'Gumb za izračun - Tranziti',
+      natalBtnAcg:       'Gumb za izračun - Astrokartografija'
     }
   },
   {
-    title: 'Astro alati — Upute za korištenje (sadržaj vodiča uređuješ u tabu "Upute za alate")',
+    title: 'Astro alati - Upute za korištenje (sadržaj vodiča uređuješ u tabu "Upute za alate")',
     keys: {
       natalGuideReadTime:   'Oznaka "Vrijeme čitanja"',
       natalGuideOpenLabel:  'Tekst za otvaranje vodiča',
@@ -1645,39 +1645,39 @@ const TEXT_GROUPS = [
     }
   },
   {
-    title: 'Astro alati — Česta pitanja (FAQ, do 15; prazno pitanje se ne prikazuje)',
+    title: 'Astro alati - Česta pitanja (FAQ, do 15; prazno pitanje se ne prikazuje)',
     keys: {
       natalFaqTitle: 'Naslov FAQ sekcije',
-      natalFaqQ1:    '1 — Pitanje',
-      natalFaqA1:    '1 — Odgovor',
-      natalFaqQ2:    '2 — Pitanje',
-      natalFaqA2:    '2 — Odgovor',
-      natalFaqQ3:    '3 — Pitanje',
-      natalFaqA3:    '3 — Odgovor',
-      natalFaqQ4:    '4 — Pitanje',
-      natalFaqA4:    '4 — Odgovor',
-      natalFaqQ5:    '5 — Pitanje',
-      natalFaqA5:    '5 — Odgovor',
-      natalFaqQ6:    '6 — Pitanje',
-      natalFaqA6:    '6 — Odgovor',
-      natalFaqQ7:    '7 — Pitanje',
-      natalFaqA7:    '7 — Odgovor',
-      natalFaqQ8:    '8 — Pitanje',
-      natalFaqA8:    '8 — Odgovor',
-      natalFaqQ9:    '9 — Pitanje',
-      natalFaqA9:    '9 — Odgovor',
-      natalFaqQ10:   '10 — Pitanje',
-      natalFaqA10:   '10 — Odgovor',
-      natalFaqQ11:   '11 — Pitanje',
-      natalFaqA11:   '11 — Odgovor',
-      natalFaqQ12:   '12 — Pitanje',
-      natalFaqA12:   '12 — Odgovor',
-      natalFaqQ13:   '13 — Pitanje',
-      natalFaqA13:   '13 — Odgovor',
-      natalFaqQ14:   '14 — Pitanje (prazno = ne prikazuje se)',
-      natalFaqA14:   '14 — Odgovor',
-      natalFaqQ15:   '15 — Pitanje (prazno = ne prikazuje se)',
-      natalFaqA15:   '15 — Odgovor'
+      natalFaqQ1:    '1 - Pitanje',
+      natalFaqA1:    '1 - Odgovor',
+      natalFaqQ2:    '2 - Pitanje',
+      natalFaqA2:    '2 - Odgovor',
+      natalFaqQ3:    '3 - Pitanje',
+      natalFaqA3:    '3 - Odgovor',
+      natalFaqQ4:    '4 - Pitanje',
+      natalFaqA4:    '4 - Odgovor',
+      natalFaqQ5:    '5 - Pitanje',
+      natalFaqA5:    '5 - Odgovor',
+      natalFaqQ6:    '6 - Pitanje',
+      natalFaqA6:    '6 - Odgovor',
+      natalFaqQ7:    '7 - Pitanje',
+      natalFaqA7:    '7 - Odgovor',
+      natalFaqQ8:    '8 - Pitanje',
+      natalFaqA8:    '8 - Odgovor',
+      natalFaqQ9:    '9 - Pitanje',
+      natalFaqA9:    '9 - Odgovor',
+      natalFaqQ10:   '10 - Pitanje',
+      natalFaqA10:   '10 - Odgovor',
+      natalFaqQ11:   '11 - Pitanje',
+      natalFaqA11:   '11 - Odgovor',
+      natalFaqQ12:   '12 - Pitanje',
+      natalFaqA12:   '12 - Odgovor',
+      natalFaqQ13:   '13 - Pitanje',
+      natalFaqA13:   '13 - Odgovor',
+      natalFaqQ14:   '14 - Pitanje (prazno = ne prikazuje se)',
+      natalFaqA14:   '14 - Odgovor',
+      natalFaqQ15:   '15 - Pitanje (prazno = ne prikazuje se)',
+      natalFaqA15:   '15 - Odgovor'
     }
   },
   {
@@ -1685,22 +1685,22 @@ const TEXT_GROUPS = [
     keys: {
       contactTitle:         'Naslov',
       contactSub:           'Podnaslov',
-      contactEmailLabel:    'Oznaka — Email',
-      contactPhoneLabel:    'Oznaka — Telefon',
-      contactLocationLabel: 'Oznaka — Lokacija',
-      contactLocationValue: 'Lokacija — vrijednost',
-      contactLocationNote:  'Lokacija — napomena (sitno)',
-      contactFollowLabel:   'Oznaka — Pratite me',
-      formNameLabel:        'Forma — Ime i prezime',
-      formEmailLabel:       'Forma — Email',
-      formPhoneLabel:       'Forma — Telefon',
-      formServiceLabel:     'Forma — Usluga (oznaka)',
-      formServicePlaceholder: 'Forma — Usluga (prazna opcija)',
-      formMessageLabel:     'Forma — Poruka (oznaka)',
-      formMessagePlaceholder: 'Forma — Poruka (placeholder)',
-      formSubmitBtn:        'Forma — gumb za slanje',
-      formSuccessTitle:     'Poruka uspjeha — naslov',
-      formSuccessText:      'Poruka uspjeha — tekst'
+      contactEmailLabel:    'Oznaka - Email',
+      contactPhoneLabel:    'Oznaka - Telefon',
+      contactLocationLabel: 'Oznaka - Lokacija',
+      contactLocationValue: 'Lokacija - vrijednost',
+      contactLocationNote:  'Lokacija - napomena (sitno)',
+      contactFollowLabel:   'Oznaka - Pratite me',
+      formNameLabel:        'Forma - Ime i prezime',
+      formEmailLabel:       'Forma - Email',
+      formPhoneLabel:       'Forma - Telefon',
+      formServiceLabel:     'Forma - Usluga (oznaka)',
+      formServicePlaceholder: 'Forma - Usluga (prazna opcija)',
+      formMessageLabel:     'Forma - Poruka (oznaka)',
+      formMessagePlaceholder: 'Forma - Poruka (placeholder)',
+      formSubmitBtn:        'Forma - gumb za slanje',
+      formSuccessTitle:     'Poruka uspjeha - naslov',
+      formSuccessText:      'Poruka uspjeha - tekst'
     }
   },
   {
@@ -1755,7 +1755,7 @@ function saveTexts() {
 /* ============================================================
    TAB: Tarot karte (nazivi + značenja uspravno/obrnuto, po špilu)
    Podaci žive u TAROT_CARD_TEXTS (data.js) da mogu ići kroz isti
-   auto-save mehanizam kao ostatak stranice — tarot/ modul ih samo čita.
+   auto-save mehanizam kao ostatak stranice - tarot/ modul ih samo čita.
    ============================================================ */
 let tarotAdminDeck = 'rws';
 
@@ -1782,14 +1782,18 @@ function renderTarotAdminList() {
     const name = saved.name != null ? saved.name : c.name;
     const upright = saved.upright || '';
     const reversed = saved.reversed || '';
+    const yesno = saved.yesno || '';
     const img = `tarot/assets/decks/${deck.folder}/${c.id}.${deck.ext}`;
+    const ynOpt = v => `<option value="${v}"${yesno === v ? ' selected' : ''}>${v || '(bez odgovora)'}</option>`;
     return `
       <div class="tarot-admin-card" data-card="${c.id}">
         <img src="${img}" alt="${esc(name)}" loading="lazy">
         <div class="tarot-admin-fields">
           <div class="af"><label>Naziv</label><input class="tarot-f-name" value="${esc(name)}"></div>
-          <div class="af"><label>Značenje — uspravno</label><textarea class="tarot-f-upright" rows="3">${esc(upright)}</textarea></div>
-          <div class="af"><label>Značenje — obrnuto</label><textarea class="tarot-f-reversed" rows="3">${esc(reversed)}</textarea></div>
+          <div class="af"><label>Odgovor karte (DA / NE / MOŽDA)</label>
+            <select class="tarot-f-yesno">${ynOpt('')}${ynOpt('DA')}${ynOpt('NE')}${ynOpt('MOŽDA')}</select></div>
+          <div class="af"><label>Značenje - uspravno</label><textarea class="tarot-f-upright" rows="3">${esc(upright)}</textarea></div>
+          <div class="af"><label>Značenje - obrnuto</label><textarea class="tarot-f-reversed" rows="3">${esc(reversed)}</textarea></div>
         </div>
       </div>`;
   }).join('');
@@ -1804,6 +1808,7 @@ function collectTarotAdminFields() {
     const id = el.dataset.card;
     TAROT_CARD_TEXTS[deckId][id] = {
       name: el.querySelector('.tarot-f-name').value.trim(),
+      yesno: el.querySelector('.tarot-f-yesno').value,
       upright: el.querySelector('.tarot-f-upright').value.trim(),
       reversed: el.querySelector('.tarot-f-reversed').value.trim()
     };
@@ -1868,7 +1873,7 @@ async function downloadSite() {
   const tarotTextsJson = JSON.stringify(TAROT_CARD_TEXTS, null, 2);
 
   const content = `/* ============================================================
-   AlkemiJana — Podaci
+   AlkemiJana - Podaci
    ============================================================ */
 
 // ===ALKEMIJANA:BLOG_POSTS:START===
@@ -1932,7 +1937,7 @@ let TAROT_CARD_TEXTS = ${tarotTextsJson};
       alert('✅ Spremljeno! Stranica se automatski ažurira za ~30 sekundi.');
     } else if (res.status === 403) {
       sessionStorage.removeItem('aj_pass');
-      alert('❌ Pogrešna lozinka — prijavi se ponovo.');
+      alert('❌ Pogrešna lozinka - prijavi se ponovo.');
     } else {
       alert('❌ Greška: ' + (data.error || 'Nepoznata greška'));
     }

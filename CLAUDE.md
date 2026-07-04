@@ -358,7 +358,9 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   (`free:true` — neograničeno karata, teku u redovima, prvi u izborniku, stol dobiva vlastiti
   scroll umjesto da raste u beskonačnost — v. `.vtar-table-scroll`; svaki špil u lijevoj traci
   dobiva dodatni gumb **"▤ Izvuci sve"** koji `handleDrawAllClick` izvlači preostale karte tog
-  špila jednu po jednu uz mali stagger (90ms) — kaskadna animacija; svako izvlačenje u free
+  špila jednu po jednu uz mali stagger (90ms) — kaskadna animacija; prije izvlačenja pozove
+  `engine.sortRemaining(deckId)` pa karte izlaze **kanonskim redom** (velika arkana 0–21, pa
+  štapovi/pehari/mačevi/pentakli: As, 2–10, Paž, Vitez, Kraljica, Kralj); svako izvlačenje u free
   modu zove `scrollTableToBottom()` koje `.vtar-table` glatko scrolla do dna da se novododana
   karta uvijek vidi) + Jedna karta, Dva izbora,
   Tri karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre, Godina pred
@@ -367,11 +369,12 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   `tarotCirclePositions` helper). `rot` (Keltski križ, karta 2) rotira karticu 90° — **rotira
   se sam `.vtar-cardbox` (kontejner), ne samo naknadno izvučena karta**, pa se "križanje"
   vidi već na praznom placeholderu prije izvlačenja. `label`/`meaning` = kratke HR oznake
-  pozicije — prikazuju se i kao `.vtar-caption` ISPOD svake karte na stolu (uz prekidač
-  „Značenja") I u legendi ispod stola. Iznimka: karta koja križa (`rot`) NEMA caption ispod
-  (isto je središte kao karta 1 pa bi se dvije oznake preklopile) — ostaje samo u legendi.
-  Caption je ograničen širinom ćelije (`--vtar-cellw`) pa se ne preklapa sa susjedima;
-  `computeLayout` rezervira visinu za caption (`capH`) kad su značenja uključena.
+  pozicije. `.vtar-caption` ISPOD karte prikazuje **SAMO `label`** (jedan red, elipsa, puni
+  `label - meaning` u `title` atributu) — puni opisi su SAMO u legendi ispod stola. Tako
+  caption nikad ne može prerasti rezervirani red i preklopiti karte ispod, a `computeLayout`
+  rezervira samo fiksnih `capH=20px` pa su karte veće. Iznimka: karta koja križa (`rot`)
+  NEMA caption ispod (isto je središte kao karta 1 pa bi se dvije oznake preklopile) —
+  ostaje samo u legendi. Caption je ograničen širinom ćelije (`--vtar-cellw`).
 - **Bounding-box layout (`computeLayout` u render, NE koristi deklarirani `cols`/`rows`
   izravno):** izračuna stvarni "otisak" (min/max `gx`/`gy`) korištenih pozicija i skalira
   karte na TAJ prostor, ne na deklarirani grid — spreadovi s puno praznog prostora u gridu
@@ -389,11 +392,14 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   placeholder pokazuje samo broj pozicije u sredini (`.vtar-slot-num`).
 - **Klik na kartu → fokus (uvećanje + značenje):** klik na izvučenu karticu otvara `.vtar-focus`
   — modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća, s nazivom ispod i
-  **značenjem DESNO od karte na desktopu / ISPOD na mobitelu** (`.vtar-focus-inner` je flex-row,
-  postaje flex-column ispod 760px). Značenje se čita iz `TAROT_CARD_TEXTS[deckId][cardId]` —
-  `upright` ili `reversed` ovisno o orijentaciji karte. **Ako je tekst prazan (trenutno cijeli
-  Marseille špil dok ga admin ne popuni), panel sa značenjem se jednostavno ne prikaže**
-  (`.vtar-focus-no-meaning` klasa sakriva `.vtar-focus-meaning`) — nema placeholder poruke.
+  **panelom DESNO od karte na desktopu / ISPOD na mobitelu** (`.vtar-focus-inner` je flex-row,
+  postaje flex-column ispod 760px; `margin:auto` na inner omogućuje scroll s vrha kad je
+  sadržaj viši od zaslona). Panel prikazuje **UVIJEK OBA značenja** (uspravno i obrnuto) iz
+  `TAROT_CARD_TEXTS[deckId][cardId]` — blok koji odgovara orijentaciji izvučene karte je
+  **uokviren** (`.vtar-focus-m-active`, lavender okvir + "· izvučeno" u labelu), drugi je
+  prigušen. Iznad značenja je **"Odgovor karte" DA/NE/MOŽDA chip** (`text.yesno`,
+  `.vtar-yn-da/-ne/-mozda` boje). Prazna polja se preskaču (Marseille bez tekstova pokazuje
+  samo yesno chip); ako nema NIČEGA, panel se ne prikaže (`.vtar-focus-no-meaning`).
   Klik bilo gdje na overlay ju zatvara. `position:fixed` (ne absolute unutar stola) je namjeran
   jer pouzdano radi i kad stol scrolla (free spread), u fullscreenu i na mobitelu. Hover na
   karticu je samo suptilan podizaj (`translateY`), ne veliko uvećanje — glavni "zoom" je
@@ -414,18 +420,30 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   auto`, stol `flex:1 1 auto` (uzima sav preostali prostor), a legenda `flex:0 1 auto` s
   vlastitim `max-height:20vh; overflow-y:auto` — tako se toolbar+stol+legenda UVIJEK uklope u
   zaslon bez obzira na omjer/veličinu monitora, legenda se sama scrolla umjesto da izgura stol
-  van. Relayout preko istog `ResizeObserver` (ne posebna `fullscreenchange` logika za veličine).
-  Skriven na mobitelu (`@media max-width:900px`).
-- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** fiksni spreadovi
-  postaju jednostavan vertikalan popis; free i dalje teče. Render bira granu
-  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`. Dodatno,
-  **fiksna alatna traka na dnu zaslona** (`.vtar-mobile-drawbar`, `position:fixed`) s gumbom
-  po uključenom špilu za izvlačenje bez scrollanja do vrha — automatski nestaje na drugim
-  stranicama jer je `#tarot section.page:not(.active)` cijela `display:none` (nije trebao
-  poseban JS za sakrivanje).
+  van. Uz to `.vtar-fs .vtar-layout` ima `overflow:hidden` a `.vtar-fs .vtar-rail`
+  `overflow-y:auto` — s dva uključena špila lijeva traka je viša od dodijeljenog prostora pa
+  bi se bez toga prelila PREKO legende; u fullscreenu špilovi dobivaju i kompaktniju širinu
+  (`--vtar-card-w` vezan uz `vh`). Relayout preko istog `ResizeObserver` (ne posebna
+  `fullscreenchange` logika za veličine). Skriven na mobitelu (`@media max-width:900px`).
+- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** BOČNE TRAKE SU SKRIVENE
+  (`display:none` na `.vtar-rail-left/right`) — sve akcije preuzima **fiksna traka na dnu**
+  (`.vtar-mobile-drawbar`, `position:fixed`): po uključenom špilu složeni chip
+  (`.vtar-drawbar-group` = gumb za izvlačenje + mali `⟲` koji radi `shuffleFull`), pa gumb
+  **"Iskorištene" s brojačem** (klik vraća iskorištene u špil; brojač ažurira `renderDiscard`
+  preko `#vtar-drawbar-used-count`) i `✦` (novi spread). Fiksni spreadovi su **mreža 3 karte
+  u redu** (grid, redom izvlačenja), rotacija Keltski-križ karte je neutralizirana
+  (`transform:none !important` + badge/✕ bez kontra-rotacije), gumb `✕` je uvijek vidljiv
+  (nema hovera na dodirnom zaslonu); free i dalje teče. Render bira granu
+  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`.
+  **PAZI:** u `.vtar-toolbar` (flex-kolona na mobitelu) `flex-basis` postaje VISINA —
+  `.vtar-spread-toggle` mora imati `flex:0 0 auto` u ≤760 mediji (inače naraste na 320px).
+  Drawbar automatski nestaje na drugim stranicama jer je `#tarot section.page:not(.active)`
+  cijela `display:none`.
 - **Postavke (bez perzistencije u localStorage — namjerno, sesijski alat):** uspravno/obrnuto
-  (utječe samo na buduća izvlačenja), prikaži/sakrij značenja (utječe na legendu). Otpad: klik
-  na izvučenu karticu je odloži; klik na zonu otpada vraća sve odložene karte natrag u špilove.
+  (utječe samo na buduća izvlačenja), prikaži/sakrij značenja (utječe na legendu). Iskorištene
+  karte (interno i dalje `discard`/"otpad" u kodu, ali SVI vidljivi tekstovi kažu "iskorištene
+  karte"): klik na izvučenu karticu je odloži; klik na zonu iskorištenih vraća sve natrag u
+  špilove.
 - **Card backs:** `back.svg` po špilu (RWS mandala/kompas, Marseille medaljon+rešetka,
   Lenormand mini-kartice, Oracle polumjesec) — moraju imati eksplicitne `width`/`height` uz
   `viewBox` da se pouzdano renderiraju kao CSS `background-image` (bez toga izgledaju
@@ -441,14 +459,16 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   javna domena, preuzeto preko en.wikisource.org) i modernih, toplijih tumačenja. Piše se kao
   IZRAVAN opis karte — **bez fraza tipa „kaže Waite / prema Waiteu / navodi se…"** — i
   uravnoteženog tona (i sjena i svjetlo karte, ne samo mračna viktorijanska strana).
-- **Admin uređivanje (`TAROT_CARD_TEXTS` u `js/data.js`):** naziv + značenje uspravno + značenje
-  obrnuto, po špilu po karti, uređuju se u admin tabu **"Tarot karte"** (`index.html` `#ap-tarot`,
-  `js/admin.js` `renderTarotAdmin()`/`switchTarotAdminDeck()`/`saveTarotAdminTexts()`). Tab
-  prikazuje deck-switch (RWS/Marseille — bez Lenormand/Oracle jer nemaju slike) pa svih 78
-  karata odjednom (slika + 3 polja), bez add/delete jer je skup karata fiksan. RWS dolazi
-  potpuno popunjen; Marseille namjerno prazan (`"marseille": {}` u data.js) dok ga Jana sama ne
-  popuni — prazan `upright`/`reversed` znači da se na tarot stolu i uz kartu dana taj tekst
-  jednostavno ne prikazuje (v. gore), NE placeholder poruka. `collectTarotAdminFields()` pokupi
+- **Admin uređivanje (`TAROT_CARD_TEXTS` u `js/data.js`):** naziv + **odgovor karte
+  (DA/NE/MOŽDA `select`, polje `yesno`)** + značenje uspravno + značenje obrnuto, po špilu po
+  karti, uređuju se u admin tabu **"Tarot karte"** (`index.html` `#ap-tarot`, `js/admin.js`
+  `renderTarotAdmin()`/`switchTarotAdminDeck()`/`saveTarotAdminTexts()`). Tab prikazuje
+  deck-switch (RWS/Marseille — bez Lenormand/Oracle jer nemaju slike) pa svih 78 karata
+  odjednom (slika + 4 polja), bez add/delete jer je skup karata fiksan. RWS dolazi potpuno
+  popunjen; **Marseille ima popunjene `name` i `yesno` za svih 78 karata, a `upright`/`reversed`
+  prazne** dok ih Jana sama ne popuni — prazan `upright`/`reversed` znači da se na tarot stolu
+  i uz kartu dana taj tekst jednostavno ne prikazuje (v. gore), NE placeholder poruka
+  (yesno chip se u fokusu prikazuje i tada). `collectTarotAdminFields()` pokupi
   trenutno prikazani špil u `TAROT_CARD_TEXTS` prije svake promjene špila I prije globalnog
   `downloadSite()` (inače bi se izgubile izmjene ako admin promijeni špil bez klika na "Spremi
   značenja karata"). `downloadSite()` uključuje `TAROT_CARD_TEXTS` marker blok pa ide kroz isti

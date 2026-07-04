@@ -1,4 +1,4 @@
-// Anonimno broji JEDINSTVENE izrade natalne karte. NE sprema nikakve osobne podatke —
+// Anonimno broji JEDINSTVENE izrade natalne karte. NE sprema nikakve osobne podatke -
 // prima samo hash unosa (h), računat na klijentu. KV binding: NATAL_LOG.
 // Ključevi:  s:<hash>            -> dedup (broji se samo prvi put)
 //            c:<YYYYMMDD>:<hash> -> brojač s datumom (stats čitaju samo nazive ključeva)

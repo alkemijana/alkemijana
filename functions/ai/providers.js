@@ -1,4 +1,4 @@
-// AI provajderi — adapteri s istim sučeljem: (model, sys, user, env, maxTokens) -> tekst.
+// AI provajderi - adapteri s istim sučeljem: (model, sys, user, env, maxTokens) -> tekst.
 // Dodavanje novog provajdera = nova funkcija + unos u callProvider/DEFAULT_MODELS.
 
 export const DEFAULT_MODELS = {
@@ -39,7 +39,7 @@ async function callGemini(model, sys, user, env, maxTokens) {
           data.candidates[0].content.parts && data.candidates[0].content.parts.map(p => p.text).join('')) || '';
 }
 
-// Cloudflare Workers AI (binding env.AI — bez ključa, besplatna dnevna kvota)
+// Cloudflare Workers AI (binding env.AI - bez ključa, besplatna dnevna kvota)
 async function callCloudflare(model, sys, user, env, maxTokens) {
   if (!env.AI) throw new Error('AI binding (Workers AI) nije konfiguriran');
   const res = await env.AI.run(model, {
@@ -49,7 +49,7 @@ async function callCloudflare(model, sys, user, env, maxTokens) {
   return (res && (res.response || res.result)) || '';
 }
 
-// OpenAI-kompatibilni /chat/completions — pokriva OpenAI, Groq, OpenRouter, Mistral, DeepSeek...
+// OpenAI-kompatibilni /chat/completions - pokriva OpenAI, Groq, OpenRouter, Mistral, DeepSeek...
 // (samo promijeni AI_BASE_URL + AI_MODEL + AI_API_KEY)
 async function callOpenAICompatible(model, sys, user, env, maxTokens) {
   const key = env.AI_API_KEY;
@@ -69,7 +69,7 @@ async function callOpenAICompatible(model, sys, user, env, maxTokens) {
   return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
 }
 
-// Anthropic (plaćeni — najveća kvaliteta; jednostavna nadogradnja)
+// Anthropic (plaćeni - najveća kvaliteta; jednostavna nadogradnja)
 async function callAnthropic(model, sys, user, env, maxTokens) {
   const key = env.AI_API_KEY;
   if (!key) throw new Error('AI_API_KEY nije postavljen');

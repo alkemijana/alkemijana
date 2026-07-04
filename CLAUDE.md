@@ -24,7 +24,7 @@ ALKEMIJANA WEBSITE/
 ├── index.html                      ← Glavna stranica + SVG zviježđa + admin HTML
 ├── css/style.css                   ← Svi stilovi
 ├── js/
-│   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke)
+│   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke, TAROT_CARD_TEXTS)
 │   ├── app.js                      ← Navigacija, renderiranje, blog, animacije
 │   ├── admin.js                    ← Admin panel logika
 │   ├── natal-data.js               ← Natalna karta: konstante, glifovi, palete, helperi (norm360, fmtDegMin, glyphSvg...)
@@ -40,10 +40,9 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
-├── tarot/                          ← Virtualni tarot — potpuno samostalan modul (v. odjeljak niže)
+├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
 │   ├── tarot-data.js               ← 78 kanonskih karata, definicije špilova, 12 spreadova (pozicije+značenja)
-│   ├── tarot-meanings.js           ← 78 kratkih opisa karata — SAMO za "kartu dana" na početnoj (ne na stolu)
 │   ├── tarot-engine.js             ← Stanje bez DOM-a (špilovi, stol, otpad, postavke) — createTarotEngine()
 │   ├── tarot-render.js             ← DOM izgradnja, animacije (let/flip), desktop+mobilni layout — createTarotUI()
 │   ├── tarot.js                    ← Init (glue) — #tarot-app stol + #vtar-cotd-root karta dana na početnoj
@@ -305,18 +304,21 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
 
 ## Virtualni tarot (mapa `tarot/`)
 
-Stranica **#tarot** (nav link "Virtualni tarot", + teaser kartica na početnoj `.vtar-home-teaser`)
+Stranica **#tarot** (nav link "Virtualni tarot", + karta dana na početnoj `#vtar-cotd-root`)
 — besplatan interaktivni tarot stol, **čisto vizualno/interaktivno izvlačenje karata, BEZ
-tumačenja značenja**. Namjerno **potpuno izdvojeno** u mapu `tarot/` (vlastiti CSS/JS, vlastite
-slike) — za izmjene ovdje nije potrebno čitati ostatak stranice, samo taj folder + minimalne
-kuke u `index.html`/`js/app.js` navedene niže.
+tumačenja značenja na stolu**. Namjerno **skoro potpuno izdvojeno** u mapu `tarot/` (vlastiti
+CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitati ostatak stranice.
+**Jedina namjerna iznimka:** tekstovi karata (`TAROT_CARD_TEXTS`) žive u `js/data.js`, ne u
+`tarot/`, da mogu ići kroz admin sustav i auto-save — v. "Admin uređivanje" niže.
 
-- **Arhitektura (5 JS filea, učitavaju se tim redom nakon `natal-live.js`):**
-  `tarot-data.js` (čisti podaci, bez ovisnosti) → `tarot-meanings.js` (78 kratkih opisa karata,
-  v. "Karta dana" niže) → `tarot-engine.js` (`createTarotEngine()` — stanje bez DOM-a: špilovi/
-  preostalo, stol, otpad, postavke, pub/sub `onChange`) → `tarot-render.js`
-  (`createTarotUI(engine, root)` — gradi cijeli DOM u `#tarot-app` iz JS-a, animacije) →
-  `tarot.js` (glue: pokreće stol na `DOMContentLoaded` I renderira "kartu dana" na početnoj).
+- **Arhitektura (4 JS filea u `tarot/`, učitavaju se nakon `natal-live.js`):** `tarot-data.js`
+  (čisti podaci: 78 kanonskih karata, špilovi, spreadovi — bez ovisnosti) → `tarot-engine.js`
+  (`createTarotEngine()` — stanje bez DOM-a: špilovi/preostalo, stol, otpad, postavke, pub/sub
+  `onChange`) → `tarot-render.js` (`createTarotUI(engine, root)` — gradi cijeli DOM u
+  `#tarot-app` iz JS-a, animacije) → `tarot.js` (glue: pokreće stol na `DOMContentLoaded` I
+  renderira "kartu dana" na početnoj preko `#vtar-cotd-root`). Tekstovi karata (`TAROT_CARD_TEXTS`)
+  dolaze iz `js/data.js`, koji se učitava PRIJE svih tarot skripti pa je globalna varijabla već
+  dostupna kad `tarot.js`/`tarot-render.js` trebaju čitati naziv/značenje karte.
 - **Logika špilova — INVARIJANTA „nikad duplikat":** svaka od 78 karata špila je u točno
   jednom stanju — u špilu (`remaining`), na stolu (`table`) ili u otpadu (`discard`). Sve
   operacije u engineu to održavaju: `drawFromDeck` (remaining→table), `discardSlot`
@@ -331,11 +333,12 @@ kuke u `index.html`/`js/app.js` navedene niže.
   tumači kao visina umjesto širine). Pri dodavanju novih klasa u ovaj modul **uvijek koristiti
   `vtar-` prefiks**.
 - **Kuke izvan `tarot/` (namjerno minimalne):** `index.html` — `<link>` na `tarot/tarot.css`,
-  5× `<script src="tarot/...">` na dnu, nav link (`showPage('tarot')`), `<section id="tarot">`
+  4× `<script src="tarot/...">` na dnu, nav link (`showPage('tarot')`), `<section id="tarot">`
   s praznim `<div id="tarot-app">` (sav sadržaj gradi JS), `<div id="vtar-cotd-root">` na
-  početnoj (karta dana) + teaser kartica `.vtar-home-teaser`. `js/app.js` — jedan zapis u
-  `PAGE_META.tarot` (SEO). `showPage()` u app.js **nije mijenjan** — generički mehanizam
-  (toggle `.page.active` po id-u) radi bez posebne iznimke za tarot.
+  početnoj (karta dana — `tarot.js` u njega renderira CIJELU `.vtar-cotd` cjelinu, HTML u
+  index.html je samo prazan kontejner). `js/app.js` — jedan zapis u `PAGE_META.tarot` (SEO).
+  `showPage()` u app.js **nije mijenjan** — generički mehanizam (toggle `.page.active` po id-u)
+  radi bez posebne iznimke za tarot. `js/data.js` i `js/admin.js` — v. "Admin uređivanje" niže.
 - **Špilovi (proširivo):** `TAROT_DECKS` niz u `tarot-data.js` — **Rider–Waite–Smith 1909** i
   **Tarot de Marseille** (Lequart 1890, Pariz), oba public domain sa Wikimedia Commons, plus
   dva **"uskoro" placeholdera** (`Lenormand`, `Oracle` — `comingSoon:true`, bez slika/karata,
@@ -353,7 +356,11 @@ kuke u `index.html`/`js/app.js` navedene niže.
   `!comingSoon && enabled`) — prazan red ako nijedan nije uključen.
 - **Spreadovi:** `TAROT_SPREADS` u `tarot-data.js` — 12 rasporeda: **Slobodno slaganje**
   (`free:true` — neograničeno karata, teku u redovima, prvi u izborniku, stol dobiva vlastiti
-  scroll umjesto da raste u beskonačnost — v. `.vtar-table-scroll`) + Jedna karta, Dva izbora,
+  scroll umjesto da raste u beskonačnost — v. `.vtar-table-scroll`; svaki špil u lijevoj traci
+  dobiva dodatni gumb **"▤ Izvuci sve"** koji `handleDrawAllClick` izvlači preostale karte tog
+  špila jednu po jednu uz mali stagger (90ms) — kaskadna animacija; svako izvlačenje u free
+  modu zove `scrollTableToBottom()` koje `.vtar-table` glatko scrolla do dna da se novododana
+  karta uvijek vidi) + Jedna karta, Dva izbora,
   Tri karte, Pet karata, Karijera, Odnos, Potkova, Zvijezda, Keltski križ, Čakre, Godina pred
   nama. **GRID model:** svaki fiksni spread ima `cols`/`rows` (za mini-ikonu u izborniku) i
   pozicije s `gx`/`gy` (SREDIŠTE karte, decimalno za lukove/kružnice — v.
@@ -380,13 +387,17 @@ kuke u `index.html`/`js/app.js` navedene niže.
   za odlaganje u otpad (`✕`) je u GORNJEM desnom kutu (hover-only). Sve tri se kontra-rotiraju
   preko `--vtar-box-rot` da ostanu čitljive na rotiranoj Keltski-križ kartici. Prazan
   placeholder pokazuje samo broj pozicije u sredini (`.vtar-slot-num`).
-- **Klik na kartu → fokus (uvećanje):** klik na izvučenu karticu otvara `.vtar-focus` —
-  modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća preko cijelog prostora,
-  s nazivom karte ispod; klik bilo gdje na overlay ju zatvara. `position:fixed` (ne absolute
-  unutar stola) je namjeran jer pouzdano radi i kad stol scrolla (free spread), u fullscreenu i
-  na mobitelu. Hover na karticu je samo suptilan podizaj (`translateY`), ne veliko uvećanje —
-  glavni "zoom" je klik-fokus. `renderSlots` zove `closeFocus()` na početku (relayout zatvori
-  fokus).
+- **Klik na kartu → fokus (uvećanje + značenje):** klik na izvučenu karticu otvara `.vtar-focus`
+  — modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća, s nazivom ispod i
+  **značenjem DESNO od karte na desktopu / ISPOD na mobitelu** (`.vtar-focus-inner` je flex-row,
+  postaje flex-column ispod 760px). Značenje se čita iz `TAROT_CARD_TEXTS[deckId][cardId]` —
+  `upright` ili `reversed` ovisno o orijentaciji karte. **Ako je tekst prazan (trenutno cijeli
+  Marseille špil dok ga admin ne popuni), panel sa značenjem se jednostavno ne prikaže**
+  (`.vtar-focus-no-meaning` klasa sakriva `.vtar-focus-meaning`) — nema placeholder poruke.
+  Klik bilo gdje na overlay ju zatvara. `position:fixed` (ne absolute unutar stola) je namjeran
+  jer pouzdano radi i kad stol scrolla (free spread), u fullscreenu i na mobitelu. Hover na
+  karticu je samo suptilan podizaj (`translateY`), ne veliko uvećanje — glavni "zoom" je
+  klik-fokus. `renderSlots` zove `closeFocus()` na početku (relayout zatvori fokus).
 - **Izbornik spreadova = panel koji se PROŠIRI u toku (ne padajući):** `.vtar-spread-toggle`
   (gumb s trenutnim spreadom) prebacuje `.vtar-open` na `.vtar-spread-panel` — panel je u
   NORMALNOM toku (`display:grid`, ne `position:absolute`) pa se otvara ispod gumba i gurne stol
@@ -419,19 +430,31 @@ kuke u `index.html`/`js/app.js` navedene niže.
   Lenormand mini-kartice, Oracle polumjesec) — moraju imati eksplicitne `width`/`height` uz
   `viewBox` da se pouzdano renderiraju kao CSS `background-image` (bez toga izgledaju
   prozirno). Dark paleta, ne mijenjaju se s temom.
-- **"Karta dana" na početnoj — SVJESNA iznimka od "bez tumačenja":** `tarot-meanings.js`
-  (`TAROT_CARD_MEANINGS`, 78 kratkih HR opisa, 3-4 rečenice) koristi se ISKLJUČIVO za teaser na
-  početnoj (`#vtar-cotd-root`, popunjava `tarot.js`), NIKAD na samom interaktivnom stolu. Dan
-  se računa deterministički preko `Intl.DateTimeFormat` s `timeZone:'Europe/Zagreb'` (mijenja
-  se u ponoć po hrvatskom vremenu, neovisno o zoni posjetitelja) hashiran u indeks 0-77 —
-  ista karta cijeli dan za sve posjetitelje, nema spremanja/API poziva. **Ton/izvor teksta:**
-  spoj tradicionalnih RWS značenja (temelj: A. E. Waite, *The Pictorial Key to the Tarot*, 1910,
+- **"Karta dana" na početnoj — SVJESNA iznimka od "bez tumačenja", i JEDINA veza s `js/data.js`:**
+  jedna klikabilna cjelina (`.vtar-cotd`, veća slika ~190px, vodi na `showPage('tarot')`) koju
+  `tarot.js` renderira u `#vtar-cotd-root`. Dan se računa deterministički preko
+  `Intl.DateTimeFormat` s `timeZone:'Europe/Zagreb'` (mijenja se u ponoć po hrvatskom vremenu,
+  neovisno o zoni posjetitelja) hashiran u indeks 0-77 među RWS kartama — ista karta cijeli dan
+  za sve posjetitelje, nema spremanja/API poziva. Prikazuje `TAROT_CARD_TEXTS.rws[id].upright`
+  (uvijek RWS, nikad Marseille — RWS ima potpuna značenja). **Ton/izvor teksta:** spoj
+  tradicionalnih RWS značenja (temelj: A. E. Waite, *The Pictorial Key to the Tarot*, 1910,
   javna domena, preuzeto preko en.wikisource.org) i modernih, toplijih tumačenja. Piše se kao
-  IZRAVAN opis karte — **bez fraza tipa „kaže Waite / prema Waiteu / navodi se…"** (Jana je to
-  izričito tražila) — i uravnoteženog tona (i sjena i svjetlo karte, ne samo mračna viktorijanska
-  strana). Ako se ažurira, zadržati taj stil: bez attribucija u tekstu, blago i čitko.
-- **Što NIJE uključeno (namjerno):** tumačenje značenja karata na samom stolu, AI uvidi,
-  spremanje/dijeljenje čitanja, drag-and-drop (samo klik).
+  IZRAVAN opis karte — **bez fraza tipa „kaže Waite / prema Waiteu / navodi se…"** — i
+  uravnoteženog tona (i sjena i svjetlo karte, ne samo mračna viktorijanska strana).
+- **Admin uređivanje (`TAROT_CARD_TEXTS` u `js/data.js`):** naziv + značenje uspravno + značenje
+  obrnuto, po špilu po karti, uređuju se u admin tabu **"Tarot karte"** (`index.html` `#ap-tarot`,
+  `js/admin.js` `renderTarotAdmin()`/`switchTarotAdminDeck()`/`saveTarotAdminTexts()`). Tab
+  prikazuje deck-switch (RWS/Marseille — bez Lenormand/Oracle jer nemaju slike) pa svih 78
+  karata odjednom (slika + 3 polja), bez add/delete jer je skup karata fiksan. RWS dolazi
+  potpuno popunjen; Marseille namjerno prazan (`"marseille": {}` u data.js) dok ga Jana sama ne
+  popuni — prazan `upright`/`reversed` znači da se na tarot stolu i uz kartu dana taj tekst
+  jednostavno ne prikazuje (v. gore), NE placeholder poruka. `collectTarotAdminFields()` pokupi
+  trenutno prikazani špil u `TAROT_CARD_TEXTS` prije svake promjene špila I prije globalnog
+  `downloadSite()` (inače bi se izgubile izmjene ako admin promijeni špil bez klika na "Spremi
+  značenja karata"). `downloadSite()` uključuje `TAROT_CARD_TEXTS` marker blok pa ide kroz isti
+  auto-save/GitHub flow kao ostatak stranice — ovo je JEDINI dio tarot modula koji tako radi.
+- **Što NIJE uključeno (namjerno):** tumačenje značenja karata na samom stolu (samo u fokusu na
+  klik i uz kartu dana), AI uvidi, spremanje/dijeljenje čitanja, drag-and-drop (samo klik).
 
 ---
 

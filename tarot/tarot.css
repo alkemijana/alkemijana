@@ -163,6 +163,9 @@
   color: var(--text-muted); cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease;
 }
 .vtar-mini-btn:hover { border-color: var(--sage); color: var(--silver-bright); background: rgba(168,144,208,0.08); }
+.vtar-mini-btn-accent { border-color: var(--lavender); color: var(--lavender); }
+.vtar-mini-btn-accent:hover { background: var(--lavender); color: #1a1430; }
+:root[data-theme="light"] .vtar-mini-btn-accent:hover { color: #fff; }
 
 /* ---- Stol ---- */
 .vtar-table {
@@ -271,17 +274,24 @@
 .vtar-card-discard-btn:hover { background: var(--lavender); color: #1a1430; }
 
 /* ---- Fokus: klik na kartu ju centrira i poveća (modal preko cijelog prostora;
-   position:fixed pa pouzdano radi i kad stol scrolla, u fullscreenu i na mobitelu) ---- */
+   position:fixed pa pouzdano radi i kad stol scrolla, u fullscreenu i na mobitelu).
+   Značenje se prikazuje DESNO od karte na desktopu, ISPOD na mobitelu; ako karta
+   (npr. Marseille dok admin ne popuni) nema teksta, panel se jednostavno ne prikaže. ---- */
 .vtar-focus {
-  position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 0.9rem; padding: 1.4rem;
+  position: fixed; inset: 0; z-index: 3000; display: flex;
+  align-items: center; justify-content: center; padding: 1.4rem;
   background: rgba(6, 8, 15, 0.9); cursor: zoom-out;
   opacity: 0; pointer-events: none; transition: opacity .22s ease;
+  overflow-y: auto;
 }
 :root[data-theme="light"] .vtar-focus { background: rgba(20, 14, 40, 0.8); }
 .vtar-focus.vtar-focus-visible { opacity: 1; pointer-events: auto; }
+.vtar-focus-inner {
+  display: flex; align-items: center; gap: 2.2rem; max-width: min(1000px, 92vw); cursor: default;
+}
+.vtar-focus-visual { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; flex-shrink: 0; }
 .vtar-focus-card {
-  height: min(80vh, 620px); aspect-ratio: var(--vtar-ratio); border-radius: 3%;
+  height: min(72vh, 560px); aspect-ratio: var(--vtar-ratio); border-radius: 3%;
   background-size: cover; background-position: center;
   box-shadow: 0 18px 60px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.14);
   transform: scale(0.85); transition: transform .28s cubic-bezier(.2,.8,.3,1.05);
@@ -292,6 +302,21 @@
 .vtar-focus-name {
   font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.4vw, 1.8rem);
   color: var(--silver-bright); text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
+.vtar-focus-meaning {
+  max-width: 360px; max-height: 72vh; overflow-y: auto; cursor: default;
+  font-family: 'Cormorant Garamond', serif; font-size: 1.08rem; line-height: 1.55; color: var(--silver-bright);
+}
+.vtar-focus-meaning-label {
+  display: block; font-family: 'Quicksand', sans-serif; font-size: 0.76rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); margin-bottom: 0.5rem;
+}
+.vtar-focus.vtar-focus-no-meaning .vtar-focus-meaning { display: none; }
+
+@media (max-width: 760px) {
+  .vtar-focus-inner { flex-direction: column; gap: 1.2rem; max-width: 94vw; }
+  .vtar-focus-card { height: min(48vh, 420px); }
+  .vtar-focus-meaning { max-width: 94vw; max-height: none; text-align: center; }
 }
 
 /* ---- Slobodno slaganje (flow) ---- */
@@ -359,35 +384,25 @@
 .vtar-fs .vtar-legend { flex: 0 1 auto; max-height: 20vh; overflow-y: auto; margin-top: 0; }
 .vtar-fs .vtar-mobile-drawbar { position: static; }
 
-/* ---- Teaser + karta dana na početnoj ---- */
-.vtar-home-teaser {
-  display: flex; align-items: center; gap: 1.4rem; max-width: 620px; margin: 0 auto;
-  padding: 1.3rem 1.7rem; background: var(--card-bg); border: 1px solid var(--border);
-  border-radius: 14px; text-decoration: none; cursor: pointer;
-  transition: transform .25s ease, border-color .25s ease;
-}
-.vtar-home-teaser:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
-.vtar-home-teaser-icon { width: 64px; height: 64px; flex-shrink: 0; }
-.vtar-home-teaser-icon svg { width: 100%; height: 100%; }
-.vtar-home-teaser-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
-.vtar-home-teaser-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); }
-.vtar-home-teaser-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.92rem; color: var(--text-muted); }
-@media (max-width: 520px) {
-  .vtar-home-teaser { flex-direction: column; text-align: center; padding: 1.4rem 1.2rem; }
-  .vtar-home-teaser-text { text-align: center; }
-}
-
+/* ---- Karta dana na početnoj — jedna klikabilna cjelina, vodi na tarot stol ---- */
 .vtar-cotd {
-  display: flex; align-items: center; gap: 1.6rem; max-width: 680px; margin: 0 auto 1.1rem;
-  padding: 1.5rem 1.8rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+  display: flex; align-items: center; gap: 2rem; max-width: 760px; margin: 0 auto;
+  padding: 1.8rem 2.1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px;
+  text-decoration: none; cursor: pointer; transition: transform .25s ease, border-color .25s ease;
 }
-.vtar-cotd-img { width: clamp(80px, 14vw, 120px); aspect-ratio: 0.583; border-radius: 6%; object-fit: cover; box-shadow: 0 6px 20px rgba(0,0,0,0.35); flex-shrink: 0; }
-.vtar-cotd-text { display: flex; flex-direction: column; gap: 0.25rem; text-align: left; }
-.vtar-cotd-eyebrow { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); }
-.vtar-cotd-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--lavender); margin: 0; }
-.vtar-cotd-desc { font-family: 'Cormorant Garamond', serif; font-size: 1rem; line-height: 1.5; color: var(--text); margin: 0; }
+.vtar-cotd:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
+.vtar-cotd-visual { flex-shrink: 0; }
+.vtar-cotd-img { width: clamp(120px, 20vw, 190px); aspect-ratio: 0.583; border-radius: 5%; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.vtar-cotd-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
+.vtar-cotd-eyebrow { font-family: 'Quicksand', sans-serif; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); }
+.vtar-cotd-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--lavender); margin: 0; }
+.vtar-cotd-desc { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; line-height: 1.5; color: var(--text); margin: 0; }
+.vtar-cotd-cta {
+  margin-top: 0.5rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem; font-weight: 600;
+  color: var(--lavender);
+}
 @media (max-width: 620px) {
-  .vtar-cotd { flex-direction: column; text-align: center; padding: 1.4rem 1.2rem; }
+  .vtar-cotd { flex-direction: column; text-align: center; padding: 1.6rem 1.3rem; gap: 1.2rem; }
   .vtar-cotd-text { text-align: center; }
 }
 

@@ -513,19 +513,6 @@
 
     <div class="section container">
       <div id="vtar-cotd-root"></div>
-      <a class="vtar-home-teaser" onclick="showPage('tarot'); return false;" href="#tarot" role="button" aria-label="Otvori virtualni tarot stol">
-        <div class="vtar-home-teaser-icon" aria-hidden="true">
-          <svg viewBox="0 0 100 100">
-            <rect x="30" y="14" width="28" height="46" rx="4" fill="none" stroke="var(--lavender)" stroke-width="2" transform="rotate(-8 44 37)"/>
-            <rect x="42" y="20" width="28" height="46" rx="4" fill="none" stroke="var(--sage)" stroke-width="2" transform="rotate(8 56 43)"/>
-            <circle cx="56" cy="43" r="3" fill="var(--silver-bright)"/>
-          </svg>
-        </div>
-        <div class="vtar-home-teaser-text">
-          <span class="vtar-home-teaser-title">✦ Virtualni tarot</span>
-          <span class="vtar-home-teaser-sub">Otvori tarot stol i izvuci vlastite karte</span>
-        </div>
-      </a>
     </div>
 
     <div class="section container" id="home-services-section">
@@ -1322,6 +1309,7 @@
         <button class="ap-tab-btn"        id="tab-texts"    onclick="switchTab('texts')">Tekstovi</button>
         <button class="ap-tab-btn"        id="tab-stats"    onclick="switchTab('stats')">Statistika</button>
         <button class="ap-tab-btn"        id="tab-natallog" onclick="switchTab('natallog')">Natalne karte</button>
+        <button class="ap-tab-btn"        id="tab-tarot"    onclick="switchTab('tarot')">Tarot karte</button>
       </div>
       <button class="ap-close" onclick="closeAdminPanel()">×</button>
     </div>
@@ -1409,6 +1397,24 @@
         </div>
       </div>
 
+      <!-- TAB: Tarot karte (nazivi + značenja uspravno/obrnuto, po špilu) -->
+      <div class="ap-tab-content" id="ap-tarot">
+        <div class="pricing-admin-wrap">
+          <h3>Tarot karte — nazivi i značenja</h3>
+          <p style="color:var(--text-muted);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.95rem;margin-bottom:1rem">
+            Značenje "uspravno" prikazuje se i uz "Kartu dana" na početnoj te uz uvećanu kartu na tarot stolu. Odaberi špil, uredi karte, klikni "Spremi značenja", pa gore "↓ Spremi" za trajno spremanje.
+          </p>
+          <div class="tarot-deck-switch" id="tarot-deck-switch">
+            <button type="button" class="tarot-deck-btn active" id="tarot-deck-btn-rws" onclick="switchTarotAdminDeck('rws')">RWS</button>
+            <button type="button" class="tarot-deck-btn" id="tarot-deck-btn-marseille" onclick="switchTarotAdminDeck('marseille')">Marseille</button>
+          </div>
+          <div id="tarot-admin-list"></div>
+          <div class="ap-actions">
+            <button class="ap-btn ap-btn-save" onclick="saveTarotAdminTexts()">Spremi značenja karata</button>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB: Tekstovi -->
       <div class="ap-tab-content" id="ap-texts">
         <div class="pricing-admin-wrap" id="texts-editor-wrap">
@@ -1461,9 +1467,9 @@
 <script src="js/natal-ai.js"></script>
 <script src="js/natal-live.js"></script>
 
-<!-- Virtualni tarot (samostalan modul, tarot/) -->
+<!-- Virtualni tarot (samostalan modul, tarot/; TAROT_CARD_TEXTS živi u js/data.js
+     radi admin uređivanja — v. CLAUDE.md) -->
 <script src="tarot/tarot-data.js"></script>
-<script src="tarot/tarot-meanings.js"></script>
 <script src="tarot/tarot-engine.js"></script>
 <script src="tarot/tarot-render.js"></script>
 <script src="tarot/tarot.js"></script>

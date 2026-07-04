@@ -1631,6 +1631,20 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .pr-item input { background: rgba(6, 8, 15, 0.7); border: 1px solid var(--border); padding: 0.45rem 0.7rem; color: var(--text); font-family: 'Cormorant Infant', serif; font-size: 0.95rem; }
 .pr-item input:focus { outline: none; border-color: var(--lavender); }
 
+/* Tarot karte admin */
+.tarot-deck-switch { display: flex; gap: 0.6rem; margin-bottom: 1.2rem; }
+.tarot-deck-btn { padding: 0.45rem 1.3rem; background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-family: 'Quicksand', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+.tarot-deck-btn.active { border-color: var(--lavender); color: var(--lavender); background: rgba(168, 144, 208, 0.08); }
+.tarot-admin-card { display: grid; grid-template-columns: 90px 1fr; gap: 1.1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+.tarot-admin-card img { width: 90px; aspect-ratio: 0.583; object-fit: cover; border-radius: 6%; box-shadow: 0 3px 10px rgba(0,0,0,0.35); }
+.tarot-admin-fields { display: grid; grid-template-columns: 1fr 1.4fr 1.4fr; gap: 1rem; }
+.tarot-admin-fields .af { margin-bottom: 0; }
+.tarot-admin-fields textarea { resize: vertical; }
+@media (max-width: 900px) {
+  .tarot-admin-card { grid-template-columns: 70px 1fr; }
+  .tarot-admin-fields { grid-template-columns: 1fr; }
+}
+
 /* ============================================================
    RESPONZIVNOST
    ============================================================ */

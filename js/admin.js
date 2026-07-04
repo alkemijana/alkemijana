@@ -211,6 +211,7 @@ function switchTab(t) {
   if (t === 'texts')    renderTextsAdmin();
   if (t === 'stats')    loadStats();
   if (t === 'natallog') loadNatalLog();
+  if (t === 'tarot')    renderTarotAdmin();
 }
 
 /* ============================================================
@@ -1752,6 +1753,69 @@ function saveTexts() {
 }
 
 /* ============================================================
+   TAB: Tarot karte (nazivi + značenja uspravno/obrnuto, po špilu)
+   Podaci žive u TAROT_CARD_TEXTS (data.js) da mogu ići kroz isti
+   auto-save mehanizam kao ostatak stranice — tarot/ modul ih samo čita.
+   ============================================================ */
+let tarotAdminDeck = 'rws';
+
+function renderTarotAdmin() {
+  renderTarotAdminList();
+}
+
+function switchTarotAdminDeck(deckId) {
+  collectTarotAdminFields();
+  tarotAdminDeck = deckId;
+  document.querySelectorAll('.tarot-deck-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tarot-deck-btn-' + deckId);
+  if (btn) btn.classList.add('active');
+  renderTarotAdminList();
+}
+
+function renderTarotAdminList() {
+  const deckId = tarotAdminDeck;
+  const deck = TAROT_DECKS.find(d => d.id === deckId);
+  const list = document.getElementById('tarot-admin-list');
+  if (!deck || !list) return;
+  list.innerHTML = TAROT_CARD_DEFS.map(c => {
+    const saved = (TAROT_CARD_TEXTS[deckId] && TAROT_CARD_TEXTS[deckId][c.id]) || {};
+    const name = saved.name != null ? saved.name : c.name;
+    const upright = saved.upright || '';
+    const reversed = saved.reversed || '';
+    const img = `tarot/assets/decks/${deck.folder}/${c.id}.${deck.ext}`;
+    return `
+      <div class="tarot-admin-card" data-card="${c.id}">
+        <img src="${img}" alt="${esc(name)}" loading="lazy">
+        <div class="tarot-admin-fields">
+          <div class="af"><label>Naziv</label><input class="tarot-f-name" value="${esc(name)}"></div>
+          <div class="af"><label>Značenje — uspravno</label><textarea class="tarot-f-upright" rows="3">${esc(upright)}</textarea></div>
+          <div class="af"><label>Značenje — obrnuto</label><textarea class="tarot-f-reversed" rows="3">${esc(reversed)}</textarea></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function collectTarotAdminFields() {
+  const list = document.getElementById('tarot-admin-list');
+  if (!list || !list.children.length) return;
+  const deckId = tarotAdminDeck;
+  if (!TAROT_CARD_TEXTS[deckId]) TAROT_CARD_TEXTS[deckId] = {};
+  list.querySelectorAll('.tarot-admin-card').forEach(el => {
+    const id = el.dataset.card;
+    TAROT_CARD_TEXTS[deckId][id] = {
+      name: el.querySelector('.tarot-f-name').value.trim(),
+      upright: el.querySelector('.tarot-f-upright').value.trim(),
+      reversed: el.querySelector('.tarot-f-reversed').value.trim()
+    };
+  });
+}
+
+function saveTarotAdminTexts() {
+  collectTarotAdminFields();
+  alert('Značenja karata su spremljena u memoriju. Klikni "↓ Spremi" gore za trajno spremanje na stranicu.');
+}
+
+/* ============================================================
    PREUZIMANJE AŽURIRANOG data.js
    ============================================================ */
 
@@ -1792,6 +1856,8 @@ async function downloadSite() {
     }
   }
 
+  collectTarotAdminFields(); // pokupi neshranjene izmjene iz trenutno otvorenog špila
+
   const postsJson    = JSON.stringify(BLOG_POSTS,    null, 2);
   const guidesJson   = JSON.stringify(guidesData(),  null, 2);
   const svcJson      = JSON.stringify(SERVICES,      null, 2);
@@ -1799,6 +1865,7 @@ async function downloadSite() {
   const revJson      = JSON.stringify(REVIEWS,       null, 2);
   const textsJson    = JSON.stringify(TEXTS,         null, 2);
   const settingsJson = JSON.stringify(SITE_SETTINGS, null, 2);
+  const tarotTextsJson = JSON.stringify(TAROT_CARD_TEXTS, null, 2);
 
   const content = `/* ============================================================
    AlkemiJana — Podaci
@@ -1837,6 +1904,11 @@ let TEXTS = ${textsJson};
 // ===ALKEMIJANA:SETTINGS:START===
 let SITE_SETTINGS = ${settingsJson};
 // ===ALKEMIJANA:SETTINGS:END===
+
+
+// ===ALKEMIJANA:TAROT_CARD_TEXTS:START===
+let TAROT_CARD_TEXTS = ${tarotTextsJson};
+// ===ALKEMIJANA:TAROT_CARD_TEXTS:END===
 `;
 
   if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }

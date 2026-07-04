@@ -79,8 +79,13 @@ function createTarotUI(engine, root) {
           <div class="vtar-table" id="vtar-table">
             <div class="vtar-slots" id="vtar-slots"></div>
             <div class="vtar-focus" id="vtar-focus" aria-hidden="true">
-              <div class="vtar-focus-card" id="vtar-focus-card"></div>
-              <div class="vtar-focus-name" id="vtar-focus-name"></div>
+              <div class="vtar-focus-inner">
+                <div class="vtar-focus-visual">
+                  <div class="vtar-focus-card" id="vtar-focus-card"></div>
+                  <div class="vtar-focus-name" id="vtar-focus-name"></div>
+                </div>
+                <div class="vtar-focus-meaning" id="vtar-focus-meaning"></div>
+              </div>
             </div>
           </div>
           <div class="vtar-rail vtar-rail-right">
@@ -113,6 +118,7 @@ function createTarotUI(engine, root) {
     focus: root.querySelector('#vtar-focus'),
     focusCard: root.querySelector('#vtar-focus-card'),
     focusName: root.querySelector('#vtar-focus-name'),
+    focusMeaning: root.querySelector('#vtar-focus-meaning'),
     legend: root.querySelector('#vtar-legend'),
     discardStack: root.querySelector('#vtar-discard-stack'),
     discardCount: root.querySelector('#vtar-discard-count'),
@@ -237,7 +243,8 @@ function createTarotUI(engine, root) {
       const actions = trEl('div', 'vtar-deck-actions');
       actions.innerHTML = `
         <button type="button" class="vtar-mini-btn" data-act="shuffle-full" data-deck="${deck.id}" title="Vrati sve karte (i sa stola i iz otpada) u špil i promiješaj">⟲ Promiješaj sve</button>
-        <button type="button" class="vtar-mini-btn" data-act="shuffle-remaining" data-deck="${deck.id}" title="Promiješaj samo preostale karte u špilu">⟲ Promiješaj preostale</button>`;
+        <button type="button" class="vtar-mini-btn" data-act="shuffle-remaining" data-deck="${deck.id}" title="Promiješaj samo preostale karte u špilu">⟲ Promiješaj preostale</button>
+        ${engine.isFree() ? `<button type="button" class="vtar-mini-btn vtar-mini-btn-accent" data-act="draw-all" data-deck="${deck.id}" title="Izvuci sve preostale karte iz ovog špila na stol, po redu">▤ Izvuci sve</button>` : ''}`;
       wrap.appendChild(actions);
 
       els.railDecks.appendChild(wrap);
@@ -246,9 +253,12 @@ function createTarotUI(engine, root) {
     els.railDecks.querySelectorAll('.vtar-mini-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const deckId = btn.dataset.deck;
-        if (btn.dataset.act === 'shuffle-full') engine.shuffleFull(deckId);
-        if (btn.dataset.act === 'shuffle-remaining') engine.shuffleRemaining(deckId);
-        pulseStack(deckId);
+        if (btn.dataset.act === 'shuffle-full') { engine.shuffleFull(deckId); pulseStack(deckId); }
+        if (btn.dataset.act === 'shuffle-remaining') { engine.shuffleRemaining(deckId); pulseStack(deckId); }
+        if (btn.dataset.act === 'draw-all') {
+          const stack = els.railDecks.querySelector(`.vtar-deck-stack[data-deck="${deckId}"]`);
+          handleDrawAllClick(deckId, stack);
+        }
       });
     });
 
@@ -330,9 +340,22 @@ function createTarotUI(engine, root) {
   /* ---- Fokus (klik na kartu → centrirano uvećanje preko stola) ---- */
   function openFocus(entry) {
     const def = trCardDef(entry.cardId);
+    const reversed = entry.orientation === 'reversed';
+    const text = (typeof TAROT_CARD_TEXTS !== 'undefined' && TAROT_CARD_TEXTS[entry.deckId] && TAROT_CARD_TEXTS[entry.deckId][entry.cardId]) || null;
+    const name = (text && text.name) || (def ? def.name : '');
+    const meaning = text ? (reversed ? text.reversed : text.upright) : '';
+
     els.focusCard.style.backgroundImage = `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
-    els.focusCard.classList.toggle('vtar-focus-reversed', entry.orientation === 'reversed');
-    els.focusName.textContent = (def ? def.name : '') + (entry.orientation === 'reversed' ? ' · obrnuto' : '');
+    els.focusCard.classList.toggle('vtar-focus-reversed', reversed);
+    els.focusName.textContent = name + (reversed ? ' · obrnuto' : '');
+
+    if (meaning) {
+      els.focusMeaning.innerHTML = `<span class="vtar-focus-meaning-label">${reversed ? 'Značenje — obrnuto' : 'Značenje — uspravno'}</span><p>${meaning}</p>`;
+      els.focus.classList.remove('vtar-focus-no-meaning');
+    } else {
+      els.focusMeaning.innerHTML = '';
+      els.focus.classList.add('vtar-focus-no-meaning');
+    }
     els.focus.classList.add('vtar-focus-visible');
     els.focus.setAttribute('aria-hidden', 'false');
   }
@@ -554,11 +577,38 @@ function createTarotUI(engine, root) {
       // dodaj novi slot ispred duha pa animiraj
       renderSlots();
       placeCardInSlot(result.slot, result.entry, true, stackEl);
+      scrollTableToBottom();
     } else {
       placeCardInSlot(result.slot, result.entry, true, stackEl);
     }
     updateDeckCounts();
     updateHint();
+  }
+
+  /* Slobodno slaganje: "Izvuci sve" — izlista sve preostale karte iz špila na
+     stol, po redu, s malim razmakom između svake (kaskadna animacija), i stol
+     automatski scrolla prema dolje da se uvijek vidi gdje se karte slažu. */
+  function handleDrawAllClick(deckId, stackEl) {
+    const dState = engine.state.decks[deckId];
+    if (!dState || !dState.enabled || !engine.isFree()) return;
+    const step = () => {
+      if (dState.remaining.length === 0) return;
+      const result = engine.drawFromDeck(deckId);
+      if (!result) return;
+      renderSlots();
+      placeCardInSlot(result.slot, result.entry, true, stackEl);
+      updateDeckCounts();
+      updateHint();
+      scrollTableToBottom();
+      setTimeout(step, 90);
+    };
+    step();
+  }
+
+  function scrollTableToBottom() {
+    requestAnimationFrame(() => {
+      els.table.scrollTo({ top: els.table.scrollHeight, behavior: 'smooth' });
+    });
   }
 
   function flashHint(msg) {

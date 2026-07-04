@@ -100,6 +100,13 @@ function createTarotUI(engine, root) {
         <div class="vtar-legend" id="vtar-legend"></div>
 
         <div class="vtar-mobile-drawbar" id="vtar-mobile-drawbar"></div>
+
+        <!-- Veliki drop-target koji se pojavi na mobitelu dok se karta povlači
+             (lakše ciljanje od malog gumba u traci). -->
+        <div class="vtar-mobile-dropzone" id="vtar-mobile-dropzone" aria-hidden="true">
+          <span class="vtar-mobile-dropzone-icon">▤</span>
+          <span class="vtar-mobile-dropzone-text">Ispusti ovdje — iskorištene karte</span>
+        </div>
       </div>
     </div>
   `;
@@ -128,7 +135,8 @@ function createTarotUI(engine, root) {
     btnNewReading: root.querySelector('#vtar-btn-new-reading'),
     btnFs: root.querySelector('#vtar-btn-fs'),
     hint: root.querySelector('#vtar-hint'),
-    mobileBar: root.querySelector('#vtar-mobile-drawbar')
+    mobileBar: root.querySelector('#vtar-mobile-drawbar'),
+    mobileDropzone: root.querySelector('#vtar-mobile-dropzone')
   };
 
   els.toggleReversed.addEventListener('change', () => engine.setAllowReversed(els.toggleReversed.checked));
@@ -368,11 +376,15 @@ function createTarotUI(engine, root) {
      zaslonu. Radi preko Pointer eventova (miš + dodir zajedno). */
   function findDropZone(x, y) {
     const el = document.elementFromPoint(x, y);
-    return el ? el.closest('.vtar-drawbar-used, .vtar-discard-zone') : null;
+    return el ? el.closest('.vtar-drawbar-used, .vtar-discard-zone, .vtar-mobile-dropzone') : null;
   }
   function attachCardInteraction(cardEl, slotIdx, entry) {
-    const LONG_MS = 280, MOVE_CANCEL = 12;
-    let pid = null, sx = 0, sy = 0, moved = false, dragging = false, longTimer = null, ghost = null, gox = 0, goy = 0, hoverZone = null;
+    // LONG_MS = koliko treba držati prije nego drag krene; DRAG_CANCEL = koliko
+    // pomak prije toga otkazuje drag (=scroll); TAP_SLOP = koliki ukupni pomak
+    // još uvijek broji kao tap (dodir uvijek malo "podrhtava", pa mora biti veći
+    // od pukih par piksela — inače se tap na mobitelu ne registrira kao otvaranje).
+    const LONG_MS = 300, DRAG_CANCEL = 10, TAP_SLOP = 24;
+    let pid = null, sx = 0, sy = 0, maxDist = 0, dragging = false, longTimer = null, ghost = null, gox = 0, goy = 0, hoverZone = null;
 
     function setHover(z) {
       if (hoverZone === z) return;
@@ -393,6 +405,7 @@ function createTarotUI(engine, root) {
       document.body.appendChild(ghost);
       cardEl.classList.add('vtar-card-dragging');
       els.stage.classList.add('vtar-dragging');
+      if (isMobile) els.mobileDropzone.classList.add('vtar-dz-show');
       moveGhost(x, y);
     }
     function moveGhost(x, y) {
@@ -405,6 +418,7 @@ function createTarotUI(engine, root) {
       const zone = (x < 0) ? null : findDropZone(x, y);
       setHover(null);
       els.stage.classList.remove('vtar-dragging');
+      els.mobileDropzone.classList.remove('vtar-dz-show');
       dragActive = false;
       if (zone) {
         if (ghost) { ghost.remove(); ghost = null; }
@@ -426,8 +440,10 @@ function createTarotUI(engine, root) {
        preglednicima ubija scroll. */
     function onMove(e) {
       if (e.pointerId !== pid) return;
+      const d = Math.hypot(e.clientX - sx, e.clientY - sy);
+      if (d > maxDist) maxDist = d;
       if (dragging) { moveGhost(e.clientX, e.clientY); return; }
-      if (Math.hypot(e.clientX - sx, e.clientY - sy) > MOVE_CANCEL) { moved = true; clearTimeout(longTimer); }
+      if (d > DRAG_CANCEL) clearTimeout(longTimer); // pomak prije drži-timera = scroll, ne diži drag
     }
     function detach() {
       document.removeEventListener('pointermove', onMove);
@@ -438,7 +454,7 @@ function createTarotUI(engine, root) {
     function onUp(e) {
       if (e.pointerId !== pid) return;
       if (dragging) { dragging = false; endDrag(e.clientX, e.clientY); }
-      else if (!moved) { openFocus(entry); }
+      else if (maxDist < TAP_SLOP) { openFocus(entry); } // tap (uz toleranciju drhtaja) = fokus
       detach();
     }
     function onCancel(e) {
@@ -449,11 +465,11 @@ function createTarotUI(engine, root) {
     cardEl.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.vtar-card-discard-btn')) return;
       if (e.button != null && e.button > 0) return;
-      pid = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; dragging = false;
+      pid = e.pointerId; sx = e.clientX; sy = e.clientY; maxDist = 0; dragging = false;
       document.addEventListener('pointermove', onMove);
       document.addEventListener('pointerup', onUp);
       document.addEventListener('pointercancel', onCancel);
-      longTimer = setTimeout(() => { if (!moved && pid != null) startDrag(sx, sy); }, LONG_MS);
+      longTimer = setTimeout(() => { if (maxDist < DRAG_CANCEL && pid != null) startDrag(sx, sy); }, LONG_MS);
     });
   }
 

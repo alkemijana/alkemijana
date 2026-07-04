@@ -2097,6 +2097,8 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 #home-natal-section {
   padding: 0 0 0.8rem;
   margin: 0 auto;
+  /* kotač je width:100% aspect 1/1 - ograniči širinu sekcije da ne bude prevelik */
+  max-width: 430px;
 }
 /* SEO/A11y: vizualno skriveni naslov za živi kotač (ne mijenja layout) */
 .visually-hidden {

@@ -398,16 +398,21 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   placeholder pokazuje samo broj pozicije u sredini (`.vtar-slot-num`).
 - **Interakcija s karticom (tap vs. drag) — `attachCardInteraction` u tarot-render.js:**
   jedinstveno preko Pointer eventova (miš + dodir). **Kratak tap/klik** otvara fokus;
-  **pritisni-i-drži (~280ms) pa povuci** hvata karticu (`.vtar-drag-ghost`, fixed, prati
+  **pritisni-i-drži (~300ms) pa povuci** hvata karticu (`.vtar-drag-ghost`, fixed, prati
   prst, `pointer-events:none` da `elementFromPoint` vidi kroz njega) i ispuštanjem na zonu
-  iskorištenih karata (`.vtar-discard-zone` desno na desktopu / `.vtar-drawbar-used` ▤ u
-  donjoj traci na mobitelu) je odloži (`engine.discardSlot`). Rješava nedostupne ✕ gumbe na
-  gustim spreadovima na dodirnom zaslonu (Keltski križ, Zvijezda...). Move/up se slušaju na
-  `document` (ne na kartici, bez `setPointerCapture` koji zna ubiti scroll); pomak >12px
-  prije isteka drži-timera = scroll (otkazuje drag). Scroll stranice tijekom draga blokira
-  **non-passive `touchmove`** koji `preventDefault`-a samo dok je `dragActive` (zato NEMA
-  `touch-action:none` na karti — obični tap/scroll na kartici ostaje moguć). Zona se istakne
-  (`.vtar-dragging` pulsira, `.vtar-drop-hover` obrub).
+  iskorištenih karata je odloži (`engine.discardSlot`). **Tap-detekcija tolerira drhtaj
+  prsta** (`maxDist < TAP_SLOP=24px` = tap → fokus; inače na dodiru tap ne bi radio jer prst
+  uvijek malo klizne); `DRAG_CANCEL=10px` prije drži-timera otkazuje drag (=scroll). Move/up
+  se slušaju na `document` (ne na kartici, bez `setPointerCapture` koji zna ubiti scroll).
+  Scroll stranice tijekom draga blokira **non-passive `touchmove`** koji `preventDefault`-a
+  samo dok je `dragActive` (zato NEMA `touch-action:none` na karti — obični tap/scroll na
+  kartici ostaje moguć). **Drop-zone po uređaju** (`findDropZone` matcha sve tri):
+  desktop = `.vtar-discard-zone` desno; mobitel = **veliki `.vtar-mobile-dropzone`** koji se
+  pojavi (`.vtar-dz-show`, 30vh, iznad donje trake) SAMO dok se povlači na mobitelu — lakše
+  ciljanje od malog `▤` gumba (koji i dalje radi kao meta). Dropzone mora dobiti
+  `pointer-events:auto` tek u `.vtar-dz-show` (inače ga `elementFromPoint` ne vidi kao metu).
+  Zona se istakne (`.vtar-dragging` pulsira, `.vtar-drop-hover` obrub/scale). **Na mobitelu je
+  ✕ gumb na karti skriven** (`display:none`) — odlaganje ide isključivo povlačenjem.
 - **Klik na kartu → fokus (uvećanje + značenje):** klik na izvučenu karticu otvara `.vtar-focus`
   — modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća, s nazivom ispod i
   **panelom DESNO od karte na desktopu / ISPOD na mobitelu** (`.vtar-focus-inner` je flex-row,
@@ -418,6 +423,9 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   prigušen. Iznad značenja je **"Odgovor karte" DA/NE/MOŽDA chip** (`text.yesno`,
   `.vtar-yn-da/-ne/-mozda` boje). Prazna polja se preskaču (Marseille bez tekstova pokazuje
   samo yesno chip); ako nema NIČEGA, panel se ne prikaže (`.vtar-focus-no-meaning`).
+  **PAZI (svijetla tema):** pozadina fokusa je TAMNA u obje teme, ali tema-varijable
+  (`--silver-bright`/`--sage`/`--text`) su TAMNE u svijetloj temi → tamni tekst na tamnoj
+  podlozi = nečitljivo. Zato `:root[data-theme="light"] .vtar-focus-*` forsira svijetli tekst.
   Klik bilo gdje na overlay ju zatvara. `position:fixed` (ne absolute unutar stola) je namjeran
   jer pouzdano radi i kad stol scrolla (free spread), u fullscreenu i na mobitelu. Hover na
   karticu je samo suptilan podizaj (`translateY`), ne veliko uvećanje — glavni "zoom" je

@@ -357,6 +357,20 @@
 .vtar-yn-mozda { color: var(--lavender); border-color: var(--lavender); background: rgba(168,144,208,0.14); }
 .vtar-focus.vtar-focus-no-meaning .vtar-focus-meaning { display: none; }
 
+/* Svijetla tema: pozadina fokusa je tamna u OBJE teme, pa tema-varijable
+   (--silver-bright/--sage/--text = TAMNE u light temi) daju tamni tekst na
+   tamnoj podlozi = nečitljivo. Ovdje forsiramo svijetli, čitljiv tekst
+   neovisno o temi. */
+:root[data-theme="light"] .vtar-focus-name { color: #f2ecff; }
+:root[data-theme="light"] .vtar-focus-meaning { color: #ece6f8; }
+:root[data-theme="light"] .vtar-focus-meaning-label,
+:root[data-theme="light"] .vtar-focus-yesno-label { color: #c9b6ea; }
+:root[data-theme="light"] .vtar-focus-m { border-color: rgba(255,255,255,0.20); }
+:root[data-theme="light"] .vtar-focus-m-active {
+  border-color: #b79ee0; background: rgba(183,158,224,0.20);
+}
+:root[data-theme="light"] .vtar-yn-mozda { color: #cbb2ee; border-color: #b79ee0; background: rgba(183,158,224,0.20); }
+
 @media (max-width: 760px) {
   .vtar-focus-inner { flex-direction: column; gap: 1.2rem; max-width: 94vw; }
   .vtar-focus-card { height: min(48vh, 420px); }
@@ -493,12 +507,13 @@
      .vtar-slots), pa je CSS ovdje ne smije ograničavati ni razmicati paddingom. */
   .vtar-slots { min-height: 0; padding: 0; }
   .vtar-slots.vtar-free { padding: 1rem 0.6rem 1.2rem; }
-  /* gumb za odlaganje uvijek vidljiv (na dodirnom zaslonu nema hovera) */
-  .vtar-table.vtar-mobile .vtar-card-discard-btn { opacity: 0.85; }
+  /* ✕ gumb se NE prikazuje na mobitelu - odlaganje ide isključivo povlačenjem
+     (pritisni, drži, vuci u iskorištene karte); ✕ je zbunjivao i smetao. */
+  .vtar-table.vtar-mobile .vtar-card-discard-btn,
+  .vtar-slots.vtar-free .vtar-card-discard-btn { display: none; }
   /* manje oznake na manjim kartama */
   .vtar-table.vtar-mobile .vtar-badge { width: 18px; height: 18px; font-size: 0.6rem; }
   .vtar-table.vtar-mobile .vtar-badge-rev { font-size: 0.72rem; }
-  .vtar-table.vtar-mobile .vtar-card-discard-btn { width: 18px; height: 18px; font-size: 0.55rem; top: -7px; right: -7px; }
   .vtar-table.vtar-mobile .vtar-badge-order { top: -7px; left: -7px; }
   .vtar-table.vtar-mobile .vtar-badge-rev { bottom: -7px; left: -7px; }
   .vtar-table.vtar-mobile .vtar-caption { max-width: calc(var(--vtar-cellw) - 2px); }
@@ -538,4 +553,28 @@
   .vtar-drawbar-swatch { width: 18px; height: 18px; border-radius: 4px; background-size: cover; background-position: center; flex-shrink: 0; }
   .vtar-drawbar-name { font-weight: 600; white-space: nowrap; }
   .vtar-drawbar-count { color: var(--text-muted); }
+
+  /* ---- Veliki drop-target (samo mobitel, samo dok se povlači) ---- */
+  .vtar-mobile-dropzone {
+    display: flex; position: fixed; left: 0; right: 0;
+    bottom: calc(54px + env(safe-area-inset-bottom, 0px)); /* iznad donje trake */
+    z-index: 260; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+    height: 30vh; margin: 0 0.6rem; padding: 1rem;
+    background: linear-gradient(180deg, rgba(168,144,208,0.16), rgba(168,144,208,0.28));
+    border: 2px dashed var(--lavender); border-radius: 18px;
+    color: var(--lavender); text-align: center;
+    opacity: 0; transform: translateY(12px); pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease, background .15s ease;
+  }
+  /* pointer-events:auto tek kad je vidljiv - da ga elementFromPoint prepozna
+     kao metu ispuštanja (ghost je pointer-events:none pa se vidi kroz njega). */
+  .vtar-mobile-dropzone.vtar-dz-show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .vtar-mobile-dropzone.vtar-drop-hover {
+    background: linear-gradient(180deg, rgba(168,144,208,0.34), rgba(168,144,208,0.5));
+    outline: none; transform: translateY(0) scale(1.015);
+  }
+  .vtar-mobile-dropzone-icon { font-size: 2.2rem; line-height: 1; }
+  .vtar-mobile-dropzone-text { font-family: 'Quicksand', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.02em; }
 }
+/* dropzone postoji samo na mobitelu — na širem ekranu je uvijek skriven */
+@media (min-width: 761px) { .vtar-mobile-dropzone { display: none; } }

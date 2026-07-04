@@ -292,7 +292,8 @@ function createTarotUI(engine, root) {
       const used = trEl('button', 'vtar-drawbar-used');
       used.type = 'button';
       used.title = 'Iskorištene karte - klikni da ih vratiš u špil';
-      used.innerHTML = `<span class="vtar-drawbar-name">Iskorištene</span><span class="vtar-drawbar-count" id="vtar-drawbar-used-count">${engine.state.discard.length}</span>`;
+      used.setAttribute('aria-label', 'Iskorištene karte - vrati ih u špil');
+      used.innerHTML = `<span class="vtar-drawbar-icon">▤</span><span class="vtar-drawbar-count" id="vtar-drawbar-used-count">${engine.state.discard.length}</span>`;
       used.addEventListener('click', () => engine.returnDiscardToDecks());
       els.mobileBar.appendChild(used);
       const nw = trEl('button', 'vtar-drawbar-new');
@@ -416,8 +417,7 @@ function createTarotUI(engine, root) {
     els.slots.classList.toggle('vtar-show-cap', engine.state.showMeanings && !spread.free);
 
     if (spread.free) { renderFreeSlots(); }
-    else if (isMobile) { renderMobileSlots(spread); }
-    else { renderDesktopSlots(spread); }
+    else { renderFixedSlots(spread); }
 
     renderLegend(spread);
     updateHint();
@@ -434,8 +434,10 @@ function createTarotUI(engine, root) {
     return cap;
   }
 
-  /* Fiksni spread, desktop - bounding-box fit izračun (karte što veće, uvijek unutar stola) */
-  function renderDesktopSlots(spread) {
+  /* Fiksni spread (desktop I mobitel) - bounding-box fit izračun; na mobitelu
+     se čuva PRAVA geometrija spreada (iste pozicije kao na desktopu), samo se
+     visina stola izvodi iz širine ekrana (v. computeLayout). */
+  function renderFixedSlots(spread) {
     const showCap = engine.state.showMeanings;
     const L = computeLayout(spread, showCap);
     els.slots.style.setProperty('--vtar-cw', L.cw + 'px');
@@ -454,27 +456,9 @@ function createTarotUI(engine, root) {
       if (pos.rot) { box.style.transform = `rotate(${pos.rot}deg)`; box.style.setProperty('--vtar-box-rot', pos.rot + 'deg'); }
       slot.appendChild(box);
       // preskoči oznaku ispod karte koja križa (isto središte kao karta 1) - ostaje u legendi
-      if (showCap && !pos.rot) slot.appendChild(captionEl(pos));
+      if (L.showCap && !pos.rot) slot.appendChild(captionEl(pos));
       els.slots.appendChild(slot);
 
-      const entry = engine.state.table[idx];
-      if (entry) placeCardInSlot(idx, entry, false);
-    });
-  }
-
-  /* Fiksni spread, mobitel - jednostavan vertikalan popis */
-  function renderMobileSlots(spread) {
-    els.slots.style.removeProperty('--vtar-cw');
-    els.slots.style.removeProperty('--vtar-cellw');
-    const showCap = engine.state.showMeanings;
-    spread.positions.forEach((pos, idx) => {
-      const slot = trEl('div', 'vtar-slot');
-      slot.dataset.slot = idx;
-      const box = trEl('div', 'vtar-cardbox');
-      box.innerHTML = `<span class="vtar-slot-num">${idx + 1}</span>`;
-      slot.appendChild(box);
-      if (showCap) slot.appendChild(captionEl(pos));
-      els.slots.appendChild(slot);
       const entry = engine.state.table[idx];
       if (entry) placeCardInSlot(idx, entry, false);
     });
@@ -484,6 +468,7 @@ function createTarotUI(engine, root) {
   function renderFreeSlots() {
     els.slots.style.removeProperty('--vtar-cw');
     els.slots.style.removeProperty('--vtar-cellw');
+    els.slots.style.height = '';
     engine.state.table.forEach((entry, idx) => {
       const slot = trEl('div', 'vtar-slot vtar-slot-flow');
       slot.dataset.slot = idx;
@@ -502,21 +487,43 @@ function createTarotUI(engine, root) {
   /* Bounding-box layout: karte se skaliraju na stvarni "otisak" pozicija
      spreada (ne na deklarirani cols/rows), pa su uvijek maksimalno velike
      bez preklapanja i uvijek unutar stola. Kad su značenja uključena,
-     rezervira se prostor za oznaku ispod karte. */
+     rezervira se prostor za oznaku ispod karte.
+     - DESKTOP: visina stola je zadana (CSS min-height), karte se uklapaju u nju.
+     - MOBITEL: obrnuto - iz širine ekrana se izračuna veličina karata, a VISINA
+       stola se postavi inline (els.slots.style.height) da geometrija spreada
+       ostane identična desktopu; stranica normalno scrolla. Oznake ispod karata
+       prikazuju se samo ako je ćelija dovoljno široka (inače ostaju u legendi). */
   function computeLayout(spread, showCap) {
     const rect = els.slots.getBoundingClientRect();
-    const W = rect.width, H = rect.height || 480;
-    const pad = Math.max(16, Math.min(W, H) * 0.045);
+    const W = rect.width;
     const gxs = spread.positions.map(p => p.gx), gys = spread.positions.map(p => p.gy);
     const minGx = Math.min(...gxs), maxGx = Math.max(...gxs);
     const minGy = Math.min(...gys), maxGy = Math.max(...gys);
     const effCols = (maxGx - minGx) + 1;
     const effRows = (maxGy - minGy) + 1;
+    const gapV = 4;
+
+    if (isMobile) {
+      const pad = 10;
+      const cellW = (W - 2 * pad) / effCols;
+      let cw = Math.min(cellW * 0.94, 118);
+      cw = Math.max(44, Math.round(cw));
+      const ch = cw / VTAR_RATIO;
+      const capOn = showCap && cellW >= 88; // premala ćelija = oznaka nečitljiva
+      const capH = capOn ? 18 : 0;
+      const cellH = ch + capH + gapV + 10;
+      const H = Math.round(effRows * cellH + 2 * pad);
+      els.slots.style.height = H + 'px';
+      return { W, H, pad, minGx, minGy, effCols, effRows, cellW, cellH, cw, showCap: capOn };
+    }
+
+    els.slots.style.height = '';
+    const H = rect.height || 480;
+    const pad = Math.max(16, Math.min(W, H) * 0.045);
     const cellW = (W - 2 * pad) / effCols;
     const cellH = (H - 2 * pad) / effRows;
 
     const capH = showCap ? 20 : 0; // jedan red naziva pozicije ispod karte
-    const gapV = 4;
     let ch = cellH - capH - gapV;
     let cw = ch * VTAR_RATIO;
     const maxCw = cellW * 0.92;
@@ -524,7 +531,7 @@ function createTarotUI(engine, root) {
     const capMax = 300;
     if (cw > capMax) { cw = capMax; ch = cw / VTAR_RATIO; }
     cw = Math.max(44, Math.round(cw));
-    return { W, H, pad, minGx, minGy, effCols, effRows, cellW, cellH, cw };
+    return { W, H, pad, minGx, minGy, effCols, effRows, cellW, cellH, cw, showCap };
   }
 
   function updateHint() {

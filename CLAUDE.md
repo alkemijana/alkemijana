@@ -345,7 +345,9 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   samo vlastiti `back.svg` kao pregled; engine ih preskače pri inicijalizaciji stanja i svugdje
   gdje se iterira `TAROT_DECKS`, jer `state.decks[id]` za njih ne postoji — provjeri `if
   (d.comingSoon)`/`if (state.decks[id])` prije dodavanja novih mjesta koja iteriraju špilove).
-  Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr. `fool.jpg`) —
+  Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr. `fool.jpg`;
+  PAZI: u izvornom Wikimedia setu za Marseille Paž/Vitez su bili zamijenjeni — datoteke
+  `*-page.jpg`/`*-knight.jpg` su ispravljene zamjenom, VALET=page, CAVALIER=knight) —
   isti id/naziv za sve špilove (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika →
   dodavanje pravog Lenormand/Oracle špila = ukloni `comingSoon`, dodaj `folder`/`ext` + 78 slika.
   Pozadine karata (`back.svg`, različit motiv po špilu) **ne mijenjaju se s temom**.
@@ -425,20 +427,24 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   bi se bez toga prelila PREKO legende; u fullscreenu špilovi dobivaju i kompaktniju širinu
   (`--vtar-card-w` vezan uz `vh`). Relayout preko istog `ResizeObserver` (ne posebna
   `fullscreenchange` logika za veličine). Skriven na mobitelu (`@media max-width:900px`).
-- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** BOČNE TRAKE SU SKRIVENE
-  (`display:none` na `.vtar-rail-left/right`) — sve akcije preuzima **fiksna traka na dnu**
-  (`.vtar-mobile-drawbar`, `position:fixed`): po uključenom špilu složeni chip
+- **Mobilna verzija (`@media max-width:760px`, klasa `.vtar-mobile`):** fiksni spreadovi
+  koriste ISTI apsolutni bounding-box layout kao desktop pa je **geometrija spreada
+  identična** (Keltski križ = pravi križ + stup, Zvijezda = krug...), samo `computeLayout`
+  u mobilnoj grani radi obrnuto: iz širine ekrana izračuna veličinu karata (max 118px) i
+  **postavi visinu stola inline** (`els.slots.style.height`) — stranica normalno scrolla.
+  Oznake ispod karata prikazuju se samo ako je ćelija ≥88px široka (inače su značenja samo
+  u legendi s brojevima); `renderFreeSlots` mora čistiti inline height. BOČNE TRAKE SU
+  SKRIVENE (`display:none` na `.vtar-rail-left/right`) — sve akcije preuzima **fiksna traka
+  na dnu** (`.vtar-mobile-drawbar`, `position:fixed`): po uključenom špilu složeni chip
   (`.vtar-drawbar-group` = gumb za izvlačenje + mali `⟲` koji radi `shuffleFull`), pa gumb
-  **"Iskorištene" s brojačem** (klik vraća iskorištene u špil; brojač ažurira `renderDiscard`
-  preko `#vtar-drawbar-used-count`) i `✦` (novi spread). Fiksni spreadovi su **mreža 3 karte
-  u redu** (grid, redom izvlačenja), rotacija Keltski-križ karte je neutralizirana
-  (`transform:none !important` + badge/✕ bez kontra-rotacije), gumb `✕` je uvijek vidljiv
-  (nema hovera na dodirnom zaslonu); free i dalje teče. Render bira granu
-  `renderDesktopSlots`/`renderMobileSlots`/`renderFreeSlots` prema `isMobile`/`free`.
-  **PAZI:** u `.vtar-toolbar` (flex-kolona na mobitelu) `flex-basis` postaje VISINA —
-  `.vtar-spread-toggle` mora imati `flex:0 0 auto` u ≤760 mediji (inače naraste na 320px).
-  Drawbar automatski nestaje na drugim stranicama jer je `#tarot section.page:not(.active)`
-  cijela `display:none`.
+  `▤` s brojačem iskorištenih (klik ih vraća u špil; brojač ažurira `renderDiscard` preko
+  `#vtar-drawbar-used-count`) i `✦` (novi spread) — dimenzionirano da SVE stane u 375px bez
+  scrollanja trake. Gumb `✕` na karti je uvijek vidljiv (nema hovera na dodirnom zaslonu),
+  badge-evi su smanjeni na 18px. Render: `renderFixedSlots` (desktop i mobitel) /
+  `renderFreeSlots`. **PAZI:** u `.vtar-toolbar` (flex-kolona na mobitelu) `flex-basis`
+  postaje VISINA — `.vtar-spread-toggle` mora imati `flex:0 0 auto` u ≤760 mediji (inače
+  naraste na 320px). Drawbar automatski nestaje na drugim stranicama jer je
+  `#tarot section.page:not(.active)` cijela `display:none`.
 - **Postavke (bez perzistencije u localStorage — namjerno, sesijski alat):** uspravno/obrnuto
   (utječe samo na buduća izvlačenja), prikaži/sakrij značenja (utječe na legendu). Iskorištene
   karte (interno i dalje `discard`/"otpad" u kodu, ali SVI vidljivi tekstovi kažu "iskorištene
@@ -459,6 +465,9 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   javna domena, preuzeto preko en.wikisource.org) i modernih, toplijih tumačenja. Piše se kao
   IZRAVAN opis karte — **bez fraza tipa „kaže Waite / prema Waiteu / navodi se…"** — i
   uravnoteženog tona (i sjena i svjetlo karte, ne samo mračna viktorijanska strana).
+  **Isti ton i opseg (2-3 rečenice) vrijedi i za OBRNUTA značenja** — temeljena na Waiteovim
+  reversed značenjima iz PKT-a, uz moderniju, blažu perspektivu (blokirana/pretjerana/
+  unutarnja verzija energije karte + nježan savjet), obraćanje u ženskom rodu.
 - **Admin uređivanje (`TAROT_CARD_TEXTS` u `js/data.js`):** naziv + **odgovor karte
   (DA/NE/MOŽDA `select`, polje `yesno`)** + značenje uspravno + značenje obrnuto, po špilu po
   karti, uređuju se u admin tabu **"Tarot karte"** (`index.html` `#ap-tarot`, `js/admin.js`

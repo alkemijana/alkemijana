@@ -468,23 +468,21 @@
   .vtar-rail-left, .vtar-rail-right { display: none; }
 
   .vtar-table { min-height: auto; border-radius: 16px; overflow: visible; }
-  .vtar-slots { min-height: auto; height: auto; padding: 1rem 0.7rem 1.3rem; }
-
-  /* fiksni spreadovi: mreža 3 u redu, redom izvlačenja (1, 2, 3...) */
-  .vtar-table.vtar-mobile .vtar-slots {
-    position: static; display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 1.1rem 0.7rem; align-items: start; justify-items: center;
-  }
-  .vtar-table.vtar-mobile .vtar-slot {
-    position: relative; left: auto; top: auto; transform: none; width: 100%;
-  }
-  .vtar-table.vtar-mobile .vtar-cardbox { width: 100%; max-width: 132px; }
-  /* rotacija karte koja križa (Keltski križ) nema smisla u mreži */
-  .vtar-table.vtar-mobile .vtar-cardbox { transform: none !important; }
-  .vtar-table.vtar-mobile .vtar-badge, .vtar-table.vtar-mobile .vtar-card-discard-btn { transform: none; }
+  /* Fiksni spreadovi zadržavaju PRAVU geometriju (isti apsolutni layout kao
+     desktop) - visinu stola postavlja JS (computeLayout, inline height na
+     .vtar-slots), pa je CSS ovdje ne smije ograničavati ni razmicati paddingom. */
+  .vtar-slots { min-height: 0; padding: 0; }
+  .vtar-slots.vtar-free { padding: 1rem 0.6rem 1.2rem; }
   /* gumb za odlaganje uvijek vidljiv (na dodirnom zaslonu nema hovera) */
-  .vtar-table.vtar-mobile .vtar-card-discard-btn, .vtar-slots.vtar-free .vtar-card-discard-btn { opacity: 0.85; }
-  .vtar-table.vtar-mobile .vtar-caption { max-width: 100%; }
+  .vtar-table.vtar-mobile .vtar-card-discard-btn { opacity: 0.85; }
+  /* manje oznake na manjim kartama */
+  .vtar-table.vtar-mobile .vtar-badge { width: 18px; height: 18px; font-size: 0.6rem; }
+  .vtar-table.vtar-mobile .vtar-badge-rev { font-size: 0.72rem; }
+  .vtar-table.vtar-mobile .vtar-card-discard-btn { width: 18px; height: 18px; font-size: 0.55rem; top: -7px; right: -7px; }
+  .vtar-table.vtar-mobile .vtar-badge-order { top: -7px; left: -7px; }
+  .vtar-table.vtar-mobile .vtar-badge-rev { bottom: -7px; left: -7px; }
+  .vtar-table.vtar-mobile .vtar-caption { max-width: calc(var(--vtar-cellw) - 2px); }
+  .vtar-table.vtar-mobile .vtar-cap-label { font-size: 0.58rem; }
 
   .vtar-legend { grid-template-columns: 1fr; margin-bottom: 4.5rem; }
   .vtar-root { padding-bottom: 5.5rem; }
@@ -499,24 +497,25 @@
   }
   .vtar-drawbar-group { display: flex; flex-shrink: 0; }
   .vtar-drawbar-btn {
-    display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
-    padding: 0.4rem 0.6rem 0.4rem 0.4rem; border-radius: 999px 0 0 999px;
+    display: flex; align-items: center; gap: 0.32rem; flex-shrink: 0;
+    padding: 0.38rem 0.5rem 0.38rem 0.35rem; border-radius: 999px 0 0 999px;
     background: var(--card-bg); border: 1px solid var(--border); color: var(--text);
-    font-family: 'Quicksand', sans-serif; font-size: 0.78rem; cursor: pointer;
+    font-family: 'Quicksand', sans-serif; font-size: 0.72rem; cursor: pointer;
   }
   .vtar-drawbar-shuffle {
-    flex-shrink: 0; padding: 0.4rem 0.55rem; border-radius: 0 999px 999px 0;
+    flex-shrink: 0; padding: 0.38rem 0.45rem; border-radius: 0 999px 999px 0;
     background: var(--card-bg); border: 1px solid var(--border); border-left: none;
-    color: var(--text-muted); font-size: 0.9rem; cursor: pointer;
+    color: var(--text-muted); font-size: 0.85rem; cursor: pointer;
   }
   .vtar-drawbar-used, .vtar-drawbar-new {
-    display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;
-    padding: 0.4rem 0.7rem; border-radius: 999px;
+    display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;
+    padding: 0.38rem 0.55rem; border-radius: 999px;
     background: transparent; border: 1px solid var(--border); color: var(--text-muted);
-    font-family: 'Quicksand', sans-serif; font-size: 0.74rem; cursor: pointer;
+    font-family: 'Quicksand', sans-serif; font-size: 0.72rem; cursor: pointer;
   }
-  .vtar-drawbar-new { border-color: var(--lavender); color: var(--lavender); font-size: 0.9rem; }
-  .vtar-drawbar-swatch { width: 22px; height: 22px; border-radius: 5px; background-size: cover; background-position: center; flex-shrink: 0; }
+  .vtar-drawbar-icon { font-size: 0.85rem; line-height: 1; }
+  .vtar-drawbar-new { border-color: var(--lavender); color: var(--lavender); font-size: 0.85rem; }
+  .vtar-drawbar-swatch { width: 18px; height: 18px; border-radius: 4px; background-size: cover; background-position: center; flex-shrink: 0; }
   .vtar-drawbar-name { font-weight: 600; white-space: nowrap; }
   .vtar-drawbar-count { color: var(--text-muted); }
 }

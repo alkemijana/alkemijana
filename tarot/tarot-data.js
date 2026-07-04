@@ -86,9 +86,12 @@ const TAROT_DECKS = [
   }
 ];
 
+/* Verzija slika karata — povećaj kad se slika promijeni na istom imenu
+   (npr. ispravljen Marseille Paž/Vitez) da probije cache preglednika/CDN-a. */
+const TAROT_IMG_VERSION = '2';
 function tarotCardImage(deckId, cardId) {
   const deck = TAROT_DECKS.find(d => d.id === deckId);
-  return `tarot/assets/decks/${deck.folder}/${cardId}.${deck.ext}`;
+  return `tarot/assets/decks/${deck.folder}/${cardId}.${deck.ext}?v=${TAROT_IMG_VERSION}`;
 }
 
 /* ---- Spreadovi ----

@@ -138,6 +138,13 @@ function createTarotUI(engine, root) {
   els.btnFs.addEventListener('click', toggleFullscreen);
   els.focus.addEventListener('click', closeFocus);
 
+  /* Dok se karta povlači (drag-to-discard) blokiraj scroll stranice na dodir.
+     Non-passive touchmove je jedini pouzdan način da se spriječi scroll na
+     mobitelu kad drag krene tek nakon pritisni-i-drži (touch-action ne bi
+     dopustio scroll ni za obični tap na karti). */
+  let dragActive = false;
+  document.addEventListener('touchmove', (e) => { if (dragActive) e.preventDefault(); }, { passive: false });
+
   /* ---- Fullscreen ---- */
   function toggleFullscreen() {
     const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
@@ -348,12 +355,106 @@ function createTarotUI(engine, root) {
       e.stopPropagation();
       engine.discardSlot(slotIdx);
     });
-    // Klik na kartu → uveličaj i centriraj preko cijelog stola
-    cardEl.addEventListener('click', (e) => {
-      if (e.target.closest('.vtar-card-discard-btn')) return;
-      openFocus(entry);
-    });
+    // Tap = uveličaj (fokus); pritisni-drži-povuci = odloži u iskorištene karte
+    attachCardInteraction(cardEl, slotIdx, entry);
     return cardEl;
+  }
+
+  /* ---- Tap / drag interakcija na karti ----
+     Kratak dodir (tap/klik) otvara fokus; pritisni-i-drži (~280ms) pa povuci
+     hvata karticu i može ju ispustiti na zonu iskorištenih karata (desno na
+     desktopu, ▤ gumb u donjoj traci na mobitelu). Rješava i nedostupne ✕
+     gumbe na gustim spreadovima (npr. Keltski križ, Zvijezda) na dodirnom
+     zaslonu. Radi preko Pointer eventova (miš + dodir zajedno). */
+  function findDropZone(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el ? el.closest('.vtar-drawbar-used, .vtar-discard-zone') : null;
+  }
+  function attachCardInteraction(cardEl, slotIdx, entry) {
+    const LONG_MS = 280, MOVE_CANCEL = 12;
+    let pid = null, sx = 0, sy = 0, moved = false, dragging = false, longTimer = null, ghost = null, gox = 0, goy = 0, hoverZone = null;
+
+    function setHover(z) {
+      if (hoverZone === z) return;
+      if (hoverZone) hoverZone.classList.remove('vtar-drop-hover');
+      hoverZone = z;
+      if (hoverZone) hoverZone.classList.add('vtar-drop-hover');
+    }
+    function startDrag(x, y) {
+      dragging = true; dragActive = true;
+      closeFocus();
+      const r = cardEl.getBoundingClientRect();
+      gox = x - r.left; goy = y - r.top;
+      ghost = trEl('div', 'vtar-drag-ghost' + (entry.orientation === 'reversed' ? ' vtar-reversed' : ''));
+      ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
+      const img = trEl('div', 'vtar-drag-ghost-img');
+      img.style.backgroundImage = `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
+      ghost.appendChild(img);
+      document.body.appendChild(ghost);
+      cardEl.classList.add('vtar-card-dragging');
+      els.stage.classList.add('vtar-dragging');
+      moveGhost(x, y);
+    }
+    function moveGhost(x, y) {
+      if (!ghost) return;
+      ghost.style.left = (x - gox) + 'px';
+      ghost.style.top = (y - goy) + 'px';
+      setHover(findDropZone(x, y));
+    }
+    function endDrag(x, y) {
+      const zone = (x < 0) ? null : findDropZone(x, y);
+      setHover(null);
+      els.stage.classList.remove('vtar-dragging');
+      dragActive = false;
+      if (zone) {
+        if (ghost) { ghost.remove(); ghost = null; }
+        engine.discardSlot(slotIdx); // re-render uklanja karticu
+        return;
+      }
+      // ispušteno izvan zone → vrati kroz animaciju
+      if (ghost) {
+        const r = cardEl.getBoundingClientRect();
+        ghost.style.transition = 'left .2s ease, top .2s ease, opacity .2s ease';
+        ghost.style.left = r.left + 'px'; ghost.style.top = r.top + 'px'; ghost.style.opacity = '0';
+        const g = ghost; ghost = null;
+        setTimeout(() => g.remove(), 220);
+      }
+      cardEl.classList.remove('vtar-card-dragging');
+    }
+    /* Move/up slušamo na dokumentu (ne na kartici) da hvatamo pokret i kad prst
+       ode s kartice do zone iskorištenih — bez pointer capture koji na nekim
+       preglednicima ubija scroll. */
+    function onMove(e) {
+      if (e.pointerId !== pid) return;
+      if (dragging) { moveGhost(e.clientX, e.clientY); return; }
+      if (Math.hypot(e.clientX - sx, e.clientY - sy) > MOVE_CANCEL) { moved = true; clearTimeout(longTimer); }
+    }
+    function detach() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      clearTimeout(longTimer); pid = null;
+    }
+    function onUp(e) {
+      if (e.pointerId !== pid) return;
+      if (dragging) { dragging = false; endDrag(e.clientX, e.clientY); }
+      else if (!moved) { openFocus(entry); }
+      detach();
+    }
+    function onCancel(e) {
+      if (e.pointerId !== pid) return;
+      if (dragging) { dragging = false; endDrag(-1, -1); } // izvan zone → vrati
+      detach();
+    }
+    cardEl.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.vtar-card-discard-btn')) return;
+      if (e.button != null && e.button > 0) return;
+      pid = e.pointerId; sx = e.clientX; sy = e.clientY; moved = false; dragging = false;
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onCancel);
+      longTimer = setTimeout(() => { if (!moved && pid != null) startDrag(sx, sy); }, LONG_MS);
+    });
   }
 
   /* Badge s brojem redoslijeda - pokraj karte (gornji lijevi kut) */
@@ -535,12 +636,15 @@ function createTarotUI(engine, root) {
   }
 
   function updateHint() {
+    const drag = isMobile
+      ? ' Karticu možeš pritisnuti, zadržati i povući u iskorištene karte.'
+      : ' Karticu možeš i povući (pritisni, drži, vuci) u iskorištene karte desno.';
     if (engine.isFree()) {
-      els.hint.textContent = 'Klikni na špil - karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.';
+      els.hint.textContent = 'Klikni na špil - karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.' + drag;
     } else if (engine.isSpreadFull()) {
-      els.hint.textContent = 'Raspored je pun. Klik na kartu ju poveća; „✦ Novi spread" za novo čitanje.';
+      els.hint.textContent = 'Raspored je pun. Klik na kartu ju poveća; „✦ Novi spread" za novo čitanje.' + drag;
     } else {
-      els.hint.textContent = 'Klikni na špil da izvučeš kartu. Klik na izvučenu kartu ju poveća.';
+      els.hint.textContent = 'Klikni na špil da izvučeš kartu. Klik na izvučenu kartu ju poveća.' + drag;
     }
   }
 

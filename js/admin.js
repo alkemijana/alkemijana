@@ -1783,7 +1783,7 @@ function renderTarotAdminList() {
     const upright = saved.upright || '';
     const reversed = saved.reversed || '';
     const yesno = saved.yesno || '';
-    const img = `tarot/assets/decks/${deck.folder}/${c.id}.${deck.ext}`;
+    const img = (typeof tarotCardImage === 'function') ? tarotCardImage(deckId, c.id) : `tarot/assets/decks/${deck.folder}/${c.id}.${deck.ext}`;
     const ynOpt = v => `<option value="${v}"${yesno === v ? ' selected' : ''}>${v || '(bez odgovora)'}</option>`;
     return `
       <div class="tarot-admin-card" data-card="${c.id}">

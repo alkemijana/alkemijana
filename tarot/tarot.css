@@ -252,6 +252,23 @@
 /* ---- Karta (izvučena) ---- */
 .vtar-card { position: absolute; inset: 0; perspective: 1000px; cursor: pointer; transition: transform .2s cubic-bezier(.2,.7,.3,1); }
 .vtar-cardbox:hover .vtar-card { transform: translateY(-3px); }
+.vtar-card.vtar-card-dragging { opacity: 0; }
+
+/* ---- Drag-to-discard: karta se povlači, "duh" prati prst/miš ---- */
+.vtar-drag-ghost {
+  position: fixed; z-index: 4000; pointer-events: none; border-radius: 9%;
+  box-shadow: 0 20px 55px rgba(0,0,0,0.65); overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.18); will-change: left, top;
+}
+.vtar-drag-ghost-img { width: 100%; height: 100%; background-size: cover; background-position: center; }
+.vtar-drag-ghost.vtar-reversed .vtar-drag-ghost-img { transform: rotate(180deg); }
+/* zona iskorištenih karata se istakne dok se karta povlači */
+.vtar-stage.vtar-dragging .vtar-discard-zone,
+.vtar-stage.vtar-dragging .vtar-drawbar-used { animation: vtarDropPulse 1.1s ease infinite; }
+.vtar-drop-hover { outline: 2px solid var(--lavender); outline-offset: 3px; border-radius: 12px; }
+.vtar-discard-zone.vtar-drop-hover { transform: scale(1.06); }
+.vtar-drawbar-used.vtar-drop-hover { background: var(--lavender); color: #1a1430; }
+@keyframes vtarDropPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
 .vtar-card-flip { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.3,.2,.2,1); }
 .vtar-card-flip.vtar-revealed { transform: rotateY(180deg); }
 
@@ -458,9 +475,12 @@
    traka na dnu; fiksni spreadovi su kompaktna mreža 3 karte u redu.
    ============================================================ */
 @media (max-width: 760px) {
-  .vtar-toolbar { flex-direction: column; align-items: stretch; }
-  /* u koloni je flex-basis VISINA - bez ovoga gumb izbornika naraste na 320px */
-  .vtar-spread-toggle { flex: 0 0 auto; }
+  /* PAZI (2 zamke flex-kolone): 1) flex-basis postaje VISINA (zato toggle
+     mora na flex:0 0 auto, inače je visok 320px); 2) flex-wrap:wrap u koloni
+     širi LINIJU na intrinzičnu širinu najšireg elementa (nowrap opis spreada!)
+     pa gumb izlazi iz okvira - zato nowrap + max-width kao osigurač. */
+  .vtar-toolbar { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
+  .vtar-spread-toggle { flex: 0 0 auto; width: 100%; max-width: 100%; }
   .vtar-toolbar-controls { justify-content: space-between; gap: 0.6rem 0.8rem; }
   .vtar-spread-panel { grid-template-columns: 1fr; }
 

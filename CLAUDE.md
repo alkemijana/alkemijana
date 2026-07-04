@@ -348,8 +348,12 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr. `fool.jpg`;
   PAZI: u izvornom Wikimedia setu za Marseille Paž/Vitez su bili zamijenjeni — datoteke
   `*-page.jpg`/`*-knight.jpg` su ispravljene zamjenom, VALET=page, CAVALIER=knight) —
-  isti id/naziv za sve špilove (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika →
-  dodavanje pravog Lenormand/Oracle špila = ukloni `comingSoon`, dodaj `folder`/`ext` + 78 slika.
+  isti id/naziv za sve špilove (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika.
+  **Cache-busting:** `tarotCardImage()` dodaje `?v=${TAROT_IMG_VERSION}` (u tarot-data.js) na
+  URL slike — kad se slika promijeni na ISTOM imenu (npr. ispravak Paž/Vitez), povećaj
+  `TAROT_IMG_VERSION` da probiješ cache preglednika/Cloudflarea (inače korisnik vidi staru
+  sliku jer se URL nije promijenio). Admin (`renderTarotAdminList`) koristi isti helper.
+  Dodavanje pravog Lenormand/Oracle špila = ukloni `comingSoon`, dodaj `folder`/`ext` + 78 slika.
   Pozadine karata (`back.svg`, različit motiv po špilu) **ne mijenjaju se s temom**.
 - **Uključi/isključi špil — odvojeno od stola:** `.vtar-deck-switches` (red prekidača, uvijek
   vidljiv iznad stola, uključuje i "uskoro" špilove kao onemogućene) je JEDINO mjesto za
@@ -392,6 +396,18 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   za odlaganje u otpad (`✕`) je u GORNJEM desnom kutu (hover-only). Sve tri se kontra-rotiraju
   preko `--vtar-box-rot` da ostanu čitljive na rotiranoj Keltski-križ kartici. Prazan
   placeholder pokazuje samo broj pozicije u sredini (`.vtar-slot-num`).
+- **Interakcija s karticom (tap vs. drag) — `attachCardInteraction` u tarot-render.js:**
+  jedinstveno preko Pointer eventova (miš + dodir). **Kratak tap/klik** otvara fokus;
+  **pritisni-i-drži (~280ms) pa povuci** hvata karticu (`.vtar-drag-ghost`, fixed, prati
+  prst, `pointer-events:none` da `elementFromPoint` vidi kroz njega) i ispuštanjem na zonu
+  iskorištenih karata (`.vtar-discard-zone` desno na desktopu / `.vtar-drawbar-used` ▤ u
+  donjoj traci na mobitelu) je odloži (`engine.discardSlot`). Rješava nedostupne ✕ gumbe na
+  gustim spreadovima na dodirnom zaslonu (Keltski križ, Zvijezda...). Move/up se slušaju na
+  `document` (ne na kartici, bez `setPointerCapture` koji zna ubiti scroll); pomak >12px
+  prije isteka drži-timera = scroll (otkazuje drag). Scroll stranice tijekom draga blokira
+  **non-passive `touchmove`** koji `preventDefault`-a samo dok je `dragActive` (zato NEMA
+  `touch-action:none` na karti — obični tap/scroll na kartici ostaje moguć). Zona se istakne
+  (`.vtar-dragging` pulsira, `.vtar-drop-hover` obrub).
 - **Klik na kartu → fokus (uvećanje + značenje):** klik na izvučenu karticu otvara `.vtar-focus`
   — modal (`position:fixed`, `z-index:3000`) koji karticu centrira i poveća, s nazivom ispod i
   **panelom DESNO od karte na desktopu / ISPOD na mobitelu** (`.vtar-focus-inner` je flex-row,

@@ -328,6 +328,19 @@ body.vtar-noselect, body.vtar-noselect * {
 .vtar-focus.vtar-focus-visible .vtar-focus-card { transform: scale(1); }
 .vtar-focus-card.vtar-focus-reversed { transform: scale(0.85) rotate(180deg); }
 .vtar-focus.vtar-focus-visible .vtar-focus-card.vtar-focus-reversed { transform: scale(1) rotate(180deg); }
+/* Značenje pozicije (polja) u spreadu - iznad karte u fokusu */
+.vtar-focus-position {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  text-align: center; max-width: min(440px, 88vw);
+}
+.vtar-focus-pos-label {
+  font-family: 'Quicksand', sans-serif; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; font-size: 0.78rem; color: var(--lavender);
+}
+.vtar-focus-pos-meaning {
+  font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.98rem; line-height: 1.4;
+  color: var(--silver-bright); text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
 .vtar-focus-name {
   font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.4vw, 1.8rem);
   color: var(--silver-bright); text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,0.6);
@@ -374,7 +387,9 @@ body.vtar-noselect, body.vtar-noselect * {
 :root[data-theme="light"] .vtar-focus-name { color: #f2ecff; }
 :root[data-theme="light"] .vtar-focus-meaning { color: #ece6f8; }
 :root[data-theme="light"] .vtar-focus-meaning-label,
-:root[data-theme="light"] .vtar-focus-yesno-label { color: #c9b6ea; }
+:root[data-theme="light"] .vtar-focus-yesno-label,
+:root[data-theme="light"] .vtar-focus-pos-label { color: #c9b6ea; }
+:root[data-theme="light"] .vtar-focus-pos-meaning { color: #ece6f8; }
 :root[data-theme="light"] .vtar-focus-m { border-color: rgba(255,255,255,0.20); }
 :root[data-theme="light"] .vtar-focus-m-active {
   border-color: #b79ee0; background: rgba(183,158,224,0.20);

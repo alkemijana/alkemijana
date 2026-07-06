@@ -81,6 +81,7 @@ function createTarotUI(engine, root) {
             <div class="vtar-focus" id="vtar-focus" aria-hidden="true">
               <div class="vtar-focus-inner">
                 <div class="vtar-focus-visual">
+                  <div class="vtar-focus-position" id="vtar-focus-position"></div>
                   <div class="vtar-focus-card" id="vtar-focus-card"></div>
                   <div class="vtar-focus-name" id="vtar-focus-name"></div>
                 </div>
@@ -125,6 +126,7 @@ function createTarotUI(engine, root) {
     focus: root.querySelector('#vtar-focus'),
     focusCard: root.querySelector('#vtar-focus-card'),
     focusName: root.querySelector('#vtar-focus-name'),
+    focusPosition: root.querySelector('#vtar-focus-position'),
     focusMeaning: root.querySelector('#vtar-focus-meaning'),
     legend: root.querySelector('#vtar-legend'),
     discardStack: root.querySelector('#vtar-discard-stack'),
@@ -475,7 +477,7 @@ function createTarotUI(engine, root) {
       if (dragging) { dragging = false; endDrag(e.clientX, e.clientY); }
       else if (maxDist < TAP_SLOP) { // tap (uz toleranciju drhtaja)
         if (entry.faceDown) revealFaceDown(cardEl, entry); // prvo okreni kartu
-        else openFocus(entry);                             // kad je otkrivena = fokus
+        else openFocus(entry, slotIdx);                    // kad je otkrivena = fokus
       }
       detach();
     }
@@ -508,7 +510,7 @@ function createTarotUI(engine, root) {
      Uvijek se prikazuju OBA značenja (uspravno i obrnuto); ono koje odgovara
      orijentaciji izvučene karte je uokvireno (vtar-focus-m-active). Uz to se
      prikazuje i DA/NE/MOŽDA odgovor karte (text.yesno) ako je upisan u adminu. */
-  function openFocus(entry) {
+  function openFocus(entry, slotIdx) {
     const def = trCardDef(entry.cardId);
     const reversed = entry.orientation === 'reversed';
     const text = (typeof TAROT_CARD_TEXTS !== 'undefined' && TAROT_CARD_TEXTS[entry.deckId] && TAROT_CARD_TEXTS[entry.deckId][entry.cardId]) || null;
@@ -516,6 +518,18 @@ function createTarotUI(engine, root) {
     const upright = (text && text.upright) || '';
     const revText = (text && text.reversed) || '';
     const yesno = (text && text.yesno) || '';
+
+    // značenje pozicije (polja) u spreadu - iznad karte; slobodno slaganje nema pozicije
+    const spread = engine.currentSpread();
+    const pos = (!spread.free && slotIdx != null) ? spread.positions[slotIdx] : null;
+    if (pos) {
+      els.focusPosition.innerHTML =
+        `<span class="vtar-focus-pos-label">${pos.label}</span><span class="vtar-focus-pos-meaning">${pos.meaning}</span>`;
+      els.focusPosition.style.display = '';
+    } else {
+      els.focusPosition.innerHTML = '';
+      els.focusPosition.style.display = 'none';
+    }
 
     els.focusCard.style.backgroundImage = `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
     els.focusCard.classList.toggle('vtar-focus-reversed', reversed);

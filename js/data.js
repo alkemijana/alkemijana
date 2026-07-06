@@ -277,8 +277,8 @@ let TAROT_CARD_TEXTS = {
     "hierophant": {
       "name": "Papa",
       "yesno": "MOŽDA",
-      "upright": "Svećenik nosi tradiciju, zajedničke vrijednosti i učenje kroz provjerene puteve. Povezuje se s obvezom, savezništvom i pripadanjem nečemu većem - mentorstvu, zajednici ili duhovnoj praksi. Podsjeća da je ponekad mudro osloniti se na ono što je već isprobano, uz pažnju da te okvir ne sputa previše.",
-      "reversed": "Obrnuti Svećenik dovodi u pitanje naslijeđena pravila - ono što je nekad davalo oslonac sada steže. Može značiti pobunu protiv konvencija, ali i slijepo držanje forme iz straha od vlastitog puta. Zadrži ono što u tradiciji ima srce, a otpusti ono što je ostalo samo ljuštura."
+      "upright": "Papa nosi tradiciju, zajedničke vrijednosti i učenje kroz provjerene puteve. Povezuje se s obvezom, savezništvom i pripadanjem nečemu većem - mentorstvu, zajednici ili duhovnoj praksi. Podsjeća da je ponekad mudro osloniti se na ono što je već isprobano, uz pažnju da te okvir ne sputa previše.",
+      "reversed": "Obrnuti Papa dovodi u pitanje naslijeđena pravila - ono što je nekad davalo oslonac sada steže. Može značiti pobunu protiv konvencija, ali i slijepo držanje forme iz straha od vlastitog puta. Zadrži ono što u tradiciji ima srce, a otpusti ono što je ostalo samo ljuštura."
     },
     "lovers": {
       "name": "Ljubavnici",

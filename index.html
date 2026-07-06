@@ -722,12 +722,28 @@
         <button type="button" class="tool-card" onclick="openAstroTool('natal')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
-              <circle cx="50" cy="50" r="27" fill="none" stroke="var(--lavender)" stroke-width="1.6" opacity="0.55"/>
-              <path d="M50,8 L50,92 M8,50 L92,50" stroke="var(--lavender)" stroke-width="1.4" opacity="0.55"/>
-              <circle cx="50" cy="8"  r="3.4" fill="var(--sage)"/>
-              <circle cx="76" cy="76" r="3.4" fill="var(--lavender)"/>
-              <circle cx="24" cy="68" r="3.4" fill="var(--silver-bright)"/>
+              <!-- vanjski i unutarnji prsten (zodijak + kuće) -->
+              <circle cx="50" cy="50" r="40" fill="none" stroke="var(--lavender)" stroke-width="2.4"/>
+              <circle cx="50" cy="50" r="30" fill="none" stroke="var(--lavender)" stroke-width="1.2" opacity="0.5"/>
+              <!-- 12 crtica zodijaka -->
+              <g stroke="var(--lavender)" stroke-width="1.2" opacity="0.5" stroke-linecap="round">
+                <path d="M50,10 L50,20"/><path d="M70,15.4 L65,24"/><path d="M84.6,30 L76,35"/>
+                <path d="M90,50 L80,50"/><path d="M84.6,70 L76,65"/><path d="M70,84.6 L65,76"/>
+                <path d="M50,90 L50,80"/><path d="M30,84.6 L35,76"/><path d="M15.4,70 L24,65"/>
+                <path d="M10,50 L20,50"/><path d="M15.4,30 L24,35"/><path d="M30,15.4 L35,24"/>
+              </g>
+              <!-- aspektne linije između planeta -->
+              <g stroke="var(--sage)" stroke-width="1.3" opacity="0.7" fill="none" stroke-linecap="round">
+                <path d="M57.8,21 L65,76"/><path d="M79.9,47.4 L32.8,74.6"/>
+                <path d="M65,76 L21,42.2"/><path d="M57.8,21 L32.8,74.6"/>
+                <path d="M79.9,47.4 L21,42.2"/>
+              </g>
+              <!-- planeti -->
+              <circle cx="57.8" cy="21"   r="3.2" fill="var(--sage)"/>
+              <circle cx="79.9" cy="47.4" r="3.2" fill="var(--lavender)"/>
+              <circle cx="65"   cy="76"   r="3.2" fill="var(--silver-bright)"/>
+              <circle cx="32.8" cy="74.6" r="3.2" fill="var(--sage)"/>
+              <circle cx="21"   cy="42.2" r="3.2" fill="var(--lavender)"/>
             </svg>
           </div>
           <h3 id="t-toolCardNatalTitle"></h3>
@@ -748,11 +764,16 @@
         <button type="button" class="tool-card" onclick="openAstroTool('transit')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--lavender)" stroke-width="2" opacity="0.5"/>
-              <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="var(--sage)" stroke-width="2.2" transform="rotate(-25 50 50)"/>
-              <circle cx="50" cy="50" r="3" fill="var(--lavender)"/>
-              <path d="M50,50 L50,20" stroke="var(--silver-bright)" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="83" cy="34" r="3.4" fill="var(--sage)"/>
+              <!-- dvostruki prsten: natalna karta (unutra) + tranzitni prsten (vani) -->
+              <circle cx="50" cy="50" r="40" fill="none" stroke="var(--lavender)" stroke-width="2.2"/>
+              <circle cx="50" cy="50" r="22" fill="none" stroke="var(--lavender)" stroke-width="1.3" opacity="0.45"/>
+              <!-- putanja tranzitnog planeta (kretanje kroz vrijeme) -->
+              <path d="M12.4,63.7 A40,40 0 1 1 63.7,12.4" fill="none" stroke="var(--sage)" stroke-width="1.7" opacity="0.6" stroke-dasharray="3.5,5" stroke-linecap="round"/>
+              <!-- tranzitni planet stiže na kraj putanje -->
+              <circle cx="63.7" cy="12.4" r="4" fill="var(--sage)"/>
+              <!-- natalni planet i središte -->
+              <circle cx="30.5" cy="61" r="2.8" fill="var(--silver-bright)"/>
+              <circle cx="50" cy="50" r="2.6" fill="var(--lavender)"/>
             </svg>
           </div>
           <h3 id="t-toolCardTransitTitle"></h3>

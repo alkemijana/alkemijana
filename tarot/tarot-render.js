@@ -105,7 +105,7 @@ function createTarotUI(engine, root) {
              (lakše ciljanje od malog gumba u traci). -->
         <div class="vtar-mobile-dropzone" id="vtar-mobile-dropzone" aria-hidden="true">
           <span class="vtar-mobile-dropzone-icon">▤</span>
-          <span class="vtar-mobile-dropzone-text">Ispusti ovdje — iskorištene karte</span>
+          <span class="vtar-mobile-dropzone-text">Ispusti ovdje - iskorištene karte</span>
         </div>
       </div>
     </div>
@@ -382,7 +382,7 @@ function createTarotUI(engine, root) {
     // LONG_MS = koliko treba držati prije nego drag krene; DRAG_CANCEL = koliko
     // pomak prije toga otkazuje drag (=scroll); TAP_SLOP = koliki ukupni pomak
     // još uvijek broji kao tap (dodir uvijek malo "podrhtava", pa mora biti veći
-    // od pukih par piksela — inače se tap na mobitelu ne registrira kao otvaranje).
+    // od pukih par piksela - inače se tap na mobitelu ne registrira kao otvaranje).
     const LONG_MS = 300, DRAG_CANCEL = 10, TAP_SLOP = 24;
     let pid = null, sx = 0, sy = 0, maxDist = 0, dragging = false, longTimer = null, ghost = null, gox = 0, goy = 0, hoverZone = null;
 
@@ -436,7 +436,7 @@ function createTarotUI(engine, root) {
       cardEl.classList.remove('vtar-card-dragging');
     }
     /* Move/up slušamo na dokumentu (ne na kartici) da hvatamo pokret i kad prst
-       ode s kartice do zone iskorištenih — bez pointer capture koji na nekim
+       ode s kartice do zone iskorištenih - bez pointer capture koji na nekim
        preglednicima ubija scroll. */
     function onMove(e) {
       if (e.pointerId !== pid) return;

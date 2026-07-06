@@ -54,7 +54,7 @@ const TAROT_CARD_DEFS = buildCardDefs(); // 78 kartica
 const TAROT_DECKS = [
   {
     id: 'rws',
-    name: 'Rider–Waite–Smith',
+    name: 'Rider-Waite-Smith',
     shortName: 'RWS',
     year: '1909',
     folder: 'rws',
@@ -86,7 +86,7 @@ const TAROT_DECKS = [
   }
 ];
 
-/* Verzija slika karata — povećaj kad se slika promijeni na istom imenu
+/* Verzija slika karata - povećaj kad se slika promijeni na istom imenu
    (npr. ispravljen Marseille Paž/Vitez) da probije cache preglednika/CDN-a. */
 const TAROT_IMG_VERSION = '2';
 function tarotCardImage(deckId, cardId) {

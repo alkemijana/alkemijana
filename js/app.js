@@ -8,13 +8,13 @@
    tako da svaka "stranica" u SPA-u ima vlastite tagove (Googlebot to renderira). */
 const PAGE_META = {
   home: {
-    title: 'Besplatna natalna karta · Izrada s tumačenjem - Alkemijana',
-    desc:  'Besplatna natalna karta online - izračunaj svoju kartu neba na hrvatskom: pozicije planeta, kuće (Placidus), aspekti i dominante. Bez registracije, s PDF posterom i radnom verzijom.',
+    title: 'Alkemijana - Astrologija & Tarot, besplatna natalna karta',
+    desc:  'Alkemijana: astrologija i tarot na hrvatskom. Besplatna natalna karta, sinastrija, tranziti, astrokartografija i virtualni tarot. Bez registracije, s PDF-om.',
     hash:  ''
   },
   natal: {
     title: 'Besplatna natalna karta online - izrada s tumačenjem | Alkemijana',
-    desc:  'Izradi besplatnu natalnu kartu na hrvatskom: pozicije planeta, kuće (Placidus), aspekti, dominante, Jonesov oblik karte. Preuzmi PDF poster (A4–A0) ili radnu A4 verziju. Bez registracije.',
+    desc:  'Izradi besplatnu natalnu kartu na hrvatskom: pozicije planeta, kuće (Placidus), aspekti, dominante, Jonesov oblik karte. Preuzmi PDF poster (A4-A0) ili radnu A4 verziju. Bez registracije.',
     hash:  'natal'
   },
   blog: {

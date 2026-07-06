@@ -178,6 +178,30 @@ function createTarotEngine() {
     emit({ type: 'new-reading' });
   }
 
+  /* Automatski ispuni trenutni (fiksni) spread kartama okrenutima licem prema
+     dolje - koristi se kad korisnik odabere novi raspored iz izbornika: karte se
+     odmah slože, a korisnik ih pritiskom okreće (flip). Špil za izvlačenje: RWS
+     ako je uključen, inače prvi uključeni. Ne dira slobodno slaganje. Orijentacija
+     (uspravno/obrnuto) poštuje postavku "Obrnute" koju je korisnik već postavio. */
+  function autoFillSpread() {
+    if (isFree()) return false;
+    const enabled = enabledDeckIds();
+    if (!enabled.length) return false;
+    const deckId = enabled.indexOf('rws') !== -1 ? 'rws' : enabled[0];
+    const d = state.decks[deckId];
+    if (!d) return false;
+    let filled = false;
+    for (let i = 0; i < state.table.length; i++) {
+      if (state.table[i] !== null) continue;
+      if (d.remaining.length === 0) break;
+      const orientation = state.allowReversed && Math.random() < 0.5 ? 'reversed' : 'upright';
+      const cardId = d.remaining.shift();
+      state.table[i] = { deckId, cardId, orientation, drawSeq: state.drawSeq++, faceDown: true };
+      filled = true;
+    }
+    return filled;
+  }
+
   function setSpread(spreadId) {
     if (state.spreadId === spreadId) return;
     // vrati trenutne karte sa stola natrag u špil prije promjene rasporeda
@@ -187,6 +211,8 @@ function createTarotEngine() {
     TAROT_DECKS.forEach(dk => { if (state.decks[dk.id]) state.decks[dk.id].remaining = shuffleArray(state.decks[dk.id].remaining); });
     state.spreadId = spreadId;
     resetTableForSpread();
+    // novi odabrani raspored se odmah ispuni kartama licem prema dolje
+    autoFillSpread();
     emit({ type: 'spread', spreadId });
   }
 

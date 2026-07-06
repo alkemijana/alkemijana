@@ -293,13 +293,23 @@ function createTarotUI(engine, root) {
       btn.dataset.deck = deck.id;
       btn.innerHTML = `<span class="vtar-drawbar-swatch"></span><span class="vtar-drawbar-name">${deck.shortName}</span><span class="vtar-drawbar-count">${dState.remaining.length}</span>`;
       btn.addEventListener('click', () => handleDrawClick(deck.id, btn));
+      group.appendChild(btn);
+      // slobodno slaganje: gumb "Izvuci sve" (kao na desktopu) - izlista sve karte špila
+      if (engine.isFree()) {
+        const all = trEl('button', 'vtar-drawbar-all');
+        all.type = 'button';
+        all.title = 'Izvuci sve preostale karte iz ovog špila (po redu)';
+        all.setAttribute('aria-label', `Izvuci sve iz špila ${deck.shortName}`);
+        all.textContent = '▤';
+        all.addEventListener('click', () => handleDrawAllClick(deck.id, btn));
+        group.appendChild(all);
+      }
       const sh = trEl('button', 'vtar-drawbar-shuffle');
       sh.type = 'button';
       sh.title = 'Vrati sve karte u špil i promiješaj';
       sh.setAttribute('aria-label', `Promiješaj špil ${deck.shortName}`);
       sh.textContent = '⟲';
       sh.addEventListener('click', () => engine.shuffleFull(deck.id));
-      group.appendChild(btn);
       group.appendChild(sh);
       els.mobileBar.appendChild(group);
     });
@@ -357,7 +367,8 @@ function createTarotUI(engine, root) {
     cardEl.querySelector('.vtar-card-front-img').style.backgroundImage =
       `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
     const def = trCardDef(entry.cardId);
-    cardEl.title = def ? def.name + (entry.orientation === 'reversed' ? ' (obrnuto)' : '') : '';
+    // dok je karta licem prema dolje ne otkrivaj naziv (ni u tooltipu)
+    cardEl.title = (def && !entry.faceDown) ? def.name + (entry.orientation === 'reversed' ? ' (obrnuto)' : '') : '';
     if (entry.orientation === 'reversed') cardEl.classList.add('vtar-reversed');
     cardEl.querySelector('.vtar-card-discard-btn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -459,7 +470,10 @@ function createTarotUI(engine, root) {
     function onUp(e) {
       if (e.pointerId !== pid) return;
       if (dragging) { dragging = false; endDrag(e.clientX, e.clientY); }
-      else if (maxDist < TAP_SLOP) { openFocus(entry); } // tap (uz toleranciju drhtaja) = fokus
+      else if (maxDist < TAP_SLOP) { // tap (uz toleranciju drhtaja)
+        if (entry.faceDown) revealFaceDown(cardEl, entry); // prvo okreni kartu
+        else openFocus(entry);                             // kad je otkrivena = fokus
+      }
       detach();
     }
     function onCancel(e) {
@@ -696,10 +710,30 @@ function createTarotUI(engine, root) {
     box.appendChild(cardEl);
     // broj redoslijeda se prikazuje TEK kad je karta postavljena
     box.appendChild(orderBadge(slotIdx + 1));
-    if (entry.orientation === 'reversed') box.appendChild(reversedBadge());
+    // oznaka "obrnuto" se ne prikazuje dok je karta licem prema dolje (bila bi spoiler)
+    if (entry.orientation === 'reversed' && !entry.faceDown) box.appendChild(reversedBadge());
 
-    if (animate && originEl) flyAndFlip(cardEl, originEl);
-    else cardEl.querySelector('.vtar-card-flip').classList.add('vtar-revealed');
+    if (entry.faceDown) {
+      // auto-ispunjeni spread: karta ostaje poleđinom prema gore, tap ju okrene
+    } else if (animate && originEl) {
+      flyAndFlip(cardEl, originEl);
+    } else {
+      cardEl.querySelector('.vtar-card-flip').classList.add('vtar-revealed');
+    }
+  }
+
+  /* Okreni kartu koja je licem prema dolje (iz auto-ispunjenog spreada) - lijep
+     flip; tek tad se prikaže naziv i eventualna oznaka "obrnuto". */
+  function revealFaceDown(cardEl, entry) {
+    entry.faceDown = false;
+    const flip = cardEl.querySelector('.vtar-card-flip');
+    if (flip) flip.classList.add('vtar-revealed');
+    const def = trCardDef(entry.cardId);
+    cardEl.title = def ? def.name + (entry.orientation === 'reversed' ? ' (obrnuto)' : '') : '';
+    if (entry.orientation === 'reversed') {
+      const box = cardEl.closest('.vtar-cardbox');
+      if (box && !box.querySelector('.vtar-badge-rev')) box.appendChild(reversedBadge());
+    }
   }
 
   /* Karta poleti sa špila do slota (WAAPI, blaga krivulja), pa se okrene licem gore */

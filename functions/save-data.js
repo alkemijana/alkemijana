@@ -32,6 +32,28 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ error: 'No content' }), { status: 400 });
   }
 
+  // ── PRIVATNA POHRANA ──
+  // Puni podaci (uključujući isključeno/arhivirano) idu u KV, NIKAD u javni repo.
+  // Javni js/data.js (body.content) sadrži samo vidljivo. Admin puni skup vraća
+  // preko /admin-data (uz lozinku). Bez ovoga bi skriveni sadržaj curio u javni
+  // data.js i Google/AI bi ga čitali.
+  const KV = env.NATAL_LOG;
+  if (body.full) {
+    if (!KV) {
+      // Bez KV-a ne smijemo commitati okljaštreni javni file jer bi se skriveni
+      // sadržaj nepovratno izgubio - prekini prije GitHub commita.
+      if (body.hasHidden) {
+        return new Response(JSON.stringify({ error: 'KV (NATAL_LOG) nije konfiguriran - skriveni/arhivirani sadržaj se ne može privatno pohraniti. Postavi KV binding (vidi CLAUDE.md) pa pokušaj ponovo.' }), { status: 500 });
+      }
+    } else {
+      try {
+        await KV.put('admin:full', JSON.stringify(body.full));
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'KV write failed: ' + e.message }), { status: 500 });
+      }
+    }
+  }
+
   const headers = {
     'Authorization': `token ${GITHUB_TOKEN}`,
     'Accept': 'application/vnd.github.v3+json',

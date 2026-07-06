@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /save-data
+Disallow: /admin-data
 Disallow: /verify-pass
 Disallow: /log-natal
 Disallow: /natal-log
@@ -14,6 +15,7 @@ Allow: /#blog
 Allow: /#o-meni
 Allow: /#kontakt
 Disallow: /save-data
+Disallow: /admin-data
 Disallow: /verify-pass
 Disallow: /log-natal
 Disallow: /natal-log

@@ -551,6 +551,30 @@ Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.
 Cloudflare Pages funkcija provjeri lozinku i koristi GitHub API token (Cloudflare env var `GITHUB_TOKEN`) za commit na repo.
 GitHub trigerira Cloudflare Pages deploy → stranica se osvježi za 30 sek.
 
+### Privatnost: isključeno/arhivirano NE ide u javni `data.js` (KV split)
+**Pravilo (Jana, striktno):** što je isključeno preko toggla (`showServices`/`showReviews`/
+`showAboutReviews` = false) ili arhivirano (`archived:true`) **ne smije se vidjeti NIGDJE** —
+ni na renderiranoj stranici ni u izvornom kodu koji Google/AI crawleri čitaju. `showX:false`
++ `display:none` NIJE dovoljno jer je `js/data.js` javna datoteka koju crawleri čitaju cijelu
+(prije je zbog toga Google AI opisivao isključene usluge s cijenama).
+
+Zato `downloadSite()` (admin.js) piše **dvije verzije**:
+- **Javni `js/data.js`** (commit na GitHub, servira se svima) = **samo vidljivo**: `pubPosts`/
+  `pubGuides` (bez arhiviranih), `pubSvc`/`pubPricing` (`[]` kad `showServices=false`),
+  `pubReviews` (samo sekcije čiji je toggle ON). Puna projekcija u `downloadSite`.
+- **Puni podaci** (`fullData`: blog/guides/services/pricing/reviews/settings) → **privatni
+  Cloudflare KV** (binding **`NATAL_LOG`**, ključ **`admin:full`**), piše ih `/save-data`.
+  Nikad na GitHub/živu stranicu.
+
+Prijavljeni admin puni skup vraća: `activateAdmin()` → `hydrateAdminData()` (admin.js) →
+GET `/admin-data` (`X-Admin-Pass`, `functions/admin-data.js`) → reassigna globalne nizove
+(`BLOG_POSTS`/`SERVICES`/…) pa u panelu vidi i može vratiti sve. Toggle ON + Spremi → stavka
+se vrati u javni `data.js` i normalno je vidljiva. Ako KV nije spreman / offline smo, admin
+ostaje na javnom (vidljivom) skupu (graceful). **Sigurnost:** `save-data` odbija commit
+okljaštrenog javnog filea ako `hasHidden=true` a KV nedostupan (da se skriveno ne izgubi);
+lokalni fallback download uzima **puni** `fullContent`. **Migracija:** nakon deploya Jana
+mora jednom kliknuti "Spremi" da se javni file okljašti i KV napuni.
+
 ---
 
 ## Vanjski servisi

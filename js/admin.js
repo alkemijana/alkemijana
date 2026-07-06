@@ -80,6 +80,45 @@ function activateAdmin() {
   bar.classList.add('show');
   syncToggleBtns();
   requestAnimationFrame(adjustAdminLayout);
+  hydrateAdminData(); // vrati skriveno/arhivirano iz privatne KV pohrane (uz lozinku)
+}
+
+/* Puni podaci (uklj. isključeno/arhivirano) NISU u javnom js/data.js - Google/AI
+   ih ne smiju vidjeti - nego u privatnom KV-u. Prijavljeni admin ih ovdje vraća
+   preko /admin-data (X-Admin-Pass) i reassigna globalne nizove da u panelu vidi i
+   može vratiti sve. Ako KV nije spreman / offline smo, ostaje javni (vidljivi) skup. */
+async function hydrateAdminData() {
+  const pass = sessionStorage.getItem('aj_pass') || '';
+  if (!pass) return;
+  let data;
+  try {
+    const res = await fetch('/admin-data?cb=' + Date.now(), { headers: { 'X-Admin-Pass': pass } });
+    if (!res.ok) return;
+    data = await res.json().catch(() => null);
+  } catch (e) { return; } // lokalno / bez funkcija - ostaje javni data.js
+  if (!data || data.empty || !data.full) return;
+
+  const f = data.full;
+  if (Array.isArray(f.blog))     BLOG_POSTS  = f.blog;
+  if (Array.isArray(f.guides) && typeof TOOL_GUIDES !== 'undefined') TOOL_GUIDES = f.guides;
+  if (Array.isArray(f.services)) SERVICES    = f.services;
+  if (Array.isArray(f.pricing))  PRICING     = f.pricing;
+  if (Array.isArray(f.reviews))  REVIEWS     = f.reviews;
+  if (f.settings && typeof f.settings === 'object') SITE_SETTINGS = f.settings;
+
+  // Osvježi admin prikaz (trenutni tab) i javne sekcije (arhivirano se ionako filtrira)
+  syncToggleBtns();
+  const activeTab = document.querySelector('.ap-tab-btn.active');
+  if (activeTab && activeTab.id) switchTab(activeTab.id.replace('tab-', ''));
+  if (typeof applySettings === 'function') applySettings();
+  if (typeof renderServices === 'function') renderServices();
+  if (typeof renderPricingTable === 'function') renderPricingTable();
+  if (typeof renderReviews === 'function') {
+    renderReviews('home', 'home-reviews-grid');
+    renderReviews('omeni', 'about-reviews-grid');
+  }
+  if (typeof renderHomeBlogPreview === 'function') renderHomeBlogPreview();
+  if (typeof renderBlogList === 'function') renderBlogList();
 }
 
 function adminLogout() {
@@ -1863,41 +1902,67 @@ async function downloadSite() {
 
   collectTarotAdminFields(); // pokupi neshranjene izmjene iz trenutno otvorenog špila
 
-  const postsJson    = JSON.stringify(BLOG_POSTS,    null, 2);
-  const guidesJson   = JSON.stringify(guidesData(),  null, 2);
-  const svcJson      = JSON.stringify(SERVICES,      null, 2);
-  const prJson       = JSON.stringify(PRICING,       null, 2);
-  const revJson      = JSON.stringify(REVIEWS,       null, 2);
-  const textsJson    = JSON.stringify(TEXTS,         null, 2);
-  const settingsJson = JSON.stringify(SITE_SETTINGS, null, 2);
+  // ── PRIVATNOST: isključeno (toggle) i arhivirano NE smije u javni data.js ──
+  // Javna datoteka dobiva SAMO vidljivi sadržaj (to je jedino što Google/AI crawleri
+  // čitaju). Puni podaci - uključujući skriveno/arhivirano - idu u privatnu KV
+  // pohranu preko /save-data, a admin ih pri prijavi vraća uz lozinku (hydrateAdminData).
+  // Pravilo: kad je toggle OFF ili je stavka arhivirana, nje NEMA nigdje u javnom izvoru;
+  // kad se uključi/odarhivira i spremi, vrati se u javni data.js i normalno je vidljiva.
+  const s = SITE_SETTINGS;
+  const allGuides  = guidesData();
+  const pubPosts   = BLOG_POSTS.filter(p => !p.archived);
+  const pubGuides  = allGuides.filter(g => !g.archived);
+  const pubSvc     = s.showServices ? SERVICES.filter(x => !x.archived) : [];
+  const pubPricing = s.showServices ? PRICING.filter(x => !x.archived) : [];
+  const pubReviews = REVIEWS.filter(r => !r.archived &&
+    ((r.section === 'home'  && s.showReviews) ||
+     (r.section === 'omeni' && s.showAboutReviews)));
+
+  const hasHidden =
+    pubPosts.length   !== BLOG_POSTS.length ||
+    pubGuides.length  !== allGuides.length  ||
+    pubSvc.length     !== SERVICES.length   ||
+    pubPricing.length !== PRICING.length    ||
+    pubReviews.length !== REVIEWS.length;
+
+  // Puni podaci za privatnu KV pohranu (admin ih vraća pri prijavi)
+  const fullData = {
+    v: 1,
+    blog: BLOG_POSTS, guides: allGuides, services: SERVICES,
+    pricing: PRICING, reviews: REVIEWS, settings: SITE_SETTINGS
+  };
+
+  const textsJson      = JSON.stringify(TEXTS,            null, 2);
+  const settingsJson   = JSON.stringify(SITE_SETTINGS,    null, 2);
   const tarotTextsJson = JSON.stringify(TAROT_CARD_TEXTS, null, 2);
 
-  const content = `/* ============================================================
+  // Gradi tekst data.js iz zadanih (već filtriranih ili punih) nizova.
+  const buildDataJs = (posts, guides, svc, pricing, reviews) => `/* ============================================================
    AlkemiJana - Podaci
    ============================================================ */
 
 // ===ALKEMIJANA:BLOG_POSTS:START===
-let BLOG_POSTS = ${postsJson};
+let BLOG_POSTS = ${JSON.stringify(posts, null, 2)};
 // ===ALKEMIJANA:BLOG_POSTS:END===
 
 
 // ===ALKEMIJANA:TOOL_GUIDES:START===
-let TOOL_GUIDES = ${guidesJson};
+let TOOL_GUIDES = ${JSON.stringify(guides, null, 2)};
 // ===ALKEMIJANA:TOOL_GUIDES:END===
 
 
 // ===ALKEMIJANA:SERVICES:START===
-let SERVICES = ${svcJson};
+let SERVICES = ${JSON.stringify(svc, null, 2)};
 // ===ALKEMIJANA:SERVICES:END===
 
 
 // ===ALKEMIJANA:PRICING:START===
-let PRICING = ${prJson};
+let PRICING = ${JSON.stringify(pricing, null, 2)};
 // ===ALKEMIJANA:PRICING:END===
 
 
 // ===ALKEMIJANA:REVIEWS:START===
-let REVIEWS = ${revJson};
+let REVIEWS = ${JSON.stringify(reviews, null, 2)};
 // ===ALKEMIJANA:REVIEWS:END===
 
 
@@ -1916,6 +1981,10 @@ let TAROT_CARD_TEXTS = ${tarotTextsJson};
 // ===ALKEMIJANA:TAROT_CARD_TEXTS:END===
 `;
 
+  // Javni file = samo vidljivo; puni = sve (za lokalni fallback bez KV-a)
+  const content     = buildDataJs(pubPosts, pubGuides, pubSvc, pubPricing, pubReviews);
+  const fullContent = buildDataJs(BLOG_POSTS, allGuides, SERVICES, PRICING, REVIEWS);
+
   if (saveBtn) { saveBtn.textContent = '⏳ Spremam...'; saveBtn.disabled = true; }
 
   const pass = sessionStorage.getItem('aj_pass') || '';
@@ -1929,7 +1998,7 @@ let TAROT_CARD_TEXTS = ${tarotTextsJson};
     const res = await fetch('/save-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Pass': pass },
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, full: fullData, hasHidden })
     });
     const data = await res.json();
 
@@ -1942,8 +2011,9 @@ let TAROT_CARD_TEXTS = ${tarotTextsJson};
       alert('❌ Greška: ' + (data.error || 'Nepoznata greška'));
     }
   } catch(e) {
-    // Fallback na download ako serverless ne radi (lokalni razvoj)
-    const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
+    // Fallback na download ako serverless ne radi (lokalni razvoj). Lokalno nema
+    // privatne KV pohrane, pa preuzimamo PUNI data.js da se skriveni sadržaj ne izgubi.
+    const blob = new Blob([fullContent], { type: 'text/javascript;charset=utf-8' });
     const a    = document.createElement('a');
     a.href     = URL.createObjectURL(blob);
     a.download = 'data.js';

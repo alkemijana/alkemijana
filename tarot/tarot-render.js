@@ -395,6 +395,10 @@ function createTarotUI(engine, root) {
     function startDrag(x, y) {
       dragging = true; dragActive = true;
       closeFocus();
+      // spriječi da vučenje počne označavati tekst po stolu/stranici (plavi highlight)
+      document.body.classList.add('vtar-noselect');
+      const sel = window.getSelection && window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
       const r = cardEl.getBoundingClientRect();
       gox = x - r.left; goy = y - r.top;
       ghost = trEl('div', 'vtar-drag-ghost' + (entry.orientation === 'reversed' ? ' vtar-reversed' : ''));
@@ -419,6 +423,7 @@ function createTarotUI(engine, root) {
       setHover(null);
       els.stage.classList.remove('vtar-dragging');
       els.mobileDropzone.classList.remove('vtar-dz-show');
+      document.body.classList.remove('vtar-noselect');
       dragActive = false;
       if (zone) {
         if (ghost) { ghost.remove(); ghost = null; }

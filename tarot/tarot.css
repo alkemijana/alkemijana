@@ -255,6 +255,11 @@
 .vtar-card.vtar-card-dragging { opacity: 0; }
 
 /* ---- Drag-to-discard: karta se povlači, "duh" prati prst/miš ---- */
+/* dok se karta vuče, onemogući označavanje teksta po cijeloj stranici (plavi highlight) */
+body.vtar-noselect, body.vtar-noselect * {
+  -webkit-user-select: none !important; -moz-user-select: none !important;
+  user-select: none !important; -webkit-touch-callout: none !important;
+}
 .vtar-drag-ghost {
   position: fixed; z-index: 4000; pointer-events: none; border-radius: 9%;
   box-shadow: 0 20px 55px rgba(0,0,0,0.65); overflow: hidden;

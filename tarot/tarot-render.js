@@ -686,8 +686,8 @@ function createTarotUI(engine, root) {
 
   function updateHint() {
     const drag = isMobile
-      ? ' Karticu možeš pritisnuti, zadržati i povući u iskorištene karte.'
-      : ' Karticu možeš i povući (pritisni, drži, vuci) u iskorištene karte desno.';
+      ? ' Kartu možeš pritisnuti, zadržati i povući u iskorištene karte.'
+      : ' Kartu možeš i povući (pritisni, drži, vuci) u iskorištene karte desno.';
     if (engine.isFree()) {
       els.hint.textContent = 'Klikni na špil - karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.' + drag;
     } else if (engine.isSpreadFull()) {

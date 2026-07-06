@@ -326,13 +326,16 @@ body > svg[viewBox="0 0 1920 1080"] {
   margin-bottom: 2.5rem;
 }
 .hero-desc {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-weight: 500;
-  font-size: 1.35rem;
-  max-width: 620px;
+  font-family: 'Dancing Script', cursive;
+  font-weight: 600;
+  font-size: 2rem;
+  max-width: 640px;
   margin: 0 auto 3rem;
   color: var(--silver-light);
-  line-height: 1.65;
+  line-height: 1.4;
+}
+@media (max-width: 768px) {
+  .hero-desc { font-size: 1.7rem; }
 }
 
 .divider {

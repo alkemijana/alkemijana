@@ -71,11 +71,14 @@ ALKEMIJANA WEBSITE/
 ## Vizualni identitet
 
 - **Boje:** tamno ljubičasta, lavender, sage green, srebrna; **NIKAD** zlatna
-- **Glavni font (logo, hero):** Tangerine (cursive, mistično rukopisno)
+- **Glavni font (logo, hero):** Tangerine (cursive, mistično rukopisno) — NE mijenjati
+- **Ime iznad natalne karte:** Dancing Script (`.nt-chart-head`) — NE mijenjati
 - **Naslovi sekcija:** Playfair Display
-- **Body tekst:** Cormorant Infant
-- **UI elementi/labels:** Quicksand
-- **Italic citati:** Cormorant Garamond
+- **Body / tekst za čitanje (paragrafi, blog, citati, opisi, inputi):** Atkinson Hyperlegible
+  (sans-serif, biran radi čitljivosti / disleksije — zamijenio Cormorant Infant + Cormorant Garamond;
+  ima PRAVI kurziv, lakši/tanji od Lexenda; samo težine 400/700 pa se 500/600 zaokruže)
+- **UI elementi/labels:** Quicksand (također u natalnom SVG kotaču i PDF-ovima — zbog ugrađivanja TTF-a u PDF ostaje Quicksand)
+  OG social-share slike (`og/home.svg`, `functions/og/[slug].js`) i dalje koriste Cormorant/Georgia — nisu tekst na stranici.
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
 - **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
 - **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, natalna karta, kontakt)

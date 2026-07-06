@@ -37,7 +37,7 @@
 .vtar-spread-toggle-icon { flex-shrink: 0; display: flex; }
 .vtar-spread-toggle-text { display: flex; flex-direction: column; gap: 0.05rem; min-width: 0; flex: 1; }
 .vtar-toolbar-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--lavender); }
-.vtar-toolbar-desc { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.86rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vtar-toolbar-desc { font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; font-size: 0.86rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vtar-spread-toggle-caret { color: var(--text-muted); font-size: 0.75rem; transition: transform .2s ease; flex-shrink: 0; }
 .vtar-spread-toggle[aria-expanded="true"] .vtar-spread-toggle-caret { transform: rotate(180deg); }
 
@@ -63,7 +63,7 @@
 .vtar-spread-chip-icon svg { width: 42px; height: 42px; }
 .vtar-spread-chip-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
 .vtar-spread-chip-text strong { font-family: 'Quicksand', sans-serif; font-size: 0.86rem; font-weight: 600; color: var(--silver-bright); }
-.vtar-spread-chip-text small { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); line-height: 1.25; }
+.vtar-spread-chip-text small { font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; font-size: 0.82rem; color: var(--text-muted); line-height: 1.25; }
 
 .vtar-toolbar-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.1rem; }
 
@@ -110,7 +110,7 @@
   gap: 1rem; align-items: stretch;
 }
 .vtar-rail { display: flex; flex-direction: column; gap: 0.9rem; }
-.vtar-rail-empty { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.88rem; color: var(--text-muted); text-align: center; padding: 1rem 0.4rem; }
+.vtar-rail-empty { font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; font-size: 0.88rem; color: var(--text-muted); text-align: center; padding: 1rem 0.4rem; }
 
 /* ---- Špil blok ---- */
 .vtar-deck-block {
@@ -325,7 +325,7 @@
 .vtar-focus-meaning {
   display: flex; flex-direction: column; gap: 0.7rem;
   max-width: 400px; max-height: 78vh; overflow-y: auto; cursor: default;
-  font-family: 'Cormorant Garamond', serif; font-size: 1.02rem; line-height: 1.5; color: var(--silver-bright);
+  font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 1.02rem; line-height: 1.5; color: var(--silver-bright);
 }
 /* Uvijek su prikazana OBA značenja; ono koje odgovara orijentaciji izvučene
    karte je uokvireno (vtar-focus-m-active), drugo je prigušeno. */
@@ -400,8 +400,8 @@
   border: 1px solid var(--border); color: var(--lavender); font-family: 'Quicksand', sans-serif;
   font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
 }
-.vtar-legend-text { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--text); line-height: 1.35; }
-.vtar-legend-text strong { font-family: 'Quicksand', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--silver-bright); }
+.vtar-legend-text { font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.95rem; color: var(--text); line-height: 1.35; }
+.vtar-legend-text strong { font-family: 'Quicksand', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--silver-bright); }
 
 /* ---- Otpad ---- */
 .vtar-discard-zone { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; }
@@ -415,7 +415,7 @@
 .vtar-discard-empty .vtar-discard-card { display: none; }
 .vtar-discard-label { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
 
-.vtar-hint { text-align: center; margin-top: 1rem; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-muted); font-size: 0.95rem; }
+.vtar-hint { text-align: center; margin-top: 1rem; font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; color: var(--text-muted); font-size: 0.95rem; }
 .vtar-hint-flash { animation: vtarHintFlash 1.4s ease; }
 @keyframes vtarHintFlash { 0% { color: var(--lavender); } 100% { color: var(--text-muted); } }
 
@@ -460,7 +460,7 @@
 .vtar-cotd-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
 .vtar-cotd-eyebrow { font-family: 'Quicksand', sans-serif; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); }
 .vtar-cotd-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--lavender); margin: 0; }
-.vtar-cotd-desc { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; line-height: 1.5; color: var(--text); margin: 0; }
+.vtar-cotd-desc { font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 1.05rem; line-height: 1.5; color: var(--text); margin: 0; }
 .vtar-cotd-cta {
   margin-top: 0.5rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem; font-weight: 600;
   color: var(--lavender);

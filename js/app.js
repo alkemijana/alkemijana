@@ -751,7 +751,7 @@ function downloadPostPdf(id) {
 <title>${titleEsc} - Alkemijana</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@500;600;700&family=Tangerine:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:wght@500;600;700&family=Tangerine:wght@700&display=swap" rel="stylesheet">
 <style>
   @page {
     size: A4;
@@ -766,7 +766,7 @@ function downloadPostPdf(id) {
   * { box-sizing: border-box; }
   html, body { background: #ffffff !important; color: #111 !important; margin: 0; padding: 0; }
   body {
-    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-family: 'Atkinson Hyperlegible', Georgia, 'Times New Roman', serif;
     font-size: 12pt;
     line-height: 1.7;
     color: #111;

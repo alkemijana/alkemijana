@@ -312,7 +312,7 @@ function showPostEditor(p) {
         <button type="button" class="ap-btn ap-btn-cancel" onclick="generateCoverFromIcon()" title="Generiraj mističnu naslovnu sliku iz odabrane ikone - radi na WhatsAppu, Facebooku, itd.">
           ✨ Generiraj iz ikone
         </button>
-        <span id="img-filename" style="font-family:'Cormorant Infant',serif;color:var(--text-muted);font-size:0.9rem">
+        <span id="img-filename" style="font-family:'Atkinson Hyperlegible',sans-serif;color:var(--text-muted);font-size:0.9rem">
           ${p && p.imageUrl ? 'Slika učitana' : 'Nema odabrane slike'}
         </span>
       </div>
@@ -351,7 +351,7 @@ function showPostEditor(p) {
 
     <div class="af">
       <label>Izvori (opcionalno - pojavljuje se ispod članka samo ako napišeš)</label>
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
+      <p style="font-family:'Atkinson Hyperlegible',sans-serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
         Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
       </p>
       <textarea id="ed-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora - &quot;Naslov rada&quot;, Časopis, 2024.">${p && p.sources ? esc(p.sources) : ''}</textarea>
@@ -697,7 +697,7 @@ function cancelPostEdit() {
   editingPostId = null;
   renderBlogAdminList();
   document.getElementById('blog-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi članak za uređivanje ili dodaj novi.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Atkinson Hyperlegible\',sans-serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi članak za uređivanje ili dodaj novi.</p>';
 }
 
 /* Rich-text toolbar naredbe - edId je id contenteditable elementa;
@@ -976,7 +976,7 @@ function showGuideEditor(g) {
 
     <div class="af">
       <label>Izvori (opcionalno - pojavljuju se ispod vodiča)</label>
-      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
+      <p style="font-family:'Atkinson Hyperlegible',sans-serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin:0.2rem 0 0.5rem">
         Svaki izvor u novi red. Linkovi se automatski pretvaraju u klikabilne. Možeš pisati i čisti tekst (citate radova).
       </p>
       <textarea id="gd-sources" rows="4" placeholder="https://primjer.com/članak&#10;Ime Autora - &quot;Naslov rada&quot;, Izdavač, 2024.">${esc(g.sources || '')}</textarea>
@@ -999,7 +999,7 @@ function cancelGuideEdit() {
   editingGuideId = null;
   renderGuidesAdminList();
   document.getElementById('guide-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi vodič za uređivanje.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Atkinson Hyperlegible\',sans-serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi vodič za uređivanje.</p>';
 }
 
 function saveGuide() {
@@ -1123,7 +1123,7 @@ function cancelServiceEdit() {
   editingSvcId = null;
   renderSvcAdmin();
   document.getElementById('svc-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi uslugu za uređivanje ili dodaj novu.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Atkinson Hyperlegible\',sans-serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi uslugu za uređivanje ili dodaj novu.</p>';
 }
 
 function saveService() {
@@ -1269,7 +1269,7 @@ function cancelReviewEdit() {
   editingRevId = null;
   renderReviewsAdmin();
   document.getElementById('rev-editor-col').innerHTML =
-    '<p style="color:var(--text-muted);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi recenziju za uređivanje ili dodaj novu.</p>';
+    '<p style="color:var(--text-muted);font-family:\'Atkinson Hyperlegible\',sans-serif;font-style:italic;font-size:1.1rem;margin-top:2rem;text-align:center">Odaberi recenziju za uređivanje ili dodaj novu.</p>';
 }
 
 function saveReview() {
@@ -1440,7 +1440,7 @@ async function loadStats() {
         html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.9rem 1.1rem;${idx < sortedBlog.length - 1 ? 'border-bottom:1px solid var(--border)' : ''}">
           <div style="display:flex;align-items:center;gap:0.8rem;min-width:0;flex:1">
             <span style="font-size:1.3rem;flex-shrink:0">${post.icon}</span>
-            <span style="color:var(--silver-light);font-family:'Cormorant Garamond',serif;font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${post.title}</span>
+            <span style="color:var(--silver-light);font-family:'Atkinson Hyperlegible',sans-serif;font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${post.title}</span>
           </div>
           <div style="display:flex;gap:1.5rem;flex-shrink:0">
             <span style="color:var(--lavender);font-family:'Playfair Display',serif;font-size:1.1rem">${count}</span>
@@ -1453,7 +1453,7 @@ async function loadStats() {
     }
 
     // === BLOK 5: Info kartica ===
-    html += `<div style="background:rgba(168,144,208,0.05);border:1px solid var(--border);padding:1.2rem;font-family:'Cormorant Garamond',serif;color:var(--text-muted);font-size:0.95rem;line-height:1.6;font-style:italic">
+    html += `<div style="background:rgba(168,144,208,0.05);border:1px solid var(--border);padding:1.2rem;font-family:'Atkinson Hyperlegible',sans-serif;color:var(--text-muted);font-size:0.95rem;line-height:1.6;font-style:italic">
       💡 Posjete se bilježe automatski preko GoatCounter analitike (bez kolačića). Brojevi se ažuriraju jednom dnevno. Za detaljniji pregled - geografska lokacija posjetitelja, izvori prometa, uređaji - koristi gumb ispod.
     </div>`;
 
@@ -1481,7 +1481,7 @@ function pageStatCard(icon, label, count, unique) {
     <div style="font-size:1.6rem;color:var(--sage);margin-bottom:0.4rem">${icon}</div>
     <div style="font-family:'Quicksand',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--silver);margin-bottom:0.6rem">${label}</div>
     <div style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--lavender);line-height:1">${count}</div>
-    <div style="font-family:'Cormorant Infant',serif;font-size:0.82rem;color:var(--text-muted);font-style:italic;margin-top:0.2rem">${unique} jedinstvenih</div>
+    <div style="font-family:'Atkinson Hyperlegible',sans-serif;font-size:0.82rem;color:var(--text-muted);font-style:italic;margin-top:0.2rem">${unique} jedinstvenih</div>
   </div>`;
 }
 

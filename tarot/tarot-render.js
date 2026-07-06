@@ -291,7 +291,10 @@ function createTarotUI(engine, root) {
       const btn = trEl('button', `vtar-drawbar-btn ${deck.backClass}`);
       btn.type = 'button';
       btn.dataset.deck = deck.id;
-      btn.innerHTML = `<span class="vtar-drawbar-swatch"></span><span class="vtar-drawbar-name">${deck.shortName}</span><span class="vtar-drawbar-count">${dState.remaining.length}</span>`;
+      // umjesto naziva špila - mala ikona karte (poleđina odgovarajućeg špila)
+      btn.title = `${deck.name} - izvuci kartu`;
+      btn.setAttribute('aria-label', `Izvuci kartu iz špila ${deck.shortName}`);
+      btn.innerHTML = `<span class="vtar-drawbar-swatch ${deck.backClass}"></span><span class="vtar-drawbar-count">${dState.remaining.length}</span>`;
       btn.addEventListener('click', () => handleDrawClick(deck.id, btn));
       group.appendChild(btn);
       // slobodno slaganje: gumb "Izvuci sve" (kao na desktopu) - izlista sve karte špila
@@ -642,11 +645,22 @@ function createTarotUI(engine, root) {
     if (isMobile) {
       const pad = 10;
       const cellW = (W - 2 * pad) / effCols;
-      let cw = Math.min(cellW * 0.94, 118);
-      cw = Math.max(44, Math.round(cw));
+      // širinski limit veličine karte
+      const cwW = Math.min(cellW * 0.94, 118);
+      // visinski limit: cijeli spread mora stati u vidljivi dio ekrana (iznad
+      // fiksne donje trake) - inače se za visoke spreadove (Odnos, Čakre,
+      // Zvijezda) ne vidi cijeli stol. Rezerviramo prostor za donju traku.
+      const reserve = 96;
+      const availH = Math.max(320, window.innerHeight - reserve);
+      let capOn = showCap && cellW >= 88; // premala ćelija = oznaka nečitljiva
+      let capH = capOn ? 18 : 0;
+      const heightFit = () => ((availH - 2 * pad) / effRows - capH - gapV - 10) * VTAR_RATIO;
+      let cw = Math.min(cwW, heightFit());
+      // ako bi karte ispale premalene, ugasi oznake ispod (ionako su u legendi)
+      // pa preračunaj - visoki spreadovi (npr. Čakre) tako dobiju veće karte
+      if (cw < 62 && capOn) { capOn = false; capH = 0; cw = Math.min(cwW, heightFit()); }
+      cw = Math.max(40, Math.floor(cw));
       const ch = cw / VTAR_RATIO;
-      const capOn = showCap && cellW >= 88; // premala ćelija = oznaka nečitljiva
-      const capH = capOn ? 18 : 0;
       const cellH = ch + capH + gapV + 10;
       const H = Math.round(effRows * cellH + 2 * pad);
       els.slots.style.height = H + 'px';

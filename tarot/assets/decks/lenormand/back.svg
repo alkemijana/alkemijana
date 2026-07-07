@@ -31,6 +31,6 @@
     <circle cx="40" cy="392" r="2.2"/><circle cx="220" cy="392" r="2.2"/>
   </g>
 
-  <text x="130" y="60" text-anchor="middle" font-family="Georgia, serif" font-size="15" letter-spacing="2" fill="url(#lnSilver)" opacity="0.9">?</text>
-  <text x="130" y="415" text-anchor="middle" font-family="Georgia, serif" font-size="9.5" letter-spacing="3.5" fill="#c4c0d8" opacity="0.65">USKORO</text>
+  <text x="130" y="62" text-anchor="middle" font-family="Georgia, serif" font-size="13" letter-spacing="2" fill="url(#lnSilver)" opacity="0.9">✦</text>
+  <text x="130" y="414" text-anchor="middle" font-family="Georgia, serif" font-size="9" letter-spacing="3.5" fill="#c4c0d8" opacity="0.6">LENORMAND</text>
 </svg>

@@ -11,7 +11,7 @@ function trEl(tag, cls, html) {
   if (html != null) el.innerHTML = html;
   return el;
 }
-function trCardDef(cardId) { return TAROT_CARD_DEFS.find(c => c.id === cardId); }
+function trCardDef(cardId) { return TAROT_CARD_DEF_BY_ID[cardId] || TAROT_CARD_DEFS.find(c => c.id === cardId); }
 function trDeckDef(deckId) { return TAROT_DECKS.find(d => d.id === deckId); }
 
 /* ---- Mini SVG pregled rasporeda spreada (za izbornik) ---- */
@@ -193,7 +193,7 @@ function createTarotUI(engine, root) {
   function renderSpreadPanel() {
     els.spreadPanel.innerHTML = '';
     TAROT_SPREADS.forEach(sp => {
-      const btn = trEl('button', 'vtar-spread-chip' + (sp.id === engine.state.spreadId ? ' active' : ''));
+      const btn = trEl('button', 'vtar-spread-chip' + (sp.id === engine.state.spreadId ? ' active' : '') + (sp.lenormand ? ' vtar-spread-len' : ''));
       btn.type = 'button';
       btn.setAttribute('role', 'option');
       btn.setAttribute('aria-selected', sp.id === engine.state.spreadId ? 'true' : 'false');
@@ -366,12 +366,48 @@ function createTarotUI(engine, root) {
       <button type="button" class="vtar-card-discard-btn" title="Odloži u iskorištene karte" aria-label="Odloži kartu u iskorištene">✕</button>`;
   }
 
+  /* Lenormand: broj karte (1-36) + mini igraća karta (npr. pik 10) u vrhu,
+     kao na klasičnim Lenormand špilovima. Igraća karta iz CC0 seta (pc/). */
+  const VTAR_SUIT_INITIAL = { hearts: 'h', diamonds: 'd', clubs: 'c', spades: 's' };
+  function lenPcSrc(def) {
+    if (!def || !def.suit || !def.rank) return null;
+    const s = VTAR_SUIT_INITIAL[def.suit];
+    if (!s) return null;
+    // figure (J/Q/K) = prave antikne skenirane karte (.jpg, 1810 francuski špil);
+    // brojevne (As, 6-10) = pip SVG-ovi. Extension po ranku.
+    const ext = (def.rank === 'J' || def.rank === 'Q' || def.rank === 'K') ? 'jpg' : 'svg';
+    const v = (typeof TAROT_IMG_VERSION !== 'undefined') ? '?v=' + TAROT_IMG_VERSION : '';
+    return `tarot/assets/decks/lenormand/pc/${def.rank}${s}.${ext}${v}`;
+  }
+  function decorateLenormandFront(frontEl, def) {
+    if (!frontEl || !def) return;
+    frontEl.querySelectorAll('.vtar-len-top').forEach(e => e.remove());
+    const pc = lenPcSrc(def);
+    const t = (typeof TAROT_CARD_TEXTS !== 'undefined' && TAROT_CARD_TEXTS.lenormand && TAROT_CARD_TEXTS.lenormand[def.id]) || {};
+    const desc = t.upright || '';
+    const top = trEl('div', 'vtar-len-top');
+    const left = trEl('div', 'vtar-len-left');
+    const num = trEl('span', 'vtar-len-num', String(def.num));
+    const p = trEl('p', 'vtar-len-desc'); p.textContent = desc;
+    left.appendChild(num); left.appendChild(p);
+    top.appendChild(left);
+    if (pc) {
+      const img = trEl('img', 'vtar-len-pc'); img.src = pc; img.alt = ''; img.draggable = false;
+      top.appendChild(img);
+    }
+    frontEl.appendChild(top);
+  }
+
   function buildCardEl(entry, slotIdx) {
     const cardEl = trEl('div', 'vtar-card ' + trDeckDef(entry.deckId).backClass);
     cardEl.innerHTML = cardInnerHtml();
     cardEl.querySelector('.vtar-card-front-img').style.backgroundImage =
       `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
     const def = trCardDef(entry.cardId);
+    const deckDef = trDeckDef(entry.deckId);
+    if (deckDef && deckDef.cardSet === 'lenormand') {
+      decorateLenormandFront(cardEl.querySelector('.vtar-card-front'), def);
+    }
     // dok je karta licem prema dolje ne otkrivaj naziv (ni u tooltipu)
     cardEl.title = (def && !entry.faceDown) ? def.name + (entry.orientation === 'reversed' ? ' (obrnuto)' : '') : '';
     if (entry.orientation === 'reversed') cardEl.classList.add('vtar-reversed');
@@ -531,9 +567,23 @@ function createTarotUI(engine, root) {
       els.focusPosition.style.display = 'none';
     }
 
-    els.focusCard.style.backgroundImage = `url("${tarotCardImage(entry.deckId, entry.cardId)}")`;
     els.focusCard.classList.toggle('vtar-focus-reversed', reversed);
     els.focusName.textContent = name + (reversed ? ' · obrnuto' : '');
+    const deckDefF = trDeckDef(entry.deckId);
+    const isLenF = !!(deckDefF && deckDefF.cardSet === 'lenormand');
+    els.focusCard.querySelectorAll('.vtar-len-top, .vtar-len-img').forEach(e => e.remove());
+    els.focusCard.classList.toggle('vtar-len-focus', isLenF);
+    const imgUrl = tarotCardImage(entry.deckId, entry.cardId);
+    if (isLenF) {
+      // Lenormand fokus: gornji "prozor" + CIJELA slika u donjih 2/3 (unutarnji div)
+      els.focusCard.style.backgroundImage = 'none';
+      const imgd = trEl('div', 'vtar-len-img');
+      imgd.style.backgroundImage = `url("${imgUrl}")`;
+      els.focusCard.appendChild(imgd);
+      decorateLenormandFront(els.focusCard, def);
+    } else {
+      els.focusCard.style.backgroundImage = `url("${imgUrl}")`;
+    }
 
     let html = '';
     if (yesno) {
@@ -714,7 +764,7 @@ function createTarotUI(engine, root) {
   /* ---- Legenda (značenja pozicija) ---- */
   function renderLegend(spread) {
     els.legend.innerHTML = '';
-    if (spread.free || !engine.state.showMeanings) { els.legend.style.display = 'none'; return; }
+    if (spread.free || spread.noLegend || !engine.state.showMeanings) { els.legend.style.display = 'none'; return; }
     els.legend.style.display = '';
     spread.positions.forEach((pos, idx) => {
       const item = trEl('div', 'vtar-legend-item');
@@ -736,10 +786,13 @@ function createTarotUI(engine, root) {
 
     const cardEl = buildCardEl(entry, slotIdx);
     box.appendChild(cardEl);
+    // Lenormand: bez suvišnih oznaka (samo broj u bijelom krugu + igraća karta,
+    // kao pravi Lenormand) - preskoči badge redoslijeda i oznaku "obrnuto".
+    const isLen = (trDeckDef(entry.deckId) || {}).cardSet === 'lenormand';
     // broj redoslijeda se prikazuje TEK kad je karta postavljena
-    box.appendChild(orderBadge(slotIdx + 1));
+    if (!isLen) box.appendChild(orderBadge(slotIdx + 1));
     // oznaka "obrnuto" se ne prikazuje dok je karta licem prema dolje (bila bi spoiler)
-    if (entry.orientation === 'reversed' && !entry.faceDown) box.appendChild(reversedBadge());
+    if (!isLen && entry.orientation === 'reversed' && !entry.faceDown) box.appendChild(reversedBadge());
 
     if (entry.faceDown) {
       // auto-ispunjeni spread: karta ostaje poleđinom prema gore, tap ju okrene
@@ -758,7 +811,8 @@ function createTarotUI(engine, root) {
     if (flip) flip.classList.add('vtar-revealed');
     const def = trCardDef(entry.cardId);
     cardEl.title = def ? def.name + (entry.orientation === 'reversed' ? ' (obrnuto)' : '') : '';
-    if (entry.orientation === 'reversed') {
+    const isLen = (trDeckDef(entry.deckId) || {}).cardSet === 'lenormand';
+    if (!isLen && entry.orientation === 'reversed') {
       const box = cardEl.closest('.vtar-cardbox');
       if (box && !box.querySelector('.vtar-badge-rev')) box.appendChild(reversedBadge());
     }

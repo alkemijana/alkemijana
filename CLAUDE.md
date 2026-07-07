@@ -344,20 +344,42 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   radi bez posebne iznimke za tarot. `js/data.js` i `js/admin.js` — v. "Admin uređivanje" niže.
 - **Špilovi (proširivo):** `TAROT_DECKS` niz u `tarot-data.js` — **Rider–Waite–Smith 1909** i
   **Tarot de Marseille** (Lequart 1890, Pariz), oba public domain sa Wikimedia Commons, plus
-  dva **"uskoro" placeholdera** (`Lenormand`, `Oracle` — `comingSoon:true`, bez slika/karata,
-  samo vlastiti `back.svg` kao pregled; engine ih preskače pri inicijalizaciji stanja i svugdje
-  gdje se iterira `TAROT_DECKS`, jer `state.decks[id]` za njih ne postoji — provjeri `if
-  (d.comingSoon)`/`if (state.decks[id])` prije dodavanja novih mjesta koja iteriraju špilove).
-  Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr. `fool.jpg`;
-  PAZI: u izvornom Wikimedia setu za Marseille Paž/Vitez su bili zamijenjeni — datoteke
-  `*-page.jpg`/`*-knight.jpg` su ispravljene zamjenom, VALET=page, CAVALIER=knight) —
-  isti id/naziv za sve špilove (`TAROT_CARD_DEFS`, 78 karata), razlikuje se samo slika.
+  **Lenormand** (v. niže) i jedan **"uskoro" placeholder** (`Oracle` — `comingSoon:true`, bez
+  slika/karata, samo vlastiti `back.svg` kao pregled; engine ga preskače pri inicijalizaciji
+  stanja i svugdje gdje se iterira `TAROT_DECKS`, jer `state.decks[id]` za njega ne postoji —
+  provjeri `if (d.comingSoon)`/`if (state.decks[id])` prije dodavanja novih mjesta koja iteriraju
+  špilove). Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr.
+  `fool.jpg`; PAZI: u izvornom Wikimedia setu za Marseille Paž/Vitez su bili zamijenjeni — datoteke
+  `*-page.jpg`/`*-knight.jpg` su ispravljene zamjenom, VALET=page, CAVALIER=knight).
   **Cache-busting:** `tarotCardImage()` dodaje `?v=${TAROT_IMG_VERSION}` (u tarot-data.js) na
   URL slike — kad se slika promijeni na ISTOM imenu (npr. ispravak Paž/Vitez), povećaj
   `TAROT_IMG_VERSION` da probiješ cache preglednika/Cloudflarea (inače korisnik vidi staru
   sliku jer se URL nije promijenio). Admin (`renderTarotAdminList`) koristi isti helper.
-  Dodavanje pravog Lenormand/Oracle špila = ukloni `comingSoon`, dodaj `folder`/`ext` + 78 slika.
   Pozadine karata (`back.svg`, različit motiv po špilu) **ne mijenjaju se s temom**.
+- **Card setovi (promjenjiva veličina špila):** špil bira svoj set karata preko `cardSet`
+  (default `'tarot'` = 78 karata `TAROT_CARD_DEFS`). **Lenormand** ima `cardSet:'lenormand'` =
+  36 karata `TAROT_LENORMAND_DEFS` (id-evi namespace-ani s `len-` da se ne sudare s tarot
+  id-evima: Lenormand ima Toranj/Zvijezde/Mjesec/Sunce kao i tarot). `TAROT_CARD_SETS` mapira
+  set→defs; `TAROT_CARD_DEF_BY_ID` je spojena mapa za dohvat po id-u; `tarotDeckCardDefs(deckId)`
+  vraća defs tog špila. Engine (`deckCardIds`), "Izvuci sve" (`sortRemaining`) i admin
+  (`renderTarotAdminList`) svi rade s per-špil setom — invarijanta "nikad duplikat" vrijedi po
+  špilu (tarot 78, Lenormand 36).
+- **Lenormand — pravi špil (od 2026.):** 36 karata; **umjetnost = keramika/porculan** (The Met
+  Open Access, javna domena, CC0) — po jedan predmet za svaki simbol, svi na Metovoj sivoj
+  gradijentnoj pozadini (to ih vizualno ujedinjuje). Slike `len-<id>.jpg` u
+  `assets/decks/lenormand/`. Na vrhu svake karte je **broj karte (1–36) + mini igraća karta**
+  (tradicionalni Lenormand umetak, npr. Brod=pik 10) u gornjem DESNOM kutu; broj karte (1-36)
+  u malom BIJELOM krugu (crn broj) gore LIJEVO. Igraće karte (`assets/decks/lenormand/pc/`,
+  `lenPcSrc` u tarot-render.js bira ekstenziju po ranku):
+  **figure J/Q/K = prave antikne skenirane karte** (`<rank><suit>.jpg`, „First French Empire
+  card deck - 1810" s Wikimedije, javna domena; smanjene na ~520px preko PowerShell
+  System.Drawing) — pravi dvorski likovi; **brojevne As,6-10 = pip SVG-ovi**
+  (`<rank><suit>.svg`, samo simboli boje na kremastom papiru, generirani `gen-pips.sh`).
+  Rank: `A`,`6`–`10`,`J`,`Q`,`K`; suit inicijal `h/d/c/s`. Lenormand karte NEMAJU badge
+  redoslijeda ni oznaku „obrnuto" (za razliku od tarota). Overlay gradi `decorateLenormandFront()` u tarot-render.js
+  (vidljiv na stolu i u fokusu); CSS `.vtar-len-corner/.vtar-len-num/.vtar-len-pc` (skalira se
+  preko container-query `cqw`). Tekstovi (klasična Lenormand značenja) u `TAROT_CARD_TEXTS.lenormand`
+  (data.js), uređivi u istom admin tabu kao ostali špilovi.
 - **Uključi/isključi špil — odvojeno od stola:** `.vtar-deck-switches` (red prekidača, uvijek
   vidljiv iznad stola, uključuje i "uskoro" špilove kao onemogućene) je JEDINO mjesto za
   uključivanje špila. `.vtar-rail-left` (stog za izvlačenje + "Promiješaj sve"/"Promiješaj

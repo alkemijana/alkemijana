@@ -1182,6 +1182,224 @@ let TAROT_CARD_TEXTS = {
       "upright": "",
       "reversed": ""
     }
+  },
+  "lenormand": {
+    "len-rider": {
+      "name": "Konjanik",
+      "yesno": "DA",
+      "upright": "Vijesti su na putu - poruka, posjet ili novost koja stiže izvana i pokreće stvari. Konjanik najavljuje kretanje, brz razvoj i često mladu osobu koja donosi nešto novo.",
+      "reversed": "Vijest kasni ili je slabija nego što se nadaš; novost stiže, ali usporeno ili bez pravog zamaha."
+    },
+    "len-clover": {
+      "name": "Djetelina",
+      "yesno": "DA",
+      "upright": "Mala sreća, povoljna prilika i vedar predah. Djetelina donosi olakšanje i sretan splet okolnosti - ali kratkotrajan, pa iskoristi trenutak dok traje.",
+      "reversed": "Sreća je prolazna ili sitna; prilika postoji, no lako izmakne ako oklijevaš."
+    },
+    "len-ship": {
+      "name": "Brod",
+      "yesno": "DA",
+      "upright": "Putovanje, daljina i čežnja za nečim udaljenim. Brod govori o kretanju prema novom - putu, trgovini, inozemstvu ili žudnji koja te vuče naprijed.",
+      "reversed": "Put se odgađa ili je čežnja jača od pokreta; nešto te zadržava na mjestu."
+    },
+    "len-house": {
+      "name": "Kuća",
+      "yesno": "DA",
+      "upright": "Dom, obitelj i sigurnost. Kuća nosi stabilnost, toplinu i osjećaj pripadanja - temelj na kojem se gradi.",
+      "reversed": "Osjećaj sigurnosti je poljuljan; u domu ili obitelji nešto traži pažnju."
+    },
+    "len-tree": {
+      "name": "Drvo",
+      "yesno": "MOŽDA",
+      "upright": "Zdravlje, rast i duboki korijeni. Drvo govori o sporom, prirodnom razvoju i o vezama koje sežu daleko unatrag; strpljenje donosi plod.",
+      "reversed": "Energija je usporena ili iscrpljena; tijelu i korijenima treba odmor i obnova."
+    },
+    "len-clouds": {
+      "name": "Oblaci",
+      "yesno": "NE",
+      "upright": "Nejasnoća, dvojba i prolazna smetnja. Oblaci najavljuju zbunjenost ili nemir - jedna strana je vedra, druga tamna, pa pričekaj da se razbistri.",
+      "reversed": "Magla se diže i stvari se polako razbistravaju, no oprez još nije naodmet."
+    },
+    "len-snake": {
+      "name": "Zmija",
+      "yesno": "NE",
+      "upright": "Komplikacije, zaobilazni putovi i oprez pred nekim tko nije iskren. Zmija upozorava na spletke ili napast, ali nosi i mudrost i lukavost koja zna preživjeti.",
+      "reversed": "Prijetnja slabi ili se otkriva; opasnost je manja nego što se činila."
+    },
+    "len-coffin": {
+      "name": "Lijes",
+      "yesno": "NE",
+      "upright": "Kraj, gubitak i preobrazba. Lijes zatvara jedno poglavlje - nešto odlazi da bi se oslobodio prostor za novo; može značiti i umor ili bolest.",
+      "reversed": "Polagani izlazak iz teškog razdoblja; najgore prolazi i snaga se vraća."
+    },
+    "len-bouquet": {
+      "name": "Cvijeće",
+      "yesno": "DA",
+      "upright": "Radost, dar i ljepota. Cvijeće donosi ugodno iznenađenje, poziv ili zahvalnost - lijep gest i vedar, skladan trenutak.",
+      "reversed": "Ljubaznost je površna ili je gest sitniji nego što se čini; radost je prigušena."
+    },
+    "len-scythe": {
+      "name": "Kosa",
+      "yesno": "NE",
+      "upright": "Nagla odluka, rez i naglost. Kosa donosi iznenadan prekid ili raščišćavanje - brzo i oštro; može značiti opasnost, ali i oslobađajući zahvat.",
+      "reversed": "Opasnost od naglog reza je manja; ipak, pazi na brzoplete odluke i oštre riječi."
+    },
+    "len-whip": {
+      "name": "Šiba",
+      "yesno": "NE",
+      "upright": "Sukob, prepirke i ponavljanje. Šiba govori o napetosti, raspravama ili strasti koja se vrti u krug - i o naporu koji traži da se nešto iznova rješava.",
+      "reversed": "Napetost popušta; svađa se stišava ili se obrazac konačno prekida."
+    },
+    "len-birds": {
+      "name": "Ptice",
+      "yesno": "MOŽDA",
+      "upright": "Razgovori, dogovori i mala briga. Ptice nose komunikaciju, tračeve ili nervozu - često i par, dvoje ljudi u živoj izmjeni riječi.",
+      "reversed": "Nemir i naklapanja se stišavaju; razgovor gubi na težini."
+    },
+    "len-child": {
+      "name": "Dijete",
+      "yesno": "DA",
+      "upright": "Novi početak, nevinost i nešto malo i svježe. Dijete najavljuje početak, iskrenost i bezazlenost - ili doslovno dijete.",
+      "reversed": "Nešto je još nezrelo ili krhko; početku treba više njege i vremena."
+    },
+    "len-fox": {
+      "name": "Lisica",
+      "yesno": "NE",
+      "upright": "Lukavost, oprez i posao. Lisica traži da budeš bistra i na oprezu - netko slijedi svoj interes; vezuje se i uz svakodnevni rad i snalažljivost.",
+      "reversed": "Prijevara se razotkriva ili je manje opasna; oprez i dalje koristi."
+    },
+    "len-bear": {
+      "name": "Medvjed",
+      "yesno": "DA",
+      "upright": "Snaga, moć i zaštita. Medvjed nosi autoritet, novac i nekog nadređenog ili zaštitničku figuru; poziva na čvrstinu i staloženu snagu.",
+      "reversed": "Moć se troši uzalud ili netko previše dominira; snagu treba mudro usmjeriti."
+    },
+    "len-stars": {
+      "name": "Zvijezde",
+      "yesno": "DA",
+      "upright": "Nada, vodstvo i vedrina. Zvijezde donose jasnoću, sreću i duhovni smjer - sve dolazi na svoje mjesto, put je osvijetljen.",
+      "reversed": "Nada je zamagljena ili se sumnja u smjer; svjetlo je tu, samo ga treba iznova ugledati."
+    },
+    "len-stork": {
+      "name": "Roda",
+      "yesno": "DA",
+      "upright": "Promjena, selidba i dolazak novog. Roda najavljuje povoljan pomak - preseljenje, rođenje ili obnovu koja unosi svjež zrak.",
+      "reversed": "Promjena kasni ili je nemirna; pomak se osjeća, ali još nije dovršen."
+    },
+    "len-dog": {
+      "name": "Pas",
+      "yesno": "DA",
+      "upright": "Prijateljstvo, vjernost i povjerenje. Pas govori o odanom prijatelju i pouzdanoj podršci - netko uz koga si sigurna.",
+      "reversed": "Povjerenje je poljuljano; provjeri je li podrška zaista tako čvrsta."
+    },
+    "len-tower": {
+      "name": "Toranj",
+      "yesno": "MOŽDA",
+      "upright": "Autoritet, ustanove i osama. Toranj nosi red, ambiciju i granice - ali i povučenost; ponekad službene institucije ili dugoročnu izgradnju.",
+      "reversed": "Zidovi popuštaju - manje izolacije, više otvaranja prema drugima."
+    },
+    "len-garden": {
+      "name": "Vrt",
+      "yesno": "DA",
+      "upright": "Javnost, društvo i susreti. Vrt govori o okupljanjima, poznanstvima i događajima - vrijeme je za druženje i širenje mreže.",
+      "reversed": "Društveni krug se sužava ili je površan; povuci se prema onome što je iskreno."
+    },
+    "len-mountain": {
+      "name": "Planina",
+      "yesno": "NE",
+      "upright": "Prepreka, zastoj i izazov. Planina stoji na putu - velika, ali savladiva; traži strpljenje i zaobilazak umjesto sile.",
+      "reversed": "Prepreka se povlači; blokada polako popušta i put se otvara."
+    },
+    "len-ways": {
+      "name": "Raskrižje",
+      "yesno": "MOŽDA",
+      "upright": "Izbor, odluka i više putova. Raskrižje nudi mogućnosti - vrijeme je da svjesno biraš smjer; postoji više od jednog rješenja.",
+      "reversed": "Neodlučnost te koči; odgađanje izbora samo množi dvojbe."
+    },
+    "len-mice": {
+      "name": "Miševi",
+      "yesno": "NE",
+      "upright": "Gubitak, stres i polagano nagrizanje. Miševi upozoravaju na sitno curenje energije, novca ili mira - nešto se troši ili gubi, pa provjeri gdje.",
+      "reversed": "Gubitak se zaustavlja ili se izgubljeno vraća; stres popušta."
+    },
+    "len-heart": {
+      "name": "Srce",
+      "yesno": "DA",
+      "upright": "Ljubav, naklonost i pomirenje. Srce nosi toplinu, romantiku i iskrene osjećaje - vrijeme koje otvara i povezuje.",
+      "reversed": "Osjećaji su zbunjeni ili povrijeđeni; srcu treba iskrenost i malo ozdravljenja."
+    },
+    "len-ring": {
+      "name": "Prsten",
+      "yesno": "DA",
+      "upright": "Obveza, dogovor i partnerstvo. Prsten govori o vezi, ugovoru ili obećanju koje traje - i o ciklusima koji se zatvaraju u krug.",
+      "reversed": "Dogovor je labav ili se veza propituje; provjeri obveze prije potvrde."
+    },
+    "len-book": {
+      "name": "Knjiga",
+      "yesno": "MOŽDA",
+      "upright": "Tajna, znanje i učenje. Knjiga skriva nešto još neotkriveno - informaciju, vještinu ili istinu koja se tek treba pokazati.",
+      "reversed": "Tajna izlazi na vidjelo ili je znanje nepotpuno; nešto se otkriva."
+    },
+    "len-letter": {
+      "name": "Pismo",
+      "yesno": "DA",
+      "upright": "Poruka, dokument i vijest. Pismo najavljuje pisanu komunikaciju - obavijest, papire ili novost koja stiže crno na bijelo.",
+      "reversed": "Poruka kasni, gubi se ili je manje važna nego što se čini."
+    },
+    "len-man": {
+      "name": "Gospodin",
+      "yesno": "MOŽDA",
+      "upright": "Muškarac u pitanju - onaj tko postavlja pitanje ako je muško, ili važan muškarac u životu (partner, netko blizak). Značenje mu daju susjedne karte.",
+      "reversed": "Njegova uloga je nejasna ili udaljena; okolne karte govore više o njemu."
+    },
+    "len-woman": {
+      "name": "Gospođa",
+      "yesno": "MOŽDA",
+      "upright": "Žena u pitanju - ona koja postavlja pitanje ako je žensko, ili važna žena u životu. Njezino značenje oblikuju karte oko nje.",
+      "reversed": "Njezina uloga je nejasna ili udaljena; okolne karte otkrivaju više."
+    },
+    "len-lily": {
+      "name": "Ljiljan",
+      "yesno": "DA",
+      "upright": "Mir, zrelost i sklad. Ljiljan nosi spokoj, čistu naklonost i obiteljsku harmoniju - a u strastvenijem čitanju i senzualnost.",
+      "reversed": "Mir je narušen ili prividan; skladu treba iskrenost i malo topline."
+    },
+    "len-sun": {
+      "name": "Sunce",
+      "yesno": "DA",
+      "upright": "Uspjeh, energija i radost. Sunce donosi pobjedu, toplinu i vedrinu - najsvjetlija karta, sve cvjeta i uspijeva.",
+      "reversed": "Energija je prigušena ili uspjeh kasni; svjetlo je tu, samo mu treba prostora."
+    },
+    "len-moon": {
+      "name": "Mjesec",
+      "yesno": "DA",
+      "upright": "Osjećaji, intuicija i priznanje. Mjesec nosi ugled, snove i emocionalnu dubinu - trenutak u kojem te drugi primjećuju i cijene.",
+      "reversed": "Emocije su nemirne ili ugled nesiguran; oslušni intuiciju iznova."
+    },
+    "len-key": {
+      "name": "Ključ",
+      "yesno": "DA",
+      "upright": "Rješenje, sigurnost i preokret. Ključ je karta 'da' - otvara vrata, potvrđuje i najavljuje da se nešto važno ostvaruje. Sudbinski pomak.",
+      "reversed": "Rješenje kasni ili je vrata teže otvoriti; ustraj, ključ je nadohvat."
+    },
+    "len-fish": {
+      "name": "Ribe",
+      "yesno": "DA",
+      "upright": "Obilje, novac i posao. Ribe nose bogatstvo, poslovni tok i neovisnost - protok resursa i priliku za rast.",
+      "reversed": "Priljev je usporen ili neredovit; s financijama budi promišljena."
+    },
+    "len-anchor": {
+      "name": "Sidro",
+      "yesno": "DA",
+      "upright": "Stabilnost, ustrajnost i nada. Sidro daje čvrsto uporište - u poslu, vezi ili cilju; ono što je usidreno, traje.",
+      "reversed": "Uporište je nesigurno ili te nešto predugo drži na mjestu; provjeri temelje."
+    },
+    "len-cross": {
+      "name": "Križ",
+      "yesno": "NE",
+      "upright": "Teret, sudbina i vjera. Križ nosi kušnju ili obvezu koju valja proći - težak, ali smislen dio puta; ponekad duhovnost i predanost.",
+      "reversed": "Teret se olakšava; teško razdoblje se bliži kraju i pritisak popušta."
+    }
   }
 };
 // ===ALKEMIJANA:TAROT_CARD_TEXTS:END===

@@ -1816,7 +1816,8 @@ function renderTarotAdminList() {
   const deck = TAROT_DECKS.find(d => d.id === deckId);
   const list = document.getElementById('tarot-admin-list');
   if (!deck || !list) return;
-  list.innerHTML = TAROT_CARD_DEFS.map(c => {
+  const defs = (typeof tarotDeckCardDefs === 'function') ? tarotDeckCardDefs(deckId) : TAROT_CARD_DEFS;
+  list.innerHTML = defs.map(c => {
     const saved = (TAROT_CARD_TEXTS[deckId] && TAROT_CARD_TEXTS[deckId][c.id]) || {};
     const name = saved.name != null ? saved.name : c.name;
     const upright = saved.upright || '';

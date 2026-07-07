@@ -2,7 +2,8 @@
    Virtualni tarot - stanje i logika (bez DOM-a)
 
    INVARIJANTA (nikad dvije identične karte): za svaki špil vrijedi da je
-   svaka od 78 karata točno na JEDNOM mjestu - u špilu (`remaining`), na stolu
+   svaka karta tog seta (tarot 78, Lenormand 36...) točno na JEDNOM mjestu -
+   u špilu (`remaining`), na stolu
    (`table`) ili u otpadu (`discard`). Svaka operacija održava tu invarijantu:
      draw:            remaining → table
      discard:         table → discard
@@ -22,7 +23,8 @@ function shuffleArray(arr) {
 }
 
 function createTarotEngine() {
-  const allCardIds = TAROT_CARD_DEFS.map(c => c.id);
+  // svaki špil ima svoj set karata (tarot = 78, lenormand = 36...)
+  function deckCardIds(deckId) { return tarotDeckCardDefs(deckId).map(c => c.id); }
 
   const state = {
     decks: {},          // deckId -> { enabled, remaining:[ids] }
@@ -38,7 +40,7 @@ function createTarotEngine() {
     if (d.comingSoon) return; // nema karata za izvlačenje (placeholder špil)
     state.decks[d.id] = {
       enabled: true, // stvarni špilovi uključeni po defaultu
-      remaining: shuffleArray(allCardIds)
+      remaining: shuffleArray(deckCardIds(d.id))
     };
   });
 
@@ -80,18 +82,18 @@ function createTarotEngine() {
     }
     // makni karte ovog špila iz otpada
     state.discard = state.discard.filter(e => e.deckId !== deckId);
-    d.remaining = shuffleArray(allCardIds);
+    d.remaining = shuffleArray(deckCardIds(deckId));
     emit({ type: 'reclaim', deckId, mode: 'full' });
   }
 
-  /* Posloži preostale karte špila po kanonskom redu (velika arkana 0-21, pa
-     štapovi, pehari, mačevi, pentakli - As, 2-10, Paž, Vitez, Kraljica, Kralj).
+  /* Posloži preostale karte špila po kanonskom redu tog seta (tarot: velika
+     arkana 0-21, pa štapovi/pehari/mačevi/pentakli As-Kralj; Lenormand: 1-36).
      Koristi ga "Izvuci sve" da karte izlaze točno tim redoslijedom. */
   function sortRemaining(deckId) {
     const d = state.decks[deckId];
     if (!d) return;
     const order = {};
-    allCardIds.forEach((id, i) => { order[id] = i; });
+    deckCardIds(deckId).forEach((id, i) => { order[id] = i; });
     d.remaining = d.remaining.slice().sort((a, b) => order[a] - order[b]);
     emit({ type: 'deck-shuffle', deckId, mode: 'sorted' });
   }

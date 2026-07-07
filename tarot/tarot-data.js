@@ -49,6 +49,67 @@ function buildCardDefs() {
 
 const TAROT_CARD_DEFS = buildCardDefs(); // 78 kartica
 
+/* ---- Lenormand: 36 karata (drugi "card set", ne dijeli 78 tarot karata) ----
+   Petit Lenormand kanonski red 1-36. `id` je namespace-an s `len-` da se NIKAD ne
+   sudari s tarot id-evima (Lenormand ima Toranj/Zvijezde/Mjesec/Sunce kao i tarot).
+   `suit`/`rank` = tradicionalni umetak igraće karte (crta se u kutu SVG karte). */
+const TAROT_LENORMAND_DEFS = [
+  ['rider',    'Konjanik',  'hearts',   '9'],
+  ['clover',   'Djetelina', 'diamonds', '6'],
+  ['ship',     'Brod',      'spades',   '10'],
+  ['house',    'Kuća',      'hearts',   'K'],
+  ['tree',     'Drvo',      'hearts',   '7'],
+  ['clouds',   'Oblaci',    'clubs',    'K'],
+  ['snake',    'Zmija',     'clubs',    'Q'],
+  ['coffin',   'Lijes',     'diamonds', '9'],
+  ['bouquet',  'Cvijeće',   'spades',   'Q'],
+  ['scythe',   'Kosa',      'diamonds', 'J'],
+  ['whip',     'Šiba',      'clubs',    'J'],
+  ['birds',    'Ptice',     'diamonds', '7'],
+  ['child',    'Dijete',    'spades',   'J'],
+  ['fox',      'Lisica',    'clubs',    '9'],
+  ['bear',     'Medvjed',   'clubs',    '10'],
+  ['stars',    'Zvijezde',  'hearts',   '6'],
+  ['stork',    'Roda',      'hearts',   'Q'],
+  ['dog',      'Pas',       'hearts',   '10'],
+  ['tower',    'Toranj',    'spades',   '6'],
+  ['garden',   'Vrt',       'spades',   '8'],
+  ['mountain', 'Planina',   'clubs',    '8'],
+  ['ways',     'Raskrižje', 'diamonds', 'Q'],
+  ['mice',     'Miševi',    'clubs',    '7'],
+  ['heart',    'Srce',      'hearts',   'J'],
+  ['ring',     'Prsten',    'clubs',    'A'],
+  ['book',     'Knjiga',    'diamonds', '10'],
+  ['letter',   'Pismo',     'spades',   '7'],
+  ['man',      'Gospodin',  'hearts',   'A'],
+  ['woman',    'Gospođa',   'spades',   'A'],
+  ['lily',     'Ljiljan',   'spades',   'K'],
+  ['sun',      'Sunce',     'diamonds', 'A'],
+  ['moon',     'Mjesec',    'hearts',   '8'],
+  ['key',      'Ključ',     'diamonds', '8'],
+  ['fish',     'Ribe',      'diamonds', 'K'],
+  ['anchor',   'Sidro',     'spades',   '9'],
+  ['cross',    'Križ',      'clubs',    '6']
+].map(([id, name, suit, rank], i) => ({
+  id: 'len-' + id, name, suit, rank, num: i + 1, isMajor: false
+}));
+
+/* Registar svih "card setova". Deck bira set preko `cardSet` (default 'tarot').
+   `TAROT_CARD_DEF_BY_ID` je spojena mapa za brzo dohvaćanje definicije po id-u
+   (id-evi su jedinstveni preko svih setova). */
+const TAROT_CARD_SETS = {
+  tarot: TAROT_CARD_DEFS,
+  lenormand: TAROT_LENORMAND_DEFS
+};
+const TAROT_CARD_DEF_BY_ID = {};
+Object.keys(TAROT_CARD_SETS).forEach(k => {
+  TAROT_CARD_SETS[k].forEach(c => { TAROT_CARD_DEF_BY_ID[c.id] = c; });
+});
+function tarotDeckCardDefs(deckId) {
+  const d = TAROT_DECKS.find(x => x.id === deckId);
+  return TAROT_CARD_SETS[(d && d.cardSet) || 'tarot'] || TAROT_CARD_DEFS;
+}
+
 /* ---- Špilovi (proširivo - dodaj novi objekt u ovaj niz za novi špil) ---- */
 
 const TAROT_DECKS = [
@@ -74,8 +135,11 @@ const TAROT_DECKS = [
     id: 'lenormand',
     name: 'Lenormand',
     shortName: 'Lenormand',
-    backClass: 'vtar-back-lenormand',
-    comingSoon: true
+    year: '1846',
+    folder: 'lenormand',
+    ext: 'jpg',
+    cardSet: 'lenormand',
+    backClass: 'vtar-back-lenormand'
   },
   {
     id: 'oracle',
@@ -88,7 +152,7 @@ const TAROT_DECKS = [
 
 /* Verzija slika karata - povećaj kad se slika promijeni na istom imenu
    (npr. ispravljen Marseille Paž/Vitez) da probije cache preglednika/CDN-a. */
-const TAROT_IMG_VERSION = '2';
+const TAROT_IMG_VERSION = '6';
 function tarotCardImage(deckId, cardId) {
   const deck = TAROT_DECKS.find(d => d.id === deckId);
   return `tarot/assets/decks/${deck.folder}/${cardId}.${deck.ext}?v=${TAROT_IMG_VERSION}`;
@@ -278,10 +342,64 @@ const TAROT_SPREADS = [
       pos.push({ gx: 2, gy: 2, label: 'Tema godine', meaning: 'Sveukupna tema i lekcija cijele godine.' });
       return pos;
     })()
+  },
+
+  /* ---- Klasični Lenormand rasporedi (lenormand:true → drukčija boja u izborniku) ----
+     Lenormand se čita u KOMBINACIJI (karte jedna uz drugu tvore rečenicu), zato su
+     oznake pozicija općenitije nego kod tarota. */
+  {
+    id: 'len-line3',
+    name: 'Lenormand: Linija 3',
+    lenormand: true,
+    short: 'Tri karte u nizu - čitaju se zajedno kao kratka rečenica.',
+    cols: 3, rows: 1,
+    positions: [
+      { gx: 0, gy: 0, label: 'Situacija', meaning: 'Polazište, ono o čemu se radi.' },
+      { gx: 1, gy: 0, label: 'Razvoj', meaning: 'Središnja karta - srž poruke.' },
+      { gx: 2, gy: 0, label: 'Ishod', meaning: 'Kamo kombinacija vodi.' }
+    ]
+  },
+  {
+    id: 'len-box9',
+    name: 'Lenormand: Kvadrat 3×3',
+    lenormand: true,
+    short: 'Devet karata oko značajnice - klasičan Lenormand kvadrat.',
+    cols: 3, rows: 3,
+    positions: [
+      { gx: 0, gy: 0, label: '1', meaning: 'Prošlost / pozadina teme.' },
+      { gx: 1, gy: 0, label: '2', meaning: 'Ono što nadolazi.' },
+      { gx: 2, gy: 0, label: '3', meaning: 'Cilj ili nada.' },
+      { gx: 0, gy: 1, label: '4', meaning: 'Utjecaj koji blijedi.' },
+      { gx: 1, gy: 1, label: 'Značajnica', meaning: 'Srž pitanja - čita se s okolnim kartama.' },
+      { gx: 2, gy: 1, label: '6', meaning: 'Neposredna okolina, utjecaji.' },
+      { gx: 0, gy: 2, label: '7', meaning: 'Temelj / podsvjesno.' },
+      { gx: 1, gy: 2, label: '8', meaning: 'Savjet, korak koji treba.' },
+      { gx: 2, gy: 2, label: '9', meaning: 'Konačan ishod.' }
+    ]
+  },
+  {
+    id: 'len-grand',
+    name: 'Lenormand: Veliki tabló',
+    lenormand: true,
+    noLegend: true,
+    short: 'Svih 36 karata odjednom (8×4 + 4) - potpuni pregled života.',
+    cols: 8, rows: 5,
+    positions: (() => {
+      const pos = [];
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) {
+        pos.push({ gx: c, gy: r, label: String(pos.length + 1), meaning: '' });
+      }
+      [2, 3, 4, 5].forEach(c => pos.push({ gx: c, gy: 4, label: String(pos.length + 1), meaning: '' }));
+      return pos;
+    })()
   }
 ];
 
 window.TAROT_CARD_DEFS = TAROT_CARD_DEFS;
+window.TAROT_LENORMAND_DEFS = TAROT_LENORMAND_DEFS;
+window.TAROT_CARD_SETS = TAROT_CARD_SETS;
+window.TAROT_CARD_DEF_BY_ID = TAROT_CARD_DEF_BY_ID;
+window.tarotDeckCardDefs = tarotDeckCardDefs;
 window.TAROT_DECKS = TAROT_DECKS;
 window.TAROT_SPREADS = TAROT_SPREADS;
 window.tarotCardImage = tarotCardImage;

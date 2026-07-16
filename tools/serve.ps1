@@ -7,7 +7,8 @@ $mime = @{
   '.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8'
   '.js'='text/javascript; charset=utf-8'; '.json'='application/json'
   '.svg'='image/svg+xml'; '.png'='image/png'; '.jpg'='image/jpeg'
-  '.ico'='image/x-icon'; '.ttf'='font/ttf'; '.txt'='text/plain'; '.xml'='text/xml'
+  '.ico'='image/x-icon'; '.ttf'='font/ttf'; '.woff2'='font/woff2'; '.woff'='font/woff'
+  '.txt'='text/plain'; '.xml'='text/xml'
 }
 
 $listener = New-Object System.Net.HttpListener
@@ -28,6 +29,7 @@ while ($listener.IsListening) {
     $ctx.Response.Close()
     continue
   }
+  $ctx.Response.KeepAlive = $false
   $file = Join-Path $root ($path -replace '/', '\')
   $full = [IO.Path]::GetFullPath($file)
   if ($full.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -and (Test-Path $full -PathType Leaf)) {

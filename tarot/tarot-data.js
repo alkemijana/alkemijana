@@ -139,7 +139,8 @@ const TAROT_DECKS = [
     folder: 'lenormand',
     ext: 'jpg',
     cardSet: 'lenormand',
-    backClass: 'vtar-back-lenormand'
+    backClass: 'vtar-back-lenormand',
+    comingSoon: true
   },
   {
     id: 'oracle',

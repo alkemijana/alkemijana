@@ -60,7 +60,7 @@ ${post && Array.isArray(post.tags) ? post.tags.map(t => `<meta property="article
   // Samo pravi posjetitelji (s JS-om) idu na SPA. Social media crawleri
   // (Facebook, WhatsApp, Twitter, LinkedIn) ne izvršavaju JS, ostaju na
   // ovoj stranici i čitaju OG meta tagove ovdje - to je ono što želimo.
-  window.location.replace(${JSON.stringify(redirect)});
+  window.location.replace(${jsStringLiteral(redirect)});
 </script>
 <style>body{font-family:sans-serif;background:#06080f;color:#c0bcce;padding:2rem;text-align:center}a{color:#a890d0}</style>
 </head>
@@ -106,4 +106,25 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+/* JS string literal siguran za ugradnju u <script> u HTML-u. JSON.stringify sam NIJE
+   dovoljan: escapira navodnike i \, ali NE i "</script>" - HTML parser bi zatvorio
+   <script> na doslovnom </script> unutar stringa i ostatak izvršio kao novi kod (XSS).
+   Zato dodatno escapiramo < > & u \uXXXX (JS ih svejedno dekodira natrag u točan znak,
+   pa redirect radi identično) i U+2028/U+2029 (prijelom retka u starijim JS parserima).
+   Escapiramo po kodu znaka - bez regexa s tim znakovima, jer literalni U+2028/U+2029
+   nisu dopušteni unutar regex literala. slug dolazi iz putanje (napadač ga kontrolira). */
+function jsStringLiteral(s) {
+  const json = JSON.stringify(String(s));
+  let out = '';
+  for (const ch of json) {
+    const c = ch.charCodeAt(0);
+    if (c === 0x3c || c === 0x3e || c === 0x26 || c === 0x2028 || c === 0x2029) {
+      out += '\\u' + c.toString(16).padStart(4, '0');
+    } else {
+      out += ch;
+    }
+  }
+  return out;
 }

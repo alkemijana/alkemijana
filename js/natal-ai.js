@@ -116,7 +116,8 @@
     });
     const data = await r.json().catch(() => ({}));
     if (!(data && data.ok && data.text)) {
-      throw new Error((data && data.note) || 'AI uvidi trenutno nisu dostupni. Pokušaj ponovno kasnije.');
+      // data.error pokriva i poruku o zaključavanju iz lib/admin-auth.js (429)
+      throw new Error((data && (data.note || data.error)) || 'AI uvidi trenutno nisu dostupni. Pokušaj ponovno kasnije.');
     }
     insightsText = data.text; insightsHash = h;
     return insightsText;

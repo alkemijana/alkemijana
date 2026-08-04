@@ -680,6 +680,12 @@
             <input type="hidden" name="subject"    value="Novi upit - Alkemijana">
             <input type="hidden" name="from_name"  value="Alkemijana">
             <input type="hidden" name="redirect"   value="false">
+            <!-- Honeypot protiv spam-botova: Web3Forms odbacuje poruku ako je polje
+                 "botcheck" popunjeno. Skriveno je od ljudi (i od čitača zaslona preko
+                 tabindex/aria-hidden), a botovi koji naslijepo popunjavaju sva polja
+                 upadnu. Javni access_key se ne može sakriti (tako Web3Forms radi), pa
+                 je ovo glavna obrana od spama. NE uklanjati i NE mijenjati ime polja. -->
+            <input type="checkbox" name="botcheck" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
 
             <div class="form-row">
               <div class="form-group"><label id="t-formNameLabel">Ime i prezime</label><input type="text"  name="ime"    required></div>
@@ -1334,7 +1340,7 @@
           rođenja. Kad izradiš kartu, bilježim samo da je alat korišten, i to tako da se podaci prije
           slanja pretvore u nepovratni niz znakova (SHA-256 sažetak) bez imena, iz kojega nije moguće
           rekonstruirati tko si ni kada si rođena/rođen. Kod astrokartografije karta svijeta učitava se s
-          poslužitelja CARTO i OpenStreetMap, a knjižnica za prikaz karte s mreže jsDelivr, pa im je
+          poslužitelja CARTO i OpenStreetMap, pa im je
           pritom vidljiva tvoja IP adresa, kao kod otvaranja bilo koje slike s interneta. PDF koji
           preuzmeš nastaje u tvom pregledniku i nigdje se ne pohranjuje.
         </p>
@@ -1367,7 +1373,7 @@
           Cloudflare služi kao poslužitelj i isporučuje stranicu, pa je uključen uvijek. Web3Forms
           dostavlja poruku iz kontakt obrasca, dakle kad pošalješ upit. Google Ireland Ltd. obavlja
           analitiku posjećenosti, isključivo uz privolu. Open-Meteo obrađuje pretragu mjesta rođenja,
-          kad ga tražiš u astro alatu. CARTO, OpenStreetMap i jsDelivr isporučuju kartu svijeta, kad
+          kad ga tražiš u astro alatu. CARTO i OpenStreetMap isporučuju kartu svijeta, kad
           otvoriš astrokartografiju. Neki od tih pružatelja imaju poslužitelje izvan Europske unije;
           u tim se slučajevima prijenos temelji na odluci Europske komisije o primjerenosti (okvir
           EU-SAD za zaštitu podataka) odnosno na standardnim ugovornim klauzulama.
@@ -1375,8 +1381,11 @@
         <p>
           8. Poslužitelj automatski bilježi standardne tehničke podatke, poput IP
           adrese, vrste preglednika i vremena pristupa, radi sigurnosti i sprječavanja zloupotrebe.
-          Pravna osnova je moj legitimni interes za sigurnost stranice (čl. 6. st. 1. t. (f) Opće
-          uredbe).
+          Da bih spriječila automatizirano pogađanje lozinke i zloupotrebu brojača, kod prijave u
+          administraciju i kod izrade karte privremeno bilježim samo nepovratni sažetak IP adrese
+          (SHA-256 sa serverskom tajnom), nikada samu adresu; taj se zapis sam briše nakon petnaest
+          minuta odnosno trideset šest sati i ne može se povezati s tobom. Pravna osnova je moj
+          legitimni interes za sigurnost stranice (čl. 6. st. 1. t. (f) Opće uredbe).
         </p>
         <p>
           9. U svakom trenutku imaš pravo zatražiti pristup podacima koje imam o tebi,

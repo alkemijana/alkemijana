@@ -2860,6 +2860,11 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 }
 .form-consent a { color: var(--lavender); text-decoration: underline; text-underline-offset: 3px; }
 
+/* Honeypot za spam-botove (polje "botcheck" u kontakt obrascu) - mora ostati
+   nevidljivo i za ljude i za čitače zaslona; ako ga bot popuni, Web3Forms odbaci
+   poruku. Ne uklanjati. */
+.hp-field { display: none !important; }
+
 @media (max-width: 760px) {
   .cc-banner-inner { padding: 1.2rem 1.3rem; gap: 1.1rem; }
   .cc-actions { width: 100%; }

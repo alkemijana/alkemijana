@@ -1,9 +1,12 @@
 // Statistika izrađenih karata - SAMO admin (X-Admin-Pass). Čita samo nazive ključeva
 // (datum je u nazivu), pa ne troši po-ključ dohvate. POST {action:'reset'} briše brojač.
+// Autentikacija i zaštita od pogađanja lozinke: lib/admin-auth.js.
+
+import { guardAdmin, passFromHeader, json } from './lib/admin-auth.js';
 
 export async function onRequestGet({ request, env }) {
-  const unauth = checkAuth(request, env);
-  if (unauth) return unauth;
+  const denied = await guardAdmin(request, env, passFromHeader(request));
+  if (denied) return denied;
 
   const KV = env.NATAL_LOG;
   if (!KV) return json({ ok: true, total: 0, last30: 0, last7: 0, note: 'KV (NATAL_LOG) nije konfiguriran - vidi CLAUDE.md za postavljanje.' }, 200);
@@ -32,8 +35,8 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const unauth = checkAuth(request, env);
-  if (unauth) return unauth;
+  const denied = await guardAdmin(request, env, passFromHeader(request));
+  if (denied) return denied;
 
   const KV = env.NATAL_LOG;
   if (!KV) return json({ ok: false, error: 'KV nije konfiguriran' }, 200);
@@ -60,27 +63,4 @@ export async function onRequestPost({ request, env }) {
 function ymdNum(ms) {
   const d = new Date(ms);
   return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
-}
-
-function checkAuth(request, env) {
-  const ADMIN_PASS = env.ADMIN_PASS;
-  if (!ADMIN_PASS) return json({ ok: false, error: 'ADMIN_PASS not configured' }, 500);
-  const provided = request.headers.get('x-admin-pass') || '';
-  if (!safeEqual(provided, ADMIN_PASS)) return json({ ok: false, error: 'Unauthorized' }, 403);
-  return null;
-}
-
-function safeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
-}
-
-function json(obj, status) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
-  });
 }

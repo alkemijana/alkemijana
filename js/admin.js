@@ -33,6 +33,7 @@ async function handleAdminLogin() {
   err.style.display = 'none';
 
   let ok = false;
+  let lockMsg = '';
   try {
     const res = await fetch('/verify-pass', {
       method: 'POST',
@@ -41,6 +42,8 @@ async function handleAdminLogin() {
     });
     const data = await res.json().catch(() => ({}));
     ok = res.ok && data.ok === true;
+    // 429 = previše promašaja, pristup privremeno zaključan (lib/admin-auth.js)
+    if (res.status === 429 && data && data.error) lockMsg = data.error;
   } catch (e) {
     // Lokalni razvoj (bez Cloudflare funkcija): pusti login da se UI može testirati,
     // ali save neće raditi jer nema env vara.
@@ -59,6 +62,7 @@ async function handleAdminLogin() {
     activateAdmin();
     history.replaceState(null, '', '#');
   } else {
+    if (lockMsg) err.textContent = lockMsg;
     err.style.display = 'block';
   }
 }
@@ -760,7 +764,13 @@ function wSel(open, close, edId) {
    (javascript:, data: osim slika). Zadržava strukturu (p, h2, h3, strong,
    b, em, i, u, blockquote, figure, img, a, ul, ol, li, br). */
 function sanitizeContentHtml(html) {
-  const tmp = document.createElement('div');
+  // Parsiranje ide u INERTNI dokument, ne u <div> žive stranice. Razlog: čim se
+  // nesiguran HTML ubaci u element ovog dokumenta, preglednik odmah krene dohvaćati
+  // resurse, pa <img src=nepostojeci onerror=...> može opaliti PRIJE nego što petlja
+  // niže ukloni atribut - čišćenje bi bilo utrka s preglednikom. U dokumentu iz
+  // createHTMLDocument resursi se ne učitavaju i rukovatelji se ne pokreću.
+  const inert = document.implementation.createHTMLDocument('');
+  const tmp = inert.createElement('div');
   tmp.innerHTML = html;
 
   const allowedTags = new Set(['P','H2','H3','H4','STRONG','B','EM','I','U','BR','BLOCKQUOTE','FIGURE','IMG','A','UL','OL','LI','DIV','SPAN']);

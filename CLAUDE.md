@@ -39,7 +39,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
-│   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
+│   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
@@ -58,6 +58,7 @@ ALKEMIJANA WEBSITE/
 │   ├── log-natal.js                ← Zapisuje izradu natalne karte u KV (binding NATAL_LOG)
 │   ├── natal-log.js                ← Admin čitanje/brisanje evidencije karata (X-Admin-Pass)
 │   ├── interpret-natal.js          ← Ruta /interpret-natal (tanki shim — pravi kod je u ai/)
+│   ├── lib/admin-auth.js           ← Zajednička provjera lozinke + lockout po IP-u (nije ruta, samo import)
 │   └── ai/                         ← AI tumačenje (server): core.js (cache+limiti+dispatch), providers.js (adapteri), prompt.js
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
@@ -274,8 +275,10 @@ osobu (po trenutku i mjestu rođenja) planet bio točno na ASC/MC/DSC/IC.
   `H = LST − RA`, veliki krug preko `greatCirclePoint`). Dropdown prebacuje bez ponovnog
   računanja (`pl.mundo`/`pl.zodio`/`pl.local`); Local Space nema ASC/MC vs DSC/IC pa
   `acgUpdateNote` mijenja napomenu ispod karte.
-- **Karta (`natal-acg-render.js`):** Leaflet (lazy-load s CDN-a, `js/lib/` ga ne
-  sadrži — jedina biblioteka u projektu koja nije vendorirana lokalno), **CARTO
+- **Karta (`natal-acg-render.js`):** Leaflet 1.9.4 (lazy-load iz `js/lib/leaflet/` —
+  **vendoriran lokalno**, kao i sve ostale biblioteke; prije je dolazio s jsDelivra bez
+  SRI-ja, što je bio supply-chain rizik. Nadogradnja = zamijeni `leaflet.js`, `leaflet.css`
+  i mapu `images/`), **CARTO
   light_all tile server** (nazivi gradova na engleskom/latinici; OSM piše lokalna
   pisma), stiliziran CSS filterom (`hue-rotate`/`invert`/`sepia` na `.leaflet-tile-pane`)
   u tonove Alkemijane — različit filter + pozadina karte za tamnu/svijetlu temu (nema
@@ -652,8 +655,10 @@ izričit pristanak PRIJE učitavanja.
 | **Web3Forms** | Kontakt forma | Hard-coded `value` u `<input name="access_key">` u index.html |
 | **Google Analytics (GA4)** | Analytics | gtag.js, Measurement ID `G-ZEYLD5W4RS`; **učitava se TEK uz privolu** (v. GDPR odjeljak); dashboard na analytics.google.com |
 | **GitHub API** | Auto-save iz admina | Token u Cloudflare env var `GITHUB_TOKEN` |
-| **jsDelivr (Leaflet)** | AstroCartography karta (`natal-acg-render.js`) | Bez ključa, CDN |
-| **OpenStreetMap tiles** | Podloga AstroCartography karte | Bez ključa, javni tile server |
+| **CARTO / OpenStreetMap tiles** | Podloga AstroCartography karte | Bez ključa, javni tile server |
+
+Leaflet se **više ne učitava s jsDelivra** — vendoriran je u `js/lib/leaflet/`. U projektu
+nema nijedne vanjske skripte osim GA4 (koji ide tek uz privolu).
 
 **Napomena — `_headers` (CSP):** korijenski `_headers` file definira Content-Security-Policy
 za cijelu stranicu (Cloudflare Pages headers). Svaki novi vanjski domain (CDN skripta, API,
@@ -741,9 +746,37 @@ Za testiranje serverless funkcije lokalno: `npx wrangler pages dev` (ako instali
 - Lozinka admin je u Cloudflare Pages env varu `ADMIN_PASS` — NIJE u kodu.
   - Login overlay šalje upisanu lozinku na `/verify-pass` koja je uspoređuje s env varom.
   - Nakon uspjeha lozinka se drži u `sessionStorage` (`aj_pass`) i šalje kao `X-Admin-Pass` header na `/save-data`.
+- **`functions/lib/admin-auth.js` — JEDINO mjesto gdje se provjerava admin lozinka.**
+  `guardAdmin(request, env, provided)` vrati `null` (prolaz) ili gotov `Response`.
+  Koriste ga SVE admin rute: `verify-pass`, `save-data`, `admin-data`, `natal-log`, `ai/core`.
+  **Svaka nova admin ruta mora ići kroz njega** — inače je rupa u lockoutu (napadač bi
+  pogađao lozinku na ruti koja ne broji promašaje). Nema `onRequest*` export pa Pages
+  ovaj file ne servira kao rutu (isti obrazac kao `functions/ai/providers.js`).
+  - Konstantno-vremenska usporedba lozinke + 250 ms pauza na promašaj.
+  - **Lockout:** 8 promašaja s istog IP-a → 429 i zaključavanje na 15 min. Brojač u KV-u
+    (`NATAL_LOG`, ključ `rl:<hash>`), uspješna prijava ga briše. Bez KV bindinga lockout
+    tiho ne radi, ali provjera lozinke radi normalno.
+  - **IP se NE sprema** — ključ je SHA-256(IP + `ADMIN_PASS` kao sol), zapis sam istekne.
+    Zato je ova obrada opisana u pravilima privatnosti (t. 8) — ne uklanjati taj tekst.
+- **`/log-natal` je javna ruta** (zove je svaki posjetitelj) pa ima dnevni limit: max 40
+  NOVIH karata po posjetitelju dnevno (`d:<YYYYMMDD>:<iphash>`). Bez toga bi skripta mogla
+  napuhati brojač i potrošiti dnevnu kvotu KV upisa (1000/dan na besplatnom planu), nakon
+  čega brojač prestaje raditi za sve. Prekoračenje NE ruši izradu karte — samo se ne broji.
 - GitHub token je u Cloudflare Pages env varu `GITHUB_TOKEN` — NIJE u kodu.
 - ImgBB i Web3Forms ključevi su u kodu — to je OK, oni su client-side ključevi s rate limit-om.
+  Kontakt obrazac ima **honeypot** (`<input name="botcheck" class="hp-field">`) — Web3Forms
+  odbaci poruku ako je popunjen. Ne uklanjati; to je glavna obrana od spama jer se javni
+  access_key ne može sakriti.
 - HTML sanitizator (`sanitizeContentHtml` u admin.js) koristi whitelist atributa i validira href/src sheme — sve `on*` event handlere automatski briše.
+  Parsira u **inertni dokument** (`document.implementation.createHTMLDocument`), ne u `<div>`
+  žive stranice — inače bi `<img src=x onerror=…>` mogao opaliti prije čišćenja. Ne vraćati na `document.createElement`.
+- **Nema vanjskih skripti** — sve biblioteke su vendorirane u `js/lib/` (uklj. Leaflet).
+  CSP u `_headers` više ne dopušta `cdn.jsdelivr.net`; ako se ikad doda vanjska skripta,
+  mora ići uz `integrity` + `crossorigin` (SRI) ili se vendorirati.
+- **Poznat, svjestan kompromis:** CSP `script-src` sadrži `'unsafe-inline'` jer stranica ima
+  ~126 inline `onclick` atributa (index.html + generirani HTML u app.js/admin.js/tarot).
+  Dok se oni ne prebace na `addEventListener`, CSP ne štiti od XSS-a koliko bi mogao.
+  Praktičan rizik je nizak (nema sadržaja koji pišu posjetitelji, admin unos ide kroz sanitizator).
 
 ---
 

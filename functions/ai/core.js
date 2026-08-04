@@ -14,6 +14,7 @@
 
 import { callProvider, DEFAULT_MODELS } from './providers.js';
 import { systemPrompt, userPrompt } from './prompt.js';
+import { guardAdmin, passFromHeader } from '../lib/admin-auth.js';
 
 const MAX_TOKENS = 2500; // temeljita strukturirana analiza (bez ograničenja sadržaja)
 
@@ -22,10 +23,11 @@ export async function handleInterpret({ request, env }) {
   const model = env.AI_MODEL || DEFAULT_MODELS[provider] || '';
   const KV = env.NATAL_LOG;
 
-  // SAMO ADMIN - ovo je Janin radni alat, nije za posjetitelje
-  if (!checkAdmin(request, env)) {
-    return json({ ok: false, error: 'auth', note: 'AI uvidi su dostupni samo prijavljenom adminu.' }, 403);
-  }
+  // SAMO ADMIN - ovo je Janin radni alat, nije za posjetitelje. guardAdmin uz provjeru
+  // lozinke broji promašaje po IP-u i zaključava nakon previše pokušaja (lib/admin-auth.js) -
+  // inače bi ova ruta bila rupa u lockoutu ostalih admin ruta (i besplatan AI za napadača).
+  const denied = await guardAdmin(request, env, passFromHeader(request));
+  if (denied) return denied;
 
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: 'Invalid JSON' }, 400); }
@@ -65,19 +67,6 @@ export async function handleInterpret({ request, env }) {
 }
 
 /* ============ HELPERI ============ */
-
-function checkAdmin(request, env) {
-  const pass = request.headers.get('x-admin-pass') || '';
-  return !!env.ADMIN_PASS && safeEqual(pass, env.ADMIN_PASS);
-}
-
-function safeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
-}
 
 function json(obj, status) {
   return new Response(JSON.stringify(obj), {

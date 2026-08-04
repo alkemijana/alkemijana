@@ -1,33 +1,18 @@
-export async function onRequestPost({ request, env }) {
-  const ADMIN_PASS = env.ADMIN_PASS;
-  if (!ADMIN_PASS) {
-    return new Response(JSON.stringify({ error: 'ADMIN_PASS not configured' }), { status: 500 });
-  }
+// Provjera admin lozinke pri prijavi. Lozinka je u env varu ADMIN_PASS (nikad u kodu).
+// Brojanje promašaja i zaključavanje po IP-u su u lib/admin-auth.js (zajedničko sa
+// svim admin rutama - napadač ne može zaobići lockout gađajući drugu rutu).
+import { guardAdmin, json } from './lib/admin-auth.js';
 
+export async function onRequestPost({ request, env }) {
   let body;
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+    return json({ error: 'Invalid JSON' }, 400);
   }
 
-  const provided = (body && body.pass) || '';
-  if (!safeEqual(provided, ADMIN_PASS)) {
-    // mala umjetna pauza protiv brute-forcea
-    await new Promise(r => setTimeout(r, 250));
-    return new Response(JSON.stringify({ ok: false }), { status: 403 });
-  }
+  const denied = await guardAdmin(request, env, (body && body.pass) || '');
+  if (denied) return denied;
 
-  return new Response(JSON.stringify({ ok: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-function safeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
+  return json({ ok: true }, 200);
 }

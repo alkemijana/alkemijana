@@ -39,16 +39,20 @@ function acgProjectionMode() {
   return sel ? sel.value : 'mundo';
 }
 
+/* Leaflet je vendoriran u js/lib/leaflet/ (kao astronomy-engine i jsPDF) - NE učitava
+   se s CDN-a. Vanjska skripta bez SRI-ja je supply-chain rizik: da netko kompromitira
+   CDN, izvršio bi tuđi kod na stranici. Lokalno + CSP bez cdn.jsdelivr.net to zatvara.
+   Nadogradnja verzije = zamijeni datoteke u js/lib/leaflet/ (uklj. images/). */
 async function ensureLeaflet() {
   if (window.L) return window.L;
   if (!document.querySelector('link[data-acg-leaflet]')) {
     const css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+    css.href = 'js/lib/leaflet/leaflet.css';
     css.setAttribute('data-acg-leaflet', '1');
     document.head.appendChild(css);
   }
-  await loadScript('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js');
+  await loadScript('js/lib/leaflet/leaflet.js');
   return window.L;
 }
 

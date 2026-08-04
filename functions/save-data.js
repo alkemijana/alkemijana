@@ -1,3 +1,7 @@
+// Spremanje podataka iz admina: javni js/data.js -> GitHub commit, puni (skriveni)
+// podaci -> privatni KV. Autentikacija i zaštita od pogađanja: lib/admin-auth.js.
+import { guardAdmin } from './lib/admin-auth.js';
+
 export async function onRequestPost({ request, env }) {
   const GITHUB_TOKEN = env.GITHUB_TOKEN;
   const ADMIN_PASS   = env.ADMIN_PASS;
@@ -21,11 +25,8 @@ export async function onRequestPost({ request, env }) {
   }
 
   const provided = request.headers.get('x-admin-pass') || body.pass || '';
-  if (!safeEqual(provided, ADMIN_PASS)) {
-    // mala umjetna pauza da uspori pokušaje pogađanja (~250ms)
-    await new Promise(r => setTimeout(r, 250));
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 403 });
-  }
+  const denied = await guardAdmin(request, env, provided);
+  if (denied) return denied;
 
   const content = body.content;
   if (!content) {
@@ -94,12 +95,4 @@ export async function onRequestPost({ request, env }) {
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
-}
-
-function safeEqual(a, b) {
-  if (typeof a !== 'string' || typeof b !== 'string') return false;
-  if (a.length !== b.length) return false;
-  let r = 0;
-  for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return r === 0;
 }

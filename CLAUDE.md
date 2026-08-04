@@ -53,6 +53,7 @@ ALKEMIJANA WEBSITE/
 │       ├── lenormand/              ← Samo back.svg — "uskoro" placeholder špil (nema karata)
 │       └── oracle/                 ← Samo back.svg — "uskoro" placeholder špil (nema karata)
 ├── functions/
+│   ├── _middleware.js              ← Sigurnosni headeri (CSP/XFO/nosniff/HSTS/COOP) na SVE Functions odgovore (_headers ih ne pokriva)
 │   ├── save-data.js                ← Cloudflare Pages Function za auto-save preko GitHub API
 │   ├── verify-pass.js              ← Provjera admin lozinke (env ADMIN_PASS)
 │   ├── log-natal.js                ← Zapisuje izradu natalne karte u KV (binding NATAL_LOG)
@@ -773,6 +774,16 @@ Za testiranje serverless funkcije lokalno: `npx wrangler pages dev` (ako instali
 - **Nema vanjskih skripti** — sve biblioteke su vendorirane u `js/lib/` (uklj. Leaflet).
   CSP u `_headers` više ne dopušta `cdn.jsdelivr.net`; ako se ikad doda vanjska skripta,
   mora ići uz `integrity` + `crossorigin` (SRI) ili se vendorirati.
+- **Sigurnosni headeri na Functions:** `_headers` (CSP/XFO/nosniff/HSTS...) Cloudflare
+  primjenjuje SAMO na statičke datoteke. Funkcijske rute (`/post`, `/og`, JSON API)
+  dobivaju headere preko `functions/_middleware.js` (omata svaku rutu, dodaje isti set).
+  **CSP je dupliciran** — pri promjeni `_headers` CSP-a promijeni i middleware.
+- **SSR rute reflektiraju `slug` iz putanje** (`functions/post/[slug].js`, `og/[slug].js`) —
+  napadač ga kontrolira. U HTML atribute ide preko `escapeHtml`, u inline `<script>` preko
+  `jsStringLiteral` (JSON.stringify + escape `< > & U+2028 U+2029` u `\uXXXX`; goli
+  JSON.stringify NE zaustavlja `</script>` breakout → XSS). **Svaki novi reflektirani slug
+  mora ići kroz jedan od ta dva.** (Praktično: browseri i CF ionako percent-encodiraju
+  `<>/` u putanji pa doslovni `</script>` ne stigne — ali escape je obrana, ne oslanjanje na to.)
 - **Poznat, svjestan kompromis:** CSP `script-src` sadrži `'unsafe-inline'` jer stranica ima
   ~126 inline `onclick` atributa (index.html + generirani HTML u app.js/admin.js/tarot).
   Dok se oni ne prebace na `addEventListener`, CSP ne štiti od XSS-a koliko bi mogao.

@@ -41,6 +41,16 @@ const PAGE_META = {
     title: 'Virtualni tarot - online izvlačenje karata | Alkemijana',
     desc:  'Besplatan virtualni tarot stol - izaberi špil (Rider-Waite-Smith ili Marseille), odaberi raspored i izvuci karte online. Bez tumačenja, samo za tvoju intuiciju.',
     hash:  'tarot'
+  },
+  privatnost: {
+    title: 'Pravila privatnosti - Alkemijana',
+    desc:  'Kako Alkemijana postupa s osobnim podacima: kolačići, analitika uz privolu, kontakt obrazac. Podaci iz astro alata ostaju u tvom pregledniku.',
+    hash:  'privatnost'
+  },
+  uvjeti: {
+    title: 'Uvjeti korištenja - Alkemijana',
+    desc:  'Uvjeti korištenja stranice Alkemijana i odricanje od odgovornosti - tarot i astrologija služe samospoznaji, nisu zamjena za stručnu pomoć.',
+    hash:  'uvjeti'
   }
 };
 
@@ -1294,6 +1304,13 @@ window.addEventListener('load', () => {
   } else if (hash.startsWith('#post/')) {
     showPage('blog');
     openPost(hash.replace('#post/', ''));
+  } else {
+    /* Izravna poveznica na stranicu (npr. #privatnost, #natal, #tarot).
+       Nužno za pravne stranice: canonical/OG meta ih objavljuju kao
+       vlastite URL-ove pa se moraju otvoriti i kad ih netko podijeli.
+       showPage() sam blokira #usluge kad su usluge isključene. */
+    const pid = hash.replace('#', '');
+    if (pid && PAGE_META[pid]) showPage(pid);
   }
 
   if (sessionStorage.getItem('aj_admin') === '1') activateAdmin();

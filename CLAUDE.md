@@ -38,6 +38,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
+│   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
@@ -599,13 +600,57 @@ mora jednom kliknuti "Spremi" da se javni file okljašti i KV napuni.
 
 ---
 
+## GDPR — privola za kolačiće i pravne stranice
+
+**Ključno pravilo:** Google Analytics se **ne smije učitati bez privole**. GoatCounter je bio
+bez kolačića pa banner nije trebao; GA4 postavlja `_ga` kolačiće i po ePrivacy direktivi traži
+izričit pristanak PRIJE učitavanja.
+
+- **`js/consent.js`** (samostalan modul, prefiks CSS klasa **`cc-`**) — banner na dnu, panel s
+  postavkama, pohrana odluke u `localStorage` (`aj_consent`: `{v, analytics, ts}`).
+  - **Strogo tumačenje:** `gtag.js` se **uopće ne ubacuje u DOM** dok posjetitelj ne pristane →
+    Googleu ne odlazi nijedan zahtjev, pa ni IP adresa. Tek na „Prihvaćam” modul ubaci skriptu
+    i pozove `gtag('config', ...)`.
+  - U `index.html` je samo **Consent Mode v2** s `default: denied` za sve kategorije (pojas i
+    tregeri — pokriva slučaj da se gtag ikad učita drugim putem).
+  - **Povlačenje privole briše `_ga`/`_gid` kolačiće** (`clearGACookies`, pokriva domenu s
+    točkom i bez nje).
+  - `VERSION` konstanta: **povećaj je kad se skup kolačića promijeni** → svima se banner
+    prikaže ponovno (nova privola).
+  - Odbijanje mora biti **jednako lako** kao prihvaćanje (čl. 7 GDPR) — zato su „Odbijam” i
+    „Prihvaćam” isti po veličini i istaknutosti. Ne mijenjati u „samo Prihvaćam + X”.
+  - Zatvaranje panela bez odluke vraća banner (`maybeReshowBanner`) — posjetitelj ne smije
+    ostati bez izbora.
+  - Javni API: `window.AJConsent.open()` / `.get()`, plus `openCookieSettings()` za podnožje.
+
+- **Pravne stranice** (`#privatnost`, `#uvjeti`) su **statičan HTML u index.html**, namjerno
+  **NE idu kroz TEXTS/admin** — pravni tekst se ne smije mijenjati usput i mora odgovarati
+  onome što kod stvarno radi.
+  - **Pri svakoj promjeni obrade podataka (novi vanjski servis, novi kolačić, nova pohrana)
+    OBAVEZNO ažuriraj i taj tekst + datum „Zadnja izmjena”.**
+  - Sadrže tablice kolačića/lokalne pohrane i popis primatelja podataka — moraju se poklapati
+    s `_headers` CSP-om i stvarnim `fetch` pozivima.
+
+- **Kontakt obrazac** ima obaveznu privolu (`#form-consent-check`, `required`) s poveznicom na
+  pravila. `new FormData(form)` je pokupi automatski, `submitForm()` nije trebalo mijenjati.
+
+- **Deep-link routing:** `DOMContentLoaded` u `app.js` sada otvara bilo koju stranicu iz
+  `PAGE_META` po hashu (`#privatnost`, `#natal`, `#tarot`…), ne samo `#admin`/`#post/`.
+  Nužno jer canonical/OG meta te URL-ove objavljuju kao stvarne adrese.
+
+- **Privatnost astro alata je stvarna, ne marketinška:** podaci o rođenju se računaju u
+  pregledniku i **ne šalju se na poslužitelj**. Ako se to ikad promijeni (npr. izračun na
+  serveru), pravila privatnosti se MORAJU izmijeniti — to je trenutno njihova glavna tvrdnja.
+
+---
+
 ## Vanjski servisi
 
 | Servis | Svrha | API ključ |
 |--------|-------|-----------|
 | **ImgBB** | Upload slika (`uploadToImgBB` u admin.js) | Hard-coded u `IMGBB_KEY` |
 | **Web3Forms** | Kontakt forma | Hard-coded `value` u `<input name="access_key">` u index.html |
-| **Google Analytics (GA4)** | Analytics | gtag.js, Measurement ID `G-ZEYLD5W4RS` u index.html; dashboard na analytics.google.com |
+| **Google Analytics (GA4)** | Analytics | gtag.js, Measurement ID `G-ZEYLD5W4RS`; **učitava se TEK uz privolu** (v. GDPR odjeljak); dashboard na analytics.google.com |
 | **GitHub API** | Auto-save iz admina | Token u Cloudflare env var `GITHUB_TOKEN` |
 | **jsDelivr (Leaflet)** | AstroCartography karta (`natal-acg-render.js`) | Bez ključa, CDN |
 | **OpenStreetMap tiles** | Podloga AstroCartography karte | Bez ključa, javni tile server |

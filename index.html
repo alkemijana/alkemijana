@@ -698,6 +698,18 @@
               <label id="t-formMessageLabel">Tvoja poruka</label>
               <textarea name="poruka" id="booking-message" placeholder=""></textarea>
             </div>
+            <!-- GDPR: izričita privola prije slanja osobnih podataka -->
+            <div class="form-consent">
+              <label>
+                <input type="checkbox" name="privola" id="form-consent-check" required>
+                <span>
+                  Suglasna/suglasan sam da se moji podaci iz ovog obrasca koriste kako bi mi Jana
+                  odgovorila na upit. Više u
+                  <a onclick="showPage('privatnost')">Pravilima privatnosti</a>.
+                </span>
+              </label>
+            </div>
+
             <button type="submit" class="btn btn-primary" style="width:100%" id="form-submit-btn">Pošalji upit</button>
           </form>
           <div class="form-success" id="formSuccess">
@@ -1272,6 +1284,195 @@
     </div>
   </section>
 
+  <!-- ============================================================
+       PRAVNE STRANICE (GDPR)
+       Namjerno statičan HTML, NE ide kroz TEXTS/admin: pravni tekst se
+       ne bi smio mijenjati usput, a mora odgovarati onome što kod
+       stvarno radi. Pri promjeni obrade podataka (novi vanjski servis,
+       novi kolačić, nova pohrana) OBAVEZNO ažuriraj i ovaj tekst.
+       ============================================================ -->
+
+  <!-- PRAVILA PRIVATNOSTI -->
+  <section class="page" id="privatnost">
+    <div class="container legal-page">
+      <h1 class="section-title">Pravila privatnosti</h1>
+
+      <p class="legal-updated">Zadnja izmjena: 4. kolovoza 2026.</p>
+
+      <!-- Gusti, "zbijeni" prikaz (.legal-dense) - isti format kao Uvjeti korištenja,
+           bez naslova odjeljaka, bez tablica i bez podebljanja. -->
+      <div class="legal-dense">
+        <p>
+          Ova stranica ne traži registraciju i ne prodaje podatke nikome. Podatke koje
+          upišeš u astro alate (datum, vrijeme i mjesto rođenja) ne šaljem na poslužitelj - izračun
+          se odvija u tvom pregledniku i podaci ostaju kod tebe. Analitika se učitava samo ako je
+          izričito dopustiš.
+        </p>
+        <p>
+          1. Voditelj obrade osobnih podataka je Jana Marošević, kao
+          fizička osoba koja vodi internetsku stranicu alkemijana.com. Kontakt za sva pitanja o
+          privatnosti i za ostvarivanje prava: <a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a>.
+        </p>
+        <p>
+          2. Kada pošalješ upit preko obrasca na stranici Kontakt, obrađujem ime i
+          prezime, e-mail adresu, telefon (ako ga upišeš), odabranu uslugu i sadržaj tvoje poruke.
+          Svrha je odgovoriti ti na upit i dogovoriti se oko onoga što te zanima, a pravna osnova
+          tvoja privola i poduzimanje radnji na tvoj zahtjev prije sklapanja dogovora (čl. 6. st. 1.
+          t. (a) i (b) Opće uredbe o zaštiti podataka). Obrazac tehnički dostavlja usluga Web3Forms,
+          koja poruku prosljeđuje na moju e-mail adresu. Poruke čuvam u e-mail sandučiću dok traje
+          komunikacija i najviše godinu dana nakon posljednje razmjene, nakon čega ih brišem. Ako
+          želiš da tvoj upit obrišem odmah, samo javi.
+        </p>
+        <p>
+          3. Podaci koje upišeš u astro alate,
+          dakle ime, datum, vrijeme i mjesto rođenja, ne šalju se meni ni na bilo kakav poslužitelj.
+          Cijeli astronomski izračun radi se u tvom pregledniku, a ono što upišeš sprema se lokalno
+          kod tebe, u memoriju preglednika, samo zato da ne moraš sve ponovno tipkati kad se vratiš;
+          to možeš u svakom trenutku obrisati brisanjem podataka stranice u postavkama preglednika.
+          Postoje tri iznimke. Kad upišeš grad, taj se pojam šalje usluzi Open-Meteo koja vraća
+          koordinate i vremensku zonu, pri čemu se šalje samo naziv mjesta, ne i tvoje ime ili datum
+          rođenja. Kad izradiš kartu, bilježim samo da je alat korišten, i to tako da se podaci prije
+          slanja pretvore u nepovratni niz znakova (SHA-256 sažetak) bez imena, iz kojega nije moguće
+          rekonstruirati tko si ni kada si rođena/rođen. Kod astrokartografije karta svijeta učitava se s
+          poslužitelja CARTO i OpenStreetMap, a knjižnica za prikaz karte s mreže jsDelivr, pa im je
+          pritom vidljiva tvoja IP adresa, kao kod otvaranja bilo koje slike s interneta. PDF koji
+          preuzmeš nastaje u tvom pregledniku i nigdje se ne pohranjuje.
+        </p>
+        <p>
+          4. Izvlačenje tarot karata odvija se u cijelosti u tvom pregledniku. Ne bilježim
+          koje si karte izvukla/izvukao, ne spremam čitanja i ne mogu ih povezati s tobom.
+        </p>
+        <p>
+          5. Uz tvoju privolu koristim Google Analytics 4 kako bih vidjela
+          koliko ljudi posjećuje stranicu i koji su sadržaji najčitaniji. Dok ne daš privolu, Google
+          Analytics se uopće ne učitava, pa prema Googleu ne odlazi nijedan zahtjev ni tvoja IP
+          adresa. Privolu možeš povući u svakom trenutku preko poveznice
+          <a href="#" onclick="openCookieSettings();return false;">Postavke kolačića</a> u podnožju
+          stranice, nakon čega se pripadajući kolačići brišu. Pravna osnova je privola (čl. 6. st. 1.
+          t. (a) Opće uredbe).
+        </p>
+        <p>
+          6. Kolačići su male datoteke koje stranica ostavlja u
+          tvom pregledniku; uz njih koristim i lokalnu pohranu preglednika, koja radi slično, ali se,
+          za razliku od kolačića, nikada ne šalje na poslužitelj. Nužni, koji ne traže privolu, jesu
+          aj_consent, koji pamti tvoju odluku o kolačićima, aj_theme, koji pamti tamnu ili svijetlu
+          temu, te aj_natal_*, aj_synastry_form i aj_transit_form, koji pamte zadnji unos i postavke
+          astro alata da ne tipkaš ponovno - sve to ostaje pohranjeno do brisanja podataka stranice i
+          predstavlja lokalnu pohranu koja se ne prenosi nikome. Analitički kolačići, koji se
+          postavljaju samo uz privolu, jesu _ga kolačići, koje koristi Google Analytics za
+          razlikovanje posjetitelja i sesija, a traju do dvije godine.
+        </p>
+        <p>
+          7. Ne prodajem podatke i ne dijelim ih u marketinške svrhe.
+          Cloudflare služi kao poslužitelj i isporučuje stranicu, pa je uključen uvijek. Web3Forms
+          dostavlja poruku iz kontakt obrasca, dakle kad pošalješ upit. Google Ireland Ltd. obavlja
+          analitiku posjećenosti, isključivo uz privolu. Open-Meteo obrađuje pretragu mjesta rođenja,
+          kad ga tražiš u astro alatu. CARTO, OpenStreetMap i jsDelivr isporučuju kartu svijeta, kad
+          otvoriš astrokartografiju. Neki od tih pružatelja imaju poslužitelje izvan Europske unije;
+          u tim se slučajevima prijenos temelji na odluci Europske komisije o primjerenosti (okvir
+          EU-SAD za zaštitu podataka) odnosno na standardnim ugovornim klauzulama.
+        </p>
+        <p>
+          8. Poslužitelj automatski bilježi standardne tehničke podatke, poput IP
+          adrese, vrste preglednika i vremena pristupa, radi sigurnosti i sprječavanja zloupotrebe.
+          Pravna osnova je moj legitimni interes za sigurnost stranice (čl. 6. st. 1. t. (f) Opće
+          uredbe).
+        </p>
+        <p>
+          9. U svakom trenutku imaš pravo zatražiti pristup podacima koje imam o tebi,
+          tražiti ispravak netočnih podataka, tražiti brisanje (pravo na zaborav), tražiti ograničenje
+          obrade, uložiti prigovor na obradu, tražiti prenosivost podataka te povući privolu, bez
+          utjecaja na zakonitost obrade prije povlačenja. Zahtjev pošalji na
+          <a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a>. Imaš i pravo podnijeti
+          pritužbu Agenciji za zaštitu osobnih podataka
+          (<a href="https://azop.hr" target="_blank" rel="noopener">azop.hr</a>).
+        </p>
+        <p>
+          10. Stranica nije namijenjena osobama mlađim od 16 godina i svjesno ne prikupljam
+          njihove podatke. Ako saznam da sam ih primila, obrisat ću ih.
+        </p>
+        <p>
+          11. Ako se način obrade podataka promijeni, izmijenit ću ovaj tekst i
+          ažurirati datum na vrhu. Ako se promijeni nešto bitno oko kolačića, ponovno ću te pitati za
+          privolu.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- UVJETI KORIŠTENJA -->
+  <section class="page" id="uvjeti">
+    <div class="container legal-page">
+      <h1 class="section-title">Uvjeti korištenja</h1>
+
+      <p class="legal-updated">Zadnja izmjena: 4. kolovoza 2026.</p>
+
+      <!-- Gusti, "zbijeni" prikaz - namjerno kao jedan blok pravnog teksta
+           (klasa .legal-dense), za razliku od prozračnijih pravila privatnosti. -->
+      <div class="legal-dense">
+        <p>
+          Tarot i astrologija na ovoj stranici služe samospoznaji, promišljanju i inspiraciji.
+          Nisu zamjena za medicinsku, psihološku, psihijatrijsku, pravnu ni financijsku pomoć i ne
+          služe postavljanju dijagnoze ni liječenju. Korištenjem ove stranice prihvaćaš uvjete
+          navedene u nastavku.
+        </p>
+        <p>
+          1. Alkemijana je osobna stranica posvećena tarotu, astrologiji i samospoznaji;
+          sadržaj i alati na njoj dostupni su besplatno i bez registracije.
+        </p>
+        <p>
+          2. Tekstovi, značenja karata, natalne karte i ostali alati predstavljaju
+          simbolička tumačenja i namijenjeni su osobnom promišljanju. Ne jamčim da će se bilo što od
+          navedenog ostvariti niti da je primjenjivo na tvoju konkretnu situaciju. Odluke koje donosiš
+          na temelju sadržaja s ove stranice donosiš samostalno i na vlastitu odgovornost, a ja ne
+          odgovaram za njihove posljedice.
+        </p>
+        <p>
+          3. Sadržaj ove stranice nije zdravstvena usluga i ne uspostavlja
+          odnos terapeuta i klijenta. Ako se nosiš s psihičkim ili tjelesnim teškoćama, obrati se
+          liječniku ili drugom stručnjaku. Ako si u krizi ili razmišljaš o samoozljeđivanju, potraži
+          pomoć odmah: hitna pomoć 194, jedinstveni broj za hitne službe 112, ili najbliža hitna
+          psihijatrijska služba.
+        </p>
+        <p>
+          4. Stranica je namijenjena punoljetnim osobama; osobe mlađe od 18 godina neka je
+          koriste uz znanje roditelja ili skrbnika.
+        </p>
+        <p>
+          5. Astro alati koriste provjerene astronomske izračune usklađene s
+          referentnim izvorima, ali ne jamčim potpunu točnost u svim okolnostima; točnost ovisi i o
+          podacima koje upišeš, osobito o točnom vremenu rođenja. Alati se povremeno mijenjaju,
+          nadograđuju ili privremeno ne rade i ne jamčim njihovu neprekidnu dostupnost.
+        </p>
+        <p>
+          6. Tekstovi, dizajn i grafika koje sam izradila autorsko su djelo i ne smiju
+          se preuzimati ni objavljivati bez mog dopuštenja; za dijeljenje slobodno koristi poveznicu na
+          stranicu. PDF-ovi koje preuzmeš sa stranice (natalna karta, poster, sinastrija, tranziti,
+          blog članci) smiju se koristiti i dijeliti isključivo u cijelosti i neizmijenjeni - nije
+          dopušteno izrezivati pojedine dijelove, uklanjati ili prekrivati oznaku i potpis Alkemijane,
+          niti koristiti isječke odvojeno od cjeline dokumenta. Slike tarot karata preuzete su iz javne
+          domene: špil Rider-Waite-Smith (1909.) i Tarot de Marseille (Lequart, 1890.) putem Wikimedia
+          Commonsa, a slike uz Lenormand špil iz zbirke Metropolitan Museum of Art (Open Access, CC0).
+        </p>
+        <p>
+          7. Stranica ponegdje upućuje na vanjske izvore; za njihov sadržaj ne
+          odgovaram.
+        </p>
+        <p>
+          8. Ove uvjete mogu s vremenom izmijeniti; važeća je uvijek inačica objavljena
+          na ovoj stranici, s datumom navedenim na vrhu.
+        </p>
+        <p>
+          9. Na korištenje ove stranice primjenjuje se pravo Republike Hrvatske.
+        </p>
+        <p>
+          10. Za sva pitanja:
+          <a href="mailto:jana@alkemijana.com">jana@alkemijana.com</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <footer>
     <div class="footer-logo">Alkemijana</div>
     <div class="footer-social">
@@ -1285,6 +1486,13 @@
       </a>
     </div>
     <div class="divider" style="max-width:200px;margin:0 auto"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+    <div class="footer-legal">
+      <a onclick="showPage('privatnost')">Pravila privatnosti</a>
+      <span class="footer-legal-sep">·</span>
+      <a onclick="showPage('uvjeti')">Uvjeti korištenja</a>
+      <span class="footer-legal-sep">·</span>
+      <a onclick="openCookieSettings()">Postavke kolačića</a>
+    </div>
     <div class="footer-copy" id="t-footerCopy">© 2026 Alkemijana. Sva prava pridržana.</div>
     <div class="footer-credit" id="t-footerCredit">Designed by Altum3D</div>
   </footer>
@@ -1459,13 +1667,20 @@
      2. app.js    - navigacija i renderiranje
      3. admin.js  - admin panel
      ============================================================ -->
-<!-- Google Analytics (GA4) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZEYLD5W4RS"></script>
+<!-- Google Analytics (GA4) - GDPR: skripta se NE učitava bez privole.
+     Ovdje se samo postavlja Consent Mode v2 sa svime na "denied";
+     js/consent.js učita gtag.js tek kad posjetitelj prihvati analitiku. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-ZEYLD5W4RS');
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted'
+  });
 </script>
 
 <script src="js/data.js"></script>
@@ -1490,6 +1705,10 @@
 <script src="tarot/tarot-engine.js"></script>
 <script src="tarot/tarot-render.js"></script>
 <script src="tarot/tarot.js"></script>
+
+<!-- Privola za kolačiće (GDPR) - samostalan modul, učitava se zadnji jer
+     koristi showPage() iz app.js za poveznicu na pravila privatnosti -->
+<script src="js/consent.js"></script>
 
 </body>
 </html>

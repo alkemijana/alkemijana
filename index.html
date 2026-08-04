@@ -1391,11 +1391,9 @@
       <div class="ap-tab-content" id="ap-stats">
         <div class="pricing-admin-wrap">
           <h3>Posjećenost stranice</h3>
-          <div id="stats-display" style="margin-top:1.5rem">
-            <p style="color:var(--text-muted);font-style:italic">Učitavam statistiku...</p>
-          </div>
-          <div style="margin-top:2rem">
-            <a href="https://alkemijana.goatcounter.com" target="_blank" rel="noopener" class="share-btn">Detaljni dashboard ↗</a>
+          <p style="color:var(--text-muted);font-family:'Atkinson Hyperlegible',sans-serif;font-style:italic;font-size:0.95rem;margin:1rem 0 1.5rem">Statistika posjeta se prati preko Google Analytics. Detaljan pregled (posjete, izvori prometa, uređaji, lokacije...) otvori na Google Analytics dashboardu.</p>
+          <div>
+            <a href="https://analytics.google.com" target="_blank" rel="noopener" class="share-btn">Google Analytics dashboard ↗</a>
           </div>
         </div>
       </div>
@@ -1461,8 +1459,14 @@
      2. app.js    - navigacija i renderiranje
      3. admin.js  - admin panel
      ============================================================ -->
-<!-- GoatCounter analytics -->
-<script data-goatcounter="https://alkemijana.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZEYLD5W4RS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZEYLD5W4RS');
+</script>
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>

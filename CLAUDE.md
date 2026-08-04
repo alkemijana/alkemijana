@@ -549,7 +549,7 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
 3. **Cjenik** — uredi tablicu cijena
 4. **Recenzije** — dodaj/uredi/arhiviraj recenzije za početnu i o-meni
 5. **Tekstovi** — uredi sav statički tekst (hero, CTA, naslovi sekcija, footer...)
-6. **Statistika** — GoatCounter analytics (ukupno posjeta, jedinstveni, po stranicama, blog članci, 30-dnevni graf)
+6. **Statistika** — praćenje preko Google Analytics (GA4); admin tab "Statistika" samo linka na Google Analytics dashboard (nema javnog API-ja za custom prikaz u adminu, za razliku od bivšeg GoatCountera)
 7. **Natalne karte** — anoniman brojač izrada (ukupno / zadnjih 30 / zadnjih 7 dana). Broje se samo jedinstveni unosi. **Ne pohranjuju se nikakvi osobni podaci** (samo hash unosa). Vidljivo prijavljenom adminu; "Resetiraj brojač". Pohrana u Cloudflare KV (vidi dolje).
 8. **Toggle gumbi (dropdown "Prikaz"):** Usluge On/Off, Rec. Početna, Rec. O meni
 9. **📷 Slika** — upload vlastite slike za O meni
@@ -605,7 +605,7 @@ mora jednom kliknuti "Spremi" da se javni file okljašti i KV napuni.
 |--------|-------|-----------|
 | **ImgBB** | Upload slika (`uploadToImgBB` u admin.js) | Hard-coded u `IMGBB_KEY` |
 | **Web3Forms** | Kontakt forma | Hard-coded `value` u `<input name="access_key">` u index.html |
-| **GoatCounter** | Analytics | Site `alkemijana.goatcounter.com`, javni counter API |
+| **Google Analytics (GA4)** | Analytics | gtag.js, Measurement ID `G-ZEYLD5W4RS` u index.html; dashboard na analytics.google.com |
 | **GitHub API** | Auto-save iz admina | Token u Cloudflare env var `GITHUB_TOKEN` |
 | **jsDelivr (Leaflet)** | AstroCartography karta (`natal-acg-render.js`) | Bez ključa, CDN |
 | **OpenStreetMap tiles** | Podloga AstroCartography karte | Bez ključa, javni tile server |

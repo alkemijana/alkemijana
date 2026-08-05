@@ -199,19 +199,46 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
   html.nd-locked #main-nav { padding-right: calc(1.5rem + var(--nd-sbw, 0px)); }
 }
 
-/* ---- Desktop: sadržaj izbornika ide DESNO ----
-   Gumb ☰ je gore desno, pa linkovi moraju biti ispod njega - inače miš
-   putuje preko cijelog ekrana od gumba do stavke. */
+/* ---- Desktop: izbornik izlazi S DESNE STRANE ----
+   Na mobitelu ostaje panel odozgo (obrazac iz verzije 1); na desktopu
+   je ploča uz desni rub, tik ispod gumba ☰, pa miš ne putuje preko
+   ekrana. Mijenja se samo geometrija i smjer klizanja - sve ostalo
+   (pozadina, blur, brzina) je zajedničko. */
 
 @media (min-width: 769px) {
-  .nd-panel { padding-right: 3rem; }
+  .nd-panel {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: min(340px, 42vw);
+    padding: 6.2rem 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    border-bottom: none;
+    border-left: 1px solid var(--border);
+    box-shadow: -20px 0 55px rgba(0, 0, 0, 0.3);
+    transform: translateX(101%);
+  }
 
+  :root[data-theme="light"] .nd-panel {
+    box-shadow: -20px 0 55px rgba(106, 78, 160, 0.14);
+  }
+
+  .nd-panel.nd-open { transform: none; }
+
+  /* stavke uz desni rub - u istoj okomici kao gumb ☰ */
   .nd-panel .nav-links {
     align-items: flex-end;
     text-align: right;
+    gap: 1.5rem;
   }
 
-  .nd-foot { text-align: right; }
+  /* prekidač teme na dno ploče */
+  .nd-foot {
+    margin-top: auto;
+    text-align: right;
+  }
 }
 
 /* ---- Mobitel ---- */

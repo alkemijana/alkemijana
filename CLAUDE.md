@@ -123,8 +123,10 @@ normalno — zaključava se samo dok je početna aktivna.
   dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i
   `openPost()` traže po njima.
 - **Logo** zove `goHome()` — vodi na početnu I resetira deck na prvi slide.
-- Na desktopu (`min-width:769px`) su stavke izbornika poravnate **desno**, uz sam gumb ☰ —
-  inače miš putuje preko cijelog ekrana od gumba do stavke. Na mobitelu ostaju lijevo.
+- **Izbornik ima dva oblika:** na mobitelu (`≤768px`) panel klizne **odozgo** preko cijele
+  širine (obrazac iz v1); na desktopu (`≥769px`) je ploča **uz desni rub** (340px, puna visina,
+  klizne s desna), stavke poravnate desno pod gumbom ☰, prekidač teme na dnu (`margin-top:auto`).
+  Mijenja se samo geometrija i smjer klizanja — pozadina, blur i brzina su zajednički.
 - Na stranicama koje se scrollaju logo dobiva **meki ovoj koji se postupno pojavljuje**:
   `--nav-scroll` (0→1 preko prvih 110 px) postavlja `navScrollFrame()` u app.js, a
   `.logo::before` po njemu mijenja `opacity`. Ovoj je radijalni preljev iz `--bg-deep` u
@@ -862,7 +864,10 @@ Detalji na koje treba paziti:
   a animacija na unutarnjoj** — CSS `transform` iz animacije nadjačava atribut pa bi se
   inače karte složile jedna na drugu. Iz istog razloga stagger karata ide preko izričitih
   klasa `ajl-c1/2/3`, ne `:nth-of-type` (sve grupe u SVG-u su `<g>`).
-- MIN_MS 900 ms prvi put, 280 ms nakon toga u istoj sesiji (`sessionStorage.aj_loader_seen`);
+- **`MIN_MS` je namjerno dulji nego što treba** — ulaz je dio dojma, pa se ekran zadržava i kad
+  je sve spremno: **1800 ms** prvi dolazak, **800 ms** ponovni posjet u istoj sesiji
+  (`sessionStorage.aj_loader_seen`). Ne dizati preko ~2 s. Trajanje animacije trake
+  (`ajlBar`, 1.9 s) treba pratiti `MIN_MS` da traka stigne do 88 % prije skoka na 100 %.
   FAILSAFE 6 s otkrije stranicu i ako nešto pukne.
 - `prefers-reduced-motion` gasi sve animacije (i loadera i ulazne).
 - Boja zvjezdica loadera ide preko `--ajl-star` s posebnom vrijednošću za svijetlu temu

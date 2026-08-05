@@ -193,7 +193,7 @@ html.hs-lock body {
 }
 
 #home .home-live-natal-wrap {
-  width: min(70dvh, 92vw);
+  width: min(80dvh, 96vw);
   max-width: none;
   height: auto;
   margin: 0 auto;

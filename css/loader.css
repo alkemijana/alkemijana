@@ -201,7 +201,7 @@ html.aj-loading body > *:not(#aj-loader) {
   width: 8%;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--lavender-soft, #7860b0), var(--lavender, #a890d0));
-  animation: ajlBar 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation: ajlBar 1.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 
 /* kad je sve spremno traka se dovrši prije nego ekran nestane */
@@ -228,6 +228,8 @@ html.aj-loading body > *:not(#aj-loader) {
   50%      { transform: translateY(-3px)  scale(1.03); opacity: 1; }
 }
 
+/* Traka mora stići do ~88 % unutar MIN_MS iz js/loader.js (1.8 s), pa
+   je zadnjih 12 % skok na 100 % kad je stvarno gotovo. */
 @keyframes ajlBar {
   0%   { width: 8%; }
   55%  { width: 62%; }

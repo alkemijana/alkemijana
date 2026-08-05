@@ -25,9 +25,12 @@
   var OUT_MS      = 800;   // trajanje fade-outa (mora pratiti transition u CSS-u)
   var ENTER_MS    = 2200;  // dulje od najduže ulazne animacije u loader.css
 
+  /* Ekran učitavanja se namjerno zadržava i kad je sve već spremno -
+     ulaz je dio dojma. Prvi dolazak 1.8 s, ponovni posjet u istoj
+     sesiji 0.8 s da ne smeta pri navigaciji. Ne dizati preko ~2 s. */
   var seen = false;
   try { seen = sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) {}
-  var MIN_MS = seen ? 280 : 900;
+  var MIN_MS = seen ? 800 : 1800;
 
   var started    = Date.now();
   var appReady   = false;

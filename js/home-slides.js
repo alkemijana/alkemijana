@@ -212,10 +212,22 @@
   }
 
   function lock() {
+    markMoving();
     if (reduced()) return;
     locked = true;
     clearTimeout(lockT);
     lockT = setTimeout(function () { locked = false; }, LOCK_MS);
+  }
+
+  /* `will-change` samo dok prijelaz traje - trajno bi držalo sve
+     slideove na zasebnim GPU slojevima i trošilo memoriju bez potrebe. */
+  function markMoving() {
+    if (!deck) return;
+    deck.classList.add('hs-moving');
+    clearTimeout(markMoving._t);
+    markMoving._t = setTimeout(function () {
+      deck.classList.remove('hs-moving');
+    }, 950);
   }
 
   function markMoved() {

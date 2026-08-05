@@ -63,10 +63,13 @@ html.hs-lock body {
   transition:
     opacity 0.72s cubic-bezier(0.22, 0.8, 0.3, 1),
     transform 0.82s cubic-bezier(0.22, 0.8, 0.3, 1),
-    filter 0.72s ease,
     visibility 0.82s;
-  will-change: transform, opacity;
+  /* `will-change` se NE stavlja ovdje: držalo bi svih 7 slideova stalno
+     na zasebnim GPU slojevima. Postavlja se samo dok prijelaz traje
+     (klasa hs-moving iz js/home-slides.js). */
 }
+
+.hs-deck.hs-moving .hs-slide { will-change: transform, opacity; }
 
 /* Slide koji je trenutno na ekranu */
 .hs-slide.hs-active {
@@ -81,15 +84,19 @@ html.hs-lock body {
 .hs-slide.hs-past {
   opacity: 0;
   transform: translateZ(340px) scale(1.22);
-  filter: blur(9px);
 }
 
 /* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - čeka u dubini */
 .hs-slide.hs-future {
   opacity: 0;
   transform: translateZ(-620px) scale(0.86);
-  filter: blur(5px);
 }
+
+/* NAPOMENA: prijelaz namjerno NEMA `filter: blur()`. Živi natalni kotač
+   je velik SVG sa stotinama elemenata i vlastitim drop-shadowom; blur
+   preko njega tjera preglednik da ga rasterizira iznova u svakom kadru,
+   što je vidljivo štekalo na prijelazu hero -> natalna karta. Dubinu
+   nose scale + translateZ + opacity, bez ikakvog filtera. */
 
 .hs-inner {
   width: 100%;
@@ -441,7 +448,6 @@ html.hs-lock body {
   .hs-slide.hs-past,
   .hs-slide.hs-future {
     transform: none;
-    filter: none;
   }
 
   .hs-hint-mouse i { animation: none; }

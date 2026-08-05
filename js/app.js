@@ -98,9 +98,16 @@ function showPage(id) {
   if (id === 'usluge') renderPricingTable();
 }
 
-/* ---- KLIZNA LADICA NAVIGACIJE (v. css/nav-drawer.css) ----
-   Traka gore ima samo logo i tri crtice; linkovi i prekidač teme su
-   u ladici koja iskliže s desna. */
+/* Klik na logo uvijek vodi na početnu i na PRVI slide, bez obzira gdje
+   je deck stao. */
+function goHome() {
+  showPage('home');
+  if (window.HomeSlides) window.HomeSlides.goTo(0);
+}
+
+/* ---- IZBORNIK (v. css/nav-drawer.css) ----
+   Traka gore ima samo logo i gumb ☰; linkovi i prekidač teme su u
+   panelu koji sklizne odozgo (isti obrazac kao mobilni izbornik v1). */
 
 function isMenuOpen() {
   const d = document.getElementById('nd-drawer');
@@ -174,6 +181,29 @@ document.addEventListener('keydown', (e) => {
     if (t) t.focus();
   }
 });
+
+/* Okvir oko logotipa se postupno pojavljuje kako stranica klizi -
+   --nav-scroll ide od 0 do 1 preko prvih 110 px. Na početnoj scrolla
+   nema pa ostaje 0 i logo je uvijek čist (v. css/nav-drawer.css). */
+(function navScrollFrame() {
+  const FADE_PX = 110;
+  let ticking = false;
+
+  function paint() {
+    ticking = false;
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    const v = Math.min(1, Math.max(0, y / FADE_PX));
+    document.documentElement.style.setProperty('--nav-scroll', v.toFixed(3));
+  }
+
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(paint);
+  }, { passive: true });
+
+  paint();
+})();
 
 /* ---- THEME (tamna / svijetla) ---- */
 
@@ -575,6 +605,11 @@ function openPost(id) {
     a.classList.toggle('active', a.dataset.page === 'blog');
   });
   closeMenu();
+
+  /* OBAVEZNO: ova funkcija ne ide kroz showPage() nego sama mijenja
+     aktivnu stranicu, pa mora sama i ugasiti deck početne. Bez toga
+     ostane html.hs-lock (overflow:hidden) i članak se ne može scrollati. */
+  if (window.HomeSlides) window.HomeSlides.deactivate();
 
   document.getElementById('post-meta').textContent  = p.date || '';
   document.getElementById('post-title').textContent = p.title;

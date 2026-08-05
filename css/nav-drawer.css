@@ -1,122 +1,89 @@
 /* ============================================================
-   Alkemijana - Klizna ladica navigacije (prefiks nd-)
+   Alkemijana - Izbornik (prefiks nd-)
    ------------------------------------------------------------
-   Traka gore drži samo logo (lijevo) i tri crtice (desno). Svi
-   linkovi i prekidač teme su u ladici koja iskliže s desne strane.
+   Gore NEMA trake: samo logo (lijevo) i minimalan ☰ (desno) na
+   prozirnoj podlozi. Klik na ☰ spusti panel odozgo preko cijele
+   širine - isti obrazac kao mobilni izbornik u verziji 1, samo sada
+   na svim veličinama ekrana.
 
    VAŽNO: `#navLinks` i `.nav-links a` zadržavaju stara imena jer ih
    `showPage()` i `openPost()` u js/app.js traže po njima. Tipografija
-   linkova ostaje u style.css; ovdje je samo raspored i sama ladica.
+   linkova ostaje u style.css; ovdje je samo raspored i sam panel.
 
-   Logika: `toggleMenu()` / `closeMenu()` u js/app.js.
+   Logika: `toggleMenu()` / `closeMenu()` / `goHome()` u js/app.js.
    ============================================================ */
 
-/* ---- Gumb s tri crtice ----
-   Namjerno NIJE minimalistički: dvostruki prsten (vanjski isprekidan,
-   polako se vrti) oko tri crtice različitih duljina - kao mali pečat. */
+/* Traka mora biti IZNAD panela da logo i ☰ ostanu vidljivi i
+   klikabilni dok je izbornik otvoren. */
+#main-nav { z-index: 210; }
+
+/* ---- Gumb ☰ (minimalan) ---- */
 
 .nd-toggle {
   position: relative;
-  width: 54px;
-  height: 54px;
+  width: 40px;
+  height: 40px;
   border: none;
-  border-radius: 50%;
-  background: transparent;
+  background: none;
+  color: var(--lavender);
   cursor: pointer;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: color 0.25s, transform 0.25s;
 }
 
-/* vanjski isprekidani prsten */
-.nd-toggle::before {
+.nd-toggle:hover { transform: scale(1.08); }
+
+.nd-icon {
+  position: absolute;
+  font-size: 1.55rem;
+  line-height: 1;
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.3, 0.9, 0.35, 1);
+}
+
+.nd-icon-close { font-size: 1.3rem; opacity: 0; transform: rotate(-90deg); }
+
+.nd-toggle[aria-expanded="true"] .nd-icon-open  { opacity: 0; transform: rotate(90deg); }
+.nd-toggle[aria-expanded="true"] .nd-icon-close { opacity: 1; transform: none; }
+
+/* ---- Okvir oko logotipa koji se pojavi TEK pri scrollanju ----
+   --nav-scroll (0-1) postavlja js/app.js iz pozicije scrolla. Početna
+   se ne scrolla pa tamo ostaje 0 i logo je uvijek čist. */
+
+.logo {
+  position: relative;
+  padding: 0.35rem 1.05rem;
+  border-radius: 999px;
+  z-index: 0;
+}
+
+.logo::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 1px dashed rgba(168, 144, 208, 0.45);
-  animation: ndRingSpin 26s linear infinite;
-  transition: border-color 0.35s, opacity 0.35s;
-}
-
-/* unutarnji puni prsten s mekim sjajem */
-.nd-toggle::after {
-  content: '';
-  position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at 50% 40%, rgba(168, 144, 208, 0.12), transparent 70%);
-  transition: border-color 0.35s, box-shadow 0.35s, background 0.35s;
-}
-
-.nd-toggle:hover::before { border-color: var(--lavender); }
-
-.nd-toggle:hover::after {
-  border-color: var(--lavender);
-  box-shadow: 0 0 22px rgba(168, 144, 208, 0.35), inset 0 0 14px rgba(168, 144, 208, 0.18);
-}
-
-@keyframes ndRingSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-.nd-bars {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 22px;
-  height: 14px;
-}
-
-.nd-bars i {
-  position: absolute;
-  left: 0;
-  height: 1.5px;
-  border-radius: 2px;
-  background: var(--lavender);
-  box-shadow: 0 0 8px rgba(168, 144, 208, 0.55);
-  transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.3, 1), opacity 0.2s, width 0.34s;
-}
-
-/* tri različite duljine - srednja najkraća, kao znak */
-.nd-bars i:nth-child(1) { top: 0;      width: 100%; }
-.nd-bars i:nth-child(2) { top: 6.25px; width: 60%; left: 20%; }
-.nd-bars i:nth-child(3) { top: 12.5px; width: 100%; }
-
-.nd-toggle:hover .nd-bars i:nth-child(2) { width: 100%; left: 0; }
-
-/* otvoreno -> crtice se sklope u ✕ */
-.nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(1) { transform: translateY(6.25px) rotate(45deg); }
-.nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(2) { opacity: 0; transform: scaleX(0.3); }
-.nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(3) { transform: translateY(-6.25px) rotate(-45deg); }
-
-/* ---- Čitljivost na stranicama koje se scrollaju ----
-   Početna (html.hs-lock) nema scrolla pa traka smije biti potpuno čista.
-   Drugdje sadržaj prolazi ispod logotipa, pa ide vrlo blag preljev prema
-   dolje - NIJE traka: bez obruba, bez blura, bez pune pozadine. */
-html:not(.hs-lock) #main-nav::before {
-  content: '';
-  position: absolute;
-  inset: -1.4rem 0 auto 0;
-  height: 8rem;
-  pointer-events: none;
   z-index: -1;
-  background: linear-gradient(180deg, var(--bg-deep) 0%, transparent 100%);
-  opacity: 0.75;
+  border-radius: 999px;
+  background: var(--nav-bg);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  opacity: var(--nav-scroll, 0);
+  transform: scale(calc(0.94 + 0.06 * var(--nav-scroll, 0)));
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
 }
 
-/* ---- Zatamnjenje iza ladice ---- */
+/* ---- Zatamnjenje iza panela ---- */
 
 .nd-overlay {
   position: fixed;
   inset: 0;
   z-index: 190;
   background: rgba(6, 8, 15, 0.42);
-  backdrop-filter: blur(2px);
   opacity: 0;
   transition: opacity 0.22s ease;
 }
@@ -130,173 +97,71 @@ html:not(.hs-lock) #main-nav::before {
 /* `hidden` sam po sebi ne pobjeđuje `position:fixed`, pa eksplicitno */
 .nd-overlay[hidden] { display: none; }
 
-/* ---- Sama ladica ---- */
+/* ---- Panel koji sklizne odozgo ---- */
 
-/* Staklasta ploča: poluprozirna pozadina + blur onoga iza nje.
-   NE koristiti neprozirnu boju - kroz ladicu se moraju nazirati
-   zvijezde i sadržaj. */
-.nd-drawer {
+.nd-panel {
   position: fixed;
   top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 200;
-  width: min(330px, 86vw);
-  display: flex;
-  flex-direction: column;
-  padding: 1.4rem 0 2rem;
-  background:
-    radial-gradient(120% 55% at 100% 0%, rgba(168, 144, 208, 0.20), transparent 62%),
-    linear-gradient(200deg, rgba(46, 34, 92, 0.42), rgba(10, 8, 26, 0.52));
-  backdrop-filter: blur(26px) saturate(1.5);
-  -webkit-backdrop-filter: blur(26px) saturate(1.5);
-  border-left: 1px solid rgba(168, 144, 208, 0.28);
-  box-shadow: -22px 0 60px rgba(0, 0, 0, 0.4);
-  transform: translateX(102%);
-  visibility: hidden;
-  transition: transform 0.26s cubic-bezier(0.3, 0.9, 0.35, 1), visibility 0.26s;
-}
-
-/* tanka svijetla nit uz lijevi rub - daje dojam stakla */
-.nd-drawer::before {
-  content: '';
-  position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(228, 224, 244, 0.4) 22%, rgba(228, 224, 244, 0.08) 70%, transparent);
-  pointer-events: none;
+  right: 0;
+  z-index: 200;
+  padding: 5.6rem 2rem 2rem;
+  background: var(--nav-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.3, 0.9, 0.35, 1), visibility 0.3s;
 }
 
-:root[data-theme="light"] .nd-drawer {
-  background:
-    radial-gradient(120% 55% at 100% 0%, rgba(168, 144, 208, 0.26), transparent 62%),
-    linear-gradient(200deg, rgba(255, 255, 255, 0.62), rgba(237, 228, 245, 0.52));
-  border-left-color: rgba(106, 78, 160, 0.26);
-  box-shadow: -22px 0 60px rgba(106, 78, 160, 0.18);
-}
-
-:root[data-theme="light"] .nd-drawer::before {
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.9) 22%, rgba(255, 255, 255, 0.3) 70%, transparent);
-}
-
-/* Preglednici bez backdrop-filtera moraju dobiti gušću pozadinu,
-   inače je tekst nečitljiv preko sadržaja. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .nd-drawer { background: linear-gradient(200deg, rgba(28, 24, 64, 0.97), rgba(6, 8, 15, 0.97)); }
-  :root[data-theme="light"] .nd-drawer { background: linear-gradient(200deg, rgba(255, 255, 255, 0.97), rgba(237, 228, 245, 0.97)); }
-}
-
-.nd-drawer.nd-open {
+.nd-panel.nd-open {
   transform: none;
   visibility: visible;
 }
 
-.nd-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem 1.2rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.nd-head-title {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.nd-close {
-  background: none;
-  border: none;
-  color: var(--lavender);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0.35rem;
-  transition: transform 0.3s, color 0.3s;
-}
-
-.nd-close:hover { transform: rotate(90deg); }
-
 /* ---- Popis linkova ---- */
 
-.nd-drawer .nav-links {
+.nd-panel .nav-links {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 1.4rem;
   margin: 0;
-  padding: 0.8rem 0;
-  flex: 1 1 auto;
-  overflow-y: auto;
+  padding: 0;
 }
 
-.nd-drawer .nav-links li {
-  /* stavke ulaze u kratkoj kaskadi - zadnja stigne prije nego ladica stane */
-  opacity: 0;
-  transform: translateX(14px);
-  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.3, 0.9, 0.35, 1);
+.nd-panel .nav-links a {
+  display: inline-block;
+  width: fit-content;
 }
 
-.nd-drawer.nd-open .nav-links li { opacity: 1; transform: none; }
+.nd-panel .nav-links a:hover { color: var(--lavender); }
 
-.nd-drawer.nd-open .nav-links li:nth-child(1) { transition-delay: 0.03s; }
-.nd-drawer.nd-open .nav-links li:nth-child(2) { transition-delay: 0.05s; }
-.nd-drawer.nd-open .nav-links li:nth-child(3) { transition-delay: 0.07s; }
-.nd-drawer.nd-open .nav-links li:nth-child(4) { transition-delay: 0.09s; }
-.nd-drawer.nd-open .nav-links li:nth-child(5) { transition-delay: 0.11s; }
-.nd-drawer.nd-open .nav-links li:nth-child(6) { transition-delay: 0.13s; }
-.nd-drawer.nd-open .nav-links li:nth-child(7) { transition-delay: 0.15s; }
-
-.nd-drawer .nav-links a {
-  display: block;
-  padding: 0.95rem 1.5rem;
-  font-size: 0.82rem;
-  border-left: 2px solid transparent;
-  transition: color 0.3s, border-color 0.3s, background 0.3s, padding-left 0.3s;
-}
-
-/* podcrtavanje iz style.css nema smisla u okomitom popisu */
-.nd-drawer .nav-links a::after { display: none; }
-
-.nd-drawer .nav-links a:hover {
-  background: rgba(168, 144, 208, 0.07);
-  padding-left: 1.8rem;
-}
-
-.nd-drawer .nav-links a.active {
-  border-left-color: var(--lavender);
-  background: rgba(168, 144, 208, 0.09);
-}
-
-/* ---- Podnožje ladice: prekidač teme ---- */
+/* ---- Prekidač teme ---- */
 
 .nd-foot {
-  padding: 1.2rem 1.5rem 0;
+  margin-top: 1.8rem;
+  padding-top: 1.4rem;
   border-top: 1px solid var(--border);
 }
 
 .nd-theme {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.85rem;
-  width: 100%;
-  padding: 0.7rem 0.9rem;
+  padding: 0.6rem 1.1rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 999px;
   background: transparent;
   color: var(--text);
   font-family: 'Quicksand', sans-serif;
   font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.3s, background 0.3s, color 0.3s;
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
 }
 
 .nd-theme:hover {
@@ -306,15 +171,15 @@ html:not(.hs-lock) #main-nav::before {
 }
 
 /* Ikone su apsolutne (mjesec i sunce se izmjenjuju na istom mjestu),
-   pa im treba vlastiti okvir fiksne širine unutar flex retka. */
+   pa im label mora ostaviti mjesta. */
 .nd-theme .theme-toggle-icon {
-  left: 0.9rem;
+  left: 1.1rem;
   color: var(--lavender);
 }
 
-.nd-theme-label { margin-left: 1.9rem; }
+.nd-theme-label { margin-left: 1.7rem; }
 
-/* ---- Zaključavanje scrolla iza otvorene ladice ----
+/* ---- Zaključavanje scrolla iza otvorenog izbornika ----
    --nd-sbw postavlja lockScrollForMenu() u js/app.js; kompenzira
    nestanak scrollbara da stranica ne poskoči udesno. */
 
@@ -333,17 +198,17 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
 /* ---- Mobitel ---- */
 
 @media (max-width: 768px) {
-  .nd-toggle { width: 42px; height: 42px; }
-  .nd-drawer { width: min(300px, 88vw); }
+  .nd-panel { padding: 5rem 1.5rem 1.8rem; }
+  .nd-panel .nav-links { gap: 1.2rem; }
 }
 
 /* ---- Pristupačnost ---- */
 
 @media (prefers-reduced-motion: reduce) {
-  .nd-drawer,
+  .nd-panel,
   .nd-overlay,
-  .nd-drawer .nav-links li,
-  .nd-bars i {
+  .nd-icon,
+  .logo::before {
     transition-duration: 0.01ms !important;
   }
 }

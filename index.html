@@ -585,21 +585,19 @@
   <!-- Traka: samo logo lijevo + tri crtice desno. Svi linkovi i prekidač
        teme su u kliznoj ladici (#nd-drawer) - v. css/nav-drawer.css. -->
   <nav id="main-nav">
-    <div class="logo" onclick="showPage('home')">Alkemijana</div>
+    <div class="logo" onclick="goHome()">Alkemijana</div>
     <button class="nd-toggle" id="nd-toggle" onclick="toggleMenu()"
             aria-label="Otvori izbornik" aria-expanded="false" aria-controls="nd-drawer">
-      <span class="nd-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="nd-icon nd-icon-open"  aria-hidden="true">☰</span>
+      <span class="nd-icon nd-icon-close" aria-hidden="true">✕</span>
     </button>
   </nav>
 
-  <!-- Klizna ladica s desna -->
+  <!-- Izbornik: panel koji sklizne odozgo (isti obrazac kao mobilni
+       izbornik u verziji 1, samo sada na svim veličinama ekrana) -->
   <div class="nd-overlay" id="nd-overlay" onclick="closeMenu()" hidden></div>
-  <aside class="nd-drawer" id="nd-drawer" role="dialog" aria-modal="true"
-         aria-label="Izbornik" aria-hidden="true">
-    <div class="nd-head">
-      <span class="nd-head-title">Izbornik</span>
-      <button class="nd-close" onclick="closeMenu()" aria-label="Zatvori izbornik">✕</button>
-    </div>
+  <div class="nd-panel" id="nd-drawer" role="dialog" aria-modal="true"
+       aria-label="Izbornik" aria-hidden="true">
 
     <!-- id="navLinks" i .nav-links a se NE smiju preimenovati:
          showPage() i openPost() ih traže po tom imenu. -->
@@ -620,7 +618,7 @@
         <span class="nd-theme-label">Promijeni temu</span>
       </button>
     </div>
-  </aside>
+  </div>
   <div id="theme-transition-circle"></div>
 
   <!-- ============================================================

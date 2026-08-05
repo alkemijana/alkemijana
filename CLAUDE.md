@@ -24,7 +24,7 @@ ALKEMIJANA WEBSITE/
 ├── index.html                      ← Glavna stranica + SVG zviježđa + ekran učitavanja + admin HTML
 ├── css/style.css                   ← Svi stilovi
 ├── css/loader.css                  ← Ekran učitavanja + ulazna animacija stranice (prefiks ajl-/aj-)
-├── css/nav-drawer.css              ← Klizna ladica navigacije s desna (prefiks nd-)
+├── css/nav-drawer.css              ← Izbornik: gumb ☰ + panel odozgo, okvir logotipa (prefiks nd-)
 ├── css/home-slides.css             ← Slide deck početne stranice (prefiks hs-)
 ├── css/fonts.css                   ← @font-face za lokalno hostane fontove
 ├── js/
@@ -94,7 +94,10 @@ ALKEMIJANA WEBSITE/
 
 ---
 
-## Početna kao slide deck + klizna navigacija (verzija 2)
+## Početna kao slide deck + izbornik (verzija 2)
+
+> **Admin sustav je NEPROMIJENJEN u odnosu na verziju 1** — `js/admin.js` je bajt u bajt isti,
+> a admin markup u `index.html` nije diran. Redizajn se tiče samo javnog dijela stranice.
 
 **Početna se NE scrolla.** `#home` je deck slideova preko cijelog ekrana; kotačić miša,
 tipkovnica i swipe prebacuju slideove uz prijelaz „kozmički zoom". Ostale stranice scrollaju
@@ -107,19 +110,24 @@ normalno — zaključava se samo dok je početna aktivna.
   **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
   fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
 - **Blog slide je VODORAVAN** (`data-hs-rail`): daljnje scrollanje/swipe pomiče kartice
-  lijevo-desno (3 zadnja članka + kartica s gumbom „Pročitaj više članaka", tekst
-  `blogPreviewMore` u TEXTS), a tek kad traka dođe do kraja nastavlja se okomiti prijelaz.
-  Ulazak odozgo postavi traku na prvu karticu, odozdo na zadnju.
+  lijevo-desno (3 zadnja članka + slot sa samim gumbom „Pročitaj više članaka", bez okvira),
+  a tek kad traka dođe do kraja nastavlja se okomiti prijelaz. Ulazak odozgo postavi traku na
+  prvu karticu, odozdo na zadnju.
 - **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
-  gledatelja (`translateZ(+340px) scale(1.22)` + blur), nadolazeći (`.hs-future`) čeka u dubini
+  gledatelja (`translateZ(+340px) scale(1.22)`), nadolazeći (`.hs-future`) čeka u dubini
   (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
-- **Navigacija:** gore NEMA trake — samo logo (lijevo) i tri crtice (desno) na prozirnoj podlozi.
-  Tri crtice su namjerno dekorativne (dvostruki prsten, vanjski isprekidan i polako se vrti,
-  crtice različitih duljina). Linkovi i prekidač teme su u **staklastoj** kliznoj ladici s desna
-  (`#nd-drawer`, ~330px, `backdrop-filter: blur`) — kroz nju se naziru zvijezde. `#navLinks` i
-  `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i `openPost()` traže po njima.
+- **Navigacija:** gore NEMA trake — samo logo (lijevo) i minimalan `☰` (desno) na prozirnoj
+  podlozi. Klik na `☰` spusti **panel odozgo preko cijele širine** (`.nd-panel`, `var(--nav-bg)`
+  + `blur(14px)`) — isti obrazac kao mobilni izbornik u verziji 1, samo na svim veličinama
+  ekrana. `#main-nav` ima `z-index:210`, panel `200`, pa logo i `☰` ostaju vidljivi i klikabilni
+  dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i
+  `openPost()` traže po njima.
+- **Logo** zove `goHome()` — vodi na početnu I resetira deck na prvi slide.
+- Na stranicama koje se scrollaju logo dobiva **okvir koji se postupno pojavljuje**:
+  `--nav-scroll` (0→1 preko prvih 110 px) postavlja `navScrollFrame()` u app.js, a
+  `.logo::before` po njemu mijenja `opacity`/`scale`. Početna se ne scrolla pa ostaje 0.
 - **Indikator slideova je LIJEVO** (`.hs-dots`).
-- **Brzine:** ladica 0.26 s, prijelaz slidea 0.72–0.82 s, ali `LOCK_MS` je samo **270 ms** —
+- **Brzine:** panel 0.3 s, prijelaz slidea 0.72–0.82 s, ali `LOCK_MS` je samo **270 ms** —
   novi korak smije prekinuti prijelaz u tijeku (CSS tranzicija nastavi od trenutne vrijednosti),
   pa scrollanje ne čeka kraj animacije. Ne vraćati lock na duljinu animacije.
 
@@ -132,6 +140,16 @@ normalno — zaključava se samo dok je početna aktivna.
   transformirane trake (transformirani element postaje offsetParent).
 - Neaktivni slideovi dobivaju **`inert`** (uz `aria-hidden`) da tipkovnica ne uđe u skriveni
   sadržaj; sadržaj ostaje u DOM-u pa ga tražilice i dalje vide.
+- **`openPost()` ne ide kroz `showPage()`** — sam mijenja `.page.active`, pa MORA sam zvati
+  `HomeSlides.deactivate()`. Bez toga ostane `html.hs-lock` (`overflow:hidden`) i članak
+  otvoren s početne se uopće ne može scrollati. Isto vrijedi za svaku novu funkciju koja
+  zaobiđe `showPage()`.
+- **Prijelaz slidea NE smije imati `filter: blur()`.** Živi natalni kotač je velik SVG sa
+  stotinama elemenata i vlastitim drop-shadowom; blur preko njega tjera preglednik da ga
+  rasterizira iznova u svakom kadru → vidljivo štekanje na prijelazu hero → natalna karta.
+  Dubinu nose `scale` + `translateZ` + `opacity`.
+- **`will-change` NE stavljati trajno** na `.hs-slide` — držalo bi svih 7 slideova stalno na
+  zasebnim GPU slojevima. Postavlja se samo dok prijelaz traje (klasa `hs-moving` na decku).
 - `wheel` i `touchmove` moraju biti **non-passive** (`{passive:false}`) da `preventDefault` radi.
   Događaji iz admin panela, ladice i privole se preskaču (`fromOverlay` u home-slides.js) —
   te površine imaju vlastiti scroll.

@@ -181,6 +181,13 @@ normalno — zaključava se samo dok je početna aktivna.
   valja**: na mobitelu je vmin = širina pa naslov ispadne upola manji nego u verziji 1.
 - `#home-natal-section` u style.css ima `max-width:680px` (ondje je kotač `width:100%`).
   U deku se to **mora poništiti** (`max-width:none`), inače kotač na velikom ekranu ostane sitan.
+- **Natpis u sredini kotača ide na `cqw`, ne na `vw`.** U style.css je
+  `clamp(0.82rem, 1.6vw, 1.15rem)` — to je u v1 valjalo jer je kotač bio širinski. U v2 kotač
+  diktira VISINA (`min(70dvh, 92vw)`), pa na širokom-a-niskom ekranu (iPad Mini položen
+  vodoravno, nizak prozor) font naraste dok se krug smanji i natpis se lomi u pet redaka.
+  Zato `#home .home-live-natal-cta` ima `container-type: inline-size`, a natpis
+  `clamp(0.64rem, 6.2cqw, 1.7rem)` + `padding: 0 6%`. Isto vrijedi za svaki novi tekst
+  unutar kotača: mjeriti ga prema kotaču, ne prema ekranu.
 
 ---
 

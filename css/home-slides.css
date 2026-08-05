@@ -203,6 +203,24 @@ html.hs-lock body {
   font-size: clamp(0.72rem, min(3vw, 1.7vh), 1.2rem);
 }
 
+/* Natpis u sredini kotača mora se ravnati prema SAMOM KRUGU, ne prema
+   širini ekrana. U style.css je `clamp(0.82rem, 1.6vw, 1.15rem)`, što je
+   u verziji 1 bilo u redu jer je kotač bio širinski. Sada kotač diktira
+   VISINA (`min(70dvh, 92vw)`), pa na širokom-a-niskom ekranu (iPad Mini
+   položen vodoravno, nizak prozor na laptopu) font naraste dok se krug
+   smanji - natpis se lomio u pet redaka umjesto dva.
+   `cqw` je 1 % širine kruga, pa omjer ostaje isti na svakom ekranu. */
+#home .home-live-natal-cta {
+  container-type: inline-size;
+}
+
+#home .home-live-natal-cta-label {
+  font-size: clamp(0.64rem, 6.2cqw, 1.7rem);
+  /* style.css ima padding 0 10%; na malom kotaču to pojede previše
+     prostora pa se natpis lomi u tri retka umjesto dva */
+  padding: 0 6%;
+}
+
 /* Karta dana raste s ekranom */
 #home .vtar-cotd {
   max-width: min(1500px, 90vw);

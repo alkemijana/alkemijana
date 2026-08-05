@@ -145,7 +145,7 @@ function closeMenu() {
   clearTimeout(closeMenu._t);
   closeMenu._t = setTimeout(() => {
     if (!isMenuOpen()) overlay.hidden = true;
-  }, 450);
+  }, 260);   // mora pratiti trajanje prijelaza u nav-drawer.css
 }
 
 function toggleMenu() {
@@ -522,10 +522,9 @@ function resetBlogFilters() {
   renderBlogList();
 }
 
-/* Vodoravna traka blog slidea na početnoj: 3 zadnja članka pa kartica
-   s gumbom "Pročitaj više članaka". Kartica je dio trake (a ne zaseban
-   element ispod) jer je posljednji korak vodoravnog pomicanja - v.
-   js/home-slides.js. */
+/* Vodoravna traka blog slidea na početnoj: 3 zadnja članka pa gumb
+   "Pročitaj više članaka". Gumb je posljednji korak trake (a ne zaseban
+   element ispod) - v. js/home-slides.js. */
 function renderHomeBlogPreview() {
   const grid = document.getElementById('home-blog-preview-grid');
   if (!grid) return;
@@ -533,8 +532,6 @@ function renderHomeBlogPreview() {
 
   const moreCard = `
     <div class="hs-rail-more">
-      <div class="hs-rail-more-star">✧</div>
-      <p class="hs-rail-more-text" id="t-blogPreviewMore"></p>
       <a class="btn" onclick="showPage('blog')" id="t-blogPreviewBtn"></a>
     </div>`;
 
@@ -1132,7 +1129,6 @@ function applyTexts() {
   set('t-blogPreviewTitle', t.blogPreviewTitle);
   set('t-blogPreviewSub',   t.blogPreviewSub);
   set('t-blogPreviewBtn',   t.blogPreviewBtn);
-  set('t-blogPreviewMore',  t.blogPreviewMore);
 
   // Stranica Usluge - sve tekstove cistimo ako !svc
   set('t-servicesPageTitle', svc ? t.servicesPageTitle : '');

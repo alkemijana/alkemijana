@@ -1456,8 +1456,7 @@ const TEXT_GROUPS = [
       reviewsSub:       'Recenzije - podnaslov',
       blogPreviewTitle: 'Blog pregled - naslov',
       blogPreviewSub:   'Blog pregled - podnaslov',
-      blogPreviewBtn:   'Blog pregled - gumb',
-      blogPreviewMore:  'Blog pregled - tekst na zadnjoj kartici trake'
+      blogPreviewBtn:   'Blog pregled - gumb'
     }
   },
   {

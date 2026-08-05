@@ -18,7 +18,11 @@
 (function () {
   'use strict';
 
-  var LOCK_MS   = 880;   // koliko dugo se ignoriraju novi pomaci (traje animacija)
+  /* Kratka pauza između koraka, NAMJERNO puno kraća od trajanja animacije:
+     služi samo da jedan zamah kotačića ne preskoči tri slidea. Novi korak
+     smije prekinuti prijelaz u tijeku - CSS tranzicija nastavi od trenutne
+     vrijednosti pa nema trzaja, a čekanje kraja animacije ne blokira. */
+  var LOCK_MS   = 270;
   var WHEEL_MIN = 42;    // prag akumuliranog kotačića za jedan korak
   var SWIPE_MIN = 46;    // prag swipea u px
   var IDLE_MS   = 220;   // pauza nakon koje se akumulator kotačića resetira
@@ -85,8 +89,14 @@
     var vw = viewport.clientWidth;
     if (!vw) return;   // slide još nije izmjeren (npr. skriven)
 
-    var gap  = vw < 640 ? 16 : 32;
-    var card = Math.min(360, Math.round(vw * (vw < 640 ? 0.82 : 0.62)));
+    /* Kartica raste s ekranom: na uskom zauzme skoro cijelu širinu, na
+       širokom je ograničava i VISINA (inače na 4K TV-u kartica bude
+       visoka pola ekrana i sadržaj se prelije). */
+    var vh   = window.innerHeight || 800;
+    var gap  = vw < 640 ? 16 : Math.round(Math.min(48, vw * 0.026));
+    var card = vw < 640
+      ? Math.round(vw * 0.84)
+      : Math.round(Math.min(vw * 0.32, vh * 0.46, 560));
 
     p.track.style.setProperty('--hs-rail-gap', gap + 'px');
     p.track.style.setProperty('--hs-rail-card', card + 'px');

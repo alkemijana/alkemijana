@@ -82,7 +82,7 @@
 /* Smooth color transitions when theme changes (osim za circular reveal koji
    ide preko svega - taj poništi tranzicije da se animacija ne preklopi). */
 body, body::before, body::after,
-nav, .nav-links, .nav-links a, .logo,
+#main-nav, .nav-links, .nav-links a, .logo,
 .section-title, .section-subtitle,
 .hero h1, .hero-desc,
 .service-card, .service-card p,
@@ -125,8 +125,12 @@ body::after {
 
 .content { position: relative; z-index: 2; }
 
-/* ---- NAVIGACIJA ---- */
-nav {
+/* ---- NAVIGACIJA ----
+   Pravilo MORA biti vezano na #main-nav, a ne na goli `nav` - inače
+   pokupi svaki <nav> na stranici i pretvori ga u fiksnu traku preko
+   cijele širine (tako je indikator slideova prekrivao pola ekrana).
+   Nema pozadine ni obruba: gore su samo logo i tri crtice. */
+#main-nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
@@ -134,11 +138,13 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--nav-bg);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border);
-  transition: top 0.3s, background-color 0.6s ease;
+  background: none;
+  border: none;
+  pointer-events: none;   /* traka ne smije hvatati klikove preko sadržaja */
+  transition: top 0.3s;
 }
+
+#main-nav > * { pointer-events: auto; }
 
 .logo {
   font-family: 'Tangerine', cursive;

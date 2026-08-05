@@ -11,12 +11,15 @@
    Logika: `toggleMenu()` / `closeMenu()` u js/app.js.
    ============================================================ */
 
-/* ---- Gumb s tri crtice ---- */
+/* ---- Gumb s tri crtice ----
+   Namjerno NIJE minimalistički: dvostruki prsten (vanjski isprekidan,
+   polako se vrti) oko tri crtice različitih duljina - kao mali pečat. */
 
 .nd-toggle {
-  width: 46px;
-  height: 46px;
-  border: 1px solid var(--border);
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border: none;
   border-radius: 50%;
   background: transparent;
   cursor: pointer;
@@ -25,40 +28,86 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
 }
 
-.nd-toggle:hover {
+/* vanjski isprekidani prsten */
+.nd-toggle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(168, 144, 208, 0.45);
+  animation: ndRingSpin 26s linear infinite;
+  transition: border-color 0.35s, opacity 0.35s;
+}
+
+/* unutarnji puni prsten s mekim sjajem */
+.nd-toggle::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: radial-gradient(circle at 50% 40%, rgba(168, 144, 208, 0.12), transparent 70%);
+  transition: border-color 0.35s, box-shadow 0.35s, background 0.35s;
+}
+
+.nd-toggle:hover::before { border-color: var(--lavender); }
+
+.nd-toggle:hover::after {
   border-color: var(--lavender);
-  background: rgba(168, 144, 208, 0.08);
-  box-shadow: 0 0 18px rgba(168, 144, 208, 0.25);
+  box-shadow: 0 0 22px rgba(168, 144, 208, 0.35), inset 0 0 14px rgba(168, 144, 208, 0.18);
+}
+
+@keyframes ndRingSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .nd-bars {
-  display: block;
-  width: 20px;
-  height: 14px;
   position: relative;
+  z-index: 1;
+  display: block;
+  width: 22px;
+  height: 14px;
 }
 
 .nd-bars i {
   position: absolute;
   left: 0;
-  width: 100%;
   height: 1.5px;
   border-radius: 2px;
   background: var(--lavender);
-  transition: transform 0.4s cubic-bezier(0.22, 0.8, 0.3, 1), opacity 0.25s;
+  box-shadow: 0 0 8px rgba(168, 144, 208, 0.55);
+  transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.3, 1), opacity 0.2s, width 0.34s;
 }
 
-.nd-bars i:nth-child(1) { top: 0; }
-.nd-bars i:nth-child(2) { top: 6.25px; }
-.nd-bars i:nth-child(3) { top: 12.5px; }
+/* tri različite duljine - srednja najkraća, kao znak */
+.nd-bars i:nth-child(1) { top: 0;      width: 100%; }
+.nd-bars i:nth-child(2) { top: 6.25px; width: 60%; left: 20%; }
+.nd-bars i:nth-child(3) { top: 12.5px; width: 100%; }
+
+.nd-toggle:hover .nd-bars i:nth-child(2) { width: 100%; left: 0; }
 
 /* otvoreno -> crtice se sklope u ✕ */
 .nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(1) { transform: translateY(6.25px) rotate(45deg); }
-.nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(2) { opacity: 0; transform: scaleX(0.4); }
+.nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(2) { opacity: 0; transform: scaleX(0.3); }
 .nd-toggle[aria-expanded="true"] .nd-bars i:nth-child(3) { transform: translateY(-6.25px) rotate(-45deg); }
+
+/* ---- Čitljivost na stranicama koje se scrollaju ----
+   Početna (html.hs-lock) nema scrolla pa traka smije biti potpuno čista.
+   Drugdje sadržaj prolazi ispod logotipa, pa ide vrlo blag preljev prema
+   dolje - NIJE traka: bez obruba, bez blura, bez pune pozadine. */
+html:not(.hs-lock) #main-nav::before {
+  content: '';
+  position: absolute;
+  inset: -1.4rem 0 auto 0;
+  height: 8rem;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--bg-deep) 0%, transparent 100%);
+  opacity: 0.75;
+}
 
 /* ---- Zatamnjenje iza ladice ---- */
 
@@ -66,14 +115,14 @@
   position: fixed;
   inset: 0;
   z-index: 190;
-  background: rgba(6, 8, 15, 0.55);
-  backdrop-filter: blur(3px);
+  background: rgba(6, 8, 15, 0.42);
+  backdrop-filter: blur(2px);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.22s ease;
 }
 
 :root[data-theme="light"] .nd-overlay {
-  background: rgba(46, 39, 82, 0.35);
+  background: rgba(46, 39, 82, 0.26);
 }
 
 .nd-overlay.nd-show { opacity: 1; }
@@ -83,26 +132,60 @@
 
 /* ---- Sama ladica ---- */
 
+/* Staklasta ploča: poluprozirna pozadina + blur onoga iza nje.
+   NE koristiti neprozirnu boju - kroz ladicu se moraju nazirati
+   zvijezde i sadržaj. */
 .nd-drawer {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   z-index: 200;
-  width: min(320px, 86vw);
+  width: min(330px, 86vw);
   display: flex;
   flex-direction: column;
   padding: 1.4rem 0 2rem;
-  background: linear-gradient(180deg, var(--panel-grad-1), var(--panel-grad-2)), var(--bg-deep);
-  border-left: 1px solid var(--border);
-  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.35);
+  background:
+    radial-gradient(120% 55% at 100% 0%, rgba(168, 144, 208, 0.20), transparent 62%),
+    linear-gradient(200deg, rgba(46, 34, 92, 0.42), rgba(10, 8, 26, 0.52));
+  backdrop-filter: blur(26px) saturate(1.5);
+  -webkit-backdrop-filter: blur(26px) saturate(1.5);
+  border-left: 1px solid rgba(168, 144, 208, 0.28);
+  box-shadow: -22px 0 60px rgba(0, 0, 0, 0.4);
   transform: translateX(102%);
   visibility: hidden;
-  transition: transform 0.48s cubic-bezier(0.22, 0.8, 0.3, 1), visibility 0.48s;
+  transition: transform 0.26s cubic-bezier(0.3, 0.9, 0.35, 1), visibility 0.26s;
+}
+
+/* tanka svijetla nit uz lijevi rub - daje dojam stakla */
+.nd-drawer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(228, 224, 244, 0.4) 22%, rgba(228, 224, 244, 0.08) 70%, transparent);
+  pointer-events: none;
 }
 
 :root[data-theme="light"] .nd-drawer {
-  box-shadow: -18px 0 50px rgba(106, 78, 160, 0.16);
+  background:
+    radial-gradient(120% 55% at 100% 0%, rgba(168, 144, 208, 0.26), transparent 62%),
+    linear-gradient(200deg, rgba(255, 255, 255, 0.62), rgba(237, 228, 245, 0.52));
+  border-left-color: rgba(106, 78, 160, 0.26);
+  box-shadow: -22px 0 60px rgba(106, 78, 160, 0.18);
+}
+
+:root[data-theme="light"] .nd-drawer::before {
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.9) 22%, rgba(255, 255, 255, 0.3) 70%, transparent);
+}
+
+/* Preglednici bez backdrop-filtera moraju dobiti gušću pozadinu,
+   inače je tekst nečitljiv preko sadržaja. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nd-drawer { background: linear-gradient(200deg, rgba(28, 24, 64, 0.97), rgba(6, 8, 15, 0.97)); }
+  :root[data-theme="light"] .nd-drawer { background: linear-gradient(200deg, rgba(255, 255, 255, 0.97), rgba(237, 228, 245, 0.97)); }
 }
 
 .nd-drawer.nd-open {
@@ -152,21 +235,21 @@
 }
 
 .nd-drawer .nav-links li {
-  /* stavke ulaze u kaskadi kad se ladica otvori */
+  /* stavke ulaze u kratkoj kaskadi - zadnja stigne prije nego ladica stane */
   opacity: 0;
-  transform: translateX(18px);
-  transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.22, 0.8, 0.3, 1);
+  transform: translateX(14px);
+  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.3, 0.9, 0.35, 1);
 }
 
 .nd-drawer.nd-open .nav-links li { opacity: 1; transform: none; }
 
-.nd-drawer.nd-open .nav-links li:nth-child(1) { transition-delay: 0.08s; }
-.nd-drawer.nd-open .nav-links li:nth-child(2) { transition-delay: 0.13s; }
-.nd-drawer.nd-open .nav-links li:nth-child(3) { transition-delay: 0.18s; }
-.nd-drawer.nd-open .nav-links li:nth-child(4) { transition-delay: 0.23s; }
-.nd-drawer.nd-open .nav-links li:nth-child(5) { transition-delay: 0.28s; }
-.nd-drawer.nd-open .nav-links li:nth-child(6) { transition-delay: 0.33s; }
-.nd-drawer.nd-open .nav-links li:nth-child(7) { transition-delay: 0.38s; }
+.nd-drawer.nd-open .nav-links li:nth-child(1) { transition-delay: 0.03s; }
+.nd-drawer.nd-open .nav-links li:nth-child(2) { transition-delay: 0.05s; }
+.nd-drawer.nd-open .nav-links li:nth-child(3) { transition-delay: 0.07s; }
+.nd-drawer.nd-open .nav-links li:nth-child(4) { transition-delay: 0.09s; }
+.nd-drawer.nd-open .nav-links li:nth-child(5) { transition-delay: 0.11s; }
+.nd-drawer.nd-open .nav-links li:nth-child(6) { transition-delay: 0.13s; }
+.nd-drawer.nd-open .nav-links li:nth-child(7) { transition-delay: 0.15s; }
 
 .nd-drawer .nav-links a {
   display: block;

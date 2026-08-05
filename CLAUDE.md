@@ -113,9 +113,15 @@ normalno — zaključava se samo dok je početna aktivna.
 - **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
   gledatelja (`translateZ(+340px) scale(1.22)` + blur), nadolazeći (`.hs-future`) čeka u dubini
   (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
-- **Navigacija:** traka gore ima SAMO logo (lijevo) i tri crtice (desno). Linkovi i prekidač teme
-  su u kliznoj ladici s desna (`#nd-drawer`, ~320px) s overlayem. `#navLinks` i `.nav-links a`
-  **zadržavaju stara imena** jer ih `showPage()` i `openPost()` traže po njima.
+- **Navigacija:** gore NEMA trake — samo logo (lijevo) i tri crtice (desno) na prozirnoj podlozi.
+  Tri crtice su namjerno dekorativne (dvostruki prsten, vanjski isprekidan i polako se vrti,
+  crtice različitih duljina). Linkovi i prekidač teme su u **staklastoj** kliznoj ladici s desna
+  (`#nd-drawer`, ~330px, `backdrop-filter: blur`) — kroz nju se naziru zvijezde. `#navLinks` i
+  `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i `openPost()` traže po njima.
+- **Indikator slideova je LIJEVO** (`.hs-dots`).
+- **Brzine:** ladica 0.26 s, prijelaz slidea 0.72–0.82 s, ali `LOCK_MS` je samo **270 ms** —
+  novi korak smije prekinuti prijelaz u tijeku (CSS tranzicija nastavi od trenutne vrijednosti),
+  pa scrollanje ne čeka kraj animacije. Ne vraćati lock na duljinu animacije.
 
 **Zamke na koje se već naletjelo (ne ponavljati):**
 - Traku **NE centrirati** preko `width:100vw` + negativne margine — `vw` uključuje prostor
@@ -129,6 +135,15 @@ normalno — zaključava se samo dok je početna aktivna.
 - `wheel` i `touchmove` moraju biti **non-passive** (`{passive:false}`) da `preventDefault` radi.
   Događaji iz admin panela, ladice i privole se preskaču (`fromOverlay` u home-slides.js) —
   te površine imaju vlastiti scroll.
+- Pravilo za traku gore MORA biti vezano na **`#main-nav`**, ne na goli `nav` — inače pokupi
+  svaki `<nav>` na stranici i pretvori ga u fiksnu traku preko cijele širine (tako je indikator
+  slideova prekrivao pola ekrana). Zato je i `.hs-dots` običan `<div>`.
+- Na apsolutno pozicioniranom elementu **ne postavljati i `left` i `right`** — razvuče se preko
+  cijele širine. Mobilni media query za `.hs-dots` je zbog toga jednom razvukao indikator.
+- Sadržaj slideova se skalira po obrascu `clamp(min, min(Xvw, Yvh), max)`. **Sam `vmin` ne
+  valja**: na mobitelu je vmin = širina pa naslov ispadne upola manji nego u verziji 1.
+- `#home-natal-section` u style.css ima `max-width:680px` (ondje je kotač `width:100%`).
+  U deku se to **mora poništiti** (`max-width:none`), inače kotač na velikom ekranu ostane sitan.
 
 ---
 

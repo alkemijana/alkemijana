@@ -52,7 +52,9 @@ html.hs-lock body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6.5rem 1.5rem 4.5rem;   /* mjesto za nav gore i točkice dolje */
+  /* mjesto za logo/tri crtice gore i nagovještaj dolje - skalira se
+     s visinom ekrana da na niskim ekranima ne pojede sadržaj */
+  padding: clamp(3.6rem, 8dvh, 6.5rem) clamp(1rem, 4vw, 4rem) clamp(2.4rem, 6dvh, 4.5rem);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -110,28 +112,80 @@ html.hs-lock body {
   transform: none;
 }
 
-/* ---- 3. Prilagodbe postojećih sekcija na visinu ekrana ---- */
+/* ---- 3. Sadržaj se skalira uz VELIČINU EKRANA ----
+   Obrazac je svugdje `clamp(min, min(Xvw, Yvh), max)`:
+     - `vw` diktira veličinu na mobitelu (uski, ali visok ekran)
+     - `vh` je koči na niskom ekranu (laptop, mobitel položen vodoravno)
+     - clamp drži razumne granice na 4K TV-u i na sitnom telefonu
+   Sam `vmin` ovdje NE radi: na mobitelu je vmin = širina pa naslov
+   ispadne dvostruko manji nego u verziji 1. */
 
 #home .hero { padding: 0 1rem; }
 
 #home .hero h1 {
-  font-size: clamp(4.5rem, 16vw, 9rem);
-  margin-bottom: 0.8rem;
+  font-size: clamp(3rem, min(22vw, 17vh), 13rem);
+  margin-bottom: clamp(0.3rem, 1.4vh, 1.4rem);
 }
 
-#home .hero-sub { margin-bottom: 1.6rem; }
-#home .hero-desc { margin-bottom: 1.8rem; }
+#home .hero-sub {
+  font-size: clamp(0.95rem, min(4.2vw, 2.5vh), 2.2rem);
+  margin-bottom: clamp(0.8rem, 2.4vh, 2.6rem);
+}
 
-#home .section-title { margin-bottom: 0.6rem; }
-#home .section-subtitle { margin-bottom: 1.8rem; }
+#home .hero-desc {
+  font-size: clamp(1.1rem, min(5.6vw, 3.4vh), 3rem);
+  max-width: min(62ch, 86vw);
+  margin-bottom: clamp(0.9rem, 2.4vh, 2.6rem);
+}
 
-/* živi kotač natalne karte mora stati u visinu ekrana */
-#home .home-live-natal-svg,
+#home .section-title {
+  font-size: clamp(1.6rem, min(6vw, 4.6vh), 4rem);
+  margin-bottom: clamp(0.3rem, 1vh, 1rem);
+}
+
+#home .section-subtitle {
+  font-size: clamp(0.95rem, min(3.6vw, 2.4vh), 2rem);
+  margin-bottom: clamp(0.9rem, 2.4vh, 2.4rem);
+}
+
+/* Živi kotač: veličinu diktira VISINA ekrana (kvadratan je), pa se
+   ograničava i širinom za uske ekrane. `width:100%` iz style.css bi ga
+   na širokom ekranu napuhao, a max-height bi onda razbio omjer i kotač
+   bi se sveo na sitnu sličicu usred praznog okvira. */
+/* `#home-natal-section` u style.css ima `max-width:680px` (tamo je kotač
+   bio width:100% pa ga je trebalo obuzdati). U deku sekcija mora pustiti
+   kotač do pune visine ekrana, inače na velikom ekranu ostane sitan. */
+#home #home-natal-section {
+  max-width: none;
+  padding: 0;
+}
+
 #home .home-live-natal-wrap {
-  max-height: 58dvh;
+  width: min(70dvh, 92vw);
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
 }
+
+#home .home-live-natal-caption {
+  font-size: clamp(0.72rem, min(3vw, 1.7vh), 1.2rem);
+}
+
+/* Karta dana raste s ekranom */
+#home .vtar-cotd {
+  max-width: min(1500px, 90vw);
+  gap: clamp(1rem, 3vh, 3.5rem);
+  padding: clamp(1.2rem, 3vh, 3.5rem) clamp(1.3rem, 3.2vh, 4rem);
+}
+
+#home .vtar-cotd-img  { width: clamp(115px, min(30vw, 30vh), 430px); }
+#home .vtar-cotd-name { font-size: clamp(1.3rem, min(5.4vw, 4vh), 3.2rem); }
+#home .vtar-cotd-desc { font-size: clamp(0.95rem, min(3.6vw, 2.3vh), 1.8rem); }
+#home .vtar-cotd-eyebrow,
+#home .vtar-cotd-cta  { font-size: clamp(0.7rem, min(3vw, 1.7vh), 1.2rem); }
 
 #home .cta-section { margin: 0; }
+#home .cta-section h2 { font-size: clamp(1.5rem, min(5.6vw, 4.4vh), 3.6rem); }
 
 /* ---- 4. Vodoravni blog slide ---- */
 
@@ -206,7 +260,7 @@ html.hs-lock body {
 
 .hs-rail-track .blog-image {
   aspect-ratio: auto;
-  height: clamp(104px, 17dvh, 190px);
+  height: clamp(100px, 17dvh, 280px);
   flex: 0 0 auto;
 }
 
@@ -218,32 +272,13 @@ html.hs-lock body {
   overflow: hidden;
 }
 
-/* Zadnja kartica u traci: poziv na cijeli blog */
+/* Zadnji korak trake: samo gumb, bez okvira i bez pozadine. Slot je i
+   dalje širine kartice da centriranje trake ostane ista aritmetika. */
 .hs-rail-more {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.1rem;
   text-align: center;
-  padding: 2.5rem 1.5rem;
-  border: 1px dashed var(--border);
-  border-radius: 16px;
-  background: var(--card-bg);
-}
-
-.hs-rail-more-star {
-  font-size: 1.6rem;
-  color: var(--lavender);
-  line-height: 1;
-}
-
-.hs-rail-more-text {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
-  color: var(--text-muted);
-  font-size: 1rem;
-  max-width: 22ch;
 }
 
 /* Točkice vodoravne trake */
@@ -271,14 +306,18 @@ html.hs-lock body {
 
 .hs-dots {
   position: absolute;
-  right: 1.6rem;
+  left: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  /* traka sama ne smije hvatati klikove - samo točkice */
+  pointer-events: none;
 }
+
+.hs-dots button { pointer-events: auto; }
 
 .hs-dots button {
   width: 10px;
@@ -364,8 +403,10 @@ html.hs-lock body {
 @media (max-width: 768px) {
   .hs-slide { padding: 5.5rem 1rem 4rem; }
 
+  /* PAZI: samo `left` - postavljanje i `left` i `right` na apsolutno
+     pozicioniranom elementu ga razvuče preko cijele širine ekrana. */
   .hs-dots {
-    right: 0.7rem;
+    left: 0.7rem;
     gap: 0.7rem;
   }
 

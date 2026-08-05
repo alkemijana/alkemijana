@@ -725,8 +725,10 @@
 
     </div>
 
-    <!-- Okomiti indikator slideova (desno) -->
-    <nav class="hs-dots" id="hs-dots" aria-label="Slideovi početne stranice"></nav>
+    <!-- Okomiti indikator slideova (lijevo).
+         NE koristiti <nav>: globalno pravilo #main-nav je vezano na id,
+         ali <nav> ionako nosi krivu semantiku za ovo. -->
+    <div class="hs-dots" id="hs-dots" role="tablist" aria-label="Slideovi početne stranice"></div>
 
     <!-- Nagovještaj da se scrolla; nestane nakon prvog pomaka -->
     <div class="hs-hint" id="hs-hint" aria-hidden="true">

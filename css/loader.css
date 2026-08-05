@@ -185,15 +185,6 @@ html.aj-loading body > *:not(#aj-loader) {
   text-shadow: 0 0 24px rgba(168, 144, 208, 0.55);
 }
 
-.ajl-sub {
-  margin-top: 0.35rem;
-  font-family: 'Quicksand', sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text-muted, #6a6488);
-}
-
 /* ---- Traka napretka ---- */
 
 .ajl-bar {

@@ -687,6 +687,30 @@ git push                             # Cloudflare Pages automatski deploya
 
 **VAŽNO:** uvijek `git pull --rebase` prije push-a jer admin može u međuvremenu spremati promjene preko serverless funkcije.
 
+### Verzije stranice (redizajn)
+
+| Oznaka | Što je | Gdje se vidi |
+|--------|--------|--------------|
+| **tag `v1`** | Zamrznuto stanje prije redizajna (5. 8. 2026.) | — (sigurnosna kopija) |
+| **grana `verzija-1`** | Isto stanje kao `v1`, kao grana | Cloudflare preview |
+| **grana `master`** | Ono što je **uživo** na alkemijana.com | alkemijana.com |
+| **grana `verzija-2`** | Redizajn u izradi | Cloudflare preview URL |
+
+Uz to postoji i zip snimka: `BACKUP ALKEMIJANA/verzija-1_2026-08-05.zip` (mapa je u .gitignore).
+
+**Pravila dok traje redizajn:**
+- Redizajn se radi **na grani `verzija-2`** — `master` ostaje verzija 1 dok Jana ne odobri.
+- **Admin auto-save (`functions/save-data.js`) piše ISKLJUČIVO na `master`** (konstanta `BRANCH`).
+  Zato Janine izmjene sadržaja (blog, tekstovi, usluge…) slijeću na `master`, a ne na granu
+  redizajna. Prije rada na `verzija-2` napravi `git merge master` da povučeš njezin sadržaj —
+  inače bi spajanje redizajna na kraju pregazilo `js/data.js`.
+- Odobreni redizajn: `git checkout master && git merge verzija-2 && git push` → ide uživo.
+- Odbijeni redizajn: `git branch -D verzija-2` (i `git push origin --delete verzija-2`) —
+  na živoj stranici se ništa nije ni promijenilo.
+- Povratak na verziju 1 ako je redizajn već otišao uživo:
+  `git reset --hard v1 && git push --force` — **PAZI:** vraća i sadržaj koji je Jana
+  spremila preko admina nakon taga. Bolje prvo spasiti `js/data.js`.
+
 ---
 
 ## Posebne tehnike u kodu

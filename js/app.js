@@ -1288,9 +1288,14 @@ function scheduleGlares() {
   setTimeout(scheduleGlares, 10000 + Math.random() * 20000);
 }
 
-/* ---- INICIJALIZACIJA ---- */
+/* ---- INICIJALIZACIJA ----
+   Ide na DOMContentLoaded, NE na window 'load': 'load' čeka i sve slike
+   (blog slike s ImgBB-a), pa bi stranica minutu stajala s praznim
+   naslovima. Sve ovdje ovisi samo o DOM-u i podacima iz data.js.
+   Na kraju šalje 'aj:ready' - to je znak js/loader.js da smije maknuti
+   ekran učitavanja (v. css/loader.css). */
 
-window.addEventListener('load', () => {
+function initSite() {
   renderServices();
   renderHomeBlogPreview();
   renderReviews('home', 'home-reviews-grid');
@@ -1317,7 +1322,16 @@ window.addEventListener('load', () => {
 
   // Pokreni ambient glare animacije (svakih 10–30 sek)
   setTimeout(scheduleGlares, 5000 + Math.random() * 5000);
-});
+
+  // Sadržaj je složen - ekran učitavanja se sad smije maknuti
+  document.dispatchEvent(new Event('aj:ready'));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSite);
+} else {
+  initSite();
+}
 
 window.addEventListener('hashchange', () => {
   if (window.location.hash === '#admin')

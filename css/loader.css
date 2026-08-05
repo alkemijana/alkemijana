@@ -1,0 +1,325 @@
+/* ============================================================
+   Alkemijana - Ekran učitavanja (astro/tarot) + ulazna animacija
+   ------------------------------------------------------------
+   ZAŠTO POSTOJI: prije ovoga se stranica iscrtavala odmah - s
+   fallback fontovima (font-display:swap), praznim naslovima (TEXTS
+   se primjenjuju tek iz JS-a) i bez primijenjenih postavki. Korisnik
+   je vidio "čudnu" stranicu koja se pred njim slaže.
+
+   KAKO RADI (tri dijela, v. i js/loader.js):
+     1. inline skripta u <head> stavi .aj-loading na <html>  -> sadržaj
+        je visibility:hidden PRIJE prvog iscrtavanja
+     2. #aj-loader (astro kotač + tarot karte) je jedino vidljivo
+     3. kad su fontovi spremni I app.js je odradio init (događaj
+        'aj:ready'), js/loader.js skida .aj-loading, dodaje .aj-reveal
+        i sadržaj se animirano otvori
+
+   VAŽNO: sadržaj se skriva s visibility:hidden, NE display:none -
+   skriveni elementi tako i dalje sudjeluju u layoutu pa preglednik
+   POKRENE učitavanje fontova (display:none ih ne bi pokrenuo i
+   document.fonts.ready bi se razriješio prerano).
+
+   Ova se datoteka učitava PRIJE style.css; var() se svejedno
+   razrješava iz :root u style.css (fallback vrijednosti su za
+   slučaj da style.css zakasni).
+   ============================================================ */
+
+/* ---- 1. Skrivanje sadržaja dok traje učitavanje ---- */
+
+html.aj-loading,
+html.aj-loading body {
+  overflow: hidden;
+}
+
+html.aj-loading body > *:not(#aj-loader) {
+  visibility: hidden;
+}
+
+/* ---- 2. Sam ekran učitavanja ---- */
+
+#aj-loader {
+  /* boja zvjezdica u pozadini ekrana - u svijetloj temi bi
+     --silver-bright bio taman pa bi "zvijezde" izgledale kao mrlje */
+  --ajl-star: #e4e0f4;
+  --ajl-star-op: 0.55;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.7rem;
+  background:
+    radial-gradient(circle at 50% 42%, var(--body-grad-1, rgba(61, 40, 120, 0.28)) 0%, transparent 62%),
+    var(--bg-deep, #06080f);
+  opacity: 1;
+  transition: opacity 0.75s ease;
+}
+
+:root[data-theme="light"] #aj-loader {
+  --ajl-star: #8a6dc4;
+  --ajl-star-op: 0.3;
+}
+
+#aj-loader.ajl-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Diskretno zvjezdano polje (prava zviježđa iz index.html su još skrivena) */
+#aj-loader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.6px 1.6px at 18% 22%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.2px 1.2px at 76% 16%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.8px 1.8px at 88% 66%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.1px 1.1px at 32% 78%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.4px 1.4px at 62% 88%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.1px 1.1px at 8%  56%, var(--ajl-star) 50%, transparent 52%),
+    radial-gradient(1.5px 1.5px at 46% 10%, var(--ajl-star) 50%, transparent 52%);
+  opacity: var(--ajl-star-op);
+  animation: ajlTwinkle 4.5s ease-in-out infinite;
+}
+
+/* ---- Astro kotač + tarot karte ---- */
+
+.ajl-wheel {
+  width: min(52vw, 230px);
+  height: auto;
+  overflow: visible;
+}
+
+/* transform-origin je u koordinatama viewBoxa (0 0 200 200) -> središte */
+.ajl-spin,
+.ajl-spin-rev,
+.ajl-orbit {
+  transform-origin: 100px 100px;
+}
+
+.ajl-spin     { animation: ajlSpin 34s linear infinite; }
+.ajl-spin-rev { animation: ajlSpin 26s linear infinite reverse; }
+.ajl-orbit    { animation: ajlSpin 9s  linear infinite; }
+
+.ajl-ring {
+  fill: none;
+  stroke: var(--lavender, #a890d0);
+  stroke-opacity: 0.38;
+  stroke-width: 0.9;
+}
+
+.ajl-ring-dash {
+  fill: none;
+  stroke: var(--sage, #c4c0d8);
+  stroke-opacity: 0.32;
+  stroke-width: 0.8;
+  stroke-dasharray: 3 7;
+}
+
+.ajl-tick {
+  stroke: var(--lavender, #a890d0);
+  stroke-opacity: 0.6;
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+
+.ajl-dot {
+  fill: var(--silver, #c4c0d8);
+  fill-opacity: 0.5;
+}
+
+.ajl-planet {
+  fill: var(--silver-bright, #e4e0f4);
+  filter: drop-shadow(0 0 4px var(--lavender, #a890d0));
+}
+
+/* Tri tarot karte u sredini kotača - dišu jedna za drugom */
+.ajl-card {
+  fill: var(--bg-light, #1c1840);
+  fill-opacity: 0.55;
+  stroke: var(--lavender, #a890d0);
+  stroke-opacity: 0.65;
+  stroke-width: 1;
+}
+
+.ajl-card-star {
+  fill: var(--silver-bright, #e4e0f4);
+  fill-opacity: 0.85;
+}
+
+.ajl-card-g {
+  animation: ajlCardBreath 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* stagger ide preko izričitih klasa, NE preko :nth-of-type - u SVG-u su
+   sve grupe <g> pa bi nth-of-type brojao i prstenove ispred karata */
+.ajl-card-g.ajl-c1 { animation-delay: 0s; }     /* lijeva */
+.ajl-card-g.ajl-c2 { animation-delay: 0.36s; }  /* desna */
+.ajl-card-g.ajl-c3 { animation-delay: 0.18s; }  /* srednja (na vrhu) */
+
+/* ---- Natpis (Tangerine) - pojavi se TEK kad je font stvarno spreman,
+        inače bi i ovdje bljesnuo fallback font ---- */
+
+.ajl-text {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#aj-loader.ajl-fonts .ajl-text {
+  opacity: 1;
+  transform: none;
+}
+
+.ajl-word {
+  font-family: 'Tangerine', cursive;
+  font-size: clamp(3rem, 11vw, 4.6rem);
+  line-height: 1;
+  color: var(--silver-bright, #e4e0f4);
+  text-shadow: 0 0 24px rgba(168, 144, 208, 0.55);
+}
+
+.ajl-sub {
+  margin-top: 0.35rem;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6a6488);
+}
+
+/* ---- Traka napretka ---- */
+
+.ajl-bar {
+  width: min(58vw, 220px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border, rgba(168, 144, 208, 0.2));
+  overflow: hidden;
+}
+
+.ajl-bar > i {
+  display: block;
+  height: 100%;
+  width: 8%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--lavender-soft, #7860b0), var(--lavender, #a890d0));
+  animation: ajlBar 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* kad je sve spremno traka se dovrši prije nego ekran nestane */
+#aj-loader.ajl-done .ajl-bar > i {
+  animation: none;
+  width: 100%;
+  transition: width 0.35s ease;
+}
+
+/* ---- Keyframes ---- */
+
+@keyframes ajlSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes ajlTwinkle {
+  0%, 100% { opacity: calc(var(--ajl-star-op) * 0.55); }
+  50%      { opacity: var(--ajl-star-op); }
+}
+
+@keyframes ajlCardBreath {
+  0%, 100% { transform: translateY(0)     scale(1);    opacity: 0.75; }
+  50%      { transform: translateY(-3px)  scale(1.03); opacity: 1; }
+}
+
+@keyframes ajlBar {
+  0%   { width: 8%; }
+  55%  { width: 62%; }
+  100% { width: 88%; }
+}
+
+/* ============================================================
+   3. ULAZNA ANIMACIJA STRANICE (.aj-reveal ostaje na <html>)
+   ============================================================ */
+
+@keyframes ajSkyIn {
+  from { opacity: 0; }
+  to   { opacity: 0.45; }
+}
+
+@keyframes ajNavIn {
+  from { opacity: 0; transform: translateY(-105%); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes ajRise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes ajHeroIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.985); filter: blur(7px); }
+  to   { opacity: 1; transform: none;                          filter: none; }
+}
+
+/* pozadinsko zvjezdano nebo (inline opacity:0.45 u index.html) */
+html.aj-reveal #sky-bg {
+  animation: ajSkyIn 1.8s ease 0.1s both;
+}
+
+html.aj-reveal #main-nav {
+  animation: ajNavIn 0.75s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+/* sadržaj aktivne stranice ulazi u kaskadi */
+html.aj-reveal .page.active > * {
+  animation: ajRise 0.85s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+html.aj-reveal .page.active > *:nth-child(1) { animation-delay: 0.14s; }
+html.aj-reveal .page.active > *:nth-child(2) { animation-delay: 0.26s; }
+html.aj-reveal .page.active > *:nth-child(3) { animation-delay: 0.36s; }
+html.aj-reveal .page.active > *:nth-child(4) { animation-delay: 0.44s; }
+html.aj-reveal .page.active > *:nth-child(n+5) { animation-delay: 0.5s; }
+
+/* hero naslov dobiva vlastiti, mekši ulaz */
+html.aj-reveal .page.active .hero > div > * {
+  animation: ajHeroIn 1.05s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+html.aj-reveal .page.active .hero h1        { animation-delay: 0.22s; }
+html.aj-reveal .page.active .hero .hero-sub { animation-delay: 0.42s; }
+html.aj-reveal .page.active .hero .hero-desc{ animation-delay: 0.56s; }
+html.aj-reveal .page.active .hero .divider  { animation-delay: 0.7s; }
+
+html.aj-reveal footer {
+  animation: ajRise 0.9s cubic-bezier(0.22, 0.8, 0.3, 1) 0.55s both;
+}
+
+/* ---- Pristupačnost: bez animacija ako ih korisnik ne želi ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ajl-spin,
+  .ajl-spin-rev,
+  .ajl-orbit,
+  .ajl-card-g,
+  .ajl-bar > i,
+  #aj-loader::before {
+    animation: none !important;
+  }
+
+  html.aj-reveal #sky-bg,
+  html.aj-reveal #main-nav,
+  html.aj-reveal .page.active > *,
+  html.aj-reveal .page.active .hero > div > *,
+  html.aj-reveal footer {
+    animation: none !important;
+  }
+
+  html.aj-reveal #sky-bg { opacity: 0.45; }
+}

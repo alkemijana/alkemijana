@@ -179,21 +179,133 @@
   }
   </script>
 
-  <!-- Fontovi (lokalno hostani - bez slanja IP-a Googleu) -->
+  <!-- Tema PRIJE prvog iscrtavanja - inače svjetloj temi bljesne tamna pozadina.
+       (app.js ima istu logiku, ali se izvršava tek na dnu <body>.) -->
+  <script>
+    try {
+      if (localStorage.getItem('aj_theme') === 'light')
+        document.documentElement.setAttribute('data-theme', 'light');
+    } catch (e) {}
+    /* Sadržaj se skriva PRIJE prvog iscrtavanja; js/loader.js ovu klasu
+       skida kad su fontovi učitani i app.js gotov s init-om. Klasa se
+       postavlja iz JS-a (ne u HTML-u) da posjetitelj bez JS-a ne ostane
+       na praznoj stranici. */
+    document.documentElement.className += ' aj-loading';
+  </script>
+
+  <!-- Fontovi (lokalno hostani - bez slanja IP-a Googleu).
+       Preload za fontove "iznad pregiba" - ekran učitavanja čeka fontove
+       pa ih vrijedi dohvatiti što ranije (latin + latin-ext za hrvatske
+       dijakritike). -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/IurY6Y5j_oScZZow4VOxCZZM.woff2"><!-- Tangerine 400 -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2"><!-- Playfair Display 700 -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2"><!-- Atkinson 400 latin -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G07JIoSwQ.woff2"><!-- Atkinson 400 latin-ext -->
   <link rel="stylesheet" href="css/fonts.css">
 
-  <!-- Stilovi -->
+  <!-- Stilovi (loader.css prvi - definira skrivanje sadržaja i ekran učitavanja) -->
+  <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="tarot/tarot.css">
+
+  <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
+  <script src="js/loader.js" defer></script>
 </head>
 <body>
+
+<!-- ============================================================
+     EKRAN UČITAVANJA (astro kotač + tarot karte)
+     Stilovi: css/loader.css | Logika: js/loader.js
+     Uklanja se iz DOM-a nakon otkrivanja stranice.
+     ============================================================ -->
+<div id="aj-loader" role="status" aria-live="polite" aria-label="Stranica se učitava">
+  <svg class="ajl-wheel" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
+    <!-- vanjski prsten s 12 crtica (30° = jedan znak zodijaka) -->
+    <g class="ajl-spin">
+      <circle class="ajl-ring" cx="100" cy="100" r="88"/>
+      <g class="ajl-tick">
+        <line x1="100"    y1="19"     x2="100"    y2="12"/>
+        <line x1="140.50" y1="29.85"  x2="144.00" y2="23.79"/>
+        <line x1="170.15" y1="59.50"  x2="176.21" y2="56.00"/>
+        <line x1="181"    y1="100"    x2="188"    y2="100"/>
+        <line x1="170.15" y1="140.50" x2="176.21" y2="144.00"/>
+        <line x1="140.50" y1="170.15" x2="144.00" y2="176.21"/>
+        <line x1="100"    y1="181"    x2="100"    y2="188"/>
+        <line x1="59.50"  y1="170.15" x2="56.00"  y2="176.21"/>
+        <line x1="29.85"  y1="140.50" x2="23.79"  y2="144.00"/>
+        <line x1="19"     y1="100"    x2="12"     y2="100"/>
+        <line x1="29.85"  y1="59.50"  x2="23.79"  y2="56.00"/>
+        <line x1="59.50"  y1="29.85"  x2="56.00"  y2="23.79"/>
+      </g>
+    </g>
+
+    <!-- srednji, isprekidani prsten (vrti se u suprotnom smjeru) -->
+    <g class="ajl-spin-rev">
+      <circle class="ajl-ring-dash" cx="100" cy="100" r="70"/>
+    </g>
+
+    <!-- unutarnji prsten od 12 točaka -->
+    <g class="ajl-spin-rev">
+      <g class="ajl-dot">
+        <circle cx="100"    cy="42"     r="1.6"/>
+        <circle cx="129.00" cy="49.77"  r="1.6"/>
+        <circle cx="150.23" cy="71.00"  r="1.6"/>
+        <circle cx="158"    cy="100"    r="1.6"/>
+        <circle cx="150.23" cy="129.00" r="1.6"/>
+        <circle cx="129.00" cy="150.23" r="1.6"/>
+        <circle cx="100"    cy="158"    r="1.6"/>
+        <circle cx="71.00"  cy="150.23" r="1.6"/>
+        <circle cx="49.77"  cy="129.00" r="1.6"/>
+        <circle cx="42"     cy="100"    r="1.6"/>
+        <circle cx="49.77"  cy="71.00"  r="1.6"/>
+        <circle cx="71.00"  cy="49.77"  r="1.6"/>
+      </g>
+    </g>
+
+    <!-- planet koji kruži po vanjskom prstenu -->
+    <g class="ajl-orbit">
+      <circle class="ajl-planet" cx="100" cy="12" r="3.2"/>
+    </g>
+
+    <!-- Tri tarot karte u lepezi (srednja je na vrhu).
+         PAZI na dvije grupe po karti: rotacija lepeze mora biti na VANJSKOJ
+         grupi kao transform ATRIBUT, a animacija "disanja" na unutarnjoj kao
+         CSS transform - CSS transform nadjačava atribut, pa bi inače
+         animacija poništila rotaciju i karte bi se složile jedna na drugu. -->
+    <g transform="rotate(-17 100 124)">
+      <g class="ajl-card-g ajl-c1">
+        <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
+        <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
+      </g>
+    </g>
+    <g transform="rotate(17 100 124)">
+      <g class="ajl-card-g ajl-c2">
+        <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
+        <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
+      </g>
+    </g>
+    <g class="ajl-card-g ajl-c3">
+      <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
+      <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
+    </g>
+  </svg>
+
+  <!-- natpis se pojavi TEK kad je Tangerine stvarno učitan (klasa .ajl-fonts) -->
+  <div class="ajl-text">
+    <div class="ajl-word">Alkemijana</div>
+    <div class="ajl-sub">slaže zvijezde</div>
+  </div>
+
+  <div class="ajl-bar"><i></i></div>
+</div>
 
 <!-- ============================================================
      12 HOROSKOPSKIH ZVIJEŽĐA - stvarne koordinate zvijezda
      Preslikavanje: x = (RA_sati/24)*1920, y = ((35−Dec)/80)*1080
      Bez linija, bez natpisa - samo zvijezde.
      ============================================================ -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"
+<svg id="sky-bg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080"
   style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.45">
   <defs>
     <filter id="sg"> <feGaussianBlur stdDeviation="2"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>

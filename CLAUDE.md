@@ -21,8 +21,10 @@ Hostana na Cloudflare Pages, repozitorij na GitHubu, automatski deploy.
 
 ```
 ALKEMIJANA WEBSITE/
-├── index.html                      ← Glavna stranica + SVG zviježđa + admin HTML
+├── index.html                      ← Glavna stranica + SVG zviježđa + ekran učitavanja + admin HTML
 ├── css/style.css                   ← Svi stilovi
+├── css/loader.css                  ← Ekran učitavanja + ulazna animacija stranice (prefiks ajl-/aj-)
+├── css/fonts.css                   ← @font-face za lokalno hostane fontove
 ├── js/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke, TAROT_CARD_TEXTS)
 │   ├── app.js                      ← Navigacija, renderiranje, blog, animacije
@@ -39,6 +41,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
+│   ├── loader.js                   ← Ekran učitavanja: čeka fontove + 'aj:ready' iz app.js, pa otkrije stranicu
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
@@ -705,6 +708,41 @@ Sekcije imaju ID-eve poput `home-services-section`, `home-reviews-section`, `abo
 Svi statički tekstovi u `TEXTS` objektu u data.js.
 HTML elementi imaju `id="t-naziv"`.
 `applyTexts()` u app.js postavlja `textContent` iz `TEXTS[naziv]`.
+
+### Ekran učitavanja i ulazna animacija (css/loader.css + js/loader.js)
+Prije ovoga se stranica iscrtavala odmah — s fallback fontovima (`font-display:swap`),
+praznim naslovima (TEXTS se primjenjuju iz JS-a) i bez primijenjenih postavki; posjetitelj
+je gledao kako se stranica slaže pred njim.
+
+Tok (tri koraka):
+1. **Inline skripta u `<head>`** (index.html) postavi temu iz `localStorage` **i** doda
+   `aj-loading` na `<html>` — oboje PRIJE prvog iscrtavanja. Klasa se dodaje iz JS-a
+   (ne u HTML atributu) da posjetitelj bez JS-a ne ostane na praznoj stranici.
+2. `html.aj-loading body > *:not(#aj-loader)` → `visibility:hidden`. **Namjerno
+   `visibility`, ne `display:none`** — skriveni elementi tako i dalje sudjeluju u layoutu
+   pa preglednik POKRENE učitavanje fontova (s `display:none` bi se `document.fonts.ready`
+   razriješio prerano i FOUT bi se ipak vidio). Vidljiv je samo `#aj-loader`: astro kotač
+   (3 prstena + planet u orbiti) s tri tarot karte u lepezi, natpis „Alkemijana" i traka.
+3. `js/loader.js` čeka **oba** uvjeta — fontovi učitani (`document.fonts.load` za
+   Tangerine/Playfair/Atkinson/Quicksand + `fonts.ready`) **i** događaj `aj:ready` koji
+   `initSite()` u app.js pošalje na kraju inicijalizacije — pa skine `aj-loading`, doda
+   `aj-reveal` i ukloni loader iz DOM-a.
+
+Detalji na koje treba paziti:
+- **`initSite()` u app.js ide na `DOMContentLoaded`, ne na `window.load`** — `load` čeka i
+  sve slike (blog slike s ImgBB-a), pa bi ekran učitavanja visio predugo.
+- `aj-reveal` se **skida nakon ~2.2 s** (ENTER_MS) — inače bi se kaskadna ulazna animacija
+  ponavljala pri svakoj promjeni stranice (`showPage` prebacuje `.page.active`, a tamo već
+  postoji `fadeIn` iz style.css).
+- U SVG-u loadera **rotacija lepeze karata mora biti `transform` ATRIBUT na vanjskoj `<g>`,
+  a animacija na unutarnjoj** — CSS `transform` iz animacije nadjačava atribut pa bi se
+  inače karte složile jedna na drugu. Iz istog razloga stagger karata ide preko izričitih
+  klasa `ajl-c1/2/3`, ne `:nth-of-type` (sve grupe u SVG-u su `<g>`).
+- MIN_MS 900 ms prvi put, 280 ms nakon toga u istoj sesiji (`sessionStorage.aj_loader_seen`);
+  FAILSAFE 6 s otkrije stranicu i ako nešto pukne.
+- `prefers-reduced-motion` gasi sve animacije (i loadera i ulazne).
+- Boja zvjezdica loadera ide preko `--ajl-star` s posebnom vrijednošću za svijetlu temu
+  (`--silver-bright` je tamo taman pa bi „zvijezde" bile mrlje).
 
 ### Zvjezdice na pozadini
 SVG s ručno postavljenim circle elementima na koordinatama stvarnih horoskopskih zviježđa (RA/Dec).

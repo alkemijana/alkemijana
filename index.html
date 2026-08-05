@@ -206,6 +206,8 @@
   <!-- Stilovi (loader.css prvi - definira skrivanje sadržaja i ekran učitavanja) -->
   <link rel="stylesheet" href="css/loader.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/nav-drawer.css"><!-- nakon style.css - nadjačava .nav-links -->
+  <link rel="stylesheet" href="css/home-slides.css">
   <link rel="stylesheet" href="tarot/tarot.css">
 
   <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
@@ -580,8 +582,27 @@
      ============================================================ -->
 <div class="content">
 
+  <!-- Traka: samo logo lijevo + tri crtice desno. Svi linkovi i prekidač
+       teme su u kliznoj ladici (#nd-drawer) - v. css/nav-drawer.css. -->
   <nav id="main-nav">
     <div class="logo" onclick="showPage('home')">Alkemijana</div>
+    <button class="nd-toggle" id="nd-toggle" onclick="toggleMenu()"
+            aria-label="Otvori izbornik" aria-expanded="false" aria-controls="nd-drawer">
+      <span class="nd-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+  </nav>
+
+  <!-- Klizna ladica s desna -->
+  <div class="nd-overlay" id="nd-overlay" onclick="closeMenu()" hidden></div>
+  <aside class="nd-drawer" id="nd-drawer" role="dialog" aria-modal="true"
+         aria-label="Izbornik" aria-hidden="true">
+    <div class="nd-head">
+      <span class="nd-head-title">Izbornik</span>
+      <button class="nd-close" onclick="closeMenu()" aria-label="Zatvori izbornik">✕</button>
+    </div>
+
+    <!-- id="navLinks" i .nav-links a se NE smiju preimenovati:
+         showPage() i openPost() ih traže po tom imenu. -->
     <ul class="nav-links" id="navLinks">
       <li><a onclick="showPage('home')"    data-page="home"   class="active" id="t-navHome">Početna</a></li>
       <li id="nav-usluge"><a onclick="showPage('usluge')"  data-page="usluge" id="t-navServices">Usluge</a></li>
@@ -591,62 +612,126 @@
       <li><a onclick="showPage('tarot')"   data-page="tarot" id="t-navTarot">Virtualni tarot</a></li>
       <li><a onclick="showPage('kontakt')" data-page="kontakt" id="t-navContact">Kontakt</a></li>
     </ul>
-    <button class="theme-toggle" onclick="toggleTheme(event)" aria-label="Promijeni temu">
-      <span class="theme-toggle-icon theme-toggle-moon">☾</span>
-      <span class="theme-toggle-icon theme-toggle-sun">☀</span>
-    </button>
-    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-  </nav>
+
+    <div class="nd-foot">
+      <button class="nd-theme" onclick="toggleTheme(event)" aria-label="Promijeni temu">
+        <span class="theme-toggle-icon theme-toggle-moon">☾</span>
+        <span class="theme-toggle-icon theme-toggle-sun">☀</span>
+        <span class="nd-theme-label">Promijeni temu</span>
+      </button>
+    </div>
+  </aside>
   <div id="theme-transition-circle"></div>
 
-  <!-- POČETNA -->
+  <!-- ============================================================
+       POČETNA - slide deck bez scrolla (v. css/home-slides.css +
+       js/home-slides.js). Svaki .hs-slide je jedan puni ekran; kotačić /
+       tipkovnica / swipe prebacuju slideove uz kozmički zoom.
+
+       Slideovi s id-em (home-services-section, home-reviews-section)
+       preskaču se automatski kad ih applySettings() postavi na
+       display:none - deck čita stvarnu vidljivost, ne fiksan popis.
+       ============================================================ -->
   <section class="page active" id="home">
-    <div class="hero">
-      <div>
-        <h1>Alkemijana</h1>
-        <div class="hero-sub" id="t-heroSub"></div>
-        <p class="hero-desc" id="t-heroDesc"></p>
-        <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
-      </div>
-    </div>
-    <div class="section container" id="home-natal-section">
-      <h2 class="visually-hidden">Besplatna natalna karta - izrada online</h2>
-      <a class="home-live-natal-wrap" onclick="openAstroTool('natal'); return false;" href="#natal" role="button" aria-label="Izradi vlastitu besplatnu natalnu kartu" title="Izradi besplatnu natalnu kartu - pozicije planeta, kuće, aspekti">
-        <div class="home-live-natal-svg" id="home-live-natal-svg" aria-hidden="true"></div>
-        <div class="home-live-natal-cta" aria-hidden="true">
-          <span class="home-live-natal-cta-label">✦ Izradi vlastitu<br>natalnu kartu</span>
+    <div class="hs-deck" id="hs-deck">
+
+      <!-- 1. Hero -->
+      <div class="hs-slide" data-hs-name="hero">
+        <div class="hs-inner">
+          <div class="hero">
+            <div>
+              <h1>Alkemijana</h1>
+              <div class="hero-sub" id="t-heroSub"></div>
+              <p class="hero-desc" id="t-heroDesc"></p>
+              <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
+            </div>
+          </div>
         </div>
-      </a>
-      <div class="home-live-natal-caption">trenutne pozicije planeta</div>
-    </div>
-
-    <div class="section container">
-      <div id="vtar-cotd-root"></div>
-    </div>
-
-    <div class="section container" id="home-services-section">
-      <h2 class="section-title" id="t-servicesTitle"></h2>
-      <p class="section-subtitle" id="t-servicesSub"></p>
-      <div class="services-grid" id="home-services-grid" data-nosnippet></div>
-    </div>
-    <div class="cta-section" id="home-cta-section">
-      <h2 id="t-ctaTitle"></h2>
-      <p id="t-ctaText"></p>
-      <a class="btn btn-primary" onclick="showPage('kontakt')" id="t-ctaBtn"></a>
-    </div>
-    <div class="section container">
-      <h2 class="section-title" id="t-blogPreviewTitle"></h2>
-      <p class="section-subtitle" id="t-blogPreviewSub"></p>
-      <div class="blog-grid" id="home-blog-preview-grid"></div>
-      <div style="text-align:center;margin-top:2.5rem">
-        <a class="btn" onclick="showPage('blog')" id="t-blogPreviewBtn"></a>
       </div>
+
+      <!-- 2. Natalna karta (živi kotač) -->
+      <div class="hs-slide" data-hs-name="natal">
+        <div class="hs-inner">
+          <div class="container" id="home-natal-section">
+            <h2 class="visually-hidden">Besplatna natalna karta - izrada online</h2>
+            <a class="home-live-natal-wrap" onclick="openAstroTool('natal'); return false;" href="#natal" role="button" aria-label="Izradi vlastitu besplatnu natalnu kartu" title="Izradi besplatnu natalnu kartu - pozicije planeta, kuće, aspekti">
+              <div class="home-live-natal-svg" id="home-live-natal-svg" aria-hidden="true"></div>
+              <div class="home-live-natal-cta" aria-hidden="true">
+                <span class="home-live-natal-cta-label">✦ Izradi vlastitu<br>natalnu kartu</span>
+              </div>
+            </a>
+            <div class="home-live-natal-caption">trenutne pozicije planeta</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Karta dana (tarot) -->
+      <div class="hs-slide" data-hs-name="karta-dana">
+        <div class="hs-inner">
+          <div class="container">
+            <div id="vtar-cotd-root"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Usluge (samo kad su uključene u adminu) -->
+      <div class="hs-slide" data-hs-name="usluge" data-hs-requires="home-services-section">
+        <div class="hs-inner">
+          <div class="container" id="home-services-section">
+            <h2 class="section-title" id="t-servicesTitle"></h2>
+            <p class="section-subtitle" id="t-servicesSub"></p>
+            <div class="services-grid" id="home-services-grid" data-nosnippet></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Poziv na kontakt (vezan uz usluge) -->
+      <div class="hs-slide" data-hs-name="cta" data-hs-requires="home-cta-section">
+        <div class="hs-inner">
+          <div class="cta-section" id="home-cta-section">
+            <h2 id="t-ctaTitle"></h2>
+            <p id="t-ctaText"></p>
+            <a class="btn btn-primary" onclick="showPage('kontakt')" id="t-ctaBtn"></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Blog - VODORAVNI slide: daljnji scroll pomiče članke
+              lijevo-desno, pa tek na kraju ide na sljedeći slide -->
+      <div class="hs-slide hs-slide-rail" data-hs-name="blog" data-hs-rail>
+        <div class="hs-inner">
+          <div class="hs-rail-head">
+            <h2 class="section-title" id="t-blogPreviewTitle"></h2>
+            <p class="section-subtitle" id="t-blogPreviewSub"></p>
+          </div>
+          <div class="hs-rail-viewport">
+            <!-- renderHomeBlogPreview() puni ovo: 3 članka + kartica s gumbom -->
+            <div class="hs-rail-track blog-grid" id="home-blog-preview-grid"></div>
+          </div>
+          <div class="hs-rail-dots" id="hs-rail-dots" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- 7. Recenzije (samo kad su uključene u adminu) -->
+      <div class="hs-slide" data-hs-name="recenzije" data-hs-requires="home-reviews-section">
+        <div class="hs-inner">
+          <div class="container" id="home-reviews-section" style="display:none">
+            <h2 class="section-title" id="t-reviewsTitle"></h2>
+            <p class="section-subtitle" id="t-reviewsSub"></p>
+            <div class="reviews-grid" id="home-reviews-grid"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="section container" id="home-reviews-section" style="display:none">
-      <h2 class="section-title" id="t-reviewsTitle"></h2>
-      <p class="section-subtitle" id="t-reviewsSub"></p>
-      <div class="reviews-grid" id="home-reviews-grid"></div>
+    <!-- Okomiti indikator slideova (desno) -->
+    <nav class="hs-dots" id="hs-dots" aria-label="Slideovi početne stranice"></nav>
+
+    <!-- Nagovještaj da se scrolla; nestane nakon prvog pomaka -->
+    <div class="hs-hint" id="hs-hint" aria-hidden="true">
+      <span class="hs-hint-mouse"><i></i></span>
+      <span class="hs-hint-label">skrolaj</span>
     </div>
   </section>
 
@@ -1806,6 +1891,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/home-slides.js"></script><!-- slide deck početne (nakon app.js) -->
 <script src="js/admin.js"></script>
 <script src="js/natal-chiron.js"></script>
 <script src="js/natal-data.js"></script>

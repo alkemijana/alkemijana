@@ -82,7 +82,14 @@ function showPage(id) {
   document.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === id);
   });
-  document.getElementById('navLinks').classList.remove('open');
+  closeMenu();
+
+  /* Početna je slide deck bez scrolla, ostale stranice scrollaju
+     normalno - v. js/home-slides.js. */
+  if (window.HomeSlides) {
+    if (id === 'home') window.HomeSlides.activate();
+    else               window.HomeSlides.deactivate();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   applyPageMeta(id);
@@ -91,9 +98,82 @@ function showPage(id) {
   if (id === 'usluge') renderPricingTable();
 }
 
-function toggleMenu() {
-  document.getElementById('navLinks').classList.toggle('open');
+/* ---- KLIZNA LADICA NAVIGACIJE (v. css/nav-drawer.css) ----
+   Traka gore ima samo logo i tri crtice; linkovi i prekidač teme su
+   u ladici koja iskliže s desna. */
+
+function isMenuOpen() {
+  const d = document.getElementById('nd-drawer');
+  return !!d && d.classList.contains('nd-open');
 }
+
+function openMenu() {
+  const drawer  = document.getElementById('nd-drawer');
+  const overlay = document.getElementById('nd-overlay');
+  const toggle  = document.getElementById('nd-toggle');
+  if (!drawer || !overlay) return;
+
+  overlay.hidden = false;
+  // reflow da se prijelaz opacityja stvarno pokrene s 0
+  void overlay.offsetWidth;
+  overlay.classList.add('nd-show');
+  drawer.classList.add('nd-open');
+  drawer.setAttribute('aria-hidden', 'false');
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Zatvori izbornik');
+  }
+  lockScrollForMenu(true);
+}
+
+function closeMenu() {
+  const drawer  = document.getElementById('nd-drawer');
+  const overlay = document.getElementById('nd-overlay');
+  const toggle  = document.getElementById('nd-toggle');
+  if (!drawer || !overlay) return;
+
+  drawer.classList.remove('nd-open');
+  drawer.setAttribute('aria-hidden', 'true');
+  overlay.classList.remove('nd-show');
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Otvori izbornik');
+  }
+  lockScrollForMenu(false);
+
+  // overlay se sakrije tek kad se stopi, inače nestane naglo
+  clearTimeout(closeMenu._t);
+  closeMenu._t = setTimeout(() => {
+    if (!isMenuOpen()) overlay.hidden = true;
+  }, 450);
+}
+
+function toggleMenu() {
+  if (isMenuOpen()) closeMenu(); else openMenu();
+}
+
+/* Scroll iza otvorene ladice se zaključava. Širina scrollbara se
+   kompenzira preko --nd-sbw da stranica ne poskoči udesno (fiksni
+   nav treba istu kompenzaciju - v. nav-drawer.css). */
+function lockScrollForMenu(lock) {
+  const root = document.documentElement;
+  if (lock) {
+    const sbw = window.innerWidth - root.clientWidth;
+    root.style.setProperty('--nd-sbw', sbw + 'px');
+    root.classList.add('nd-locked');
+  } else {
+    root.classList.remove('nd-locked');
+    root.style.removeProperty('--nd-sbw');
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && isMenuOpen()) {
+    closeMenu();
+    const t = document.getElementById('nd-toggle');
+    if (t) t.focus();
+  }
+});
 
 /* ---- THEME (tamna / svijetla) ---- */
 
@@ -442,11 +522,27 @@ function resetBlogFilters() {
   renderBlogList();
 }
 
+/* Vodoravna traka blog slidea na početnoj: 3 zadnja članka pa kartica
+   s gumbom "Pročitaj više članaka". Kartica je dio trake (a ne zaseban
+   element ispod) jer je posljednji korak vodoravnog pomicanja - v.
+   js/home-slides.js. */
 function renderHomeBlogPreview() {
   const grid = document.getElementById('home-blog-preview-grid');
   if (!grid) return;
   const latest = BLOG_POSTS.filter(p => !p.archived).slice(0, 3);
-  grid.innerHTML = latest.map(blogCard).join('');
+
+  const moreCard = `
+    <div class="hs-rail-more">
+      <div class="hs-rail-more-star">✧</div>
+      <p class="hs-rail-more-text" id="t-blogPreviewMore"></p>
+      <a class="btn" onclick="showPage('blog')" id="t-blogPreviewBtn"></a>
+    </div>`;
+
+  grid.innerHTML = latest.map(blogCard).join('') + moreCard;
+
+  // gumb i tekst kartice dolaze iz TEXTS, a upravo su iznova stvoreni
+  applyTexts();
+  if (window.HomeSlides) window.HomeSlides.refresh();
 }
 
 function blogCard(p) {
@@ -481,7 +577,7 @@ function openPost(id) {
   document.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === 'blog');
   });
-  document.getElementById('navLinks').classList.remove('open');
+  closeMenu();
 
   document.getElementById('post-meta').textContent  = p.date || '';
   document.getElementById('post-title').textContent = p.title;
@@ -1006,6 +1102,10 @@ function applySettings() {
     const safeAbout = safeImgSrc(SITE_SETTINGS.aboutImageUrl);
     aboutImg.innerHTML = safeAbout ? `<img src="${esc(safeAbout)}" alt="Jana">` : '';
   }
+
+  /* Slideovi usluga/CTA/recenzija postoje samo dok su ti togglovi
+     uključeni - deck mora prebrojati slideove ispočetka. */
+  if (window.HomeSlides) window.HomeSlides.refresh();
 }
 
 /* ---- TEKSTOVI ---- */
@@ -1032,6 +1132,7 @@ function applyTexts() {
   set('t-blogPreviewTitle', t.blogPreviewTitle);
   set('t-blogPreviewSub',   t.blogPreviewSub);
   set('t-blogPreviewBtn',   t.blogPreviewBtn);
+  set('t-blogPreviewMore',  t.blogPreviewMore);
 
   // Stranica Usluge - sve tekstove cistimo ako !svc
   set('t-servicesPageTitle', svc ? t.servicesPageTitle : '');

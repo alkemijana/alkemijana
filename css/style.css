@@ -151,7 +151,9 @@ nav {
 }
 .logo span { color: var(--lavender); font-style: normal; }
 
-.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+/* .nav-links živi u kliznoj ladici (#nd-drawer) - raspored je u
+   css/nav-drawer.css, ovdje ostaje samo tipografija linkova. */
+.nav-links { list-style: none; }
 .nav-links a {
   color: var(--text);
   text-decoration: none;
@@ -178,39 +180,9 @@ nav {
 .nav-links a:hover::after,
 .nav-links a.active::after { width: 100%; }
 
-.menu-toggle {
-  display: none;
-  background: none; border: none;
-  color: var(--lavender);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-/* ---- THEME TOGGLE (Mjesec ↔ Sunce) ---- */
-.theme-toggle {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--lavender);
-  cursor: pointer;
-  padding: 0;
-  margin-left: 1.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.theme-toggle:hover {
-  border-color: var(--lavender);
-  background: rgba(168, 144, 208, 0.08);
-  box-shadow: 0 0 18px rgba(168, 144, 208, 0.25);
-  transform: rotate(-12deg) scale(1.06);
-}
+/* ---- THEME TOGGLE (Mjesec ↔ Sunce) ----
+   Gumb je sada u kliznoj ladici (.nd-theme u css/nav-drawer.css);
+   ovdje ostaje samo animacija ikona jer je dijele oba mjesta. */
 .theme-toggle-icon {
   position: absolute;
   font-size: 1.2rem;
@@ -1655,22 +1627,6 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
    ============================================================ */
 @media (max-width: 768px) {
   nav { padding: 1rem 1.5rem; }
-  .nav-links {
-    position: fixed;
-    top: 70px; left: 0; right: 0;
-    flex-direction: column;
-    background: var(--nav-bg);
-    backdrop-filter: blur(14px);
-    padding: 2rem;
-    gap: 1.5rem;
-    transform: translateY(-150%);
-    transition: transform 0.4s;
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-links.open { transform: translateY(0); }
-  .menu-toggle { display: block; }
-  .theme-toggle { width: 38px; height: 38px; margin-left: auto; margin-right: 0.5rem; }
-  .theme-toggle-icon { font-size: 1.05rem; }
   .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
   .about-image-float { float: none; max-width: 220px; margin: 0 auto 1.5rem; }
   .about-image-float:empty { width: 180px; height: 220px; }

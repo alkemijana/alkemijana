@@ -99,6 +99,7 @@ let TEXTS = {
   "blogPreviewTitle": "Najnoviji članci",
   "blogPreviewSub": "S bloga",
   "blogPreviewBtn": "Pročitaj više članaka →",
+  "blogPreviewMore": "Ima još toga za pročitati.",
   "contactTitle": "Kontakt",
   "contactSub": "Putovanje počinje jednom porukom",
   "aboutQuote": "Alkemijana nije mjesto gdje ćeš dobiti odgovore. To je mjesto gdje ćeš početi postavljati prava pitanja.",

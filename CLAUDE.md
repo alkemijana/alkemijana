@@ -24,6 +24,8 @@ ALKEMIJANA WEBSITE/
 ├── index.html                      ← Glavna stranica + SVG zviježđa + ekran učitavanja + admin HTML
 ├── css/style.css                   ← Svi stilovi
 ├── css/loader.css                  ← Ekran učitavanja + ulazna animacija stranice (prefiks ajl-/aj-)
+├── css/nav-drawer.css              ← Klizna ladica navigacije s desna (prefiks nd-)
+├── css/home-slides.css             ← Slide deck početne stranice (prefiks hs-)
 ├── css/fonts.css                   ← @font-face za lokalno hostane fontove
 ├── js/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke, TAROT_CARD_TEXTS)
@@ -42,6 +44,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
 │   ├── loader.js                   ← Ekran učitavanja: čeka fontove + 'aj:ready' iz app.js, pa otkrije stranicu
+│   ├── home-slides.js              ← Slide deck početne: kotačić/tipkovnica/swipe, vodoravni blog slide
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
@@ -88,6 +91,44 @@ ALKEMIJANA WEBSITE/
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
 - **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
 - **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, natalna karta, kontakt)
+
+---
+
+## Početna kao slide deck + klizna navigacija (verzija 2)
+
+**Početna se NE scrolla.** `#home` je deck slideova preko cijelog ekrana; kotačić miša,
+tipkovnica i swipe prebacuju slideove uz prijelaz „kozmički zoom". Ostale stranice scrollaju
+normalno — zaključava se samo dok je početna aktivna.
+
+- **Datoteke:** `css/home-slides.css` + `js/home-slides.js` (prefiks **`hs-`**),
+  `css/nav-drawer.css` (prefiks **`nd-`**, logika `toggleMenu`/`closeMenu` u app.js).
+- **Slideovi (redom):** hero → natalna karta → karta dana → *usluge* → *CTA* → blog → *recenzije*.
+  Kurzivom označeni ovise o togglovima u adminu: nose `data-hs-requires="<id>"` i deck ih
+  **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
+  fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
+- **Blog slide je VODORAVAN** (`data-hs-rail`): daljnje scrollanje/swipe pomiče kartice
+  lijevo-desno (3 zadnja članka + kartica s gumbom „Pročitaj više članaka", tekst
+  `blogPreviewMore` u TEXTS), a tek kad traka dođe do kraja nastavlja se okomiti prijelaz.
+  Ulazak odozgo postavi traku na prvu karticu, odozdo na zadnju.
+- **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
+  gledatelja (`translateZ(+340px) scale(1.22)` + blur), nadolazeći (`.hs-future`) čeka u dubini
+  (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
+- **Navigacija:** traka gore ima SAMO logo (lijevo) i tri crtice (desno). Linkovi i prekidač teme
+  su u kliznoj ladici s desna (`#nd-drawer`, ~320px) s overlayem. `#navLinks` i `.nav-links a`
+  **zadržavaju stara imena** jer ih `showPage()` i `openPost()` traže po njima.
+
+**Zamke na koje se već naletjelo (ne ponavljati):**
+- Traku **NE centrirati** preko `width:100vw` + negativne margine — `vw` uključuje prostor
+  scrollbara pa traka ispadne pomaknuta u odnosu na sredinu ekrana. Rail slide zato nema
+  vodoravni padding (nosi ga naslov), a pomak je čista aritmetika nad `viewport.clientWidth`.
+- Za položaj kartica **ne koristiti `getBoundingClientRect` ni `offsetLeft`**: slide je u 3D
+  prostoru pa su izmjereni pravokutnici skalirani dok traje prijelaz, a `offsetLeft` se mjeri od
+  transformirane trake (transformirani element postaje offsetParent).
+- Neaktivni slideovi dobivaju **`inert`** (uz `aria-hidden`) da tipkovnica ne uđe u skriveni
+  sadržaj; sadržaj ostaje u DOM-u pa ga tražilice i dalje vide.
+- `wheel` i `touchmove` moraju biti **non-passive** (`{passive:false}`) da `preventDefault` radi.
+  Događaji iz admin panela, ladice i privole se preskaču (`fromOverlay` u home-slides.js) —
+  te površine imaju vlastiti scroll.
 
 ---
 

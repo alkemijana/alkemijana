@@ -1,0 +1,407 @@
+/* ============================================================
+   Alkemijana - Slide deck početne stranice (prefiks hs-)
+   ------------------------------------------------------------
+   Početna se NE scrolla. Svaki .hs-slide je jedan puni ekran;
+   kotačić miša / tipkovnica / swipe prebacuju slideove uz prijelaz
+   "kozmički zoom" - odlazeći slide odlazi u dubinu i blijedi, novi
+   dolazi iz daljine, a zvjezdano nebo se pomiče brže (parallax).
+
+   Blog slide je VODORAVAN (.hs-slide-rail): daljnje scrollanje
+   pomiče članke lijevo-desno, pa tek na kraju ide sljedeći slide.
+
+   Logika: js/home-slides.js. Ostale stranice scrollaju normalno -
+   zaključava se samo dok je #home aktivan (html.hs-lock).
+   ============================================================ */
+
+/* ---- 1. Zaključavanje scrolla dok je početna aktivna ---- */
+
+html.hs-lock,
+html.hs-lock body {
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+/* Početna nema padding-top kao ostale stranice - nav pluta preko deka */
+#home.page {
+  padding-top: 0;
+  min-height: 0;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fallback za preglednike bez dvh */
+@supports not (height: 100dvh) {
+  #home.page { height: 100vh; }
+}
+
+/* ---- 2. Deck i slideovi ---- */
+
+.hs-deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+}
+
+.hs-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6.5rem 1.5rem 4.5rem;   /* mjesto za nav gore i točkice dolje */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateZ(-620px) scale(0.86);
+  transform-style: preserve-3d;
+  transition:
+    opacity 0.72s cubic-bezier(0.22, 0.8, 0.3, 1),
+    transform 0.82s cubic-bezier(0.22, 0.8, 0.3, 1),
+    filter 0.72s ease,
+    visibility 0.82s;
+  will-change: transform, opacity;
+}
+
+/* Slide koji je trenutno na ekranu */
+.hs-slide.hs-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  filter: none;
+}
+
+/* Slide koji je OTIŠAO (scroll prema dolje) - proleti pokraj gledatelja */
+.hs-slide.hs-past {
+  opacity: 0;
+  transform: translateZ(340px) scale(1.22);
+  filter: blur(9px);
+}
+
+/* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - čeka u dubini */
+.hs-slide.hs-future {
+  opacity: 0;
+  transform: translateZ(-620px) scale(0.86);
+  filter: blur(5px);
+}
+
+.hs-inner {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sadržaj slidea ulazi s malim zakašnjenjem za oštriji dojam dubine */
+.hs-slide .hs-inner > * {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.6s ease 0.16s, transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1) 0.16s;
+}
+
+.hs-slide.hs-active .hs-inner > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---- 3. Prilagodbe postojećih sekcija na visinu ekrana ---- */
+
+#home .hero { padding: 0 1rem; }
+
+#home .hero h1 {
+  font-size: clamp(4.5rem, 16vw, 9rem);
+  margin-bottom: 0.8rem;
+}
+
+#home .hero-sub { margin-bottom: 1.6rem; }
+#home .hero-desc { margin-bottom: 1.8rem; }
+
+#home .section-title { margin-bottom: 0.6rem; }
+#home .section-subtitle { margin-bottom: 1.8rem; }
+
+/* živi kotač natalne karte mora stati u visinu ekrana */
+#home .home-live-natal-svg,
+#home .home-live-natal-wrap {
+  max-height: 58dvh;
+}
+
+#home .cta-section { margin: 0; }
+
+/* ---- 4. Vodoravni blog slide ---- */
+
+.hs-slide-rail .hs-inner {
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.hs-rail-head { text-align: center; }
+
+/* Traka se proteže preko pune širine slidea, zato rail slide nema
+   vodoravni padding (nosi ga naslov). NE koristiti `100vw` + negativnu
+   marginu: `vw` uključuje prostor scrollbara pa je traka ispadala
+   pomaknuta u odnosu na sredinu ekrana. Ovako je centriranje čista
+   aritmetika nad širinom trake i neovisno je o 3D transformu slidea. */
+.hs-slide-rail {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.hs-rail-head { padding: 0 1.5rem; }
+
+.hs-rail-viewport {
+  width: 100%;
+  overflow: hidden;
+  /* overflow:hidden reže box-shadow kartica pa treba zračni prostor */
+  padding: 1.2rem 0;
+}
+
+.hs-rail-track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--hs-rail-gap, 2rem);
+  /* --hs-rail-x postavlja js/home-slides.js */
+  transform: translateX(var(--hs-rail-x, 0px));
+  transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1);
+  will-change: transform;
+}
+
+/* .blog-grid je grid u style.css - u traci mora biti flex */
+.hs-rail-track.blog-grid {
+  display: flex;
+  grid-template-columns: none;
+  margin: 0;
+}
+
+.hs-rail-track > * {
+  flex: 0 0 var(--hs-rail-card, 340px);
+  width: var(--hs-rail-card, 340px);
+  opacity: 0.45;
+  transform: scale(0.94);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.hs-rail-track > .hs-rail-current {
+  opacity: 1;
+  transform: none;
+}
+
+/* Samo kartica u fokusu je klikabilna - inače bi hover na prigušenoj
+   kartici poništio scale iz .hs-rail-track > * (hover ima vlastiti
+   transform u style.css). */
+.hs-rail-track > *:not(.hs-rail-current) { pointer-events: none; }
+
+/* Kartica članka mora stati u visinu ekrana: slika dobiva fiksnu
+   visinu umjesto aspect-ratija, a sažetak se reže na tri retka. */
+.hs-rail-track .blog-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.hs-rail-track .blog-image {
+  aspect-ratio: auto;
+  height: clamp(104px, 17dvh, 190px);
+  flex: 0 0 auto;
+}
+
+.hs-rail-track .blog-content p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Zadnja kartica u traci: poziv na cijeli blog */
+.hs-rail-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.hs-rail-more-star {
+  font-size: 1.6rem;
+  color: var(--lavender);
+  line-height: 1;
+}
+
+.hs-rail-more-text {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 22ch;
+}
+
+/* Točkice vodoravne trake */
+.hs-rail-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.hs-rail-dots i {
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.35s, width 0.35s;
+}
+
+.hs-rail-dots i.hs-on {
+  background: var(--lavender);
+  width: 34px;
+}
+
+/* ---- 5. Okomiti indikator slideova (desno) ---- */
+
+.hs-dots {
+  position: absolute;
+  right: 1.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.hs-dots button {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.35s, border-color 0.35s, transform 0.35s;
+}
+
+.hs-dots button:hover { border-color: var(--lavender); transform: scale(1.25); }
+
+.hs-dots button.hs-on {
+  background: var(--lavender);
+  border-color: var(--lavender);
+  box-shadow: 0 0 12px rgba(168, 144, 208, 0.6);
+}
+
+/* ---- 6. Nagovještaj scrolla ---- */
+
+.hs-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.hs-hint.hs-gone { opacity: 0; }
+
+.hs-hint-mouse {
+  position: relative;
+  width: 20px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+}
+
+.hs-hint-mouse i {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 2px;
+  height: 6px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--lavender);
+  animation: hsWheel 1.9s ease-in-out infinite;
+}
+
+.hs-hint-label {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@keyframes hsWheel {
+  0%, 100% { transform: translateY(0);   opacity: 1; }
+  55%      { transform: translateY(11px); opacity: 0.15; }
+}
+
+/* ---- 7. Parallax zvjezdanog neba ----
+   --hs-sky postavlja js/home-slides.js (0 = prvi slide). */
+
+#sky-bg {
+  transition: transform 1s cubic-bezier(0.22, 0.8, 0.3, 1);
+  transform: translateY(calc(var(--hs-sky, 0) * -1.6%)) scale(calc(1 + var(--hs-sky, 0) * 0.035));
+}
+
+/* ---- 8. Mobitel ---- */
+
+@media (max-width: 768px) {
+  .hs-slide { padding: 5.5rem 1rem 4rem; }
+
+  .hs-dots {
+    right: 0.7rem;
+    gap: 0.7rem;
+  }
+
+  .hs-dots button { width: 8px; height: 8px; }
+
+  #home .hero h1 { font-size: clamp(3.6rem, 19vw, 7rem); }
+  #home .home-live-natal-svg,
+  #home .home-live-natal-wrap { max-height: 46dvh; }
+
+  .hs-hint { bottom: 1rem; }
+}
+
+/* Nizak ekran (npr. mobitel u vodoravnom položaju) - deck bi se prelio */
+@media (max-height: 560px) {
+  .hs-slide { padding: 4.5rem 1rem 2.6rem; }
+  .hs-hint { display: none; }
+  #home .hero h1 { font-size: clamp(2.8rem, 11vh, 5rem); }
+}
+
+/* ---- 9. Pristupačnost ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-slide,
+  .hs-slide .hs-inner > *,
+  .hs-rail-track,
+  .hs-rail-track > *,
+  #sky-bg {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .hs-slide.hs-past,
+  .hs-slide.hs-future {
+    transform: none;
+    filter: none;
+  }
+
+  .hs-hint-mouse i { animation: none; }
+}

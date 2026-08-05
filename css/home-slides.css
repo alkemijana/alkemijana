@@ -42,8 +42,6 @@ html.hs-lock body {
   position: relative;
   width: 100%;
   height: 100%;
-  perspective: 1400px;
-  perspective-origin: 50% 45%;
 }
 
 .hs-slide {
@@ -58,8 +56,7 @@ html.hs-lock body {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateZ(-620px) scale(0.86);
-  transform-style: preserve-3d;
+  transform: scale(0.92);
   transition:
     opacity 0.72s cubic-bezier(0.22, 0.8, 0.3, 1),
     transform 0.82s cubic-bezier(0.22, 0.8, 0.3, 1),
@@ -70,6 +67,12 @@ html.hs-lock body {
 }
 
 .hs-deck.hs-moving .hs-slide { will-change: transform, opacity; }
+
+/* Dok prijelaz traje, gasi se drop-shadow na živom natalnom kotaču.
+   To je filter nad SVG-om sa stotinama elemenata - da ostane uključen,
+   preglednik bi ga rasterizirao iznova u SVAKOM kadru animacije.
+   Ovako se prekapča dvaput (početak i kraj), ne 50 puta. */
+.hs-deck.hs-moving .home-live-natal-svg svg { filter: none; }
 
 /* Slide koji je trenutno na ekranu */
 .hs-slide.hs-active {
@@ -83,20 +86,42 @@ html.hs-lock body {
 /* Slide koji je OTIŠAO (scroll prema dolje) - proleti pokraj gledatelja */
 .hs-slide.hs-past {
   opacity: 0;
-  transform: translateZ(340px) scale(1.22);
+  transform: scale(1.14);
 }
 
-/* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - čeka u dubini */
+/* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - dolazi iz daljine */
 .hs-slide.hs-future {
   opacity: 0;
-  transform: translateZ(-620px) scale(0.86);
+  transform: scale(0.92);
 }
 
-/* NAPOMENA: prijelaz namjerno NEMA `filter: blur()`. Živi natalni kotač
-   je velik SVG sa stotinama elemenata i vlastitim drop-shadowom; blur
-   preko njega tjera preglednik da ga rasterizira iznova u svakom kadru,
-   što je vidljivo štekalo na prijelazu hero -> natalna karta. Dubinu
-   nose scale + translateZ + opacity, bez ikakvog filtera. */
+/* NAPOMENA o performansama - ne vraćati unatrag:
+   - prijelaz NEMA `filter: blur()` (rasterizacija u svakom kadru),
+   - prijelaz NEMA `perspective` + `translateZ`: 3D kontekst tjera
+     preglednik da cijelo podstablo slidea drži kao 3D sloj, što je na
+     slabijim strojevima štekalo. Obični 2D `scale` + `opacity` daju
+     gotovo isti dojam dubine, a kompozitor ih odradi bez repainta. */
+
+/* ---- Zagrijavanje dok traje ekran učitavanja ----
+   Svaki slide se jednom iscrta i slike se dekodiraju PRIJE nego se
+   stranica otkrije, pa prvi posjet nekom slideu ne mora rasterizirati
+   sadržaj usred animacije (to je bio glavni izvor štekanja).
+   Sadržaj je i dalje nevidljiv: `opacity` je praktički nula, a ekran
+   učitavanja je iznad svega. `visibility:visible` je nužan jer je
+   cijeli `.content` pod `html.aj-loading` skriven - bez toga preglednik
+   ne bi ništa ni iscrtao. */
+.hs-deck.hs-warm .hs-slide {
+  visibility: visible;
+  opacity: 0.004;
+  transform: none;
+  transition: none;
+}
+
+.hs-deck.hs-warm .hs-slide .hs-inner > * {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
 
 .hs-inner {
   width: 100%;
@@ -350,59 +375,41 @@ html.hs-lock body {
 .hs-hint {
   position: absolute;
   left: 50%;
-  bottom: 1.6rem;
-  transform: translateX(-50%);
+  bottom: 1.7rem;
+  margin-left: -13px;
   z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  opacity: 1;
+  width: 26px;
+  color: var(--lavender);
+  opacity: 0.5;
   transition: opacity 0.5s ease;
   pointer-events: none;
 }
 
+.hs-hint svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: hsHintBreathe 2.6s ease-in-out infinite;
+}
+
 .hs-hint.hs-gone { opacity: 0; }
 
-.hs-hint-mouse {
-  position: relative;
-  width: 20px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-}
-
-.hs-hint-mouse i {
-  position: absolute;
-  left: 50%;
-  top: 6px;
-  width: 2px;
-  height: 6px;
-  margin-left: -1px;
-  border-radius: 2px;
-  background: var(--lavender);
-  animation: hsWheel 1.9s ease-in-out infinite;
-}
-
-.hs-hint-label {
-  font-family: 'Quicksand', sans-serif;
-  font-size: 0.62rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-@keyframes hsWheel {
-  0%, 100% { transform: translateY(0);   opacity: 1; }
-  55%      { transform: translateY(11px); opacity: 0.15; }
+@keyframes hsHintBreathe {
+  0%, 100% { transform: translateY(-3px); opacity: 0.35; }
+  50%      { transform: translateY(3px);  opacity: 1; }
 }
 
 /* ---- 7. Parallax zvjezdanog neba ----
    --hs-sky postavlja js/home-slides.js (0 = prvi slide). */
 
+/* SAMO pomak, BEZ skaliranja. Nebo je SVG 1920x1080 sa stotinama
+   krugova i filterima zamućenja - `scale()` bi ga natjerao na ponovnu
+   rasterizaciju u svakom kadru, a čisti `translate` kompozitor odradi
+   na GPU-u bez ijednog repainta. */
 #sky-bg {
   transition: transform 1s cubic-bezier(0.22, 0.8, 0.3, 1);
-  transform: translateY(calc(var(--hs-sky, 0) * -1.6%)) scale(calc(1 + var(--hs-sky, 0) * 0.035));
+  transform: translate3d(0, calc(var(--hs-sky, 0) * -1.5%), 0);
+  will-change: transform;
 }
 
 /* ---- 8. Mobitel ---- */
@@ -450,5 +457,5 @@ html.hs-lock body {
     transform: none;
   }
 
-  .hs-hint-mouse i { animation: none; }
+  .hs-hint svg { animation: none; }
 }

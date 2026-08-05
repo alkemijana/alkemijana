@@ -60,20 +60,24 @@
   z-index: 0;
 }
 
+/* Meki ovoj koji se PRELIJEVA u pozadinu - bez obruba i bez oštrog ruba.
+   Radijalni preljev iz boje pozadine prema prozirnom, uz `blur()` da rub
+   bude potpuno mekan. Namjerno NIJE `border` + `border-radius` (to daje
+   tvrdu pilulu) i NIJE `backdrop-filter` (taj uvijek ima oštar rez). */
 .logo::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -0.9rem -2.2rem;
   z-index: -1;
-  border-radius: 999px;
-  background: var(--nav-bg);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
-  opacity: var(--nav-scroll, 0);
-  transform: scale(calc(0.94 + 0.06 * var(--nav-scroll, 0)));
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    var(--bg-deep) 0%,
+    var(--bg-deep) 38%,
+    rgba(0, 0, 0, 0) 76%);
+  filter: blur(7px);
+  opacity: calc(var(--nav-scroll, 0) * 0.92);
+  transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
@@ -193,6 +197,21 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
 
 @media (max-width: 768px) {
   html.nd-locked #main-nav { padding-right: calc(1.5rem + var(--nd-sbw, 0px)); }
+}
+
+/* ---- Desktop: sadržaj izbornika ide DESNO ----
+   Gumb ☰ je gore desno, pa linkovi moraju biti ispod njega - inače miš
+   putuje preko cijelog ekrana od gumba do stavke. */
+
+@media (min-width: 769px) {
+  .nd-panel { padding-right: 3rem; }
+
+  .nd-panel .nav-links {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .nd-foot { text-align: right; }
 }
 
 /* ---- Mobitel ---- */

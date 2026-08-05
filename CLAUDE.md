@@ -123,9 +123,14 @@ normalno — zaključava se samo dok je početna aktivna.
   dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i
   `openPost()` traže po njima.
 - **Logo** zove `goHome()` — vodi na početnu I resetira deck na prvi slide.
-- Na stranicama koje se scrollaju logo dobiva **okvir koji se postupno pojavljuje**:
+- Na desktopu (`min-width:769px`) su stavke izbornika poravnate **desno**, uz sam gumb ☰ —
+  inače miš putuje preko cijelog ekrana od gumba do stavke. Na mobitelu ostaju lijevo.
+- Na stranicama koje se scrollaju logo dobiva **meki ovoj koji se postupno pojavljuje**:
   `--nav-scroll` (0→1 preko prvih 110 px) postavlja `navScrollFrame()` u app.js, a
-  `.logo::before` po njemu mijenja `opacity`/`scale`. Početna se ne scrolla pa ostaje 0.
+  `.logo::before` po njemu mijenja `opacity`. Ovoj je radijalni preljev iz `--bg-deep` u
+  prozirno + `blur(7px)` — namjerno **nije** `border`+`border-radius` (tvrda pilula) niti
+  `backdrop-filter` (uvijek ima oštar rez). Početna se ne scrolla pa ostaje 0.
+- Nagovještaj scrolla (`.hs-hint`) je samo tanka SVG strelica koja diše, **bez teksta**.
 - **Indikator slideova je LIJEVO** (`.hs-dots`).
 - **Brzine:** panel 0.3 s, prijelaz slidea 0.72–0.82 s, ali `LOCK_MS` je samo **270 ms** —
   novi korak smije prekinuti prijelaz u tijeku (CSS tranzicija nastavi od trenutne vrijednosti),
@@ -144,10 +149,24 @@ normalno — zaključava se samo dok je početna aktivna.
   `HomeSlides.deactivate()`. Bez toga ostane `html.hs-lock` (`overflow:hidden`) i članak
   otvoren s početne se uopće ne može scrollati. Isto vrijedi za svaku novu funkciju koja
   zaobiđe `showPage()`.
-- **Prijelaz slidea NE smije imati `filter: blur()`.** Živi natalni kotač je velik SVG sa
-  stotinama elemenata i vlastitim drop-shadowom; blur preko njega tjera preglednik da ga
-  rasterizira iznova u svakom kadru → vidljivo štekanje na prijelazu hero → natalna karta.
-  Dubinu nose `scale` + `translateZ` + `opacity`.
+**Performanse deka — ovih pet stvari drži prijelaz glatkim, ne vraćati unatrag:**
+1. **Bez `filter: blur()` na prijelazu.** Živi natalni kotač je velik SVG sa stotinama
+   elemenata; blur preko njega znači ponovnu rasterizaciju u SVAKOM kadru.
+2. **Bez `perspective` + `translateZ`.** 3D kontekst drži cijelo podstablo slidea kao 3D sloj.
+   Obični 2D `scale` + `opacity` daju gotovo isti dojam dubine, a kompozitor ih odradi bez
+   repainta.
+3. **Nebo (`#sky-bg`) se SAMO pomiče, ne skalira.** `scale()` na SVG-u 1920×1080 s filterima
+   zamućenja = repaint po kadru; `translate3d` ide čisto po GPU-u.
+4. **`drop-shadow` na živom kotaču se gasi dok prijelaz traje**
+   (`.hs-deck.hs-moving .home-live-natal-svg svg { filter: none }`) — prekapča se dvaput
+   umjesto da se računa u svakom kadru.
+5. **Zagrijavanje u ekranu učitavanja.** `HomeSlides.warmup()` (zove ga `js/loader.js` prije
+   otkrivanja) nakratko stavi `hs-warm` na deck: svi slideovi postanu `visibility:visible` uz
+   `opacity:0.004`, pa se jednom iscrtaju i sve slike se dekodiraju (`img.decode()`) dok je
+   ekran učitavanja još gore. Bez toga se sadržaj slidea prvi put rasterizira tek usred
+   animacije. `visibility:visible` je nužan jer je `.content` pod `html.aj-loading` skriven.
+   Ima strop od 2,2 s da spora slika ne zaglavi ekran učitavanja.
+
 - **`will-change` NE stavljati trajno** na `.hs-slide` — držalo bi svih 7 slideova stalno na
   zasebnim GPU slojevima. Postavlja se samo dok prijelaz traje (klasa `hs-moving` na decku).
 - `wheel` i `touchmove` moraju biti **non-passive** (`{passive:false}`) da `preventDefault` radi.

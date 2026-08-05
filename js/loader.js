@@ -33,6 +33,7 @@
   var appReady   = false;
   var fontsReady = false;
   var revealed   = false;
+  var warming    = false;   // zagrijavanje se pokreće samo jednom
 
   function loader() { return document.getElementById('aj-loader'); }
 
@@ -75,8 +76,21 @@
   /* ---- 3. Otkrivanje stranice ---- */
 
   function maybeReveal() {
-    if (!appReady || !fontsReady) return;
-    setTimeout(reveal, Math.max(0, MIN_MS - (Date.now() - started)));
+    if (!appReady || !fontsReady || warming) return;
+    warming = true;
+
+    /* Prije otkrivanja pusti deck početne da se "zagrije": svaki slide
+       se jednom iscrta i sve slike se dekodiraju dok je ekran učitavanja
+       još gore. Tako prvi prelazak na neki slide ne mora rasterizirati
+       sadržaj usred animacije. Ako HomeSlides nije tu (druga stranica),
+       ide se odmah dalje. */
+    var warm = (window.HomeSlides && window.HomeSlides.warmup)
+      ? window.HomeSlides.warmup()
+      : Promise.resolve();
+
+    warm.catch(function () {}).then(function () {
+      setTimeout(reveal, Math.max(0, MIN_MS - (Date.now() - started)));
+    });
   }
 
   function reveal() {

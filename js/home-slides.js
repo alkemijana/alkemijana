@@ -375,6 +375,47 @@
     slides.forEach(function (s) { if (isRail(s)) layoutRail(s); });
   }
 
+  /* ---- Zagrijavanje (zove ga js/loader.js prije otkrivanja stranice) ----
+     Natjera preglednik da JEDNOM iscrta svaki slide i dekodira sve slike
+     dok je ekran učitavanja još gore. Bez toga se sadržaj slidea prvi put
+     rasterizira tek usred animacije prijelaza - to je bilo vidljivo kao
+     štekanje pri prvom prelasku na natalnu kartu i na blog.
+     Vraća Promise; nikad se ne odbija i sam sebe prekida nakon WARM_MAX. */
+  function warmup() {
+    var WARM_MAX = 2200;
+    if (!deck) return Promise.resolve();
+
+    collect();
+    slides.forEach(function (s) { if (isRail(s)) layoutRail(s); });
+    deck.classList.add('hs-warm');
+
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        deck.classList.remove('hs-warm');
+        // vrati slideove u ispravno stanje nakon zagrijavanja
+        paint();
+        resolve();
+      }
+
+      setTimeout(finish, WARM_MAX);
+
+      // dva kadra: prvi primijeni klasu, drugi stvarno iscrta
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          var imgs = Array.prototype.slice.call(deck.querySelectorAll('img'));
+          var jobs = imgs.map(function (im) {
+            if (!im.decode) return Promise.resolve();
+            return im.decode().catch(function () {});   // slomljena slika ne smije blokirati
+          });
+          Promise.all(jobs).then(finish, finish);
+        });
+      });
+    });
+  }
+
   /* ---- Init ---- */
 
   function init() {
@@ -406,6 +447,7 @@
     activate:   activate,
     deactivate: deactivate,
     refresh:    refresh,
-    goTo:       goTo
+    goTo:       goTo,
+    warmup:     warmup
   };
 })();

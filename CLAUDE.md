@@ -88,6 +88,12 @@ ALKEMIJANA WEBSITE/
   ima PRAVI kurziv, lakši/tanji od Lexenda; samo težine 400/700 pa se 500/600 zaokruže)
 - **UI elementi/labels:** Quicksand (također u natalnom SVG kotaču i PDF-ovima — zbog ugrađivanja TTF-a u PDF ostaje Quicksand)
   OG social-share slike (`og/home.svg`, `functions/og/[slug].js`) i dalje koriste Cormorant/Georgia — nisu tekst na stranici.
+- **Kutovi (verzija 2):** sve je **pravokutno, `border-radius: 0`** — nema pilula (`999px`)
+  ni zaobljenih kartica. Iznimke su namjerne: **krugovi** (`50%`: točkice u legendi, prekidači,
+  badgevi, avatari, živi kotač) i **kutovi karata**. Kut karte se piše u obliku
+  `X% / (X% × 0.583)` (npr. `9% / 5.25%`) — jedan postotak daje **eliptičan** kut jer je karta
+  viša nego šira; drugi broj je isti polumjer izražen u % visine pa je kut prava četvrtina
+  kruga, kao na tiskanoj karti. Admin panel (`.abt`, `.ep-btn`…) je namjerno ostao na 2–3 px.
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
 - **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
 - **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, natalna karta, kontakt)
@@ -105,7 +111,8 @@ normalno — zaključava se samo dok je početna aktivna.
 
 - **Datoteke:** `css/home-slides.css` + `js/home-slides.js` (prefiks **`hs-`**),
   `css/nav-drawer.css` (prefiks **`nd-`**, logika `toggleMenu`/`closeMenu` u app.js).
-- **Slideovi (redom):** hero → natalna karta → karta dana → *usluge* → *CTA* → blog → *recenzije*.
+- **Slideovi (redom):** hero → natalna karta → karta dana → *usluge* → *CTA* → blog →
+  *recenzije* → **izbornik (lepeza karata)**.
   Kurzivom označeni ovise o togglovima u adminu: nose `data-hs-requires="<id>"` i deck ih
   **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
   fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
@@ -116,8 +123,26 @@ normalno — zaključava se samo dok je početna aktivna.
 - **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
   gledatelja (`translateZ(+340px) scale(1.22)`), nadolazeći (`.hs-future`) čeka u dubini
   (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
-- **Navigacija:** gore NEMA trake — samo logo (lijevo) i minimalan `☰` (desno) na prozirnoj
-  podlozi. Klik na `☰` spusti **panel odozgo preko cijele širine** (`.nd-panel`, `var(--nav-bg)`
+- **Zadnji slide = izbornik kao LEPEZA KARATA** (`#home-menu-fan`, prefiks `hs-menu-`):
+  svaka stranica iz izbornika (bez Početne) je karta u omjeru tarot karte (0.583), razastrta
+  u lepezu. Bez naslova i bez opisa — samo ikona + naziv. Položaj računa
+  **`layoutHomeMenuFan()` u app.js** (postavlja `--hs-x` u % širine, `--hs-y` u % visine,
+  `--hs-rot`), jer broj karata nije fiksan (kartica „Usluge" nestaje s togglom, zato je
+  poziv i u `applySettings()`) a raspon ovisi o širini ekrana. Računica oduzima i „bleed"
+  (`visina × sin(najveći kut)`) — zakrenuta karta je šira od svog okvira pa bi lepeza inače
+  na mobitelu izašla iz ekrana. Hover mijenja samo `--hs-lift`/`--hs-scale` (ne cijeli
+  `transform`) da se položaj u lepezi ne izgubi. Karte su **neprozirne** (pune boje, ne
+  `--card-bg`) — inače se kroz njih vide zvijezde i karta ispod.
+  Širina lepeze ide na `vw`, ne na `%`: `.hs-inner` je flex pa bi se `.container` raširio po
+  sadržaju i gurnuo lepezu iz sredine ekrana.
+- **Navigacija:** na POČETNOJ gore NEMA trake — samo logo (lijevo) i minimalan `☰` (desno) na
+  prozirnoj podlozi. Na **svim ostalim stranicama** traka dobiva podlogu, blur i obrub kao u
+  verziji 1 (`html.nd-chrome`), a na širokom ekranu (`NAV_BAR_MIN = 1100px`) i klasičnu
+  alatnu traku s ispisanim linkovima (`html.nd-bar-on`, `☰` skriven). Klase i selidbu radi
+  **`syncNavBar()` u app.js**: `#navLinks` i prekidač teme se **SELE** između ladice
+  (`#nd-drawer`/`#nd-foot`) i trake (`#nd-bar`) — namjerno se ne dupliciraju, da ostane jedan
+  popis linkova koji `showPage()`/`openPost()` ažuriraju i da čitači ekrana ne vide dvostruko.
+  Zove se iz `showPage()`, `openPost()`, `initSite()` i na `resize`. Klik na `☰` spusti **panel odozgo preko cijele širine** (`.nd-panel`, `var(--nav-bg)`
   + `blur(14px)`) — isti obrazac kao mobilni izbornik u verziji 1, samo na svim veličinama
   ekrana. `#main-nav` ima `z-index:210`, panel `200`, pa logo i `☰` ostaju vidljivi i klikabilni
   dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i

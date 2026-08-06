@@ -159,11 +159,6 @@ html.hs-lock body {
   margin-bottom: clamp(0.3rem, 1.4vh, 1.4rem);
 }
 
-#home .hero-sub {
-  font-size: clamp(0.95rem, min(4.2vw, 2.5vh), 2.2rem);
-  margin-bottom: clamp(0.8rem, 2.4vh, 2.6rem);
-}
-
 #home .hero-desc {
   font-size: clamp(1.1rem, min(5.6vw, 3.4vh), 3rem);
   max-width: min(62ch, 86vw);
@@ -236,6 +231,107 @@ html.hs-lock body {
 
 #home .cta-section { margin: 0; }
 #home .cta-section h2 { font-size: clamp(1.5rem, min(5.6vw, 4.4vh), 3.6rem); }
+
+/* ---- Zadnji slide: izbornik kao LEPEZA KARATA ----
+   Bez naslova i bez opisa - svaka stranica je jedna karta (omjer kao
+   tarot karta, 0.583), a karte su razastrte u lepezu kao u ruci.
+
+   Položaj svake karte računa `layoutHomeMenuFan()` u js/app.js: postavlja
+   `--hs-x` (pomak, u % ŠIRINE karte), `--hs-y` (spuštanje krajnjih karata,
+   u % VISINE) i `--hs-rot`. Mora se računati u JS-u jer broj karata nije
+   fiksan - kartica "Usluge" nestaje kad su usluge isključene u adminu, a
+   raspon lepeze ovisi o raspoloživoj širini.
+
+   Hover ne mijenja `transform` izravno nego samo `--hs-lift`/`--hs-scale`
+   koje transform već koristi - tako se položaj u lepezi ne izgubi, a
+   prijelaz i dalje animira `transform`. */
+
+.hs-menu-fan {
+  --hs-fan-w: clamp(88px, min(24vw, 21vh), 200px);
+  position: relative;
+  /* `.hs-inner` je flex pa se `.container` širi po sadržaju - lepeza šira
+     od unutarnjeg prostora ne bi bila odrezana nego bi gurnula cijeli
+     stupac udesno (lepeza više ne bi bila po sredini ekrana). Zato je
+     širina vezana uz vw, s rezervom za padding slidea i kontejnera. */
+  width: min(1000px, 74vw);
+  height: calc(var(--hs-fan-w) / 0.583 * 1.3);
+  margin: 0 auto;
+}
+
+.hs-menu-card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--hs-fan-w);
+  aspect-ratio: 0.583;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7%;
+  padding: 9% 7%;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text);
+  cursor: pointer;
+  /* NEPROZIRNO: karta mora izgledati kao tiskana karta, a ne kao staklo -
+     zato pune boje, ne `--card-bg`/`--panel-grad-*` (koji su prozirni pa
+     bi se kroz kartu vidjele zvijezde i karta ispod nje u lepezi). */
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(168, 144, 208, 0.16), transparent 62%),
+    linear-gradient(165deg, #1d1846, #0e0b24);
+  border: 1px solid var(--border);
+  /* pravi kut karte: drugi broj je isti polumjer izražen u % visine
+     (v. isto objašnjenje u tarot/tarot.css) */
+  border-radius: 6% / 3.5%;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  transform-origin: 50% 100%;
+  transform:
+    translate(calc(-50% + var(--hs-x, 0%)), calc(var(--hs-y, 0%) + var(--hs-lift, 0px)))
+    rotate(var(--hs-rot, 0deg))
+    scale(var(--hs-scale, 1));
+  transition: transform 0.35s cubic-bezier(0.22, 0.8, 0.3, 1),
+              border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+:root[data-theme="light"] .hs-menu-card {
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(106, 78, 160, 0.10), transparent 62%),
+    linear-gradient(165deg, #fdfbff, #ebe1f6);
+}
+
+/* tanki unutarnji okvir - kao tiskani rub karte */
+.hs-menu-card::after {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border: 1px solid rgba(168, 144, 208, 0.28);
+  border-radius: 4% / 2.3%;
+  pointer-events: none;
+}
+
+.hs-menu-card:hover,
+.hs-menu-card:focus-visible {
+  --hs-lift: -22px;
+  --hs-scale: 1.06;
+  z-index: 20;
+  border-color: var(--lavender);
+  box-shadow: var(--shadow-glow), 0 18px 38px rgba(0, 0, 0, 0.5);
+}
+
+.hs-menu-icon {
+  width: 52%;
+  aspect-ratio: 1;
+}
+
+.hs-menu-icon svg { width: 100%; height: 100%; display: block; }
+
+.hs-menu-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(0.66rem, min(1.5vw, 1.7vh), 1.05rem);
+  color: var(--lavender);
+  line-height: 1.2;
+}
 
 /* ---- 4. Vodoravni blog slide ---- */
 

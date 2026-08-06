@@ -93,6 +93,7 @@ function showPage(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   applyPageMeta(id);
+  syncNavBar();
 
   if (id === 'blog')   renderBlogList();
   if (id === 'usluge') renderPricingTable();
@@ -181,6 +182,91 @@ document.addEventListener('keydown', (e) => {
     if (t) t.focus();
   }
 });
+
+/* ---- ALATNA TRAKA NA STRANICAMA KOJE NISU POČETNA ----
+   Početna je slide deck i gore ostaje samo logo + ☰ na prozirnoj podlozi.
+   Sve ostale stranice dobivaju traku kao u verziji 1: podloga + obrub, a na
+   širokom ekranu i linkove ispisane u traci.
+
+   #navLinks i prekidač teme SE SELE (ne dupliciraju) između ladice i trake -
+   tako ostaje jedan jedini popis linkova koji showPage()/openPost() ažuriraju
+   i nema dvostrukog sadržaja za čitače ekrana. */
+
+const NAV_BAR_MIN = 1100;   // ispod ovoga linkovi ostaju u ladici (ne stanu u red)
+
+function syncNavBar() {
+  const nav    = document.getElementById('main-nav');
+  const bar    = document.getElementById('nd-bar');
+  const drawer = document.getElementById('nd-drawer');
+  const links  = document.getElementById('navLinks');
+  const foot   = document.getElementById('nd-foot');
+  const theme  = document.getElementById('nd-theme');
+  if (!nav || !bar || !drawer || !links || !foot || !theme) return;
+
+  const active   = document.querySelector('.page.active');
+  const isHome   = !active || active.id === 'home';
+  const inBar    = !isHome && window.innerWidth >= NAV_BAR_MIN;
+  const root     = document.documentElement;
+
+  root.classList.toggle('nd-chrome', !isHome);   // podloga + obrub trake
+  root.classList.toggle('nd-bar-on', inBar);     // linkovi u traci, ☰ skriven
+
+  if (inBar) {
+    if (links.parentElement !== bar) bar.appendChild(links);
+    if (theme.parentElement !== bar) bar.appendChild(theme);
+    if (isMenuOpen()) closeMenu();
+  } else {
+    if (links.parentElement !== drawer) drawer.insertBefore(links, foot);
+    if (theme.parentElement !== foot)   foot.appendChild(theme);
+  }
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(syncNavBar._t);
+  syncNavBar._t = setTimeout(() => { syncNavBar(); layoutHomeMenuFan(); }, 120);
+});
+
+/* ---- LEPEZA KARATA NA ZADNJEM SLIDEU POČETNE ----
+   Svaka stranica iz izbornika je jedna karta; ovdje im se računa mjesto u
+   lepezi. U CSS-u se to ne da: broj karata nije fiksan (kartica "Usluge"
+   nestaje kad su usluge isključene), a razmak mora ovisiti o raspoloživoj
+   širini da lepeza na mobitelu ne izađe iz ekrana.
+   Stilovi i značenje varijabli: css/home-slides.css (.hs-menu-fan). */
+
+function layoutHomeMenuFan() {
+  const fan = document.getElementById('home-menu-fan');
+  if (!fan) return;
+
+  const cards = [...fan.querySelectorAll('.hs-menu-card')]
+                  .filter(c => getComputedStyle(c).display !== 'none');
+  const n = cards.length;
+  if (!n) return;
+
+  const fanW  = fan.clientWidth;
+  const cardW = cards[0].offsetWidth  || 1;
+  const cardH = cards[0].offsetHeight || 1;
+  const stepR = 7;    // stupnjeva po karti
+  const arcY  = 2.2;  // koliko krajnje karte padnu (% visine karte)
+
+  /* Zakrenuta karta je šira nego što joj je okvir: krajnje karte "cure"
+     u stranu za otprilike visina × sin(najveći kut). Bez toga bi lepeza
+     na mobitelu izašla iz ekrana iako sami okviri stanu. */
+  const bleed = cardH * Math.sin((stepR * (n - 1) / 2) * Math.PI / 180);
+  const avail = Math.max(cardW, fanW - bleed);
+
+  /* Pomak izražen u % širine karte. Gornja granica 74 % (karte se lijepo
+     preklapaju), ali nikad toliko da lepeza prijeđe širinu slidea. */
+  const fitPct = n > 1 ? ((avail - cardW) / (cardW * (n - 1))) * 100 : 0;
+  const stepX  = Math.max(28, Math.min(74, fitPct));
+
+  cards.forEach((card, i) => {
+    const off = i - (n - 1) / 2;
+    card.style.setProperty('--hs-x',   (off * stepX) + '%');
+    card.style.setProperty('--hs-y',   (off * off * arcY) + '%');
+    card.style.setProperty('--hs-rot', (off * stepR) + 'deg');
+    card.style.zIndex = i + 1;
+  });
+}
 
 /* Okvir oko logotipa se postupno pojavljuje kako stranica klizi -
    --nav-scroll ide od 0 do 1 preko prvih 110 px. Na početnoj scrolla
@@ -610,6 +696,7 @@ function openPost(id) {
      aktivnu stranicu, pa mora sama i ugasiti deck početne. Bez toga
      ostane html.hs-lock (overflow:hidden) i članak se ne može scrollati. */
   if (window.HomeSlides) window.HomeSlides.deactivate();
+  syncNavBar();   // isto: bez showPage() traku moramo osvježiti sami
 
   document.getElementById('post-meta').textContent  = p.date || '';
   document.getElementById('post-title').textContent = p.title;
@@ -1109,6 +1196,7 @@ function applySettings() {
   const show = SITE_SETTINGS.showServices;
 
   const navUsluge    = document.getElementById('nav-usluge');
+  const menuUsluge   = document.getElementById('home-menu-usluge');   // kartica na zadnjem slideu
   const homeSvc      = document.getElementById('home-services-section');
   const homeCta      = document.getElementById('home-cta-section');
   const uslugePage   = document.getElementById('usluge');
@@ -1116,6 +1204,8 @@ function applySettings() {
   const svcFormRow   = document.getElementById('svc-form-row');
 
   if (navUsluge)    navUsluge.style.display    = show ? '' : 'none';
+  if (menuUsluge)   menuUsluge.style.display   = show ? '' : 'none';
+  layoutHomeMenuFan();   // broj karata u lepezi ovisi o ovom togglu
   if (homeSvc)      homeSvc.style.display      = show ? 'block' : 'none';
   if (homeCta)      homeCta.style.display      = show ? 'block' : 'none';
   if (uslugePage)   uslugePage.style.display   = show ? '' : 'none';
@@ -1151,8 +1241,7 @@ function applyTexts() {
      poput "Moje usluge", "Cjenik", "Zakazi susret", "Rezerviraj termin". */
   const svc = SITE_SETTINGS.showServices;
 
-  // Početna
-  set('t-heroSub',          t.heroSub);
+  // Početna (hero nema podnaslov - v2 pokazuje samo naslov + opis)
   set('t-heroDesc',         t.heroDesc);
   set('t-servicesTitle',    svc ? t.servicesTitle : '');
   set('t-servicesSub',      svc ? t.servicesSub   : '');
@@ -1449,6 +1538,8 @@ function initSite() {
     const pid = hash.replace('#', '');
     if (pid && PAGE_META[pid]) showPage(pid);
   }
+
+  syncNavBar();   // i kad se učitalo na početnoj (showPage se tad ne zove)
 
   if (sessionStorage.getItem('aj_admin') === '1') activateAdmin();
 

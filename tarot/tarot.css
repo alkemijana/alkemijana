@@ -23,14 +23,14 @@
   justify-content: space-between;
   padding: 0.6rem 0.7rem; margin-bottom: 0.6rem;
   background: linear-gradient(180deg, var(--panel-grad-1), var(--panel-grad-2));
-  border: 1px solid var(--border); border-radius: 14px;
+  border: 1px solid var(--border); border-radius: 0;
 }
 
 /* ---- Spread izbornik: gumb + panel koji se PROŠIRI u toku (ne padajući) ---- */
 .vtar-spread-toggle {
   display: flex; align-items: center; gap: 0.6rem; flex: 1 1 320px; min-width: 0;
   padding: 0.4rem 0.7rem; background: var(--card-bg); border: 1px solid var(--border);
-  border-radius: 12px; cursor: pointer; text-align: left;
+  border-radius: 0; cursor: pointer; text-align: left;
   transition: border-color .2s ease;
 }
 .vtar-spread-toggle:hover, .vtar-spread-toggle[aria-expanded="true"] { border-color: var(--lavender); }
@@ -47,14 +47,14 @@
 .vtar-spread-panel {
   display: none; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 0.5rem; margin-bottom: 0.8rem; padding: 0.9rem;
-  background: var(--card-bg); border: 1px solid var(--lavender); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--lavender); border-radius: 0;
 }
 .vtar-spread-panel.vtar-open { display: grid; }
 
 .vtar-spread-chip {
   display: flex; align-items: center; gap: 0.6rem; text-align: left;
   padding: 0.5rem 0.7rem; background: var(--form-bg); border: 1px solid var(--border);
-  border-radius: 12px; color: var(--text); cursor: pointer;
+  border-radius: 0; color: var(--text); cursor: pointer;
   transition: border-color .2s ease, background .2s ease, transform .15s ease;
 }
 .vtar-spread-chip:hover { border-color: var(--lavender); transform: translateY(-1px); }
@@ -81,7 +81,7 @@
 
 .vtar-btn {
   font-family: 'Quicksand', sans-serif; font-size: 0.82rem; font-weight: 600;
-  padding: 0.5rem 1.05rem; border-radius: 999px; border: 1px solid var(--lavender);
+  padding: 0.5rem 1.05rem; border-radius: 0; border: 1px solid var(--lavender);
   background: transparent; color: var(--lavender); cursor: pointer;
   transition: background .2s ease, color .2s ease; white-space: nowrap;
 }
@@ -92,7 +92,7 @@
 .vtar-deck-switches {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem 1.1rem;
   padding: 0.55rem 0.9rem; margin-bottom: 0.8rem;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
 }
 .vtar-deck-switches-label { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.03em; text-transform: uppercase; }
 .vtar-deck-switch-item { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
@@ -114,7 +114,7 @@
 
 /* ---- Špil blok ---- */
 .vtar-deck-block {
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 0.75rem 0.6rem; display: flex; flex-direction: column; align-items: center;
   gap: 0.55rem; transition: border-color .2s ease;
 }
@@ -124,8 +124,15 @@
 .vtar-deck-stack-wrap { position: relative; width: 100%; display: flex; justify-content: center; padding: 0.35rem 0 0.2rem; }
 .vtar-deck-stack { position: relative; width: var(--vtar-card-w); aspect-ratio: var(--vtar-ratio); cursor: pointer; }
 
+/* ZAOBLJENJE KUTA KARTE - uvijek u obliku `X% / (X% * 0.583)`.
+   Jedan postotak (npr. `9%`) daje ELIPTIČAN kut: vodoravni polumjer je
+   9 % ŠIRINE, a okomiti 9 % VISINE, a karta je viša nego šira (omjer
+   --vtar-ratio = 0.583) - kut ispadne izdužen. Drugi broj (iza kose crte)
+   je isti polumjer izražen kao postotak visine (9 × 0.583 = 5.25), pa je
+   kut prava četvrtina kruga, kao na tiskanoj karti. Isto vrijedi za sve
+   ostale postotke ovdje (3 % → 1.75 %, 5 % → 2.9 %). */
 .vtar-deck-card {
-  position: absolute; inset: 0; border-radius: 9%;
+  position: absolute; inset: 0; border-radius: 9% / 5.25%;
   background-size: cover; background-position: center;
   box-shadow: 0 3px 12px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);
   transition: transform .2s ease;
@@ -159,7 +166,7 @@
 .vtar-deck-actions { display: flex; flex-direction: column; gap: 0.32rem; width: 100%; }
 .vtar-mini-btn {
   font-family: 'Quicksand', sans-serif; font-size: 0.68rem; padding: 0.34rem 0.4rem;
-  border-radius: 8px; border: 1px solid var(--border); background: transparent;
+  border-radius: 0; border: 1px solid var(--border); background: transparent;
   color: var(--text-muted); cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease;
 }
 .vtar-mini-btn:hover { border-color: var(--sage); color: var(--silver-bright); background: rgba(168,144,208,0.08); }
@@ -173,7 +180,7 @@
   background:
     radial-gradient(ellipse at 50% 34%, rgba(168,144,208,0.14) 0%, transparent 62%),
     radial-gradient(ellipse at 50% 60%, var(--bg-light) 0%, var(--bg-deep) 100%);
-  border: 1px solid var(--border); border-radius: 20px;
+  border: 1px solid var(--border); border-radius: 0;
   box-shadow: inset 0 0 80px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(168,144,208,0.06), var(--shadow-glow);
   min-height: clamp(440px, 64vh, 780px);
 }
@@ -187,12 +194,12 @@
    roditelja - stol namjerno NEMA overflow:hidden da bi hover-zoom karte
    mogao "izaći" preko ruba stola bez rezanja) */
 .vtar-table::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 20px;
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 0;
   background-image: radial-gradient(circle, var(--lavender) 0.6px, transparent 0.6px);
   background-size: 30px 30px; opacity: 0.07; overflow: hidden;
 }
 .vtar-table::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 20px;
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 0;
   box-shadow: inset 0 0 120px rgba(0,0,0,0.35);
 }
 :root[data-theme="light"] .vtar-table::before { opacity: 0.13; }
@@ -212,7 +219,7 @@
 
 .vtar-cardbox {
   position: relative; width: var(--vtar-cw); aspect-ratio: var(--vtar-ratio);
-  border: 1.5px dashed var(--border); border-radius: 9%;
+  border: 1.5px dashed var(--border); border-radius: 9% / 5.25%;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   transition: border-color .2s ease; pointer-events: auto;
 }
@@ -266,7 +273,7 @@ body.vtar-noselect, body.vtar-noselect * {
   user-select: none !important; -webkit-touch-callout: none !important;
 }
 .vtar-drag-ghost {
-  position: fixed; z-index: 4000; pointer-events: none; border-radius: 9%;
+  position: fixed; z-index: 4000; pointer-events: none; border-radius: 9% / 5.25%;
   box-shadow: 0 20px 55px rgba(0,0,0,0.65); overflow: hidden;
   border: 1px solid rgba(255,255,255,0.18); will-change: left, top;
 }
@@ -275,7 +282,7 @@ body.vtar-noselect, body.vtar-noselect * {
 /* zona iskorištenih karata se istakne dok se karta povlači */
 .vtar-stage.vtar-dragging .vtar-discard-zone,
 .vtar-stage.vtar-dragging .vtar-drawbar-used { animation: vtarDropPulse 1.1s ease infinite; }
-.vtar-drop-hover { outline: 2px solid var(--lavender); outline-offset: 3px; border-radius: 12px; }
+.vtar-drop-hover { outline: 2px solid var(--lavender); outline-offset: 3px; border-radius: 0; }
 .vtar-discard-zone.vtar-drop-hover { transform: scale(1.06); }
 .vtar-drawbar-used.vtar-drop-hover { background: var(--lavender); color: #1a1430; }
 @keyframes vtarDropPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
@@ -283,7 +290,7 @@ body.vtar-noselect, body.vtar-noselect * {
 .vtar-card-flip.vtar-revealed { transform: rotateY(180deg); }
 
 .vtar-card-face {
-  position: absolute; inset: 0; border-radius: 9%; backface-visibility: hidden;
+  position: absolute; inset: 0; border-radius: 9% / 5.25%; backface-visibility: hidden;
   box-shadow: 0 6px 20px rgba(0,0,0,0.5); overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
 }
 .vtar-card-back { transform: rotateY(0deg); background-size: cover; background-position: center; }
@@ -371,7 +378,7 @@ body.vtar-noselect, body.vtar-noselect * {
 }
 .vtar-focus-visual { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; flex-shrink: 0; }
 .vtar-focus-card {
-  height: min(72vh, 560px); aspect-ratio: var(--vtar-ratio); border-radius: 3%;
+  height: min(72vh, 560px); aspect-ratio: var(--vtar-ratio); border-radius: 3% / 1.75%;
   background-size: cover; background-position: center;
   box-shadow: 0 18px 60px rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.14);
   transform: scale(0.85); transition: transform .28s cubic-bezier(.2,.8,.3,1.05);
@@ -405,7 +412,7 @@ body.vtar-noselect, body.vtar-noselect * {
    karte je uokvireno (vtar-focus-m-active), drugo je prigušeno. */
 .vtar-focus-m {
   padding: 0.65rem 0.85rem; border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 12px; opacity: 0.62;
+  border-radius: 0; opacity: 0.62;
 }
 .vtar-focus-m p { margin: 0; }
 .vtar-focus-m-active {
@@ -424,7 +431,7 @@ body.vtar-noselect, body.vtar-noselect * {
 }
 .vtar-yn-chip {
   font-family: 'Quicksand', sans-serif; font-size: 0.82rem; font-weight: 700;
-  letter-spacing: 0.07em; padding: 0.18rem 0.85rem; border-radius: 999px; border: 1px solid;
+  letter-spacing: 0.07em; padding: 0.18rem 0.85rem; border-radius: 0; border: 1px solid;
 }
 .vtar-yn-da    { color: #a8e0b0; border-color: #7fc98d; background: rgba(127,201,141,0.14); }
 .vtar-yn-ne    { color: #ffb3b3; border-color: #ff8484; background: rgba(255,132,132,0.13); }
@@ -468,7 +475,7 @@ body.vtar-noselect, body.vtar-noselect * {
 .vtar-legend {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.5rem 1.2rem;
   margin-top: 1.2rem; padding: 1.1rem 1.3rem; background: var(--card-bg);
-  border: 1px solid var(--border); border-radius: 14px;
+  border: 1px solid var(--border); border-radius: 0;
 }
 .vtar-legend-item { display: flex; align-items: baseline; gap: 0.55rem; }
 .vtar-legend-num {
@@ -483,11 +490,11 @@ body.vtar-noselect, body.vtar-noselect * {
 .vtar-discard-zone { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; }
 .vtar-discard-stack { position: relative; width: calc(var(--vtar-card-w) * 0.82); aspect-ratio: var(--vtar-ratio); }
 .vtar-discard-card {
-  position: absolute; inset: 0; border-radius: 9%; background-size: cover; border: 1px solid rgba(255,255,255,0.08);
+  position: absolute; inset: 0; border-radius: 9% / 5.25%; background-size: cover; border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   transform: translate(calc(var(--i, 0) * 2px), calc(var(--i, 0) * -2px)) rotate(calc(var(--i, 0) * 4deg - 4deg));
 }
-.vtar-discard-empty .vtar-discard-stack { border: 1.5px dashed var(--border); border-radius: 9%; opacity: 0.5; }
+.vtar-discard-empty .vtar-discard-stack { border: 1.5px dashed var(--border); border-radius: 9% / 5.25%; opacity: 0.5; }
 .vtar-discard-empty .vtar-discard-card { display: none; }
 .vtar-discard-label { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
 
@@ -527,12 +534,12 @@ body.vtar-noselect, body.vtar-noselect * {
 /* ---- Karta dana na početnoj - jedna klikabilna cjelina, vodi na tarot stol ---- */
 .vtar-cotd {
   display: flex; align-items: center; gap: 2rem; max-width: 760px; margin: 0 auto;
-  padding: 1.8rem 2.1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px;
+  padding: 1.8rem 2.1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   text-decoration: none; cursor: pointer; transition: transform .25s ease, border-color .25s ease;
 }
 .vtar-cotd:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
 .vtar-cotd-visual { flex-shrink: 0; }
-.vtar-cotd-img { width: clamp(120px, 20vw, 190px); aspect-ratio: 0.583; border-radius: 5%; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.vtar-cotd-img { width: clamp(120px, 20vw, 190px); aspect-ratio: 0.583; border-radius: 5% / 2.9%; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
 .vtar-cotd-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }
 .vtar-cotd-eyebrow { font-family: 'Quicksand', sans-serif; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sage); }
 .vtar-cotd-name { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--lavender); margin: 0; }
@@ -577,7 +584,7 @@ body.vtar-noselect, body.vtar-noselect * {
   /* bočne trake zamjenjuje drawbar na dnu */
   .vtar-rail-left, .vtar-rail-right { display: none; }
 
-  .vtar-table { min-height: auto; border-radius: 16px; overflow: visible; }
+  .vtar-table { min-height: auto; border-radius: 0; overflow: visible; }
   /* Fiksni spreadovi zadržavaju PRAVU geometriju (isti apsolutni layout kao
      desktop) - visinu stola postavlja JS (computeLayout, inline height na
      .vtar-slots), pa je CSS ovdje ne smije ograničavati ni razmicati paddingom. */
@@ -615,7 +622,7 @@ body.vtar-noselect, body.vtar-noselect * {
   .vtar-drawbar-btn {
     flex: 1 1 auto; min-width: 0;
     display: flex; align-items: center; justify-content: center; gap: 0.45rem;
-    min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 999px 0 0 999px;
+    min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 0;
     background: var(--card-bg); border: 1px solid var(--border); color: var(--text);
     font-family: 'Quicksand', sans-serif; font-size: 0.8rem; cursor: pointer;
   }
@@ -625,7 +632,7 @@ body.vtar-noselect, body.vtar-noselect * {
     color: var(--lavender); font-size: 0.95rem; cursor: pointer;
   }
   .vtar-drawbar-shuffle {
-    flex: 0 0 auto; min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 0 999px 999px 0;
+    flex: 0 0 auto; min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 0;
     background: var(--card-bg); border: 1px solid var(--border); border-left: none;
     color: var(--text-muted); font-size: 0.95rem; cursor: pointer;
   }
@@ -633,7 +640,7 @@ body.vtar-noselect, body.vtar-noselect * {
   .vtar-drawbar-new { flex: 0.7 1 auto; }
   .vtar-drawbar-used, .vtar-drawbar-new {
     display: flex; align-items: center; justify-content: center; gap: 0.35rem;
-    min-width: 0; min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 999px;
+    min-width: 0; min-height: 58px; padding: 0.4rem 0.6rem; border-radius: 0;
     background: transparent; border: 1px solid var(--border); color: var(--text-muted);
     font-family: 'Quicksand', sans-serif; font-size: 0.8rem; cursor: pointer;
   }
@@ -653,7 +660,7 @@ body.vtar-noselect, body.vtar-noselect * {
     z-index: 260; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
     height: 30vh; margin: 0 0.6rem; padding: 1rem;
     background: linear-gradient(180deg, rgba(168,144,208,0.16), rgba(168,144,208,0.28));
-    border: 2px dashed var(--lavender); border-radius: 18px;
+    border: 2px dashed var(--lavender); border-radius: 0;
     color: var(--lavender); text-align: center;
     opacity: 0; transform: translateY(12px); pointer-events: none;
     transition: opacity .18s ease, transform .18s ease, background .15s ease;

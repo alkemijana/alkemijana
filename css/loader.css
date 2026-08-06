@@ -286,9 +286,8 @@ html.aj-reveal .page.active .hero > div > * {
 }
 
 html.aj-reveal .page.active .hero h1        { animation-delay: 0.22s; }
-html.aj-reveal .page.active .hero .hero-sub { animation-delay: 0.42s; }
-html.aj-reveal .page.active .hero .hero-desc{ animation-delay: 0.56s; }
-html.aj-reveal .page.active .hero .divider  { animation-delay: 0.7s; }
+html.aj-reveal .page.active .hero .hero-desc{ animation-delay: 0.44s; }
+html.aj-reveal .page.active .hero .divider  { animation-delay: 0.58s; }
 
 html.aj-reveal footer {
   animation: ajRise 0.9s cubic-bezier(0.22, 0.8, 0.3, 1) 0.55s both;

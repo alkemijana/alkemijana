@@ -87,7 +87,6 @@ let REVIEWS = [];
 
 // ===ALKEMIJANA:TEXTS:START===
 let TEXTS = {
-  "heroSub": "Već znaš. Karte samo pokazuju put.",
   "heroDesc": "Ovo nije mjesto gdje ćeš dobiti odgovore. Ovo je mjesto gdje ćeš početi postavljati prava pitanja.",
   "servicesTitle": "Moje usluge",
   "servicesSub": "Putovi do unutarnje istine",
@@ -97,7 +96,7 @@ let TEXTS = {
   "reviewsTitle": "Riječi klijenata",
   "reviewsSub": "Iskustva onih koji su prošli kroz vrata",
   "blogPreviewTitle": "Najnoviji članci",
-  "blogPreviewSub": "S bloga",
+  "blogPreviewSub": "",
   "blogPreviewBtn": "Pročitaj više članaka →",
   "contactTitle": "Kontakt",
   "contactSub": "Putovanje počinje jednom porukom",
@@ -124,7 +123,7 @@ let TEXTS = {
   "valueFreedomTitle": "Sloboda izbora",
   "valueFreedomText": "Ti si pisac svoje priče. Karte samo ukazuju na mogućnosti.",
   "blogPageTitle": "Blog & članci",
-  "blogPageSub": "Mudrost koja se dijeli",
+  "blogPageSub": "",
   "relatedTitle": "Možda će ti se svidjeti",
   "natalPageTitle": "Besplatni astro alati",
   "natalPageSub": "Natalna karta, sinastrija, tranziti i astrokartografija - sve na jednom mjestu, besplatno i bez registracije.",

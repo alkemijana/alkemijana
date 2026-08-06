@@ -56,7 +56,7 @@
 .logo {
   position: relative;
   padding: 0.35rem 1.05rem;
-  border-radius: 999px;
+  border-radius: 0;
   z-index: 0;
 }
 
@@ -80,6 +80,79 @@
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
+
+/* ============================================================
+   ALATNA TRAKA (sve stranice OSIM početne)
+   ------------------------------------------------------------
+   Početna je slide deck - gore ostaje samo logo + ☰ na prozirnoj
+   podlozi. Ostale stranice scrollaju pa im sadržaj mora ići ISPOD
+   trake s podlogom, kao u verziji 1.
+
+   Klase postavlja syncNavBar() u js/app.js:
+     html.nd-chrome  → traka ima podlogu, blur i obrub (sve širine)
+     html.nd-bar-on  → linkovi su preseljeni u traku, ☰ je skriven
+                       (samo ≥ NAV_BAR_MIN, jer 7 linkova + logo
+                        ispod toga ne stane u jedan red)
+   ============================================================ */
+
+html.nd-chrome #main-nav {
+  background: var(--nav-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  pointer-events: auto;
+  transition: top 0.3s, background-color 0.6s ease;
+}
+
+/* Meki ovoj oko logotipa treba samo prozirnoj traci - kad traka ima
+   svoju podlogu, ovoj bi bio mrlja iza logotipa. */
+html.nd-chrome .logo::before { opacity: 0; }
+
+/* Traka je visoka ~102 px (logo + prekidač teme), a `.page` u style.css
+   rezervira 6rem = 96 px - sadržaj bi zavirio ispod trake. */
+html.nd-chrome .page { padding-top: 7.5rem; }
+
+/* Posuda u koju se sele linkovi i prekidač teme. Na početnoj je prazna
+   (širina 0) pa raspored `space-between` ostaje netaknut. */
+.nd-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2.2rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nd-bar:empty { flex: 0 0 auto; }
+
+.nd-bar .nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.1rem, 2.2vw, 2.5rem);
+  margin: 0;
+  padding: 0;
+}
+
+/* Linkovi su u traci → gumb ☰ i ladica nemaju svrhu (podnožje ladice
+   ostaje prazno pa mu se skriva i obrub) */
+html.nd-bar-on .nd-toggle { display: none; }
+html.nd-bar-on .nd-foot   { display: none; }
+
+/* Prekidač teme u traci: okrugli gumb s ikonom (kao u verziji 1),
+   bez natpisa. U ladici ostaje široki gumb s natpisom. */
+.nd-bar .nd-theme {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  gap: 0;
+  border-radius: 50%;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.nd-bar .nd-theme .theme-toggle-icon { left: auto; }
+.nd-bar .nd-theme-label { display: none; }
 
 /* ---- Zatamnjenje iza panela ---- */
 
@@ -156,7 +229,7 @@
   gap: 0.85rem;
   padding: 0.6rem 1.1rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 0;
   background: transparent;
   color: var(--text);
   font-family: 'Quicksand', sans-serif;

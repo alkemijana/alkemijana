@@ -295,14 +295,6 @@ body > svg[viewBox="0 0 1920 1080"] {
   }
 }
 
-.hero-sub {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
-  font-size: 1.45rem;
-  color: var(--text-muted);
-  letter-spacing: 0.18em;
-  margin-bottom: 2.5rem;
-}
 .hero-desc {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 500;
@@ -394,7 +386,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   content: '';
   position: absolute;
   inset: -1px;
-  border-radius: 999px;
+  border-radius: 0;
   padding: 1px;
   background: linear-gradient(120deg, rgba(168,144,208,0.55), rgba(168,144,208,0.05) 40%, rgba(168,144,208,0.55));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -424,7 +416,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   background: linear-gradient(140deg, var(--search-grad-1), var(--search-grad-2));
   backdrop-filter: blur(8px);
   border: 1px solid rgba(168,144,208,0.22);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.95rem 3rem 0.95rem 3rem;
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
@@ -482,7 +474,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   color: var(--text-muted);
   background: rgba(168,144,208,0.04);
   border: 1px solid rgba(168,144,208,0.22);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.5rem 1.1rem;
   cursor: pointer;
   transition: color 0.25s, background 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.15s;
@@ -507,7 +499,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   font-size: 0.62rem;
   line-height: 1.4;
   background: rgba(168,144,208,0.18);
-  border-radius: 999px;
+  border-radius: 0;
   letter-spacing: 0;
   vertical-align: middle;
 }
@@ -567,7 +559,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   color: var(--lavender);
   background: transparent;
   border: 1px solid rgba(168,144,208,0.35);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.6rem 1.4rem;
   cursor: pointer;
   transition: background 0.25s, color 0.25s;
@@ -594,6 +586,12 @@ body > svg[viewBox="0 0 1920 1080"] {
   text-transform: uppercase;
   margin-bottom: 4rem;
 }
+
+/* Prazan tekst iz admina (npr. obrisan podnaslov) ne smije ostaviti
+   prazan razmak - applyTexts() postavlja textContent na '' pa element
+   ostane u dokumentu s punom marginom. */
+.section-title:empty,
+.section-subtitle:empty { display: none; }
 
 /* ---- KARTICE USLUGA ---- */
 .services-grid {
@@ -885,7 +883,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   color: var(--lavender);
   background: rgba(168, 144, 208, 0.08);
   border: 1px solid rgba(168, 144, 208, 0.28);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.35rem 0.85rem;
   margin: -0.6rem 0 1.2rem;
 }
@@ -948,7 +946,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 .post-body ul ul, .post-body ol ol,
 .post-body ul ol, .post-body ol ul { margin: 0.5rem 0 0; }
 .post-body figure.post-inline-img,
-.post-body img { margin: 2rem auto; display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.post-body img { margin: 2rem auto; display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 .post-body figure.post-inline-img { padding: 0; }
 .post-body figure.post-inline-img img { margin: 0; border: none; box-shadow: none; border-radius: 0; }
 .post-body a { color: var(--lavender); text-decoration: underline; text-decoration-color: rgba(168,144,208,0.4); text-underline-offset: 3px; transition: text-decoration-color 0.25s; }
@@ -974,7 +972,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   color: var(--lavender);
   background: rgba(168, 144, 208, 0.08);
   border: 1px solid rgba(168, 144, 208, 0.3);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.4rem 0.95rem;
   cursor: pointer;
   transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.15s;
@@ -1001,7 +999,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   padding: 1rem 1.4rem;
   background: linear-gradient(135deg, rgba(168, 144, 208, 0.12), rgba(168, 144, 208, 0.03));
   border: 1px solid rgba(168, 144, 208, 0.3);
-  border-radius: 6px;
+  border-radius: 0;
   margin-bottom: 1.2rem;
 }
 .series-badge-label {
@@ -1035,7 +1033,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   padding: 1.3rem 1.5rem;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
   text-decoration: none;
@@ -1096,7 +1094,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   flex-shrink: 0;
   width: 88px;
   height: 88px;
-  border-radius: 4px;
+  border-radius: 0;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(168,144,208,0.18), rgba(168,144,208,0.05));
   border: 1px solid var(--border);
@@ -1187,7 +1185,7 @@ body > svg[viewBox="0 0 1920 1080"] {
   background: rgba(168, 144, 208, 0.18);
   border: 1px solid rgba(168, 144, 208, 0.35);
   color: var(--silver-light);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.3rem 0.75rem;
 }
 .tag-chip-pill button {
@@ -1619,7 +1617,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .tarot-deck-btn { padding: 0.45rem 1.3rem; background: transparent; border: 1px solid var(--border); color: var(--text-muted); font-family: 'Quicksand', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
 .tarot-deck-btn.active { border-color: var(--lavender); color: var(--lavender); background: rgba(168, 144, 208, 0.08); }
 .tarot-admin-card { display: grid; grid-template-columns: 90px 1fr; gap: 1.1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
-.tarot-admin-card img { width: 90px; aspect-ratio: 0.583; object-fit: cover; border-radius: 6%; box-shadow: 0 3px 10px rgba(0,0,0,0.35); }
+.tarot-admin-card img { width: 90px; aspect-ratio: 0.583; object-fit: cover; border-radius: 6% / 3.5%; box-shadow: 0 3px 10px rgba(0,0,0,0.35); }
 .tarot-admin-fields { display: grid; grid-template-columns: 1fr 0.8fr 1.5fr 1.5fr; gap: 1rem; }
 .tarot-admin-fields .af { margin-bottom: 0; }
 .tarot-admin-fields textarea { resize: vertical; }
@@ -1696,7 +1694,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   display: none; position: absolute; z-index: 40;
   top: 100%; left: 0; right: 0; margin-top: 4px;
   background: var(--bg-light); border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden;
+  border-radius: 0; overflow: hidden;
   box-shadow: var(--shadow-glow);
 }
 .nt-dd-item {
@@ -1707,7 +1705,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-dd-empty { padding: 0.65rem 1rem; font-family: 'Quicksand', sans-serif; font-size: 0.88rem; color: var(--text-muted); }
 
 .nt-error {
-  margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 8px;
+  margin: 0 0 1rem; padding: 0.7rem 1rem; border-radius: 0;
   background: rgba(176, 106, 122, 0.12); border: 1px solid rgba(176, 106, 122, 0.4);
   color: #c98a9a; font-family: 'Quicksand', sans-serif; font-size: 0.92rem;
 }
@@ -1733,7 +1731,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .tool-card {
   display: flex; flex-direction: column; align-items: center; text-align: center;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 1.6rem 1.2rem;
   cursor: pointer; font: inherit; color: inherit;
   position: relative; overflow: hidden;
@@ -1780,7 +1778,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .acg-proj-label select {
   font-family: 'Quicksand', sans-serif; font-size: 0.82rem;
   background: var(--form-bg); color: var(--text);
-  border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 0; padding: 0.4rem 0.6rem;
 }
 
 /* Okvir oko karte (padding = ACG_GUTTER u JS-u) u kojem stoje glif-oznake linija */
@@ -1788,14 +1786,14 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   position: relative;
   padding: 30px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow: var(--shadow-glow);
   background: var(--bg-mid);
   margin: 0 auto 1.4rem;
 }
 /* .acg-map i .leaflet-container su ISTI element - zato .acg-map.leaflet-container
    (specifičnost 0,2,0) da nadjača Leafletov default .leaflet-container{background:#ddd} */
-.acg-map, .acg-map.leaflet-container { width: 100%; height: 460px; border-radius: 6px; background: var(--bg-deep); }
+.acg-map, .acg-map.leaflet-container { width: 100%; height: 460px; border-radius: 0; background: var(--bg-deep); }
 :root[data-theme="light"] .acg-map,
 :root[data-theme="light"] .acg-map.leaflet-container { background: var(--bg-mid); }
 
@@ -1805,7 +1803,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   position: absolute; transform: translate(-50%, -50%);
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px;
-  background: var(--card-bg); border: 1.5px solid; border-radius: 999px;
+  background: var(--card-bg); border: 1.5px solid; border-radius: 50%;
   box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 .acg-edge-glyph .nt-glyph { width: 13px; height: 13px; flex: none; }
@@ -1853,7 +1851,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 /* Kutija s GEO koordinatama + ASC/MC pod mišem */
 .acg-coord-box {
   background: var(--card-bg); color: var(--card-text);
-  border: 1px solid var(--border); border-radius: 8px;
+  border: 1px solid var(--border); border-radius: 0;
   padding: 0.35rem 0.7rem; box-shadow: var(--shadow-glow);
   font-family: 'Quicksand', sans-serif; font-size: 0.72rem; white-space: nowrap;
 }
@@ -1874,14 +1872,14 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .acg-legend {
   display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; justify-content: center;
   max-width: 900px; margin: 0 auto 1.4rem; padding: 1rem 1.2rem;
-  border: 1px solid var(--border); border-radius: 12px; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 0; background: var(--card-bg);
 }
 .acg-legend-item {
   display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;
   font-family: 'Quicksand', sans-serif; font-size: 0.82rem; color: var(--text);
 }
 .acg-legend-item input[type="checkbox"] { accent-color: var(--lavender); }
-.acg-legend-swatch { width: 0.7rem; height: 0.7rem; border-radius: 999px; display: inline-block; }
+.acg-legend-swatch { width: 0.7rem; height: 0.7rem; border-radius: 50%; display: inline-block; }
 .acg-legend-item .nt-glyph { width: 15px; height: 15px; }
 
 /* - FAQ akordion na natal stranici - */
@@ -1956,7 +1954,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-guide-card {
   border: 1px solid rgba(168,144,208,0.28);
   background: linear-gradient(160deg, rgba(28,24,64,0.35), rgba(6,8,15,0.25));
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1985,7 +1983,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   font-size: 1.7rem;
   color: var(--sage);
   border: 1px solid rgba(168,144,208,0.35);
-  border-radius: 999px;
+  border-radius: 0;
   background: rgba(168,144,208,0.07);
 }
 .nt-guide-headtext { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; flex: 1; }
@@ -2039,7 +2037,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .nt-guide-collapse {
   background: none;
   border: 1px solid rgba(168,144,208,0.35);
-  border-radius: 999px;
+  border-radius: 0;
   color: var(--lavender);
   font-family: 'Quicksand', sans-serif;
   font-size: 0.74rem;
@@ -2257,7 +2255,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 }
 .nt-cc-chip {
   display: inline-flex; align-items: center; gap: 0.42rem; cursor: pointer;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 0.3rem 0.85rem;
   font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text);
   user-select: none; transition: border-color 0.2s, background 0.2s;
@@ -2300,7 +2298,7 @@ input[type="time"]:disabled { opacity: 0.45; }
   max-width: 860px; margin: 2.6rem auto;
 }
 .nt-dl-card {
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 1.6rem 1.8rem;
   /* kartice u gridu su jednake visine; redak s gumbom guramo na dno da gumbi
      (poster i radni PDF) budu poravnati na istoj razini bez obzira na duljinu teksta */
@@ -2311,19 +2309,19 @@ input[type="time"]:disabled { opacity: 0.45; }
 .nt-dl-row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; margin-top: auto; }
 .nt-dl-row select {
   background: var(--form-bg); color: var(--text);
-  border: 1px solid var(--border); border-radius: 8px;
+  border: 1px solid var(--border); border-radius: 0;
   padding: 0.65rem 0.9rem; font-family: 'Quicksand', sans-serif; font-size: 0.9rem;
 }
 
 .nt-ai-card {
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 1.6rem 1.8rem; max-width: 860px; margin: 0 auto 2.6rem auto;
 }
 .nt-ai-card h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 0.5rem; }
 .nt-ai-card > p { font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem; line-height: 1.5; }
 .nt-ai-badge {
   font-family: 'Quicksand', sans-serif; font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--lavender); border: 1px solid var(--border); border-radius: 999px;
+  color: var(--lavender); border: 1px solid var(--border); border-radius: 0;
   padding: 0.12rem 0.5rem; margin-left: 0.5rem; vertical-align: middle; opacity: 0.85;
 }
 .nt-ai-fresh {
@@ -2343,7 +2341,7 @@ input[type="time"]:disabled { opacity: 0.45; }
 }
 .nt-table-aspects { grid-column: 1 / -1; }
 .nt-table-card {
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 1.4rem 1.6rem;
 }
 .nt-table-card h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--lavender); margin-bottom: 0.8rem; }
@@ -2380,7 +2378,7 @@ input[type="time"]:disabled { opacity: 0.45; }
   font-family: 'Quicksand', sans-serif;
 }
 .nt-opt-label { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
-.nt-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.nt-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 0; overflow: hidden; }
 .nt-seg-btn {
   background: none; border: none; cursor: pointer; padding: 0.32rem 1rem;
   font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted);
@@ -2415,7 +2413,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 }
 .nt-person-num {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 1.55rem; height: 1.55rem; border-radius: 999px;
+  width: 1.55rem; height: 1.55rem; border-radius: 50%;
   background: var(--lavender); color: #1a1430; font-weight: 700; font-size: 0.8rem;
 }
 .nt-form-wrap[data-natal-mode="synastry"] .nt-person-head { display: inline-flex; }
@@ -2442,7 +2440,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
   margin: 1.1rem auto 0.5rem; font-family: 'Quicksand', sans-serif; font-size: 0.98rem;
 }
 .syn-legend-item { display: inline-flex; align-items: center; gap: 0.55rem; color: var(--text); }
-.syn-legend-dot { width: 1rem; height: 1rem; border-radius: 999px; flex: 0 0 auto; }
+.syn-legend-dot { width: 1rem; height: 1rem; border-radius: 50%; flex: 0 0 auto; }
 .syn-legend-item strong { font-weight: 600; }
 .syn-legend-item span.syn-legend-meta { color: var(--text-muted); font-size: 0.82rem; }
 .syn-aspect-note { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; font-weight: 400; color: var(--text-muted); }
@@ -2466,7 +2464,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 
 .tr-panel {
   margin: 0; padding: 1.3rem 1.5rem;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   display: flex; flex-direction: column; gap: 0.9rem;
 }
 .tr-panel-top {
@@ -2480,7 +2478,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 }
 .tr-anchor input[type="date"], .tr-anchor input[type="time"] {
   background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 0.4rem 0.6rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
+  border-radius: 0; padding: 0.4rem 0.6rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
 }
 .tr-now { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
 .tr-readout {
@@ -2499,7 +2497,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 .tr-slider { width: 100%; accent-color: var(--lavender); cursor: pointer; }
 .tr-num {
   background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 0.35rem 0.4rem; width: 100%;
+  border-radius: 0; padding: 0.35rem 0.4rem; width: 100%;
   font-family: 'Quicksand', sans-serif; font-size: 0.86rem; text-align: center;
 }
 .tr-hint { margin: 1rem 0 0; font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted); }
@@ -2558,7 +2556,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 .syn-controls-row { display: flex; justify-content: center; margin: 0 auto 1.3rem; }
 .nt-swap-btn {
   display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   padding: 0.5rem 1.3rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
   color: var(--text); transition: border-color 0.2s, color 0.2s;
 }
@@ -2572,7 +2570,7 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
   margin: 2.4rem 0 1.4rem;
 }
 .nt-tab {
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   cursor: pointer; padding: 0.45rem 1.2rem;
   font-family: 'Quicksand', sans-serif; font-size: 0.82rem; letter-spacing: 0.05em;
   color: var(--text-muted); transition: all 0.25s;
@@ -2608,10 +2606,10 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 }
 .nt-dom-lbl { width: 7.2em; flex-shrink: 0; }
 .nt-dom-bar {
-  flex: 1; height: 9px; border-radius: 999px; overflow: hidden;
+  flex: 1; height: 9px; border-radius: 0; overflow: hidden;
   background: rgba(168, 144, 208, 0.12);
 }
-.nt-dom-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+.nt-dom-fill { height: 100%; border-radius: 0; transition: width 0.6s ease; }
 .nt-dom-pct { width: 3em; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-muted); }
 .nt-table-dom { margin-top: 0.2rem; }
 

@@ -582,10 +582,14 @@
      ============================================================ -->
 <div class="content">
 
-  <!-- Traka: samo logo lijevo + tri crtice desno. Svi linkovi i prekidač
-       teme su u kliznoj ladici (#nd-drawer) - v. css/nav-drawer.css. -->
+  <!-- Traka: na POČETNOJ samo logo lijevo + tri crtice desno (linkovi su u
+       kliznoj ladici #nd-drawer). Na svim OSTALIM stranicama traka dobiva
+       podlogu i - na širokom ekranu - klasičnu alatnu traku s linkovima kao
+       u verziji 1: syncNavBar() u js/app.js preseli #navLinks i prekidač
+       teme u #nd-bar. V. css/nav-drawer.css. -->
   <nav id="main-nav">
     <div class="logo" onclick="goHome()">Alkemijana</div>
+    <div class="nd-bar" id="nd-bar"></div>
     <button class="nd-toggle" id="nd-toggle" onclick="toggleMenu()"
             aria-label="Otvori izbornik" aria-expanded="false" aria-controls="nd-drawer">
       <span class="nd-icon nd-icon-open"  aria-hidden="true">☰</span>
@@ -611,8 +615,9 @@
       <li><a onclick="showPage('kontakt')" data-page="kontakt" id="t-navContact">Kontakt</a></li>
     </ul>
 
-    <div class="nd-foot">
-      <button class="nd-theme" onclick="toggleTheme(event)" aria-label="Promijeni temu">
+    <!-- Prekidač teme se seli između ladice i alatne trake (syncNavBar) -->
+    <div class="nd-foot" id="nd-foot">
+      <button class="nd-theme" id="nd-theme" onclick="toggleTheme(event)" aria-label="Promijeni temu">
         <span class="theme-toggle-icon theme-toggle-moon">☾</span>
         <span class="theme-toggle-icon theme-toggle-sun">☀</span>
         <span class="nd-theme-label">Promijeni temu</span>
@@ -639,7 +644,6 @@
           <div class="hero">
             <div>
               <h1>Alkemijana</h1>
-              <div class="hero-sub" id="t-heroSub"></div>
               <p class="hero-desc" id="t-heroDesc"></p>
               <div class="divider"><div class="line"></div><span class="star">✧</span><div class="line"></div></div>
             </div>
@@ -717,6 +721,110 @@
             <h2 class="section-title" id="t-reviewsTitle"></h2>
             <p class="section-subtitle" id="t-reviewsSub"></p>
             <div class="reviews-grid" id="home-reviews-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Izbornik kao kartice - ZADNJI slide.
+              Iste stranice kao u izborniku (bez Početne, na njoj smo).
+              Kartica "Usluge" se skriva zajedno s nav linkom kad su usluge
+              isključene u adminu - v. applySettings() u js/app.js.
+              Stilovi: css/home-slides.css (prefiks hs-menu-). -->
+      <div class="hs-slide" data-hs-name="izbornik">
+        <div class="hs-inner">
+          <div class="container">
+
+            <div class="hs-menu-fan" id="home-menu-fan">
+
+              <a class="hs-menu-card" id="home-menu-usluge" href="#usluge"
+                 onclick="showPage('usluge'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M62 18a30 30 0 1 0 20 44A32 32 0 0 1 62 18Z"/>
+                    <g stroke="var(--sage)" stroke-width="1.8">
+                      <path d="M24 24v10M19 29h10"/>
+                      <path d="M34 66v8M30 70h8"/>
+                    </g>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">Usluge</span>
+              </a>
+
+              <a class="hs-menu-card" href="#o-meni" onclick="showPage('o-meni'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="50" cy="36" r="15"/>
+                    <path d="M22 82a28 28 0 0 1 56 0"/>
+                    <g stroke="var(--sage)" stroke-width="1.6">
+                      <path d="M76 22v9M71.5 26.5h9"/>
+                      <path d="M22 44v7M18.5 47.5h7"/>
+                    </g>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">O meni</span>
+              </a>
+
+              <a class="hs-menu-card" href="#blog" onclick="showPage('blog'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M50 28c-8-6-18-8-28-7v46c10-1 20 1 28 7 8-6 18-8 28-7V21c-10-1-20 1-28 7Z"/>
+                    <path d="M50 28v46"/>
+                    <g stroke="var(--sage)" stroke-width="1.5">
+                      <path d="M32 40h10M32 50h10M58 40h10M58 50h10"/>
+                    </g>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">Blog</span>
+              </a>
+
+              <a class="hs-menu-card" href="#natal" onclick="showPage('natal'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="50" cy="50" r="32"/>
+                    <circle cx="50" cy="50" r="22" stroke-width="1.2" opacity="0.55"/>
+                    <g stroke-width="1.2" opacity="0.55">
+                      <path d="M50 18v8M82 50h-8M50 82v-8M18 50h8"/>
+                      <path d="M72.6 27.4l-5.6 5.6M72.6 72.6l-5.6-5.6M27.4 72.6l5.6-5.6M27.4 27.4l5.6 5.6"/>
+                    </g>
+                    <circle cx="61" cy="36" r="3.2" fill="var(--sage)" stroke="none"/>
+                    <circle cx="38" cy="58" r="2.8" fill="var(--lavender)" stroke="none"/>
+                    <circle cx="58" cy="63" r="2.4" fill="var(--silver-bright)" stroke="none"/>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">Astro alati</span>
+              </a>
+
+              <a class="hs-menu-card" href="#tarot" onclick="showPage('tarot'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="38" y="26" width="30" height="46" transform="rotate(-18 53 49)"/>
+                    <rect x="35" y="28" width="30" height="46"/>
+                    <path d="M50 42l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z"
+                          stroke="var(--sage)" stroke-width="1.6"/>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">Virtualni tarot</span>
+              </a>
+
+              <a class="hs-menu-card" href="#kontakt" onclick="showPage('kontakt'); return false;">
+                <span class="hs-menu-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="var(--lavender)" stroke-width="2.2"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="18" y="30" width="64" height="42"/>
+                    <path d="M18 34l32 24 32-24"/>
+                    <path d="M50 14l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"
+                          stroke="var(--sage)" stroke-width="1.5"/>
+                  </svg>
+                </span>
+                <span class="hs-menu-name">Kontakt</span>
+              </a>
+
+            </div>
           </div>
         </div>
       </div>

@@ -1445,7 +1445,6 @@ const TEXT_GROUPS = [
   {
     title: 'Početna',
     keys: {
-      heroSub:          'Hero - podnaslov',
       heroDesc:         'Hero - opis',
       servicesTitle:    'Usluge - naslov',
       servicesSub:      'Usluge - podnaslov',

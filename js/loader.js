@@ -40,6 +40,44 @@
 
   function loader() { return document.getElementById('aj-loader'); }
 
+  /* ---- Traka napretka ----
+     Jedna jedina tranzicija `transform: scaleX()` (v. css/loader.css):
+       - puzanje: od 6 % do 90 % kroz CREEP_MS, s jakim usporavanjem pri
+         kraju, pa traka nikad ne stane dok se čeka
+       - dovršetak: prekid te tranzicije i kratki potez do 100 %
+     Prekinuta tranzicija kreće od TRENUTNE vrijednosti, pa nema skoka
+     bez obzira kad stranica bude spremna (brz reload ili spora veza).
+     Ne vraćati na @keyframes s međutočkama ni na animaciju širine -
+     oboje daje vidljivo zastajkivanje dok je glavna dretva zauzeta. */
+
+  var CREEP_MS = 4200;   // dulje od MIN_MS: traka jos puze kad se otkriva
+
+  function bar() {
+    var el = loader();
+    return el ? el.querySelector('.ajl-bar > i') : null;
+  }
+
+  function startBar() {
+    var b = bar();
+    if (!b) return;
+    /* Čitanje offsetWidth prisili preglednik da prvo primijeni početno
+       stanje iz CSS-a (scaleX(0.06)); bez toga bi obje vrijednosti pale
+       u isti kadar i tranzicija se ne bi ni pokrenula. Namjerno NIJE
+       requestAnimationFrame - taj u pozadinskoj kartici ne okine. */
+    void b.offsetWidth;
+    b.style.transition = 'transform ' + CREEP_MS + 'ms cubic-bezier(0.05, 0.75, 0.2, 1)';
+    b.style.transform  = 'scaleX(0.9)';
+  }
+
+  function finishBar() {
+    var b = bar();
+    if (!b) return;
+    b.style.transition = 'transform 300ms cubic-bezier(0.3, 0.8, 0.4, 1)';
+    b.style.transform  = 'scaleX(1)';
+  }
+
+  startBar();
+
   /* ---- 1. Fontovi ---- */
 
   function markFonts() {
@@ -103,7 +141,8 @@
     try { sessionStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
 
     var el = loader();
-    if (el) el.classList.add('ajl-done');   // traka napretka do kraja
+    if (el) el.classList.add('ajl-done');
+    finishBar();   // traka dovrši potez prije nego ekran nestane
 
     setTimeout(function () {
       var root = document.documentElement;
@@ -117,7 +156,7 @@
          ponavljala pri SVAKOJ promjeni stranice (showPage prebacuje
          .page.active), a tamo već postoji fadeIn iz style.css. */
       setTimeout(function () { root.classList.remove('aj-reveal'); }, ENTER_MS);
-    }, 240);
+    }, 300);   // koliko traje dovršetak trake (finishBar)
   }
 
   setTimeout(reveal, FAILSAFE_MS);

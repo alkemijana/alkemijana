@@ -98,6 +98,10 @@ html.aj-loading body > *:not(#aj-loader) {
 .ajl-spin-rev,
 .ajl-orbit {
   transform-origin: 100px 100px;
+  /* nagovještaj kompozitoru da rotaciju ne mora računati na glavnoj
+     dretvi - baš dok se ekran vidi ona je najzauzetija (init, kotač,
+     zagrijavanje deka) pa bi se vrtnja trzala */
+  will-change: transform;
 }
 
 .ajl-spin     { animation: ajlSpin 34s linear infinite; }
@@ -195,20 +199,27 @@ html.aj-loading body > *:not(#aj-loader) {
   overflow: hidden;
 }
 
+/* Traka se pomiče preko `transform: scaleX()`, a NE preko `width`.
+   Razlog: dok se ekran učitavanja vidi, glavna dretva je najzauzetija
+   (init u app.js, crtanje živog kotača, zagrijavanje deka, dekodiranje
+   slika). Animacija širine traži novi raspored i bojanje u svakom kadru
+   pa u tim trenucima vidljivo zastane; `transform` odrađuje kompozitor
+   pa traka klizi glatko i kad je dretva blokirana.
+
+   Sam pomak vodi js/loader.js jednom jedinom tranzicijom (puzanje do
+   90 %, pa dovršetak). Namjerno NIJE @keyframes s međutočkama - svaka
+   međutočka ima vlastito usporavanje pa se traka na njoj "zaustavi".
+   Prekinuta tranzicija kreće od trenutne vrijednosti, pa dovršetak
+   nema skoka bez obzira kad stranica bude spremna. */
 .ajl-bar > i {
   display: block;
   height: 100%;
-  width: 8%;
+  width: 100%;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--lavender-soft, #7860b0), var(--lavender, #a890d0));
-  animation: ajlBar 1.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-}
-
-/* kad je sve spremno traka se dovrši prije nego ekran nestane */
-#aj-loader.ajl-done .ajl-bar > i {
-  animation: none;
-  width: 100%;
-  transition: width 0.35s ease;
+  transform: scaleX(0.06);
+  transform-origin: left center;
+  will-change: transform;
 }
 
 /* ---- Keyframes ---- */
@@ -228,13 +239,6 @@ html.aj-loading body > *:not(#aj-loader) {
   50%      { transform: translateY(-3px)  scale(1.03); opacity: 1; }
 }
 
-/* Traka mora stići do ~88 % unutar MIN_MS iz js/loader.js (1.8 s), pa
-   je zadnjih 12 % skok na 100 % kad je stvarno gotovo. */
-@keyframes ajlBar {
-  0%   { width: 8%; }
-  55%  { width: 62%; }
-  100% { width: 88%; }
-}
 
 /* ============================================================
    3. ULAZNA ANIMACIJA STRANICE (.aj-reveal ostaje na <html>)
@@ -300,9 +304,15 @@ html.aj-reveal footer {
   .ajl-spin-rev,
   .ajl-orbit,
   .ajl-card-g,
-  .ajl-bar > i,
   #aj-loader::before {
     animation: none !important;
+  }
+
+  /* traka se ne animira - odmah je puna (js/loader.js provjerava ovo) */
+  .ajl-bar > i {
+    animation: none !important;
+    transition: none !important;
+    transform: scaleX(1);
   }
 
   html.aj-reveal #sky-bg,

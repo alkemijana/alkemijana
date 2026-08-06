@@ -900,9 +900,22 @@ Detalji na koje treba paziti:
   klasa `ajl-c1/2/3`, ne `:nth-of-type` (sve grupe u SVG-u su `<g>`).
 - **`MIN_MS` je namjerno dulji nego što treba** — ulaz je dio dojma, pa se ekran zadržava i kad
   je sve spremno: **1800 ms** prvi dolazak, **800 ms** ponovni posjet u istoj sesiji
-  (`sessionStorage.aj_loader_seen`). Ne dizati preko ~2 s. Trajanje animacije trake
-  (`ajlBar`, 1.9 s) treba pratiti `MIN_MS` da traka stigne do 88 % prije skoka na 100 %.
+  (`sessionStorage.aj_loader_seen`). Ne dizati preko ~2 s.
   FAILSAFE 6 s otkrije stranicu i ako nešto pukne.
+- **Traka napretka ide na `transform: scaleX()`, ne na `width`, i vodi je JS
+  (`startBar`/`finishBar` u loader.js) JEDNOM tranzicijom** — puzanje 6 %→90 % kroz
+  `CREEP_MS` (4,2 s), pa na `reveal()` prekid i kratki potez do 100 %. Tri razloga, sva tri
+  su bila stvarni problem:
+  1. `width` traži novi raspored i bojanje u svakom kadru; dok se ekran vidi glavna je dretva
+     najzauzetija (init, živi kotač, `warmup()`, dekodiranje slika) pa je traka vidljivo
+     zapinjala. `transform` odrađuje kompozitor.
+  2. `@keyframes` s međutočkama (staro `ajlBar` 0/55/100 %) daje **zastoj na svakoj
+     međutočki** jer se easing primjenjuje po odsječku.
+  3. Prekinuta tranzicija kreće od TRENUTNE vrijednosti, pa dovršetak nema skoka bez obzira
+     kad stranica bude spremna. Zato `CREEP_MS` smije biti dulji od `MIN_MS` — traka na
+     otkrivanju još puže i nikad ne "sjedi" na 90 %.
+  `startBar()` koristi prisilni reflow (`void offsetWidth`), **ne `requestAnimationFrame`** —
+  rAF u pozadinskoj kartici ne okine pa se tranzicija ne bi ni pokrenula.
 - `prefers-reduced-motion` gasi sve animacije (i loadera i ulazne).
 - Boja zvjezdica loadera ide preko `--ajl-star` s posebnom vrijednošću za svijetlu temu
   (`--silver-bright` je tamo taman pa bi „zvijezde" bile mrlje).

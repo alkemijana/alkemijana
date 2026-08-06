@@ -199,9 +199,15 @@ html.nd-bar-on .nd-foot   { display: none; }
 
 /* ---- Popis linkova ---- */
 
+/* Stavke su poravnate DESNO - u istoj okomici kao gumb ☰ iznad njih. */
+.nd-panel {
+  text-align: right;
+}
+
 .nd-panel .nav-links {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 1.4rem;
   margin: 0;
   padding: 0;
@@ -300,19 +306,10 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
 
   .nd-panel.nd-open { transform: none; }
 
-  /* stavke poravnate LIJEVO (i na desnoj ploči) - poravnanje udesno je
-     otežavalo čitanje jer je svaki redak počinjao na drugom mjestu */
-  .nd-panel .nav-links {
-    align-items: flex-start;
-    text-align: left;
-    gap: 1.5rem;
-  }
+  .nd-panel .nav-links { gap: 1.5rem; }
 
   /* prekidač teme na dno ploče */
-  .nd-foot {
-    margin-top: auto;
-    text-align: left;
-  }
+  .nd-foot { margin-top: auto; }
 }
 
 /* ---- Mobitel ----
@@ -320,11 +317,8 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
    prekidačem teme), inače prva stavka izbornika završi ispod trake -
    panel klizne odozgo pa mu traka stoji preko vrha. */
 @media (max-width: 768px) {
-  .nd-panel {
-    padding: 7.4rem 1.5rem 2rem;
-    text-align: left;
-  }
-  .nd-panel .nav-links { gap: 1.2rem; align-items: flex-start; }
+  .nd-panel { padding: 7.4rem 1.5rem 2rem; }
+  .nd-panel .nav-links { gap: 1.2rem; }
 }
 
 /* ---- Pristupačnost ---- */

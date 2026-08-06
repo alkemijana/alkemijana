@@ -300,25 +300,31 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
 
   .nd-panel.nd-open { transform: none; }
 
-  /* stavke uz desni rub - u istoj okomici kao gumb ☰ */
+  /* stavke poravnate LIJEVO (i na desnoj ploči) - poravnanje udesno je
+     otežavalo čitanje jer je svaki redak počinjao na drugom mjestu */
   .nd-panel .nav-links {
-    align-items: flex-end;
-    text-align: right;
+    align-items: flex-start;
+    text-align: left;
     gap: 1.5rem;
   }
 
   /* prekidač teme na dno ploče */
   .nd-foot {
     margin-top: auto;
-    text-align: right;
+    text-align: left;
   }
 }
 
-/* ---- Mobitel ---- */
-
+/* ---- Mobitel ----
+   Gornji padding mora biti VEĆI od visine trake (~102 px s logotipom i
+   prekidačem teme), inače prva stavka izbornika završi ispod trake -
+   panel klizne odozgo pa mu traka stoji preko vrha. */
 @media (max-width: 768px) {
-  .nd-panel { padding: 5rem 1.5rem 1.8rem; }
-  .nd-panel .nav-links { gap: 1.2rem; }
+  .nd-panel {
+    padding: 7.4rem 1.5rem 2rem;
+    text-align: left;
+  }
+  .nd-panel .nav-links { gap: 1.2rem; align-items: flex-start; }
 }
 
 /* ---- Pristupačnost ---- */

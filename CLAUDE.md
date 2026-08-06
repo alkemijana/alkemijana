@@ -486,6 +486,15 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
   špilove). Slike u `tarot/assets/decks/<folder>/`, imenovane kanonskim id-em karte (npr.
   `fool.jpg`; PAZI: u izvornom Wikimedia setu za Marseille Paž/Vitez su bili zamijenjeni — datoteke
   `*-page.jpg`/`*-knight.jpg` su ispravljene zamjenom, VALET=page, CAVALIER=knight).
+  **Poravnate slike (RWS, kolovoz 2026.):** izvorni skenovi s Wikimedije nisu bili jednako
+  kadrirani — svaki malo drugačije zakrenut i odrezan, pa se uz rub vidjela bijela pozadina, a
+  karte su na stolu ispadale različito velike. Sve 78 RWS karata prošlo je kroz
+  **`tools/card-normalize.ps1`** (+ `card-normalize.cs`, dev alat, nije dio stranice): nađe
+  otisnutu **crnu liniju okvira** (sidro — jedino što je na svakoj karti na istom mjestu),
+  ispravi nagib, izreže **medijan okvira + jednaku kremastu marginu** i spremi na
+  **500×858 (omjer 0.583)**. Marseille još nije obrađen — isti alat, `-Deck marseille`.
+  Alat pokretati **samo nad izvornim skenovima** (`git checkout` prije ponavljanja), inače
+  reže drugi krug margine.
   **Cache-busting:** `tarotCardImage()` dodaje `?v=${TAROT_IMG_VERSION}` (u tarot-data.js) na
   URL slike — kad se slika promijeni na ISTOM imenu (npr. ispravak Paž/Vitez), povećaj
   `TAROT_IMG_VERSION` da probiješ cache preglednika/Cloudflarea (inače korisnik vidi staru

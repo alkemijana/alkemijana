@@ -408,7 +408,6 @@ html.hs-lock body {
   pointer-events: none;
 }
 
-.hs-menu-card:hover,
 .hs-menu-card:focus-visible {
   --hs-lift: -10px;
   --hs-scale: 1.05;
@@ -416,6 +415,16 @@ html.hs-lock body {
   z-index: 20;
   border-color: var(--lavender);
   box-shadow: var(--shadow-glow), 0 18px 38px rgba(0, 0, 0, 0.5);
+}
+@media (hover: hover) {
+  .hs-menu-card:hover {
+    --hs-lift: -10px;
+    --hs-scale: 1.05;
+    --hs-rot: 0deg;
+    z-index: 20;
+    border-color: var(--lavender);
+    box-shadow: var(--shadow-glow), 0 18px 38px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* SVG ikona je apsolutna UNUTAR svog okvira namjerno: SVG bez `width` i
@@ -593,7 +602,9 @@ html.hs-lock body {
   transition: background 0.35s, border-color 0.35s, transform 0.35s;
 }
 
-.hs-dots button:hover { border-color: var(--lavender); transform: scale(1.25); }
+@media (hover: hover) {
+  .hs-dots button:hover { border-color: var(--lavender); transform: scale(1.25); }
+}
 
 .hs-dots button.hs-on {
   background: var(--lavender);

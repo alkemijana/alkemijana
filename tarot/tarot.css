@@ -33,7 +33,10 @@
   border-radius: 0; cursor: pointer; text-align: left;
   transition: border-color .2s ease;
 }
-.vtar-spread-toggle:hover, .vtar-spread-toggle[aria-expanded="true"] { border-color: var(--lavender); }
+.vtar-spread-toggle[aria-expanded="true"] { border-color: var(--lavender); }
+@media (hover: hover) {
+  .vtar-spread-toggle:hover { border-color: var(--lavender); }
+}
 .vtar-spread-toggle-icon { flex-shrink: 0; display: flex; }
 .vtar-spread-toggle-text { display: flex; flex-direction: column; gap: 0.05rem; min-width: 0; flex: 1; }
 .vtar-toolbar-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--lavender); }
@@ -57,7 +60,9 @@
   border-radius: 0; color: var(--text); cursor: pointer;
   transition: border-color .2s ease, background .2s ease, transform .15s ease;
 }
-.vtar-spread-chip:hover { border-color: var(--lavender); transform: translateY(-1px); }
+@media (hover: hover) {
+  .vtar-spread-chip:hover { border-color: var(--lavender); transform: translateY(-1px); }
+}
 .vtar-spread-chip.active { border-color: var(--lavender); background: rgba(168,144,208,0.14); }
 .vtar-spread-chip-icon { flex-shrink: 0; display: flex; width: 42px; height: 42px; }
 .vtar-spread-chip-icon svg { width: 42px; height: 42px; }
@@ -85,8 +90,12 @@
   background: transparent; color: var(--lavender); cursor: pointer;
   transition: background .2s ease, color .2s ease; white-space: nowrap;
 }
-.vtar-btn:hover { background: var(--lavender); color: #1a1430; }
-:root[data-theme="light"] .vtar-btn:hover { color: #fff; }
+@media (hover: hover) {
+  .vtar-btn:hover { background: var(--lavender); color: #1a1430; }
+}
+@media (hover: hover) {
+  :root[data-theme="light"] .vtar-btn:hover { color: #fff; }
+}
 
 /* ---- Deck switches (uključi/isključi špil) ---- */
 .vtar-deck-switches {
@@ -140,7 +149,9 @@
 .vtar-deck-card-3 { transform: translate(4px, 4px) rotate(3deg); }
 .vtar-deck-card-2 { transform: translate(2px, 2px) rotate(1.5deg); }
 .vtar-deck-card-1 { transform: translate(0,0) rotate(0deg); }
-.vtar-deck-stack:hover .vtar-deck-card-1 { transform: translateY(-5px); box-shadow: 0 10px 22px rgba(0,0,0,0.5); }
+@media (hover: hover) {
+  .vtar-deck-stack:hover .vtar-deck-card-1 { transform: translateY(-5px); box-shadow: 0 10px 22px rgba(0,0,0,0.5); }
+}
 .vtar-deck-stack.vtar-pulse .vtar-deck-card-1 { animation: vtarDeckPulse .5s ease; }
 @keyframes vtarDeckPulse { 0% { transform: scale(1); } 35% { transform: scale(1.09) rotate(-3deg); } 100% { transform: scale(1) rotate(0deg); } }
 
@@ -169,10 +180,16 @@
   border-radius: 0; border: 1px solid var(--border); background: transparent;
   color: var(--text-muted); cursor: pointer; transition: border-color .2s ease, color .2s ease, background .2s ease;
 }
-.vtar-mini-btn:hover { border-color: var(--sage); color: var(--silver-bright); background: rgba(168,144,208,0.08); }
+@media (hover: hover) {
+  .vtar-mini-btn:hover { border-color: var(--sage); color: var(--silver-bright); background: rgba(168,144,208,0.08); }
+}
 .vtar-mini-btn-accent { border-color: var(--lavender); color: var(--lavender); }
-.vtar-mini-btn-accent:hover { background: var(--lavender); color: #1a1430; }
-:root[data-theme="light"] .vtar-mini-btn-accent:hover { color: #fff; }
+@media (hover: hover) {
+  .vtar-mini-btn-accent:hover { background: var(--lavender); color: #1a1430; }
+}
+@media (hover: hover) {
+  :root[data-theme="light"] .vtar-mini-btn-accent:hover { color: #fff; }
+}
 
 /* ---- Stol ---- */
 .vtar-table {
@@ -263,7 +280,9 @@
 
 /* ---- Karta (izvučena) ---- */
 .vtar-card { position: absolute; inset: 0; perspective: 1000px; cursor: pointer; transition: transform .2s cubic-bezier(.2,.7,.3,1); }
-.vtar-cardbox:hover .vtar-card { transform: translateY(-3px); }
+@media (hover: hover) {
+  .vtar-cardbox:hover .vtar-card { transform: translateY(-3px); }
+}
 .vtar-card.vtar-card-dragging { opacity: 0; }
 
 /* ---- Drag-to-discard: karta se povlači, "duh" prati prst/miš ---- */
@@ -356,8 +375,13 @@ body.vtar-noselect, body.vtar-noselect * {
   transition: opacity .15s ease, background .15s ease;
   transform: rotate(calc(-1 * var(--vtar-box-rot, 0deg)));
 }
-.vtar-cardbox:hover .vtar-card-discard-btn, .vtar-cardbox:focus-within .vtar-card-discard-btn { opacity: 0.92; }
-.vtar-card-discard-btn:hover { background: var(--lavender); color: #1a1430; }
+.vtar-cardbox:focus-within .vtar-card-discard-btn { opacity: 0.92; }
+@media (hover: hover) {
+  .vtar-cardbox:hover .vtar-card-discard-btn { opacity: 0.92; }
+}
+@media (hover: hover) {
+  .vtar-card-discard-btn:hover { background: var(--lavender); color: #1a1430; }
+}
 
 /* ---- Fokus: klik na kartu ju centrira i poveća (modal preko cijelog prostora;
    position:fixed pa pouzdano radi i kad stol scrolla, u fullscreenu i na mobitelu).
@@ -537,7 +561,9 @@ body.vtar-noselect, body.vtar-noselect * {
   padding: 1.8rem 2.1rem; background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   text-decoration: none; cursor: pointer; transition: transform .25s ease, border-color .25s ease;
 }
-.vtar-cotd:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
+@media (hover: hover) {
+  .vtar-cotd:hover { transform: translateY(-3px); border-color: var(--lavender); box-shadow: var(--shadow-glow); }
+}
 .vtar-cotd-visual { flex-shrink: 0; }
 .vtar-cotd-img { width: clamp(120px, 20vw, 190px); aspect-ratio: 0.583; border-radius: 5% / 2.9%; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
 .vtar-cotd-text { display: flex; flex-direction: column; gap: 0.3rem; text-align: left; }

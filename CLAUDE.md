@@ -100,6 +100,12 @@ ALKEMIJANA WEBSITE/
   kruga, kao na tiskanoj karti. Admin panel (`.abt`, `.ep-btn`…) je namjerno ostao na 2–3 px.
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
 - **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
+- **HOVER SAMO NA MIŠU:** svako pravilo s `:hover` **mora** biti unutar
+  `@media (hover: hover)`. Na dodirnom zaslonu hover „ostane zalijepljen" nakon dodira
+  (kartica ostane podignuta/osvijetljena dok se ne dodirne nešto drugo) — to je smetalo pa
+  su sva 78 pravila omotana. Kad selektor ima više dijelova, u medij ide **samo** dio s
+  `:hover`, a `:focus-visible` ostaje vani (tipkovnica mora raditi svugdje).
+  **Novo hover pravilo bez tog medija je greška.**
 - **Stranica:** SPA (single page) — JS prebacuje između sekcija (početna, blog, o-meni, natalna karta, kontakt)
 
 ---

@@ -35,7 +35,9 @@
   transition: color 0.25s, transform 0.25s;
 }
 
-.nd-toggle:hover { transform: scale(1.08); }
+@media (hover: hover) {
+  .nd-toggle:hover { transform: scale(1.08); }
+}
 
 .nd-icon {
   position: absolute;
@@ -218,7 +220,9 @@ html.nd-bar-on .nd-foot   { display: none; }
   width: fit-content;
 }
 
-.nd-panel .nav-links a:hover { color: var(--lavender); }
+@media (hover: hover) {
+  .nd-panel .nav-links a:hover { color: var(--lavender); }
+}
 
 /* ---- Prekidač teme ---- */
 
@@ -247,10 +251,12 @@ html.nd-bar-on .nd-foot   { display: none; }
   transition: border-color 0.25s, background 0.25s, color 0.25s;
 }
 
-.nd-theme:hover {
-  border-color: var(--lavender);
-  background: rgba(168, 144, 208, 0.08);
-  color: var(--lavender);
+@media (hover: hover) {
+  .nd-theme:hover {
+    border-color: var(--lavender);
+    background: rgba(168, 144, 208, 0.08);
+    color: var(--lavender);
+  }
 }
 
 /* Ikone su apsolutne (mjesec i sunce se izmjenjuju na istom mjestu),

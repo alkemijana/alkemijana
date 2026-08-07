@@ -112,7 +112,7 @@ normalno — zaključava se samo dok je početna aktivna.
 - **Datoteke:** `css/home-slides.css` + `js/home-slides.js` (prefiks **`hs-`**),
   `css/nav-drawer.css` (prefiks **`nd-`**, logika `toggleMenu`/`closeMenu` u app.js).
 - **Slideovi (redom):** hero → natalna karta → karta dana → *usluge* → *CTA* → blog →
-  *recenzije* → **izbornik (lepeza karata)**.
+  *recenzije* → **izbornik (karte razložene u spread)**.
   Kurzivom označeni ovise o togglovima u adminu: nose `data-hs-requires="<id>"` i deck ih
   **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
   fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
@@ -123,18 +123,25 @@ normalno — zaključava se samo dok je početna aktivna.
 - **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
   gledatelja (`translateZ(+340px) scale(1.22)`), nadolazeći (`.hs-future`) čeka u dubini
   (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
-- **Zadnji slide = izbornik kao LEPEZA KARATA** (`#home-menu-fan`, prefiks `hs-menu-`):
-  svaka stranica iz izbornika (bez Početne) je karta u omjeru tarot karte (0.583), razastrta
-  u lepezu. Bez naslova i bez opisa — samo ikona + naziv. Položaj računa
-  **`layoutHomeMenuFan()` u app.js** (postavlja `--hs-x` u % širine, `--hs-y` u % visine,
-  `--hs-rot`), jer broj karata nije fiksan (kartica „Usluge" nestaje s togglom, zato je
-  poziv i u `applySettings()`) a raspon ovisi o širini ekrana. Računica oduzima i „bleed"
-  (`visina × sin(najveći kut)`) — zakrenuta karta je šira od svog okvira pa bi lepeza inače
-  na mobitelu izašla iz ekrana. Hover mijenja samo `--hs-lift`/`--hs-scale` (ne cijeli
-  `transform`) da se položaj u lepezi ne izgubi. Karte su **neprozirne** (pune boje, ne
-  `--card-bg`) — inače se kroz njih vide zvijezde i karta ispod.
-  Širina lepeze ide na `vw`, ne na `%`: `.hs-inner` je flex pa bi se `.container` raširio po
-  sadržaju i gurnuo lepezu iz sredine ekrana.
+- **Zadnji slide = izbornik kao RAZLOŽEN SPREAD** (`.hs-menu-spread`, prefiks `hs-menu-`):
+  svaka stranica iz izbornika (bez Početne) je karta u omjeru tarot karte (0.583), sve su
+  razložene jedna do druge **bez preklapanja**, uz blagi nagib. Bez naslova i bez opisa —
+  samo ikona + naziv. **Bilo je lepeza (karte naslagane u ruci) — vraćeno jer se na iPhone
+  mini naziv nije mogao pročitati ni karta pogoditi prstom.** Raspored je čisti CSS
+  (`flex-wrap` + `justify-content: center`), bez JS-a: broj karata nije fiksan (kartica
+  „Usluge" nestaje s togglom) pa se red mora sam prelamati i centrirati.
+  Karte su **neprozirne** (pune boje, ne `--card-bg`) — inače se kroz njih vide zvijezde.
+  **Tri zamke naučene ovdje (sve tri su bile stvarni kvarovi):**
+  1. **Postotni `padding` unutar karte se računa od ŠIRINE RODITELJA**, ne od karte —
+     `padding: 7%` je na spreadu od 772 px značio 54 px sa svake strane, pa se kartica nije
+     mogla suziti ispod ~110 px. Sve unutarnje mjere idu preko `--hs-card-w`.
+  2. **`aspect-ratio` + rastezanje po visini vrti se u krug**: kartica dobije visinu reda,
+     omjer je pretvori natrag u širinu, `flex-basis` se ignorira, a postotne mjere unutar
+     kartice (ikona `width: 50%`) padnu na nulu. Zato su širina I visina izričite.
+  3. **SVG bez `width`/`height` atributa ima „prirodnu" veličinu 300×150** i preko
+     `min-content` diktira visinu kartice — zato je ikona `position: absolute` u svom okviru.
+  Širina spreada ide na `vw`, a `.container` tog slidea nema vodoravni padding: `.hs-inner`
+  je flex pa bi se kontejner raširio po sadržaju i gurnuo spread iz sredine ekrana.
 - **Navigacija:** na POČETNOJ gore NEMA trake — samo logo (lijevo) i minimalan `☰` (desno) na
   prozirnoj podlozi. Na **svim ostalim stranicama** traka dobiva podlogu, blur i obrub kao u
   verziji 1 (`html.nd-chrome`), a na širokom ekranu (`NAV_BAR_MIN = 1100px`) i klasičnu

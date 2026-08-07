@@ -207,6 +207,17 @@ html.hs-lock body {
    `cqw` je 1 % širine kruga, pa omjer ostaje isti na svakom ekranu. */
 #home .home-live-natal-cta {
   container-type: inline-size;
+
+  /* Krug ne smije biti manji od ~170 px. Font natpisa ide na `cqw` (dakle
+     u postotku kruga), ali ima donju granicu od 0.64rem radi čitljivosti -
+     kad je kotač malen (mobitel), font udari u tu granicu i prestane se
+     smanjivati, pa natpis proporcionalno naraste i prelije se preko
+     tamnog dijela kruga. Ispod 170 px krug bi bio manji od natpisa.
+     `clamp(40%, 170px, 66%)` znači: veliki kotač → 40 % kao i prije,
+     mali kotač → fiksnih 170 px, sitan kotač → najviše 66 % (da gumb ne
+     proguta cijeli crtež). Usput je i meta za prst veća. */
+  width:  clamp(40%, 170px, 66%);
+  height: clamp(40%, 170px, 66%);
 }
 
 #home .home-live-natal-cta-label {
@@ -229,54 +240,139 @@ html.hs-lock body {
 #home .vtar-cotd-eyebrow,
 #home .vtar-cotd-cta  { font-size: clamp(0.7rem, min(3vw, 1.7vh), 1.2rem); }
 
+/* NIZAK EKRAN (mobitel s vidljivom adresnom trakom, npr. iPhone mini):
+   kartica karte dana zna narasti viša od raspoloživog prostora pa se
+   popne skroz do vrha i završi ISPOD logotipa u traci. Deck se ne
+   scrolla, pa ju ovdje treba stisnuti: manji razmaci i opis skraćen na
+   nekoliko redaka (cijeli tekst je ionako na stranici tarota, kartica je
+   samo najava). Granice su na visini, ne na širini - problem radi
+   VISINA ekrana. */
+@media (max-height: 780px) {
+  #home .vtar-cotd {
+    gap: clamp(0.6rem, 1.6vh, 1.4rem);
+    padding: clamp(0.7rem, 1.8vh, 1.4rem) clamp(0.9rem, 2.6vw, 1.6rem);
+  }
+  #home .vtar-cotd-img { width: clamp(96px, min(26vw, 22vh), 430px); }
+  #home .vtar-cotd-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+  }
+}
+
+@media (max-height: 660px) {
+  #home .vtar-cotd-desc { -webkit-line-clamp: 4; line-clamp: 4; }
+}
+
+/* Isti problem na vodoravnom blog slideu: kartica članka je viša od
+   trake pa naslov ostane odrezan. Naslov i sažetak se skraćuju, a
+   unutarnji razmak stisne. */
+@media (max-height: 780px) {
+  #home .hs-rail-track .blog-content { padding: clamp(0.85rem, 2.4vh, 2rem); }
+
+  #home .hs-rail-track .blog-content h3,
+  #home .hs-rail-track .blog-content p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  #home .hs-rail-track .blog-content h3 { -webkit-line-clamp: 2; line-clamp: 2; }
+  #home .hs-rail-track .blog-content p  { -webkit-line-clamp: 3; line-clamp: 3; }
+}
+
+@media (max-height: 620px) {
+  #home .hs-rail-track .blog-content p { -webkit-line-clamp: 2; line-clamp: 2; }
+}
+
+@media (max-height: 560px) {
+  #home .vtar-cotd-desc { -webkit-line-clamp: 3; line-clamp: 3; }
+}
+
 #home .cta-section { margin: 0; }
 #home .cta-section h2 { font-size: clamp(1.5rem, min(5.6vw, 4.4vh), 3.6rem); }
 
-/* ---- Zadnji slide: izbornik kao LEPEZA KARATA ----
-   Bez naslova i bez opisa - svaka stranica je jedna karta (omjer kao
-   tarot karta, 0.583), a karte su razastrte u lepezu kao u ruci.
+/* ---- Zadnji slide: izbornik kao RAZLOŽEN SPREAD ----
+   Svaka stranica je jedna karta (omjer tarot karte, 0.583), a karte su
+   razložene po stolu kao u spreadu - jedna do druge, BEZ preklapanja.
 
-   Položaj svake karte računa `layoutHomeMenuFan()` u js/app.js: postavlja
-   `--hs-x` (pomak, u % ŠIRINE karte), `--hs-y` (spuštanje krajnjih karata,
-   u % VISINE) i `--hs-rot`. Mora se računati u JS-u jer broj karata nije
-   fiksan - kartica "Usluge" nestaje kad su usluge isključene u adminu, a
-   raspon lepeze ovisi o raspoloživoj širini.
+   Prije je ovdje bila lepeza (karte naslagane u ruci). Na malom ekranu se
+   pokazalo da to ne valja: preklopljene karte su preuske da bi se naziv
+   pročitao i teško se pogađaju prstom. Zato razlog za razložen raspored -
+   svaka karta je cijela vidljiva i cijela je meta za dodir.
 
-   Hover ne mijenja `transform` izravno nego samo `--hs-lift`/`--hs-scale`
-   koje transform već koristi - tako se položaj u lepezi ne izgubi, a
-   prijelaz i dalje animira `transform`. */
+   Broj karata nije fiksan (kartica "Usluge" nestaje kad su usluge
+   isključene u adminu), pa raspored NE smije ovisiti o broju: `flex-wrap`
+   s `justify-content: center` sam prelama redak i centrira ostatak. Zato
+   ovdje više nema računanja u JS-u. */
 
-.hs-menu-fan {
-  --hs-fan-w: clamp(88px, min(24vw, 21vh), 200px);
-  position: relative;
-  /* `.hs-inner` je flex pa se `.container` širi po sadržaju - lepeza šira
-     od unutarnjeg prostora ne bi bila odrezana nego bi gurnula cijeli
-     stupac udesno (lepeza više ne bi bila po sredini ekrana). Zato je
-     širina vezana uz vw, s rezervom za padding slidea i kontejnera. */
-  width: min(1000px, 74vw);
-  height: calc(var(--hs-fan-w) / 0.583 * 1.3);
+/* `.container` ovdje ne smije imati vodoravni padding: `.hs-inner` je
+   flex, pa kad je spread širi od unutarnjeg prostora kontejnera, ne biva
+   odrezan nego gurne cijeli stupac udesno (mjereno: karte 52-323 px na
+   ekranu širokom 320 px). Spread sam pazi na svoju širinu. */
+#home .hs-slide[data-hs-name="izbornik"] .container {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.hs-menu-spread {
+  /* Širina karte na jednom mjestu; visina se iz nje računa (omjer karte).
+     Veličina ovisi i o VISINI ekrana (`vh`), ne samo o širini: na niskom
+     ekranu (mobitel položen vodoravno) karte bi inače stale u red koji je
+     viši od ekrana, a deck se ne scrolla. */
+  --hs-card-w: clamp(84px, min(26vw, 22vh), 176px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  /* BEZ rastezanja po visini: sa `stretch` (zadano) karta dobije visinu
+     reda, `aspect-ratio` tu visinu pretvori natrag u širinu i kartica
+     prestane slušati `flex-basis` - a onda i postotne mjere unutar nje
+     (ikona `width: 50%`) padnu na nulu jer im je roditelj "neodređen". */
+  align-items: flex-start;
+  gap: clamp(8px, 1.2vw, 20px);
+  /* `.hs-inner` je flex pa se `.container` širi po sadržaju - element širi
+     od raspoloživog prostora ne bi bio odrezan nego bi gurnuo cijeli
+     stupac udesno (i spread ne bi bio po sredini ekrana). Zato širina ide
+     na `vw`, s rezervom za padding slidea. */
+  width: min(1200px, calc(100vw - 2.5rem));
   margin: 0 auto;
 }
 
 .hs-menu-card {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: var(--hs-fan-w);
-  aspect-ratio: 0.583;
+  /* Širina I visina su izričite, bez `aspect-ratio` i bez `flex-grow`.
+     Razlog (naučeno na ovom slideu): `aspect-ratio` + rastezanje po
+     visini vrti se u krug - kartica dobije visinu reda, omjer tu visinu
+     pretvori natrag u širinu, kartica prestane slušati zadanu širinu, a
+     postotne mjere unutar nje (ikona `width: 50%`) padnu na nulu jer im
+     je roditelj "neodređen". Ovako je sve određeno unaprijed.
+     `flex-grow: 0` je nužan da zadnji, nepotpun red ne napuše karte. */
+  flex: 0 0 auto;
+  width: var(--hs-card-w);
+  height: calc(var(--hs-card-w) / 0.583);
+  /* Bez ovoga flex item ne smije biti uži od svog `min-content` sadržaja
+     pa se zadana širina ignorira (mjereno 110 px umjesto 84 px). */
+  min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7%;
-  padding: 9% 7%;
+  /* PAZI: postotni `padding` se u CSS-u računa od ŠIRINE RODITELJA, a ne
+     od same kartice. Kod uskog spreada to je značilo padding od 54 px sa
+     svake strane (7 % od 772 px) - kartica se zbog toga nije mogla suziti
+     ispod ~110 px koliko god joj širinu zadali. Zato sve mjere unutar
+     kartice idu preko `--hs-card-w`. */
+  gap: calc(var(--hs-card-w) * 0.06);
+  padding: calc(var(--hs-card-w) * 0.09) calc(var(--hs-card-w) * 0.07);
   text-align: center;
   text-decoration: none;
   color: var(--text);
   cursor: pointer;
   /* NEPROZIRNO: karta mora izgledati kao tiskana karta, a ne kao staklo -
      zato pune boje, ne `--card-bg`/`--panel-grad-*` (koji su prozirni pa
-     bi se kroz kartu vidjele zvijezde i karta ispod nje u lepezi). */
+     bi se kroz kartu vidjele zvijezde). */
   background:
     radial-gradient(ellipse at 50% 12%, rgba(168, 144, 208, 0.16), transparent 62%),
     linear-gradient(165deg, #1d1846, #0e0b24);
@@ -285,14 +381,22 @@ html.hs-lock body {
      (v. isto objašnjenje u tarot/tarot.css) */
   border-radius: 6% / 3.5%;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-  transform-origin: 50% 100%;
+  /* blagi nagib da karte izgledaju položene na stol, a ne poredane u
+     tablicu; ne dira raspored jer je transform samo vizualan */
   transform:
-    translate(calc(-50% + var(--hs-x, 0%)), calc(var(--hs-y, 0%) + var(--hs-lift, 0px)))
     rotate(var(--hs-rot, 0deg))
+    translateY(var(--hs-lift, 0px))
     scale(var(--hs-scale, 1));
-  transition: transform 0.35s cubic-bezier(0.22, 0.8, 0.3, 1),
+  transition: transform 0.3s cubic-bezier(0.22, 0.8, 0.3, 1),
               border-color 0.25s ease, box-shadow 0.25s ease;
 }
+
+.hs-menu-card:nth-child(6n+1) { --hs-rot: -1.6deg; }
+.hs-menu-card:nth-child(6n+2) { --hs-rot:  1.2deg; }
+.hs-menu-card:nth-child(6n+3) { --hs-rot: -0.7deg; }
+.hs-menu-card:nth-child(6n+4) { --hs-rot:  1.7deg; }
+.hs-menu-card:nth-child(6n+5) { --hs-rot: -1.2deg; }
+.hs-menu-card:nth-child(6n+6) { --hs-rot:  0.8deg; }
 
 :root[data-theme="light"] .hs-menu-card {
   background:
@@ -312,23 +416,42 @@ html.hs-lock body {
 
 .hs-menu-card:hover,
 .hs-menu-card:focus-visible {
-  --hs-lift: -22px;
-  --hs-scale: 1.06;
+  --hs-lift: -10px;
+  --hs-scale: 1.05;
+  --hs-rot: 0deg;
   z-index: 20;
   border-color: var(--lavender);
   box-shadow: var(--shadow-glow), 0 18px 38px rgba(0, 0, 0, 0.5);
 }
 
+/* SVG ikona je apsolutna UNUTAR svog okvira namjerno: SVG bez `width` i
+   `height` atributa ima "prirodnu" veličinu 300×150, a kartica joj je
+   preko `min-content` visine dopuštala da diktira visinu (mjereno 189 px
+   umjesto 144). `aspect-ratio` je tu visinu onda vraćao natrag u širinu,
+   pa je kartica bila šira od tražene i red se lomio. Izvan toka SVG više
+   ništa ne diktira. */
 .hs-menu-icon {
-  width: 52%;
+  position: relative;
+  flex: 0 0 auto;
+  width: 50%;
   aspect-ratio: 1;
 }
 
-.hs-menu-icon svg { width: 100%; height: 100%; display: block; }
+.hs-menu-icon svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Naziv se mjeri prema SAMOJ KARTI (`cqw`), ne prema ekranu - inače na
+   uskom ekranu font udari u donju granicu i tekst preraste karticu. */
+.hs-menu-card { container-type: inline-size; }
 
 .hs-menu-name {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(0.66rem, min(1.5vw, 1.7vh), 1.05rem);
+  font-size: clamp(0.62rem, 11cqw, 1.05rem);
   color: var(--lavender);
   line-height: 1.2;
 }
@@ -541,17 +664,40 @@ html.hs-lock body {
   .hs-dots button { width: 8px; height: 8px; }
 
   #home .hero h1 { font-size: clamp(3.6rem, 19vw, 7rem); }
-  #home .home-live-natal-svg,
-  #home .home-live-natal-wrap { max-height: 46dvh; }
+
+  /* Kotač na mobitelu MORA ostati kvadrat (style.css mu daje
+     `aspect-ratio: 1/1`). Ovdje je prije stajao `max-height: 46dvh` i to
+     je bio pravi kvar: visina se odrezala, širina je ostala iz `vw`, pa
+     - crtež se letterboxao (prazan prostor lijevo i desno), a
+     - gumb u sredini, koji je `40% × 40%` roditelja, postao je ELIPSA
+       (npr. 123×104 px) uža od vlastitog natpisa, pa je tekst virio van.
+     Visinu zato ograničavamo kroz ŠIRINU - omjer tako ostaje 1:1. */
+  #home .home-live-natal-wrap { width: min(52dvh, 96vw); }
+  #home .home-live-natal-svg  { max-height: none; }
 
   .hs-hint { bottom: 1rem; }
 }
 
-/* Nizak ekran (npr. mobitel u vodoravnom položaju) - deck bi se prelio */
+/* Nizak ekran (npr. mobitel u vodoravnom položaju) - deck bi se prelio.
+   Prostor u visini je ovdje najuže grlo: slide ne scrolla, pa i kotač i
+   kartice članaka moraju biti vezani uz `dvh`, ne uz širinu. */
 @media (max-height: 560px) {
   .hs-slide { padding: 4.5rem 1rem 2.6rem; }
   .hs-hint { display: none; }
   #home .hero h1 { font-size: clamp(2.8rem, 11vh, 5rem); }
+
+  /* kotač: visinu diktira ekran, a `aspect-ratio` iz style.css drži kvadrat */
+  #home .home-live-natal-wrap { width: min(58dvh, 92vw); }
+  #home .home-live-natal-caption { margin-top: -3%; }
+
+  /* Članci na blog slideu: ostaju datum, naslov i poveznica. Slika i
+     sažetak se skrivaju - u ovoj visini kartica inače prelije slide,
+     a cijeli tekst je ionako jedan dodir dalje. */
+  #home .hs-rail-track .blog-image { display: none; }
+  #home .hs-rail-track .blog-content { padding: 0.7rem 0.9rem; }
+  #home .hs-rail-track .blog-content h3 { font-size: 1rem; }
+  #home .hs-rail-track .blog-content p  { display: none; }
+  .hs-rail-viewport { padding: 0.5rem 0; }
 }
 
 /* ---- 9. Pristupačnost ---- */

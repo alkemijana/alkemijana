@@ -208,62 +208,60 @@ html.hs-lock body {
 #home .home-live-natal-cta {
   container-type: inline-size;
 
-  /* Krug ne smije biti manji od ~170 px. Font natpisa ide na `cqw` (dakle
-     u postotku kruga), ali ima donju granicu od 0.64rem radi čitljivosti -
-     kad je kotač malen (mobitel), font udari u tu granicu i prestane se
-     smanjivati, pa natpis proporcionalno naraste i prelije se preko
-     tamnog dijela kruga. Ispod 170 px krug bi bio manji od natpisa.
-     `clamp(40%, 170px, 66%)` znači: veliki kotač → 40 % kao i prije,
-     mali kotač → fiksnih 170 px, sitan kotač → najviše 66 % (da gumb ne
-     proguta cijeli crtež). Usput je i meta za prst veća. */
-  width:  clamp(40%, 170px, 66%);
-  height: clamp(40%, 170px, 66%);
+  /* VELIČINA JE VEZANA UZ CRTEŽ, NE UZ PIKSELE: najmanja kružnica u SVG-u
+     kotača ima polumjer 220 u viewBoxu širokom 1120, dakle promjer joj je
+     39.3 % širine kotača. Gumb zato ide na 38 % - taman unutar te
+     kružnice, na svakom ekranu. Fiksna donja granica u pikselima (bila je
+     170 px) na malom kotaču izađe izvan te kružnice, pa je nema.
+     Kotač je kvadrat (v. `aspect-ratio` u style.css) pa je 38 % × 38 %
+     uvijek KRUG, nikad elipsa. */
+  width:  38%;
+  height: 38%;
 }
 
 #home .home-live-natal-cta-label {
+  /* Font prati veličinu kruga (`cqw`). Donja granica je tu radi
+     čitljivosti - kad se u nju udari (mali kotač), natpis se jednostavno
+     prelomi u više kratkih redaka umjesto da izađe iz kruga. */
   font-size: clamp(0.64rem, 6.2cqw, 1.7rem);
-  /* style.css ima padding 0 10%; na malom kotaču to pojede previše
-     prostora pa se natpis lomi u tri retka umjesto dva */
-  padding: 0 6%;
+  line-height: 1.35;
+  padding: 0 9%;
 }
 
-/* Karta dana raste s ekranom */
+/* Karta dana raste s ekranom.
+   `--cotd-fit` (0.55-1) postavlja `fitCotd()` u js/home-slides.js: kartica
+   se izmjeri i, ako je viša od slidea, SVE mjere u njoj se smanje istim
+   faktorom dok ne stane. Tekst se pritom nikad ne skraćuje - duljina
+   opisa ovisi o tome koja je karta na redu pa se u CSS-u ne da unaprijed
+   pogoditi veličina. */
 #home .vtar-cotd {
+  --cotd-fit: 1;
   max-width: min(1500px, 90vw);
-  gap: clamp(1rem, 3vh, 3.5rem);
-  padding: clamp(1.2rem, 3vh, 3.5rem) clamp(1.3rem, 3.2vh, 4rem);
+  gap: calc(clamp(1rem, 3vh, 3.5rem) * var(--cotd-fit));
+  padding: calc(clamp(1.2rem, 3vh, 3.5rem) * var(--cotd-fit))
+           calc(clamp(1.3rem, 3.2vh, 4rem) * var(--cotd-fit));
 }
 
-#home .vtar-cotd-img  { width: clamp(115px, min(30vw, 30vh), 430px); }
-#home .vtar-cotd-name { font-size: clamp(1.3rem, min(5.4vw, 4vh), 3.2rem); }
-#home .vtar-cotd-desc { font-size: clamp(0.95rem, min(3.6vw, 2.3vh), 1.8rem); }
+#home .vtar-cotd-text { gap: calc(0.3rem * var(--cotd-fit)); }
+
+#home .vtar-cotd-img  { width: calc(clamp(115px, min(30vw, 30vh), 430px) * var(--cotd-fit)); }
+#home .vtar-cotd-name { font-size: calc(clamp(1.3rem, min(5.4vw, 4vh), 3.2rem) * var(--cotd-fit)); }
+#home .vtar-cotd-desc { font-size: calc(clamp(0.95rem, min(3.6vw, 2.3vh), 1.8rem) * var(--cotd-fit)); }
 #home .vtar-cotd-eyebrow,
-#home .vtar-cotd-cta  { font-size: clamp(0.7rem, min(3vw, 1.7vh), 1.2rem); }
+#home .vtar-cotd-cta  { font-size: calc(clamp(0.7rem, min(3vw, 1.7vh), 1.2rem) * var(--cotd-fit)); }
 
 /* NIZAK EKRAN (mobitel s vidljivom adresnom trakom, npr. iPhone mini):
    kartica karte dana zna narasti viša od raspoloživog prostora pa se
-   popne skroz do vrha i završi ISPOD logotipa u traci. Deck se ne
-   scrolla, pa ju ovdje treba stisnuti: manji razmaci i opis skraćen na
-   nekoliko redaka (cijeli tekst je ionako na stranici tarota, kartica je
-   samo najava). Granice su na visini, ne na širini - problem radi
-   VISINA ekrana. */
+   popne skroz do vrha i završi ISPOD logotipa u traci. Ovdje se zato
+   unaprijed stisne, a `fitCotd()` u JS-u onda dotjera ostatak.
+   Granice su na VISINI ekrana, ne na širini - problem radi visina. */
 @media (max-height: 780px) {
   #home .vtar-cotd {
-    gap: clamp(0.6rem, 1.6vh, 1.4rem);
-    padding: clamp(0.7rem, 1.8vh, 1.4rem) clamp(0.9rem, 2.6vw, 1.6rem);
+    gap: calc(clamp(0.6rem, 1.6vh, 1.4rem) * var(--cotd-fit));
+    padding: calc(clamp(0.7rem, 1.8vh, 1.4rem) * var(--cotd-fit))
+             calc(clamp(0.9rem, 2.6vw, 1.6rem) * var(--cotd-fit));
   }
-  #home .vtar-cotd-img { width: clamp(96px, min(26vw, 22vh), 430px); }
-  #home .vtar-cotd-desc {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
-    overflow: hidden;
-  }
-}
-
-@media (max-height: 660px) {
-  #home .vtar-cotd-desc { -webkit-line-clamp: 4; line-clamp: 4; }
+  #home .vtar-cotd-img { width: calc(clamp(96px, min(26vw, 22vh), 430px) * var(--cotd-fit)); }
 }
 
 /* Isti problem na vodoravnom blog slideu: kartica članka je viša od
@@ -284,10 +282,6 @@ html.hs-lock body {
 
 @media (max-height: 620px) {
   #home .hs-rail-track .blog-content p { -webkit-line-clamp: 2; line-clamp: 2; }
-}
-
-@media (max-height: 560px) {
-  #home .vtar-cotd-desc { -webkit-line-clamp: 3; line-clamp: 3; }
 }
 
 #home .cta-section { margin: 0; }

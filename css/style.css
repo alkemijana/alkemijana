@@ -521,8 +521,8 @@ body > svg[viewBox="0 0 1920 1080"] {
 }
 
 .blog-results-meta {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
+  font-family: 'Quicksand', sans-serif;
+  font-style: normal;
   font-size: 0.95rem;
   color: var(--text-muted);
   letter-spacing: 0.08em;
@@ -576,13 +576,16 @@ body > svg[viewBox="0 0 1920 1080"] {
   .blog-chip { font-size: 0.66rem; padding: 0.42rem 0.9rem; letter-spacing: 0.14em; }
 }
 
+/* Podnaslov sekcije: Quicksand (isti font kao linkovi u traci i ostale
+   oznake), NE kurzivni Atkinson - razvučena kurzivna verzalka se loše
+   čitala. Boja i veličina su ostale iste. */
 .section-subtitle {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
+  font-family: 'Quicksand', sans-serif;
+  font-weight: 500;
   text-align: center;
   color: var(--text-muted);
   font-size: 1.25rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 4rem;
 }
@@ -2002,8 +2005,7 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   color: var(--text-muted);
 }
 .nt-guide-excerpt {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.05rem;
   line-height: 1.55;
   color: var(--text);

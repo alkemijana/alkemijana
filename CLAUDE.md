@@ -83,6 +83,10 @@ ALKEMIJANA WEBSITE/
 - **Glavni font (logo, hero):** Tangerine (cursive, mistično rukopisno) — NE mijenjati
 - **Ime iznad natalne karte:** Dancing Script (`.nt-chart-head`) — NE mijenjati
 - **Naslovi sekcija:** Playfair Display
+- **Podnaslovi sekcija (`.section-subtitle`) i sitne oznake:** Quicksand (verzalka, blaži
+  razmak). Prije je to bio **kurzivni Atkinson u verzalki** — izbačen na zahtjev jer se
+  loše čitao; boja i veličina su ostale iste. Kurziv Atkinsona ostaje samo tamo gdje je
+  pravi naglasak (recenzije, citati, `<em>`).
 - **Body / tekst za čitanje (paragrafi, blog, citati, opisi, inputi):** Atkinson Hyperlegible
   (sans-serif, biran radi čitljivosti / disleksije — zamijenio Cormorant Infant + Cormorant Garamond;
   ima PRAVI kurziv, lakši/tanji od Lexenda; samo težine 400/700 pa se 500/600 zaokruže)
@@ -154,6 +158,15 @@ normalno — zaključava se samo dok je početna aktivna.
   ekrana. `#main-nav` ima `z-index:210`, panel `200`, pa logo i `☰` ostaju vidljivi i klikabilni
   dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i
   `openPost()` traže po njima.
+- **Deck je KRUŽAN:** iza zadnjeg slidea dolazi prvi i obrnuto (`goTo()` omata indeks).
+  `paint(prev, dir)` pritom mora znati smjer — inače odlazeći slide kod omatanja ispadne
+  s krive strane (zadnji bi otišao u dubinu umjesto da proleti pokraj gledatelja).
+- **Karta dana se mjeri i skalira** (`fitCotd()` u home-slides.js): duljina teksta ovisi
+  o tome koja je karta na redu, a slide se ne scrolla, pa se u CSS-u ne da unaprijed
+  pogoditi veličina. Kartica se izmjeri i, ako je viša od slidea, sve mjere u njoj se
+  smanje faktorom `--cotd-fit` (do 0.55). **Tekst se NE skraćuje** — mora se vidjeti cijel
+  (ranije je bio `-webkit-line-clamp`, izbačeno na zahtjev). Zove se iz `refresh()`,
+  na `resize` i iz `tarot.js` čim se karta dana iscrta.
 - **Logo** zove `goHome()` — vodi na početnu I resetira deck na prvi slide.
 - **Izbornik ima dva oblika:** na mobitelu (`≤768px`) panel klizne **odozgo** preko cijele
   širine (obrazac iz v1); na desktopu (`≥769px`) je ploča **uz desni rub** (340px, puna visina,
@@ -933,9 +946,22 @@ Veličina kruga odgovara prividnoj magnitudi zvijezde.
 Boje: bjelkasti tonovi za većinu, narančasti za Aldebaran/Antares, hladniji ljubičasti za pozadinske.
 
 ### Blog članci — URL routing
-Klik na članak → `openPost(id)` → `window.location.hash = 'post/<id>'`
+Klik na članak → `openPost(id)` → `pushHistory('#post/<id>')`
 Pri učitavanju stranice JS provjerava hash → automatski otvori članak (deep linking).
 Gumb "Kopiraj link" kopira URL s tim hash-om.
+
+### Povijest preglednika (gumb "natrag")
+Stranica je SPA pa preglednik sam po sebi nema što pamtiti — bez ovoga bi „natrag"
+izbacio posjetitelja sa stranice već nakon prvog klika u izborniku.
+- `showPage(id, opts)` / `openPost(id, opts)` na kraju zovu **`pushHistory()`** (novi unos
+  u povijesti), osim kad je `opts.fromHistory` — to je slučaj kad promjenu pokreće sam
+  preglednik ili prvo učitavanje.
+- **`popstate`** → `routeFromLocation(true)` prikaže stanje iz URL-a. `#admin` je iznimka:
+  to nije stranica nego overlay za prijavu.
+- `showPage()` uvijek zove `hideBlogPostView()` — otvoreni članak je „podstranica" bloga
+  pa mora nestati pri svakoj promjeni stranice, inače ostane ispod nove.
+- **Svaka nova funkcija koja mijenja prikaz mora ići kroz `showPage`/`openPost`** ili sama
+  pozvati `pushHistory()`, inače se URL i prikaz raziđu.
 
 ---
 

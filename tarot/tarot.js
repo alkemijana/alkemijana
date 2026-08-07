@@ -53,6 +53,11 @@
         </div>
       </a>
     `;
+
+    /* Slide početne se ne scrolla, a duljina teksta ovisi o karti dana -
+       deck kartu izmjeri i po potrebi smanji da cijeli tekst stane
+       (fitCotd u js/home-slides.js). Ovdje jer se tek sada zna sadržaj. */
+    if (window.HomeSlides && window.HomeSlides.fitCotd) window.HomeSlides.fitCotd();
   }
 
   if (document.readyState === 'loading') {

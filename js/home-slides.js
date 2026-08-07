@@ -149,11 +149,24 @@
 
   /* ---- Prebacivanje slideova ---- */
 
-  function paint() {
+  /* `prev`/`dir` su bitni SAMO kod omatanja (zadnji -> prvi i obrnuto):
+     tada odlazeći slide po indeksu ispadne s krive strane (npr. zadnji
+     slide je "future" iako smo išli naprijed), pa bi umjesto da proleti
+     pokraj gledatelja - otišao natrag u dubinu. */
+  function paint(prev, dir) {
     slides.forEach(function (el, i) {
+      var past   = i < current;
+      var future = i > current;
+
+      if (typeof prev === 'number' && typeof dir === 'number' &&
+          i === prev && prev !== current) {
+        past   = dir > 0;
+        future = dir < 0;
+      }
+
       el.classList.toggle('hs-active', i === current);
-      el.classList.toggle('hs-past',   i <  current);
-      el.classList.toggle('hs-future', i >  current);
+      el.classList.toggle('hs-past',   past   && i !== current);
+      el.classList.toggle('hs-future', future && i !== current);
       /* Samo aktivan slide smije biti dohvatljiv tipkovnicom i čitačem
          ekrana - `inert` izbacuje ostale iz tab redoslijeda (sadržaj
          ostaje u DOM-u pa ga tražilice i dalje vide). */
@@ -173,7 +186,12 @@
 
   function goTo(idx, dir) {
     if (!slides.length) return;
-    idx = Math.max(0, Math.min(slides.length - 1, idx));
+    /* Deck je KRUŽAN: iza zadnjeg slidea dolazi prvi i obrnuto. Zato se
+       indeks omota, a ne odsijeca (`Math.min/max` bi na zadnjem slideu
+       samo stao). Klik na točkicu i dalje ide izravno na traženi slide -
+       omatanje mijenja samo krajeve. */
+    var n = slides.length;
+    idx = ((idx % n) + n) % n;
     if (idx === current) return;
 
     var prev = current;
@@ -186,7 +204,7 @@
       setRail(slide, goingDown ? 0 : Math.max(0, railCount(slide) - 1));
     }
 
-    paint();
+    paint(prev, typeof dir === 'number' ? dir : (current > prev ? 1 : -1));
     markMoved();
     lock();
   }
@@ -369,10 +387,43 @@
       watchRail(s);
       layoutRail(s);
     });
+    fitCotd();
   }
 
   function onResize() {
     slides.forEach(function (s) { if (isRail(s)) layoutRail(s); });
+    fitCotd();
+  }
+
+  /* ---- Karta dana: cijeli tekst mora stati u slide ----
+     Duljina teksta ovisi o tome koja je karta na redu (razlikuju se i za
+     nekoliko redaka), a slide se ne scrolla - zato se u CSS-u ne da
+     unaprijed pogoditi veličina. Ovdje se kartica izmjeri i, ako je viša
+     od raspoloživog prostora, sve mjere u njoj se smanje faktorom
+     `--cotd-fit` (fontovi, slika, razmaci - v. css/home-slides.css).
+     Skraćivanja teksta nema: tekst se uvijek vidi cijel. */
+  function fitCotd() {
+    var card = document.querySelector('#home .vtar-cotd');
+    if (!card) return;
+
+    var slide = card.closest('.hs-slide');
+    if (!slide) return;
+
+    var cs    = getComputedStyle(slide);
+    var avail = slide.clientHeight
+              - parseFloat(cs.paddingTop || 0)
+              - parseFloat(cs.paddingBottom || 0);
+    if (avail <= 0) return;
+
+    var fit = 1;
+    card.style.setProperty('--cotd-fit', '1');
+
+    /* Tekst se pri smanjenju prelama drugačije, pa se ne da izračunati u
+       jednom koraku - ide se korak po korak (najviše 12 puta, do 55 %). */
+    for (var i = 0; i < 12 && card.scrollHeight > avail && fit > 0.55; i++) {
+      fit = Math.max(0.55, fit - 0.05);
+      card.style.setProperty('--cotd-fit', String(fit));
+    }
   }
 
   /* ---- Zagrijavanje (zove ga js/loader.js prije otkrivanja stranice) ----
@@ -448,6 +499,7 @@
     deactivate: deactivate,
     refresh:    refresh,
     goTo:       goTo,
-    warmup:     warmup
+    warmup:     warmup,
+    fitCotd:    fitCotd   // zove i tarot.js kad iscrta kartu dana
   };
 })();

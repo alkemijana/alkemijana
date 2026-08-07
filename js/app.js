@@ -69,7 +69,12 @@ function applyPageMeta(id) {
   document.documentElement.lang = 'hr';
 }
 
-function showPage(id) {
+/* `opts.fromHistory` je true kad promjenu stranice pokreće gumb "natrag"
+   ili "naprijed" u pregledniku - tada se u povijest NE dodaje novi unos
+   (inače bi se korisnik vrtio u krug). */
+function showPage(id, opts) {
+  opts = opts || {};
+
   /* LEGAL: ako usluge nisu uključene u adminu (nema registriranog obrta),
      #usluge stranica je potpuno blokirana - preusmjeri na početnu.
      Tako čak ni direktni URL/bookmark ne može prikazati cjenik. */
@@ -84,6 +89,11 @@ function showPage(id) {
   });
   closeMenu();
 
+  /* Otvoreni članak je "podstranica" bloga: svaki odlazak na neku
+     stranicu (pa i povratak na sam blog) mora ga zatvoriti, inače bi
+     ostao prikazan ispod nove stranice. */
+  hideBlogPostView();
+
   /* Početna je slide deck bez scrolla, ostale stranice scrollaju
      normalno - v. js/home-slides.js. */
   if (window.HomeSlides) {
@@ -94,10 +104,47 @@ function showPage(id) {
 
   applyPageMeta(id);
   syncNavBar();
+  if (!opts.fromHistory) pushHistory(id === 'home' ? '' : '#' + id);
 
   if (id === 'blog')   renderBlogList();
   if (id === 'usluge') renderPricingTable();
 }
+
+/* ---- POVIJEST PREGLEDNIKA ----
+   Stranica je SPA: bez ovoga preglednik nema što pamtiti pa gumb
+   "natrag" izbaci posjetitelja sa stranice već nakon prvog klika na
+   izbornik. Svaka promjena stranice zato dodaje unos u povijest, a
+   `popstate` (natrag/naprijed) vraća prikaz na stanje iz URL-a. */
+
+function pushHistory(hash) {
+  var target = hash || window.location.pathname;
+  var current = window.location.hash || window.location.pathname;
+  if (current === target) return;              // isti prikaz - bez novog unosa
+  try { history.pushState({ aj: true }, '', target); } catch (e) {}
+}
+
+function routeFromLocation(fromHistory) {
+  var hash = window.location.hash;
+
+  if (hash.indexOf('#post/') === 0) {
+    openPost(hash.replace('#post/', ''), { fromHistory: fromHistory });
+    return;
+  }
+  var pid = hash.replace('#', '');
+  if (pid && PAGE_META[pid]) showPage(pid, { fromHistory: fromHistory });
+  else                       showPage('home', { fromHistory: fromHistory });
+}
+
+window.addEventListener('popstate', function () {
+  /* #admin nije stranica nego overlay - povratak na njega samo otvori
+     prijavu, prikaz ostaje kakav je bio. */
+  if (window.location.hash === '#admin') {
+    var ov = document.getElementById('admin-login-overlay');
+    if (ov) ov.classList.add('show');
+    return;
+  }
+  routeFromLocation(true);
+});
 
 /* Klik na logo uvijek vodi na početnu i na PRVI slide, bez obzira gdje
    je deck stao. */
@@ -638,7 +685,8 @@ function blogCard(p) {
     </div>`;
 }
 
-function openPost(id) {
+function openPost(id, opts) {
+  opts = opts || {};
   const p = BLOG_POSTS.find(x => x.id === id);
   if (!p) return;
 
@@ -680,7 +728,7 @@ function openPost(id) {
 
   document.getElementById('blog-list-view').classList.add('hidden');
   document.getElementById('blog-post-view').classList.add('active');
-  window.location.hash = 'post/' + id;
+  if (!opts.fromHistory) pushHistory('#post/' + id);
   renderShareBar(p);
   setPostMetaTags(p);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -890,11 +938,21 @@ function renderSourcesInto(wrapId, listId, raw) {
 }
 
 function closeBlogPost() {
-  document.getElementById('blog-post-view').classList.remove('active');
-  document.getElementById('blog-list-view').classList.remove('hidden');
-  window.location.hash = '';
+  /* Ide kroz showPage da URL i povijest ostanu usklađeni s prikazom -
+     inače gumb "natrag" u pregledniku ne bi znao gdje se posjetitelj
+     nalazi (v. pushHistory / routeFromLocation). */
+  showPage('blog');
+}
+
+/* Zatvori prikaz članka i vrati popis (bez diranja povijesti) - zove
+   showPage('blog') i povratak kroz povijest. */
+function hideBlogPostView() {
+  const post = document.getElementById('blog-post-view');
+  const list = document.getElementById('blog-list-view');
+  if (!post || !post.classList.contains('active')) return;
+  post.classList.remove('active');
+  list.classList.remove('hidden');
   resetPostMetaTags();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderShareBar(p) {
@@ -1480,20 +1538,22 @@ function initSite() {
   renderReviews('omeni', 'about-reviews-grid');
   applySettings();
 
+  /* Prvo otvaranje NE dodaje unos u povijest (`fromHistory: true`) -
+     inače bi gumb "natrag" prvo vratio na isti prikaz. */
   const hash = window.location.hash;
   if (hash === '#admin') {
-    showPage('home');
+    showPage('home', { fromHistory: true });
     document.getElementById('admin-login-overlay').classList.add('show');
   } else if (hash.startsWith('#post/')) {
-    showPage('blog');
-    openPost(hash.replace('#post/', ''));
+    showPage('blog', { fromHistory: true });
+    openPost(hash.replace('#post/', ''), { fromHistory: true });
   } else {
     /* Izravna poveznica na stranicu (npr. #privatnost, #natal, #tarot).
        Nužno za pravne stranice: canonical/OG meta ih objavljuju kao
        vlastite URL-ove pa se moraju otvoriti i kad ih netko podijeli.
        showPage() sam blokira #usluge kad su usluge isključene. */
     const pid = hash.replace('#', '');
-    if (pid && PAGE_META[pid]) showPage(pid);
+    if (pid && PAGE_META[pid]) showPage(pid, { fromHistory: true });
   }
 
   syncNavBar();   // i kad se učitalo na početnoj (showPage se tad ne zove)

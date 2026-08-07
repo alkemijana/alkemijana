@@ -53,7 +53,14 @@ function createTarotEngine() {
     const sp = currentSpread();
     state.table = sp.free ? [] : sp.positions.map(() => null);
   }
+  /* Stol NE ostaje prazan pri ulasku: zadani raspored ("Jedna karta") se
+     odmah složi kartama licem prema dolje, a posjetitelj ih pritiskom
+     okreće. Prije se ovdje zvao samo `resetTableForSpread()` pa je stol
+     prvi put bio prazan sve dok se ne klikne na špil.
+     `autoFillSpread` je deklaracija funkcije (hoistana) pa se smije
+     pozvati prije mjesta na kojem je napisana. */
   resetTableForSpread();
+  autoFillSpread();
 
   const listeners = [];
   function onChange(fn) { listeners.push(fn); }
@@ -177,6 +184,7 @@ function createTarotEngine() {
     });
     touched.forEach(id => { state.decks[id].remaining = shuffleArray(state.decks[id].remaining); });
     resetTableForSpread();
+    autoFillSpread();   // stol nikad ne ostaje prazan - v. komentar niže
     emit({ type: 'new-reading' });
   }
 

@@ -3,8 +3,8 @@
    ------------------------------------------------------------
    Početna se NE scrolla. Svaki .hs-slide je jedan puni ekran;
    kotačić miša / tipkovnica / swipe prebacuju slideove uz prijelaz
-   "kozmički zoom" - odlazeći slide odlazi u dubinu i blijedi, novi
-   dolazi iz daljine, a zvjezdano nebo se pomiče brže (parallax).
+   listanjem odozdo prema gore - odlazeći slide klizne van na vrh, novi
+   dolazi s dna, a zvjezdano nebo se pomiče sporije (parallax).
 
    Blog slide je VODORAVAN (.hs-slide-rail): daljnje scrollanje
    pomiče članke lijevo-desno, pa tek na kraju ide sljedeći slide.
@@ -53,14 +53,17 @@ html.hs-lock body {
   /* mjesto za logo/tri crtice gore i nagovještaj dolje - skalira se
      s visinom ekrana da na niskim ekranima ne pojede sadržaj */
   padding: clamp(3.6rem, 8dvh, 6.5rem) clamp(1rem, 4vw, 4rem) clamp(2.4rem, 6dvh, 4.5rem);
-  opacity: 0;
+  /* Slideovi se LISTAJU ODOZDO PREMA GORE (kao vrpca): odlazeći klizne
+     van na vrh, nadolazeći dolazi s dna. Nema blijeđenja - oba se vide
+     dok putuju, pa se pokret zaista čita kao listanje.
+     `overflow: hidden` na `#home.page` reže ono što je izvan ekrana. */
+  opacity: 1;
   visibility: hidden;
   pointer-events: none;
-  transform: scale(0.92);
+  transform: translateY(100%);
   transition:
-    opacity 0.72s cubic-bezier(0.22, 0.8, 0.3, 1),
-    transform 0.82s cubic-bezier(0.22, 0.8, 0.3, 1),
-    visibility 0.82s;
+    transform 0.68s cubic-bezier(0.3, 0.85, 0.25, 1),
+    visibility 0.68s;
   /* `will-change` se NE stavlja ovdje: držalo bi svih 7 slideova stalno
      na zasebnim GPU slojevima. Postavlja se samo dok prijelaz traje
      (klasa hs-moving iz js/home-slides.js). */
@@ -76,31 +79,30 @@ html.hs-lock body {
 
 /* Slide koji je trenutno na ekranu */
 .hs-slide.hs-active {
-  opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: none;
   filter: none;
 }
 
-/* Slide koji je OTIŠAO (scroll prema dolje) - proleti pokraj gledatelja */
+/* Slide koji je OTIŠAO (scroll prema dolje) - otišao je GORE, van ekrana */
 .hs-slide.hs-past {
-  opacity: 0;
-  transform: scale(1.14);
+  transform: translateY(-100%);
 }
 
-/* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - dolazi iz daljine */
+/* Slide koji TEK DOLAZI (ili se vratio scrollom gore) - čeka DOLJE */
 .hs-slide.hs-future {
-  opacity: 0;
-  transform: scale(0.92);
+  transform: translateY(100%);
 }
 
 /* NAPOMENA o performansama - ne vraćati unatrag:
    - prijelaz NEMA `filter: blur()` (rasterizacija u svakom kadru),
    - prijelaz NEMA `perspective` + `translateZ`: 3D kontekst tjera
      preglednik da cijelo podstablo slidea drži kao 3D sloj, što je na
-     slabijim strojevima štekalo. Obični 2D `scale` + `opacity` daju
-     gotovo isti dojam dubine, a kompozitor ih odradi bez repainta. */
+     slabijim strojevima štekalo.
+   Čisti `translateY` kompozitor odradi na GPU-u bez ijednog repainta -
+   povoljniji je i od `scale`, jer skaliranje traži ponovno iscrtavanje
+   velikog SVG-a natalnog kotača. */
 
 /* ---- Zagrijavanje dok traje ekran učitavanja ----
    Svaki slide se jednom iscrta i slike se dekodiraju PRIJE nego se
@@ -142,6 +144,14 @@ html.hs-lock body {
 .hs-slide.hs-active .hs-inner > * {
   opacity: 1;
   transform: none;
+}
+
+/* Slide koji odlazi GORE zadržava svoj sadržaj do kraja pokreta - da se
+   ne "isprazni" usred listanja. Ulazni stagger vrijedi samo za dolazak. */
+.hs-slide.hs-past .hs-inner > * {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 /* ---- 3. Sadržaj se skalira uz VELIČINU EKRANA ----

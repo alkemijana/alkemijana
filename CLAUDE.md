@@ -116,7 +116,7 @@ ALKEMIJANA WEBSITE/
 > a admin markup u `index.html` nije diran. Redizajn se tiče samo javnog dijela stranice.
 
 **Početna se NE scrolla.** `#home` je deck slideova preko cijelog ekrana; kotačić miša,
-tipkovnica i swipe prebacuju slideove uz prijelaz „kozmički zoom". Ostale stranice scrollaju
+tipkovnica i swipe prebacuju slideove uz prijelaz „listanje odozdo prema gore". Ostale stranice scrollaju
 normalno — zaključava se samo dok je početna aktivna.
 
 - **Datoteke:** `css/home-slides.css` + `js/home-slides.js` (prefiks **`hs-`**),
@@ -130,9 +130,13 @@ normalno — zaključava se samo dok je početna aktivna.
   lijevo-desno (3 zadnja članka + slot sa samim gumbom „Pročitaj više članaka", bez okvira),
   a tek kad traka dođe do kraja nastavlja se okomiti prijelaz. Ulazak odozgo postavi traku na
   prvu karticu, odozdo na zadnju.
-- **Prijelaz:** `.hs-deck` ima `perspective`; odlazeći slide (`.hs-past`) proleti pokraj
-  gledatelja (`translateZ(+340px) scale(1.22)`), nadolazeći (`.hs-future`) čeka u dubini
-  (`translateZ(-620px)`). Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
+- **Prijelaz: LISTANJE ODOZDO PREMA GORE.** Odlazeći slide (`.hs-past`) klizne van na vrh
+  (`translateY(-100%)`), nadolazeći (`.hs-future`) dolazi s dna (`translateY(100%)`).
+  **Bez blijeđenja** — oba se vide dok putuju, pa se pokret čita kao listanje vrpce; ono
+  izvan ekrana reže `overflow:hidden` na `#home.page`. Odlazeći slide zadržava sadržaj do
+  kraja pokreta (`.hs-past .hs-inner > *`), inače bi se „ispraznio" usred listanja.
+  Zvjezdano nebo (`#sky-bg`) se pomiče preko `--hs-sky` (= indeks slidea).
+  *(Prije je ovdje bio „kozmički zoom" — slide je odlazio u dubinu i blijedio.)*
 - **Zadnji slide = izbornik kao RAZLOŽEN SPREAD** (`.hs-menu-spread`, prefiks `hs-menu-`):
   svaka stranica iz izbornika (bez Početne) je karta u omjeru tarot karte (0.583), sve su
   razložene jedna do druge **bez preklapanja**, uz blagi nagib. Bez naslova i bez opisa —

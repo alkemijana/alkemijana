@@ -698,17 +698,31 @@
         </div>
       </div>
 
-      <!-- 6. Blog - VODORAVNI slide: daljnji scroll pomiče članke
-              lijevo-desno, pa tek na kraju ide na sljedeći slide -->
+      <!-- 6. Blog - VODORAVNI slide: članci se listaju STRELICAMA lijevo/desno
+              (i swipeom na dodiru), a okomiti scroll ide na sljedeći slide -->
       <div class="hs-slide hs-slide-rail" data-hs-name="blog" data-hs-rail>
         <div class="hs-inner">
           <div class="hs-rail-head">
             <h2 class="section-title" id="t-blogPreviewTitle"></h2>
             <p class="section-subtitle" id="t-blogPreviewSub"></p>
           </div>
-          <div class="hs-rail-viewport">
-            <!-- renderHomeBlogPreview() puni ovo: 3 članka + kartica s gumbom -->
-            <div class="hs-rail-track blog-grid" id="home-blog-preview-grid"></div>
+          <div class="hs-rail-stage">
+            <button type="button" class="hs-rail-arrow hs-rail-arrow-prev" aria-label="Prethodni članak" disabled>
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+                <path d="M15 4 L7 12 L15 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="hs-rail-viewport">
+              <!-- renderHomeBlogPreview() puni ovo: 3 članka + kartica s gumbom -->
+              <div class="hs-rail-track blog-grid" id="home-blog-preview-grid"></div>
+            </div>
+            <button type="button" class="hs-rail-arrow hs-rail-arrow-next" aria-label="Sljedeći članak" disabled>
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+                <path d="M9 4 L17 12 L9 20" fill="none" stroke="currentColor" stroke-width="1.6"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
           <div class="hs-rail-dots" id="hs-rail-dots" aria-hidden="true"></div>
         </div>

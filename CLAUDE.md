@@ -126,10 +126,17 @@ normalno — zaključava se samo dok je početna aktivna.
   Kurzivom označeni ovise o togglovima u adminu: nose `data-hs-requires="<id>"` i deck ih
   **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
   fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
-- **Blog slide je VODORAVAN** (`data-hs-rail`): daljnje scrollanje/swipe pomiče kartice
-  lijevo-desno (3 zadnja članka + slot sa samim gumbom „Pročitaj više članaka", bez okvira),
-  a tek kad traka dođe do kraja nastavlja se okomiti prijelaz. Ulazak odozgo postavi traku na
-  prvu karticu, odozdo na zadnju.
+- **Blog slide je VODORAVAN** (`data-hs-rail`): 3 zadnja članka + slot sa samim gumbom
+  „Pročitaj više članaka" (bez okvira). Listaju se **STRELICAMA** `.hs-rail-arrow-prev/-next`
+  (apsolutne, preko lijevog i desnog ruba trake; onemogućene na krajevima) i **swipeom
+  lijevo/desno** na dodiru; tipke `←`/`→` rade isto. **Okomiti scroll traku NE pomiče** —
+  ide ravno na sljedeći/prethodni slide (prije je morao „proscrollati" kroz sve članke).
+  Ulazak na slide uvijek postavi traku na prvi članak.
+  U JS-u su zato dvije funkcije: `step(dir)` (okomito, uvijek mijenja slide) i `stepH(dir)`
+  (vodoravno → `railStep` na blog slideu, inače kao okomiti).
+  Strelice su `position:absolute` **izvan** `.hs-rail-viewport` (u `.hs-rail-stage`): viewport
+  mora ostati pune širine slidea jer se centriranje kartica računa aritmetički iz
+  `viewport.clientWidth` — svako sužavanje bi ga pomaknulo u odnosu na sredinu ekrana.
 - **Prijelaz: LISTANJE ODOZDO PREMA GORE.** Odlazeći slide (`.hs-past`) klizne van na vrh
   (`translateY(-100%)`), nadolazeći (`.hs-future`) dolazi s dna (`translateY(100%)`).
   **Bez blijeđenja** — oba se vide dok putuju, pa se pokret čita kao listanje vrpce; ono
@@ -169,8 +176,14 @@ normalno — zaključava se samo dok je početna aktivna.
   dok je otvoren. `#navLinks` i `.nav-links a` **zadržavaju stara imena** jer ih `showPage()` i
   `openPost()` traže po njima.
 - **Deck je KRUŽAN:** iza zadnjeg slidea dolazi prvi i obrnuto (`goTo()` omata indeks).
-  `paint(prev, dir)` pritom mora znati smjer — inače odlazeći slide kod omatanja ispadne
-  s krive strane (zadnji bi otišao u dubinu umjesto da proleti pokraj gledatelja).
+  Kod omatanja MORAJU se namjestiti **oba** slidea, i to su bila dva odvojena kvara:
+  1. **Odlazeći** — `paint(prev, dir)` mu po smjeru forsira `hs-past`/`hs-future`, inače bi
+     zadnji slide po indeksu ispao „budući" i otišao na krivu stranu.
+  2. **Nadolazeći** — `prepIncoming(el, dir)` ga prije animacije „teleportira" na ispravnu
+     stranu s klasom `hs-noanim` (`transition:none`) i prisilnim reflowom. Bez toga je prvi
+     slide, koji je cijelo vrijeme stajao GORE (`hs-past`), pri prelasku sa zadnjeg ulazio
+     **odozgo** — suprotno od smjera listanja. Teleport se ne vidi jer je slide još
+     `visibility:hidden`.
 - **Karta dana se mjeri i skalira** (`fitCotd()` u home-slides.js): duljina teksta ovisi
   o tome koja je karta na redu, a slide se ne scrolla, pa se u CSS-u ne da unaprijed
   pogoditi veličina. Kartica se izmjeri i, ako je viša od slidea, sve mjere u njoj se

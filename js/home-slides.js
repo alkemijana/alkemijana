@@ -4,8 +4,9 @@
    Početna se ne scrolla: svaki .hs-slide je jedan puni ekran, a
    kotačić / tipkovnica / swipe prebacuju slideove uz "kozmički zoom".
 
-   Blog slide (data-hs-rail) je vodoravan - daljnje scrollanje pomiče
-   članke lijevo-desno, pa tek kad dođe do kraja nastavlja okomito.
+   Blog slide (data-hs-rail) je vodoravan: članci se listaju STRELICAMA
+   lijevo/desno (i swipeom na dodiru), a okomiti scroll ide ravno na
+   sljedeći slide - traka ga više ne presreće.
 
    Slideovi s data-hs-requires="<id>" postoje samo dok je taj element
    vidljiv (usluge/CTA/recenzije ovise o togglovima u adminu), zato se
@@ -113,6 +114,7 @@
 
     p.cards.forEach(function (c, i) { c.classList.toggle('hs-rail-current', i === idx); });
     paintRailDots(slide, idx, p.cards.length);
+    paintRailArrows(slide, idx, p.cards.length);
   }
 
   /* Traka se premjeri kad god joj se promijeni širina (promjena prozora,
@@ -147,13 +149,56 @@
     layoutRail(slide);
   }
 
+  /* Strelice lijevo/desno - jedini nacin listanja clanaka mišem/klikom
+     (uz swipe na dodiru). Okomiti scroll traku vise NE pomice. */
+  function paintRailArrows(slide, idx, count) {
+    var prev = slide.querySelector('.hs-rail-arrow-prev');
+    var next = slide.querySelector('.hs-rail-arrow-next');
+    if (prev) prev.disabled = idx <= 0;
+    if (next) next.disabled = idx >= count - 1;
+  }
+
+  function wireRailArrows(slide) {
+    if (slide._hsArrows) return;
+    var prev = slide.querySelector('.hs-rail-arrow-prev');
+    var next = slide.querySelector('.hs-rail-arrow-next');
+    if (!prev && !next) return;
+    slide._hsArrows = true;
+    if (prev) prev.addEventListener('click', function () { railStep(-1); });
+    if (next) next.addEventListener('click', function () { railStep(1);  });
+  }
+
   /* ---- Prebacivanje slideova ---- */
 
   /* `prev`/`dir` su bitni SAMO kod omatanja (zadnji -> prvi i obrnuto):
      tada odlazeći slide po indeksu ispadne s krive strane (npr. zadnji
      slide je "future" iako smo išli naprijed), pa bi umjesto da proleti
      pokraj gledatelja - otišao natrag u dubinu. */
+  /* Nadolazeci slide mora CEKATI s prave strane prije nego krene.
+     Kod OMATANJA (zadnji -> prvi i obrnuto) to nije samo po sebi tako:
+     prvi slide je cijelo vrijeme stajao GORE (hs-past, translateY(-100%)),
+     pa je pri prelasku sa zadnjeg na prvi ulazio odozgo - suprotno od
+     smjera listanja. Zato ga ovdje "teleportiramo" na ispravnu stranu s
+     ugasenom tranzicijom (nevidljivo je, slide je jos `visibility:hidden`)
+     i tek onda pustimo animaciju. */
+  function prepIncoming(el, dir) {
+    if (!el || typeof dir !== 'number') return;
+    var isPast   = el.classList.contains('hs-past');
+    var isFuture = el.classList.contains('hs-future');
+    if (!isPast && !isFuture) return;      // vec je aktivan
+    var wantPast = dir < 0;                // unatrag -> dolazi odozgo
+    if (wantPast === isPast) return;       // vec ceka s prave strane
+
+    el.classList.add('hs-noanim');
+    el.classList.toggle('hs-past',   wantPast);
+    el.classList.toggle('hs-future', !wantPast);
+    void el.offsetWidth;                   // prisilni reflow: primijeni odmah
+    el.classList.remove('hs-noanim');
+  }
+
   function paint(prev, dir) {
+    prepIncoming(slides[current], dir);
+
     slides.forEach(function (el, i) {
       var past   = i < current;
       var future = i > current;
@@ -197,36 +242,43 @@
     var prev = current;
     current = idx;
 
-    // ulazak u vodoravnu traku: odozgo na prvi članak, odozdo na zadnji
+    /* Ulazak u vodoravnu traku uvijek pocinje od PRVOG clanka - traka se
+       vise ne prelistava okomitim scrollom pa nema "dolaska s kraja". */
     var slide = slides[current];
-    if (isRail(slide)) {
-      var goingDown = (typeof dir === 'number') ? dir > 0 : current > prev;
-      setRail(slide, goingDown ? 0 : Math.max(0, railCount(slide) - 1));
-    }
+    if (isRail(slide)) setRail(slide, 0);
 
     paint(prev, typeof dir === 'number' ? dir : (current > prev ? 1 : -1));
     markMoved();
     lock();
   }
 
+  /* OKOMITI korak - uvijek mijenja slide, i na blog slideu. Traka clanaka
+     se namjerno NE lista scrollanjem (bilo je tako, ali je znacilo da se
+     kroz blog mora "proscrollati" da bi se doslo dalje). */
   function step(dir) {
     if (!slides.length) return;
-    var slide = slides[current];
-
-    if (isRail(slide)) {
-      var count = railCount(slide);
-      var idx   = parseInt(slide.dataset.hsRailIndex || '0', 10);
-      var next  = idx + dir;
-      if (count && next >= 0 && next < count) {
-        setRail(slide, next);
-        markMoved();
-        lock();
-        return;
-      }
-      // traka je na kraju (ili početku) -> nastavi okomito
-    }
-
     goTo(current + dir, dir);
+  }
+
+  /* VODORAVNI korak (strelice na tipkovnici, swipe lijevo/desno):
+     na blog slideu lista clanke, drugdje se ponasa kao okomiti. */
+  function stepH(dir) {
+    if (!slides.length) return;
+    if (isRail(slides[current])) { railStep(dir); return; }
+    goTo(current + dir, dir);
+  }
+
+  /* Pomak trake clanaka za jedan korak; na krajevima stane (strelice su
+     tamo ionako onemogucene). */
+  function railStep(dir) {
+    var slide = slides[current];
+    if (!isRail(slide)) return;
+    var count = railCount(slide);
+    var idx   = parseInt(slide.dataset.hsRailIndex || '0', 10);
+    var next  = idx + dir;
+    if (!count || next < 0 || next >= count) return;
+    setRail(slide, next);
+    markMoved();
   }
 
   function lock() {
@@ -324,8 +376,8 @@
     var k = e.key;
     if (k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Spacebar') { e.preventDefault(); step(1); }
     else if (k === 'ArrowUp' || k === 'PageUp')  { e.preventDefault(); step(-1); }
-    else if (k === 'ArrowRight') { e.preventDefault(); step(1); }
-    else if (k === 'ArrowLeft')  { e.preventDefault(); step(-1); }
+    else if (k === 'ArrowRight') { e.preventDefault(); stepH(1); }
+    else if (k === 'ArrowLeft')  { e.preventDefault(); stepH(-1); }
     else if (k === 'Home') { e.preventDefault(); goTo(0, -1); }
     else if (k === 'End')  { e.preventDefault(); goTo(slides.length - 1, 1); }
   }
@@ -354,9 +406,10 @@
     var dx = touchX - t.clientX;
     var dy = touchY - t.clientY;
 
-    // vodoravni swipe se broji samo ako je izraženiji od okomitog
+    /* Vodoravni swipe se broji samo ako je izraženiji od okomitog. Na blog
+       slideu tako lista članke (uz strelice), drugdje mijenja slide. */
     if (Math.abs(dx) > Math.abs(dy)) {
-      if (Math.abs(dx) >= SWIPE_MIN) step(dx > 0 ? 1 : -1);
+      if (Math.abs(dx) >= SWIPE_MIN) stepH(dx > 0 ? 1 : -1);
     } else if (Math.abs(dy) >= SWIPE_MIN) {
       step(dy > 0 ? 1 : -1);
     }
@@ -385,6 +438,7 @@
     slides.forEach(function (s) {
       if (!isRail(s)) return;
       watchRail(s);
+      wireRailArrows(s);
       layoutRail(s);
     });
     fitCotd();

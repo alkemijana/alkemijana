@@ -6,8 +6,9 @@
    listanjem odozdo prema gore - odlazeći slide klizne van na vrh, novi
    dolazi s dna, a zvjezdano nebo se pomiče sporije (parallax).
 
-   Blog slide je VODORAVAN (.hs-slide-rail): daljnje scrollanje
-   pomiče članke lijevo-desno, pa tek na kraju ide sljedeći slide.
+   Blog slide je VODORAVAN (.hs-slide-rail): članci se listaju
+   strelicama (.hs-rail-arrow) i swipeom, a okomiti scroll ide ravno
+   na sljedeći slide.
 
    Logika: js/home-slides.js. Ostale stranice scrollaju normalno -
    zaključava se samo dok je #home aktivan (html.hs-lock).
@@ -76,6 +77,12 @@ html.hs-lock body {
    preglednik bi ga rasterizirao iznova u SVAKOM kadru animacije.
    Ovako se prekapča dvaput (početak i kraj), ne 50 puta. */
 .hs-deck.hs-moving .home-live-natal-svg svg { filter: none; }
+
+/* Kratko gašenje tranzicije dok se nadolazeći slide "teleportira" na
+   ispravnu stranu ekrana (v. prepIncoming u js/home-slides.js). Bez toga
+   je deck kod OMATANJA (zadnji -> prvi) listao naopako: prvi slide je
+   stajao gore pa je ulazio odozgo, iako smo išli prema dolje. */
+.hs-slide.hs-noanim { transition: none !important; }
 
 /* Slide koji je trenutno na ekranu */
 .hs-slide.hs-active {
@@ -491,6 +498,66 @@ html.hs-lock body {
 
 .hs-rail-head { padding: 0 1.5rem; }
 
+/* Okvir oko trake: strelice su APSOLUTNE preko rubova, a ne u toku,
+   da viewport ostane pune širine slidea - centriranje kartica je čista
+   aritmetika nad `viewport.clientWidth` (v. layoutRail u JS-u) pa bi ga
+   svako sužavanje viewporta pomaknulo u odnosu na sredinu ekrana. */
+.hs-rail-stage {
+  position: relative;
+  width: 100%;
+}
+
+.hs-rail-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 3.4vw, 52px);
+  height: clamp(52px, 7vh, 76px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--nav-bg);
+  backdrop-filter: blur(8px);
+  color: var(--lavender);
+  cursor: pointer;
+  transition: border-color 0.25s ease, color 0.25s ease,
+              background 0.25s ease, opacity 0.25s ease;
+}
+
+/* Strelica leži preko kartice (osobito na uskom ekranu) pa mora biti
+   neprozirna koliko treba da se glif vidi na svakoj podlozi. */
+:root[data-theme="light"] .hs-rail-arrow { background: rgba(253, 251, 255, 0.82); }
+
+.hs-rail-arrow svg { width: 60%; height: auto; display: block; }
+
+.hs-rail-arrow-prev { left: clamp(0.4rem, 2vw, 2.2rem); }
+.hs-rail-arrow-next { right: clamp(0.4rem, 2vw, 2.2rem); }
+
+@media (hover: hover) {
+  .hs-rail-arrow:hover:not(:disabled) {
+    border-color: var(--lavender);
+    color: var(--silver-bright);
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+.hs-rail-arrow:focus-visible {
+  outline: 2px solid var(--lavender);
+  outline-offset: 2px;
+}
+
+/* Na krajevima traka stane (ne omata se) - strelica se prigusi, ali
+   ostaje na mjestu da se raspored ne pomice. */
+.hs-rail-arrow:disabled {
+  opacity: 0.22;
+  cursor: default;
+  pointer-events: none;
+}
+
 .hs-rail-viewport {
   width: 100%;
   overflow: hidden;
@@ -689,6 +756,16 @@ html.hs-lock body {
      Visinu zato ograničavamo kroz ŠIRINU - omjer tako ostaje 1:1. */
   #home .home-live-natal-wrap { width: min(52dvh, 96vw); }
   #home .home-live-natal-svg  { max-height: none; }
+
+  /* Kartica zauzme 84vw pa strelice nužno leže preko njezinih rubova.
+     Zato su uže i poluprozirne - meta za prst ostaje ≥40px. */
+  .hs-rail-arrow {
+    width: 34px;
+    height: 60px;
+    background: rgba(14, 11, 36, 0.72);
+  }
+  .hs-rail-arrow-prev { left: 0.2rem; }
+  .hs-rail-arrow-next { right: 0.2rem; }
 
   .hs-hint { bottom: 1rem; }
 }

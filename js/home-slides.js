@@ -99,8 +99,10 @@
       ? Math.round(vw * 0.84)
       : Math.round(Math.min(vw * 0.32, vh * 0.46, 560));
 
-    p.track.style.setProperty('--hs-rail-gap', gap + 'px');
-    p.track.style.setProperty('--hs-rail-card', card + 'px');
+    /* Na SLIDE, ne na traku: strelice nisu unutar trake, a moraju znati
+       koliko je kartica široka da se postave uz njezin rub (v. CSS). */
+    slide.style.setProperty('--hs-rail-gap', gap + 'px');
+    slide.style.setProperty('--hs-rail-card', card + 'px');
 
     var idx = parseInt(slide.dataset.hsRailIndex || '0', 10);
     if (idx >= p.cards.length) idx = Math.max(0, p.cards.length - 1);

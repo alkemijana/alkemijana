@@ -505,6 +505,8 @@ html.hs-lock body {
 .hs-rail-stage {
   position: relative;
   width: 100%;
+  --hs-arrow-w:   clamp(38px, 3.4vw, 52px);
+  --hs-arrow-gap: clamp(0.5rem, 1.6vw, 1.6rem);
 }
 
 .hs-rail-arrow {
@@ -515,7 +517,7 @@ html.hs-lock body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(38px, 3.4vw, 52px);
+  width: var(--hs-arrow-w);
   height: clamp(52px, 7vh, 76px);
   padding: 0;
   border: 1px solid var(--border);
@@ -534,8 +536,20 @@ html.hs-lock body {
 
 .hs-rail-arrow svg { width: 60%; height: auto; display: block; }
 
-.hs-rail-arrow-prev { left: clamp(0.4rem, 2vw, 2.2rem); }
-.hs-rail-arrow-next { right: clamp(0.4rem, 2vw, 2.2rem); }
+/* Strelice stoje UZ KARTICU, ne uz rub ekrana: traka je puna širina
+   slidea pa bi ih fiksni razmak od ruba na širokom ekranu bacio stotine
+   piksela daleko od članka. `--hs-rail-card` postavlja layoutRail() na
+   sam slide (širina kartice u px), pa je položaj:
+     rub kartice (50% - kartica/2) - razmak - širina strelice.
+   `max()` je zaštita za uske ekrane, gdje kartica zauzme skoro sve. */
+.hs-rail-arrow-prev {
+  left: max(0.4rem, calc(50% - var(--hs-rail-card, 340px) / 2
+                          - var(--hs-arrow-gap) - var(--hs-arrow-w)));
+}
+.hs-rail-arrow-next {
+  right: max(0.4rem, calc(50% - var(--hs-rail-card, 340px) / 2
+                          - var(--hs-arrow-gap) - var(--hs-arrow-w)));
+}
 
 @media (hover: hover) {
   .hs-rail-arrow:hover:not(:disabled) {

@@ -128,8 +128,10 @@ normalno — zaključava se samo dok je početna aktivna.
   fiksnog niza — zato `applySettings()` na kraju zove `HomeSlides.refresh()`.
 - **Blog slide je VODORAVAN** (`data-hs-rail`): 3 zadnja članka + slot sa samim gumbom
   „Pročitaj više članaka" (bez okvira). Listaju se **STRELICAMA** `.hs-rail-arrow-prev/-next`
-  (apsolutne, preko lijevog i desnog ruba trake; onemogućene na krajevima) i **swipeom
-  lijevo/desno** na dodiru; tipke `←`/`→` rade isto. **Okomiti scroll traku NE pomiče** —
+  (SAMO desktop, `≥769px`; onemogućene na krajevima trake) i **swipeom lijevo/desno**
+  na dodiru; tipke `←`/`→` rade isto. **Na mobitelu (`≤768px`) strelica NEMA**
+  (`display:none`) — kartica ondje zauzme 84 % širine pa bi nužno ležale preko teksta
+  članka; ostaje samo klizanje prstom. **Okomiti scroll traku NE pomiče** —
   ide ravno na sljedeći/prethodni slide (prije je morao „proscrollati" kroz sve članke).
   Ulazak na slide uvijek postavi traku na prvi članak.
   U JS-u su zato dvije funkcije: `step(dir)` (okomito, uvijek mijenja slide) i `stepH(dir)`
@@ -137,6 +139,10 @@ normalno — zaključava se samo dok je početna aktivna.
   Strelice su `position:absolute` **izvan** `.hs-rail-viewport` (u `.hs-rail-stage`): viewport
   mora ostati pune širine slidea jer se centriranje kartica računa aritmetički iz
   `viewport.clientWidth` — svako sužavanje bi ga pomaknulo u odnosu na sredinu ekrana.
+  Položaj im se računa od **ruba kartice**, ne od ruba ekrana
+  (`50% − kartica/2 − razmak − širina strelice`) — inače na širokom ekranu odlutaju
+  stotinjak piksela od članka. Zato `layoutRail()` postavlja `--hs-rail-card`/`--hs-rail-gap`
+  na **sam slide**, a ne na traku: strelice nisu unutar trake pa ih ne bi naslijedile.
 - **Prijelaz: LISTANJE ODOZDO PREMA GORE.** Odlazeći slide (`.hs-past`) klizne van na vrh
   (`translateY(-100%)`), nadolazeći (`.hs-future`) dolazi s dna (`translateY(100%)`).
   **Bez blijeđenja** — oba se vide dok putuju, pa se pokret čita kao listanje vrpce; ono

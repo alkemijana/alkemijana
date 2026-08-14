@@ -771,15 +771,11 @@ html.hs-lock body {
   #home .home-live-natal-wrap { width: min(52dvh, 96vw); }
   #home .home-live-natal-svg  { max-height: none; }
 
-  /* Kartica zauzme 84vw pa strelice nužno leže preko njezinih rubova.
-     Zato su uže i poluprozirne - meta za prst ostaje ≥40px. */
-  .hs-rail-arrow {
-    width: 34px;
-    height: 60px;
-    background: rgba(14, 11, 36, 0.72);
-  }
-  .hs-rail-arrow-prev { left: 0.2rem; }
-  .hs-rail-arrow-next { right: 0.2rem; }
+  /* BEZ strelica na mobitelu: kartica zauzme 84vw pa bi nužno ležale
+     preko njezinih rubova (i preko teksta članka). Listanje ide
+     isključivo klizanjem prsta lijevo/desno - swipe hvata stepH()
+     u js/home-slides.js i radi neovisno o strelicama. */
+  .hs-rail-arrow { display: none; }
 
   .hs-hint { bottom: 1rem; }
 }

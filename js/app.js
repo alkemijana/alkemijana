@@ -399,6 +399,9 @@ async function submitForm(e) {
     if (data.success) {
       form.style.display = 'none';
       document.getElementById('formSuccess').classList.add('show');
+      /* Analitika: samo činjenica da je upit poslan - NIKAD sadržaj poruke,
+         ime ni e-mail (v. track() u js/consent.js). */
+      if (window.AJTrack) window.AJTrack('contact_submit');
     } else {
       alert('Greška pri slanju. Provjerite ključ ili pokušajte ponovo.');
       btn.textContent = origTxt;
@@ -729,6 +732,10 @@ function openPost(id, opts) {
   document.getElementById('blog-list-view').classList.add('hidden');
   document.getElementById('blog-post-view').classList.add('active');
   if (!opts.fromHistory) pushHistory('#post/' + id);
+  /* Analitika: koji se članak čita. GA4 i sam broji pregled stranice
+     (#post/<id>), ali ovdje ide i naslov pa je izvještaj čitljiv bez
+     preslagivanja id-eva. */
+  if (window.AJTrack) window.AJTrack('blog_post_open', { post_id: id, post_title: p.title || '' });
   renderShareBar(p);
   setPostMetaTags(p);
   window.scrollTo({ top: 0, behavior: 'smooth' });

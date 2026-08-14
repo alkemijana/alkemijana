@@ -1,6 +1,9 @@
 # Mali statični HTTP server za lokalni razvoj (Windows bez Node/Pythona).
 # Pokreće ga Claude Preview preko .claude/launch.json — nije dio deploya.
-param([int]$Port = 8344)
+# Port: -Port argument, pa varijabla okoline PORT (tako ga dodjeljuje Claude Preview
+# kad je 8344 već zauzet drugom sesijom), pa zadanih 8344.
+param([int]$Port = 0)
+if (-not $Port) { $Port = if ($env:PORT) { [int]$env:PORT } else { 8344 } }
 
 $root = Split-Path -Parent $PSScriptRoot
 $mime = @{

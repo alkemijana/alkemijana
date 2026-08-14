@@ -156,6 +156,7 @@ async function synastrySubmit(ev) {
     try {
       localStorage.setItem('aj_synastry_form', JSON.stringify({ p1: serializePerson(p1), p2: serializePerson(p2) }));
     } catch (e) {}
+    if (window.AJTrack) window.AJTrack('natal_chart_created', { tool: 'synastry' });
     document.getElementById('synastry-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);

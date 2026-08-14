@@ -206,6 +206,7 @@ async function acgSubmit(ev) {
     currentAcg = { name, place: selectedPlace, lines, dateV, timeV, gastDeg, eps };
     renderAcgResult(currentAcg);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV, noTime: false, place: selectedPlace })); } catch (e) {}
+    if (window.AJTrack) window.AJTrack('natal_chart_created', { tool: 'acg' });
     document.getElementById('acg-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);

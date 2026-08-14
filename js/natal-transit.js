@@ -209,6 +209,7 @@ async function transitSubmit(ev) {
     resetTransitOffsets();
     applyTransit(true);
     try { localStorage.setItem('aj_transit_form', JSON.stringify(serializePerson(p))); } catch (e) {}
+    if (window.AJTrack) window.AJTrack('natal_chart_created', { tool: 'transit' });
     document.getElementById('transit-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);

@@ -226,12 +226,47 @@
     if (!readConsent()) showBanner();
   }
 
+  /* ---------- mjerenje događaja (GA4) ----------
+
+     Jedina točka iz koje ostatak stranice šalje događaje u Google Analytics.
+     Šalje SAMO ako je posjetitelj pristao na analitiku i ako je gtag stvarno
+     učitan - bez privole ne ide nijedan zahtjev prema Googleu, kao i za
+     preglede stranica.
+
+     PRAVILO: u parametre NIKAD ne smije ući osobni podatak (ime, datum ili
+     mjesto rođenja, sadržaj kontakt forme). Šalje se samo KOJI je alat
+     korišten, ne S ČIME. Inače bi se izračun karte, koji se cijeli odvija u
+     pregledniku, počeo curiti prema Googleu - a pravila privatnosti tvrde
+     suprotno (v. CLAUDE.md, GDPR odjeljak).
+
+     GA4 ograničenja kojih se držimo: naziv događaja i parametra do 40 znakova
+     (mala slova, brojke, donja crta), vrijednost parametra do 100 znakova. */
+  function track(name, params) {
+    try {
+      if (!gaLoaded || typeof window.gtag !== 'function') return;
+      var c = readConsent();
+      if (!c || !c.analytics) return;
+      var p = {}, k;
+      for (k in (params || {})) {
+        if (!Object.prototype.hasOwnProperty.call(params, k)) continue;
+        var v = params[k];
+        if (v === undefined || v === null) continue;
+        p[k] = (typeof v === 'string') ? v.slice(0, 100) : v;
+      }
+      window.gtag('event', name, p);
+    } catch (e) {}
+  }
+
   /* ---------- javni API ---------- */
 
   window.AJConsent = {
     open: openPanel,
     get:  readConsent
   };
+
+  /* Pozivati uvijek obranjeno: `if (window.AJTrack) window.AJTrack('ime', {...})`
+     - consent.js se učitava POSLIJE ostalih skripti. */
+  window.AJTrack = track;
 
   /* Poveznica u podnožju */
   window.openCookieSettings = function () { openPanel(); };

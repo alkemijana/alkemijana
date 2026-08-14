@@ -824,6 +824,29 @@ izričit pristanak PRIJE učitavanja.
     ostati bez izbora.
   - Javni API: `window.AJConsent.open()` / `.get()`, plus `openCookieSettings()` za podnožje.
 
+- **Mjerenje događaja (`window.AJTrack`)** — `track()` u consent.js je **jedino mjesto** odakle
+  stranica šalje GA4 događaje. Šalje samo ako je gtag stvarno učitan **i** privola dana; bez
+  privole tiho ne radi ništa. Pozivati uvijek obranjeno (`if (window.AJTrack) …`) jer se
+  consent.js učitava POSLIJE ostalih skripti.
+  - **PRAVILO: u parametre nikad ne smije ući osobni podatak** (ime, datum/mjesto rođenja,
+    sadržaj kontakt forme, **ni koja je tarot karta izvučena**). Šalje se KOJI je alat
+    korišten, ne S ČIME. Pravila privatnosti (t. 3, 4, 5) to izričito tvrde — ako se skup
+    parametara promijeni, MORA se promijeniti i taj tekst + datum „Zadnja izmjena”.
+  - Postavljeni događaji: `natal_chart_created` (`tool`: natal/synastry/transit/acg, `no_time`),
+    `natal_pdf_download` (`tool`, `pdf_kind`: poster/working, `paper`), `tarot_spread_drawn`
+    (`spread`, `deck`), `tarot_card_focus` (samo `deck`), `blog_post_open` (`post_id`,
+    `post_title`), `contact_submit` (bez parametara).
+  - **Tarot: jedan događaj po ČITANJU, ne po karti.** Fiksni raspored se auto-dijeli licem
+    prema dolje (`autoFillSpread` u engineu), pa se čitanje broji tek kad je **zadnja karta
+    okrenuta** (`revealFaceDown` → `trackSpreadDraw`); u slobodnom slaganju čim prva karta
+    legne na stol. Zastavica `spreadTracked` sprječava ponavljanje i resetira se na
+    `spread`/`new-reading`/`discard-all`/`reclaim`. Klik na špil NIJE mjerno mjesto —
+    kod fiksnog rasporeda je stol već pun pa se klik odbija.
+  - GA4 limiti kojih se držimo: naziv događaja/parametra ≤ 40 znakova (mala slova, brojke,
+    donja crta), vrijednost ≤ 100 znakova (`track()` sam reže).
+  - **U GA4 se parametri ne vide u izvještajima dok se ne registriraju** kao *custom
+    definitions* (Admin → Custom definitions → Create custom dimension, scope Event).
+
 - **Pravne stranice** (`#privatnost`, `#uvjeti`) su **statičan HTML u index.html**, namjerno
   **NE idu kroz TEXTS/admin** — pravni tekst se ne smije mijenjati usput i mora odgovarati
   onome što kod stvarno radi.

@@ -246,9 +246,16 @@ function buildPosterSVG(chart, w, h) {
   return s;
 }
 
+/* Analitika PDF-ova: šalje se samo koji je alat, koja vrsta PDF-a i format
+   papira - nikad ime ni podaci s karte (v. track() u js/consent.js). */
+function trackPdf(tool, kind, size) {
+  if (window.AJTrack) window.AJTrack('natal_pdf_download', { tool: tool, pdf_kind: kind, paper: size || 'A4' });
+}
+
 async function downloadPoster() {
   const size = document.getElementById('natal-poster-size').value || 'A2';
   const btn = document.getElementById('natal-poster-btn');
+  trackPdf('natal', 'poster', size);
   await withBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const [w, h] = PAGE_MM[size];
@@ -443,6 +450,7 @@ function buildAstroSeekSVG(chart) {
 
 async function downloadWorking() {
   const btn = document.getElementById('natal-working-btn');
+  trackPdf('natal', 'working');
   await withBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -911,6 +919,7 @@ async function downloadSynastryPoster() {
   const sel = document.getElementById('synastry-poster-size');
   const size = (sel && sel.value) || 'A2';
   const btn = document.getElementById('synastry-poster-btn');
+  trackPdf('synastry', 'poster', size);
   await withSynBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const [w, h] = PAGE_MM[size];
@@ -927,6 +936,7 @@ async function downloadSynastryPoster() {
 /* ── Radna A4 verzija sinastrije ── */
 async function downloadSynastryWorking() {
   const btn = document.getElementById('synastry-working-btn');
+  trackPdf('synastry', 'working');
   await withSynBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1152,6 +1162,7 @@ async function downloadTransitPoster() {
   const sel = document.getElementById('transit-poster-size');
   const size = (sel && sel.value) || 'A2';
   const btn = document.getElementById('transit-poster-btn');
+  trackPdf('transit', 'poster', size);
   await withTransitBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const [w, h] = PAGE_MM[size];
@@ -1167,6 +1178,7 @@ async function downloadTransitPoster() {
 
 async function downloadTransitWorking() {
   const btn = document.getElementById('transit-working-btn');
+  trackPdf('transit', 'working');
   await withTransitBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -1568,6 +1580,7 @@ function buildAcgWorkingPageSVG(acg, projMode) {
 
 async function downloadAcgWorking() {
   const btn = document.getElementById('acg-working-btn');
+  trackPdf('acg', 'working');
   await withAcgBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     await ensureWorldLand();
@@ -1652,6 +1665,7 @@ async function downloadAcgPoster() {
   const sel = document.getElementById('acg-poster-size');
   const size = (sel && sel.value) || 'A2';
   const btn = document.getElementById('acg-poster-btn');
+  trackPdf('acg', 'poster', size);
   await withAcgBtnSpinner(btn, async () => {
     await ensurePdfLibs();
     await ensureWorldLand();

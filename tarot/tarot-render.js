@@ -555,6 +555,15 @@ function createTarotUI(engine, root) {
     const revText = (text && text.reversed) || '';
     const yesno = (text && text.yesno) || '';
 
+    /* Analitika: zanima li posjetitelje značenje karte (klik na kartu).
+       NAMJERNO se šalje samo špil, NE i koja je karta - pravila privatnosti
+       (t. 4) izričito obećavaju da se ne bilježi koje su karte izvučene.
+       Ako se to ikad promijeni, mora se promijeniti i taj tekst. */
+    if (window.AJTrack) {
+      const dd = trDeckDef(entry.deckId);
+      window.AJTrack('tarot_card_focus', { deck: (dd && dd.name) || entry.deckId });
+    }
+
     // značenje pozicije (polja) u spreadu - iznad karte; slobodno slaganje nema pozicije
     const spread = engine.currentSpread();
     const pos = (!spread.free && slotIdx != null) ? spread.positions[slotIdx] : null;
@@ -816,6 +825,7 @@ function createTarotUI(engine, root) {
       const box = cardEl.closest('.vtar-cardbox');
       if (box && !box.querySelector('.vtar-badge-rev')) box.appendChild(reversedBadge());
     }
+    trackSpreadDraw(entry.deckId);   // okretanje zadnje karte = čitanje je gotovo
   }
 
   /* Karta poleti sa špila do slota (WAAPI, blaga krivulja), pa se okrene licem gore */
@@ -861,6 +871,33 @@ function createTarotUI(engine, root) {
   }
 
   /* ---- Izvlačenje ---- */
+
+  /* Analitika: jedan događaj po ČITANJU, ne po karti (s „Izvuci sve" bi to
+     bilo 78 događaja). Čitanje se broji tek kad je stvarno pročitano:
+       - fiksni raspored: sve pozicije popunjene I sve karte okrenute licem
+         gore (karte se auto-dijele licem prema dolje, korisnik ih okreće),
+       - slobodno slaganje: čim prva karta legne na stol.
+     `spreadTracked` sprječava ponavljanje unutar istog čitanja i sam se
+     resetira čim stol više nije potpun (novi spread, odlaganje karte). */
+  let spreadTracked = false;
+
+  function trackSpreadDraw(deckId) {
+    if (!window.AJTrack) return;
+    const sp = engine.currentSpread();
+    const table = engine.state.table;
+    const ready = sp.free
+      ? table.length > 0
+      : (table.length > 0 && table.every(e => e && !e.faceDown));
+    if (!ready) { spreadTracked = false; return; }
+    if (spreadTracked) return;
+    spreadTracked = true;
+    const deckDef = trDeckDef(deckId);
+    window.AJTrack('tarot_spread_drawn', {
+      spread: sp.name || sp.id,
+      deck: (deckDef && deckDef.name) || deckId
+    });
+  }
+
   function handleDrawClick(deckId, stackEl) {
     const dState = engine.state.decks[deckId];
     if (!dState || !dState.enabled) return;
@@ -878,6 +915,7 @@ function createTarotUI(engine, root) {
     }
     updateDeckCounts();
     updateHint();
+    trackSpreadDraw(deckId);
   }
 
   /* Slobodno slaganje: "Izvuci sve" - izlista sve preostale karte iz špila na
@@ -897,6 +935,7 @@ function createTarotUI(engine, root) {
       placeCardInSlot(result.slot, result.entry, true, stackEl);
       updateDeckCounts();
       updateHint();
+      trackSpreadDraw(deckId);
       scrollTableToBottom();
       setTimeout(step, 90);
     };
@@ -927,6 +966,10 @@ function createTarotUI(engine, root) {
   }
 
   engine.onChange((evt) => {
+    /* novo čitanje (novi spread, promjena rasporeda, počišćen stol) - dopusti
+       da se sljedeće dovršeno čitanje opet izmjeri (v. trackSpreadDraw) */
+    if (evt.type === 'spread' || evt.type === 'new-reading' ||
+        evt.type === 'discard-all' || evt.type === 'reclaim') spreadTracked = false;
     switch (evt.type) {
       case 'spread': renderAll(); break;
       case 'decks': renderDeckSwitches(); renderDeckRail(); updateDeckCounts(); break;

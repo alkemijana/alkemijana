@@ -235,6 +235,9 @@ async function natalSubmit(ev) {
     if (window.AInatal) window.AInatal.setChart(chart);
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
     logNatalCreation(chart);
+    /* Analitika: SAMO koji je alat korišten i je li upisano vrijeme rođenja.
+       Nikakvi podaci o rođenju ne izlaze iz preglednika (v. js/consent.js). */
+    if (window.AJTrack) window.AJTrack('natal_chart_created', { tool: 'natal', no_time: noTime ? 1 : 0 });
     document.getElementById('natal-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (e) {
     showNatalError('Došlo je do greške pri izračunu: ' + e.message);

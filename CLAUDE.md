@@ -190,6 +190,15 @@ normalno — zaključava se samo dok je početna aktivna.
      slide, koji je cijelo vrijeme stajao GORE (`hs-past`), pri prelasku sa zadnjeg ulazio
      **odozgo** — suprotno od smjera listanja. Teleport se ne vidi jer je slide još
      `visibility:hidden`.
+- **U POKRETU SMIJU BITI NAJVIŠE DVA SLIDEA** (novi + onaj s kojeg smo otišli). Prijelaz traje
+  0.68 s, a `LOCK_MS` je 270 ms, pa se kod brzog vrtenja znao nakupiti treći i četvrti slide
+  još u letu iz ranijeg koraka. Takav „zalutali" slide preleti preko cijelog ekrana usred tuđe
+  animacije, i to **ispod ostalih** (slideovi nemaju `z-index` pa se slaganje ravna po
+  redoslijedu u DOM-u) — to je bio onaj slide koji „odleti prema gore iza svih ostalih".
+  `paint()` zato svakom slideu koji nije ni `current` ni `prev` stavi `hs-noanim`, primijeni
+  klase, napravi **jedan** prisilni reflow i skine `hs-noanim` — zalutali slide tako nestane
+  na mjesto umjesto da preleti ekran. Ne uklanjati; alternativa bi bila dizati `LOCK_MS` na
+  duljinu animacije, a to je namjerno kratko da scrollanje ne čeka kraj prijelaza.
 - **Karta dana se mjeri i skalira** (`fitCotd()` u home-slides.js): duljina teksta ovisi
   o tome koja je karta na redu, a slide se ne scrolla, pa se u CSS-u ne da unaprijed
   pogoditi veličina. Kartica se izmjeri i, ako je viša od slidea, sve mjere u njoj se

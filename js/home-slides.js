@@ -201,6 +201,24 @@
   function paint(prev, dir) {
     prepIncoming(slides[current], dir);
 
+    /* NAJVIŠE DVA SLIDEA SMIJU BITI U POKRETU: novi i onaj s kojeg smo
+       upravo otišli. Prijelaz traje 0.68 s, a `LOCK_MS` je 270 ms (namjerno,
+       da scrollanje ne čeka kraj animacije) - kod brzog vrtenja se zato
+       zna nakupiti i treći, četvrti slide koji je JOŠ u letu iz ranijeg
+       koraka. Takav "zalutali" slide preleti preko cijelog ekrana usred
+       tuđe animacije, i to ISPOD ostalih (slaganje se ravna po redoslijedu
+       u DOM-u jer slideovi nemaju `z-index`) - to je onaj slide koji
+       "odleti prema gore iza svih ostalih".
+       Zato ih ovdje vraćamo na mjesto BEZ animacije: klasa `hs-noanim` se
+       stavi svima odjednom, pa se nakon jednog prisilnog reflowa skine. */
+    var strays = [];
+    slides.forEach(function (el, i) {
+      if (i !== current && i !== prev) {
+        strays.push(el);
+        el.classList.add('hs-noanim');
+      }
+    });
+
     slides.forEach(function (el, i) {
       var past   = i < current;
       var future = i > current;
@@ -222,6 +240,11 @@
       if (hidden) el.setAttribute('inert', '');
       else        el.removeAttribute('inert');
     });
+
+    if (strays.length && deck) {
+      void deck.offsetWidth;   // jedan reflow za sve: nova mjesta vrijede odmah
+      strays.forEach(function (el) { el.classList.remove('hs-noanim'); });
+    }
 
     document.documentElement.style.setProperty('--hs-sky', String(current));
     paintDots();

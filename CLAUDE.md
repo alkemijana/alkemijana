@@ -73,7 +73,12 @@ ALKEMIJANA WEBSITE/
 └── CLAUDE.md                       ← ovaj fajl
 ```
 
-`BACKUP ALKEMIJANA/` i `AlkemiJana.html` su u .gitignore — ignoriraju se.
+`BACKUP ALKEMIJANA/`, `AlkemiJana.html` i `vizitka-qr/` su u .gitignore — ignoriraju se.
+
+**`vizitka-qr/`** je Janin lokalni materijal (QR kod + 3D modeli vizitke za ispis, ~71 MB
+STL/3MF). **Nije dio stranice i ne smije u repo:** sve iz repoa Cloudflare Pages objavljuje
+javno, a binarne datoteke ostaju u git povijesti zauvijek pa svaka nova verzija modela trajno
+napuhne `clone`. Ne predlagati commitanje te mape ni na „commitaj sve".
 
 ---
 

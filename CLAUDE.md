@@ -825,6 +825,23 @@ izričit pristanak PRIJE učitavanja.
     prikaže ponovno (nova privola).
   - Odbijanje mora biti **jednako lako** kao prihvaćanje (čl. 7 GDPR) — zato su „Odbijam” i
     „Prihvaćam” isti po veličini i istaknutosti. Ne mijenjati u „samo Prihvaćam + X”.
+  - **Stranica je ZAMRZNUTA dok odluke nema:** `blockPage()` stavi `inert` na svu djecu
+    `<body>` osim trake, panela s postavkama i ekrana učitavanja (jedan atribut pokriva i
+    klik i tab redoslijed), a `html.cc-blocking` u style.css poblijedi sadržaj
+    (`opacity: 0.3`) i zaključa scroll. Sve odluke idu kroz `decide(analytics)` koja na
+    kraju zove `unblockPage()`.
+    - **`opacity` MORA imati `!important`** — `#sky-bg` nosi `opacity:0.45` kao inline stil
+      u index.html, pa bi inače nebo ostalo svijetlo dok je sve drugo poblijedjelo.
+    - Deck početne sluša kotačić/tipkovnicu na `window`, gdje `inert` ne pomaže — zato
+      `busy()` u home-slides.js provjerava i `cc-blocking`.
+    - `showBanner()` klasu `cc-show` stavlja nakon **prisilnog reflowa**, ne u
+      `requestAnimationFrame`: u pozadinskoj kartici rAF ne okine pa bi stranica ostala
+      zamrznuta s nevidljivom trakom.
+    - **Pravno:** ovo je dopušteno samo zato što OBA izlaza otključavaju stranicu —
+      „Odbijam” jednako kao „Prihvaćam”. Ne smije se promijeniti tako da samo prihvaćanje
+      otključava (to bi bio „cookie wall” i privola više ne bi bila dobrovoljna).
+    - Nuspojava: dok odluke nema, ni admin prijava (`#admin`) nije klikabilna — Jana prvo
+      odabere kolačiće, pa se prijavi.
   - Zatvaranje panela bez odluke vraća banner (`maybeReshowBanner`) — posjetitelj ne smije
     ostati bez izbora.
   - Javni API: `window.AJConsent.open()` / `.get()`, plus `openCookieSettings()` za podnožje.

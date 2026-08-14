@@ -365,9 +365,13 @@
     return !!t.closest('#admin-panel-overlay, #admin-login-overlay, .nd-drawer, .cc-banner, .cc-panel, .cc-overlay');
   }
 
+  /* `cc-blocking` = stranica je zamrznuta dok se ne odluči o kolačićima.
+     Deck sluša kotačić/tipkovnicu na `window`, a `inert` i `pointer-events`
+     te događaje ne zaustavljaju - zato provjera i ovdje. */
   function busy(e) {
     return !active || fromOverlay(e) ||
            document.documentElement.classList.contains('nd-locked') ||
+           document.documentElement.classList.contains('cc-blocking') ||
            document.documentElement.classList.contains('aj-loading');
   }
 

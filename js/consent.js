@@ -13,6 +13,12 @@
 
    Odbijanje mora biti jednako lako kao prihvaćanje (čl. 7 GDPR),
    zato su "Prihvaćam" i "Odbijam" vizualno ravnopravni gumbi.
+
+   Dok odluke nema, stranica je ZAMRZNUTA: sadržaj poblijedi, ne može
+   se scrollati ni kliknuti (v. blockPage/unblockPage). To je dopušteno
+   jer OBA izlaza vode dalje - i "Odbijam" otključava stranicu jednako
+   kao "Prihvaćam" - pa privola ostaje dobrovoljna. Ne smije se
+   promijeniti tako da samo prihvaćanje otključava stranicu.
    ============================================================ */
 
 (function () {
@@ -92,6 +98,44 @@
     }
   }
 
+  /* ---------- zamrzavanje stranice do odluke ----------
+
+     Dok posjetitelj ne odabere, sve osim trake s privolom (i panela s
+     postavkama) dobiva `inert` - time postaje i neklikabilno i izvan
+     tab redoslijeda, jednim atributom. CSS uz to poblijedi sadržaj i
+     zaključa scroll (v. `html.cc-blocking` u css/style.css).
+
+     Pamti se KOJE smo elemente sami postavili: ako je nešto već bilo
+     `inert` iz drugog razloga, ne diramo ga i ne skidamo mu atribut. */
+
+  var blocked = [];
+
+  function blockPage() {
+    if (blocked.length) return;
+    document.documentElement.classList.add('cc-blocking');
+    Array.prototype.forEach.call(document.body.children, function (el) {
+      // ekran učitavanja je iznad svega i sam sebe uklanja - preskoči ga
+      if (el === banner || el === panel || el.id === 'aj-loader') return;
+      if (el.hasAttribute('inert')) return;
+      el.setAttribute('inert', '');
+      blocked.push(el);
+    });
+  }
+
+  function unblockPage() {
+    document.documentElement.classList.remove('cc-blocking');
+    blocked.forEach(function (el) { el.removeAttribute('inert'); });
+    blocked = [];
+  }
+
+  /* Jedina točka kroz koju prolazi odluka - i iz trake i iz panela. */
+  function decide(analytics) {
+    writeConsent(analytics);
+    applyConsent(analytics);
+    hideBanner();
+    unblockPage();
+  }
+
   /* ---------- izgradnja DOM-a ---------- */
 
   var banner = null, panel = null;
@@ -124,8 +168,8 @@
 
     banner.addEventListener('click', function (e) {
       var act = e.target.getAttribute && e.target.getAttribute('data-cc');
-      if (act === 'accept')   { writeConsent(true);  applyConsent(true);  hideBanner(); }
-      if (act === 'reject')   { writeConsent(false); applyConsent(false); hideBanner(); }
+      if (act === 'accept')   { decide(true); }
+      if (act === 'reject')   { decide(false); }
       if (act === 'settings') { hideBanner(); openPanel(); }
     });
 
@@ -135,7 +179,14 @@
 
   function showBanner() {
     buildBanner();
-    requestAnimationFrame(function () { banner.classList.add('cc-show'); });
+    blockPage();
+    /* Prisilni reflow, NE `requestAnimationFrame`: u pozadinskoj kartici
+       rAF ne okine, pa bi stranica ostala zamrznuta s nevidljivom trakom
+       sve dok se kartica ne aktivira. Reflow "usidri" početni položaj
+       trake pa tranzicija u `cc-show` svejedno klizne. (Isti razlog kao
+       kod trake napretka u js/loader.js.) */
+    void banner.offsetWidth;
+    banner.classList.add('cc-show');
   }
 
   function hideBanner() {
@@ -192,10 +243,10 @@
       if (e.target === panel || act === 'close') { closePanel(); maybeReshowBanner(); return; }
       if (act === 'save') {
         var on = document.getElementById('cc-analytics').checked;
-        writeConsent(on); applyConsent(on); closePanel(); hideBanner();
+        closePanel(); decide(on);
       }
       if (act === 'reject-all') {
-        writeConsent(false); applyConsent(false); closePanel(); hideBanner();
+        closePanel(); decide(false);
       }
     });
 

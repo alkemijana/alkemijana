@@ -2822,6 +2822,32 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .cc-banner.cc-show { transform: translateY(0); }
+
+/* ---- Stranica je ZAMRZNUTA dok se ne odluči o kolačićima ----
+   Sadržaj poblijedi i ne reagira ni na klik ni na scroll dok posjetitelj
+   ne odabere. Sam blok radi `inert` iz js/consent.js (jedan atribut
+   pokriva i klik i tab redoslijed); ovdje je vizualni dio, plus
+   `pointer-events` kao rezerva za preglednike bez `inert` podrške.
+
+   Izuzeti su traka s privolom, panel s postavkama i ekran učitavanja -
+   njima se mora moći pristupiti. Namjerno se NE koristi `filter: blur()`:
+   ispod je živi natalni kotač (SVG sa stotinama elemenata) i animirano
+   zvjezdano nebo, pa bi se zamućenje rasterizirala u svakom kadru. */
+html.cc-blocking,
+html.cc-blocking body {
+  overflow: hidden;
+}
+
+/* `!important` je ovdje nužan, ne nemar: zvjezdano nebo (`#sky-bg`) nosi
+   `opacity:0.45` kao INLINE stil u index.html, a inline stil nadjačava
+   svaki selektor bez `!important` - bez toga nebo ostane puno svijetlo
+   dok je sve ostalo poblijedjelo. */
+html.cc-blocking body > *:not(.cc-banner):not(.cc-overlay):not(#aj-loader) {
+  opacity: 0.3 !important;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.45s ease;
+}
 .cc-banner-inner {
   max-width: 1250px; margin: 0 auto; padding: 0.95rem 2rem;
   display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;

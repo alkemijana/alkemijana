@@ -788,6 +788,12 @@ Sve slike idu kroz `uploadToImgBB(file, opts)` u `js/admin.js`:
   zlu (prespora veza, format koji preglednik ne zna otvoriti = HEIC s iPhonea, odgovor
   ImgBB-a). Prije nije bilo timeouta pa se zaglavljeni upload nije imao kako prekinuti.
 - **`opts.onStatus`** dojavljuje "Pripremam / Uploadam" pozivatelju.
+- **Dekodiranje ide preko `createImageBitmap(file)`, ne preko `<img src="blob:…">`** —
+  bitmap radi izravno nad datotekom pa ga CSP ne dira. Preko `<img>` je `img-src` blokirao
+  blob adresu, `onerror` je opalio i **običan JPG je javljao "format nije podržan"**.
+  Zbog žive minijature u editoru `img-src` sada svejedno sadrži **`blob:`** (oba mjesta:
+  `_headers` i `functions/_middleware.js`). Ako dekodiranje ipak padne, datoteka do 5 MB
+  se pošalje kakva jest — smanjivanje je ubrzanje, ne uvjet.
 
 **ZAMKA (bila je stvarni kvar, ne ponavljati):** `document.execCommand('insertHTML', …)`
 u Chromeu **normalizira ubačeni `<p>` u `<span>` i pritom BACI `id`**. Stari kod je tako

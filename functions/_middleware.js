@@ -18,7 +18,7 @@
 const CSP = "default-src 'self'; " +
   "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; " +
   "style-src 'self' 'unsafe-inline'; font-src 'self'; " +
-  "img-src 'self' data: https://i.ibb.co https://emojicdn.elk.sh https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com; " +
+  "img-src 'self' data: blob: https://i.ibb.co https://emojicdn.elk.sh https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com; " +
   "connect-src 'self' https://api.imgbb.com https://api.web3forms.com https://*.google-analytics.com https://*.analytics.google.com https://geocoding-api.open-meteo.com; " +
   "form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 

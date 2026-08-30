@@ -162,6 +162,7 @@ document.getElementById('aj-pass').addEventListener('keydown', e => {
 const UPLOAD_MAX_PX         = 1600;         // dulja stranica nakon smanjivanja
 const UPLOAD_TARGET_BYTES   = 900 * 1024;   // ciljana veličina poslane datoteke
 const UPLOAD_PASSTHRU_BYTES = 400 * 1024;   // manje od ovoga se ne dira (bez gubitka)
+const UPLOAD_FALLBACK_BYTES = 5 * 1024 * 1024; // ako dekodiranje padne, tolika se jos smije poslati kakva jest
 const UPLOAD_TIMEOUT_MS     = 60000;
 
 function uploadTimeoutSignal(ms) {
@@ -178,6 +179,18 @@ function fileToBase64(file) {
     reader.onerror = () => reject(new Error('Čitanje datoteke nije uspjelo.'));
     reader.readAsDataURL(file);
   });
+}
+
+/* Dekodiraj sliku iz datoteke. Prvo createImageBitmap - on radi IZRAVNO nad
+   datotekom, bez ijednog URL-a, pa ga Content-Security-Policy ne dira. Stariji
+   put preko <img src="blob:..."> ostaje kao rezerva, ali on ovisi o tome da
+   img-src u CSP-u dopusta blob: (bez toga preglednik javi gresku ucitavanja,
+   sto izvana izgleda kao "format nije podrzan" i za obicni JPG). */
+async function decodeImageFile(file) {
+  if (typeof createImageBitmap === 'function') {
+    try { return await createImageBitmap(file); } catch (e) {}
+  }
+  return await loadImageForResize(file);
 }
 
 function loadImageForResize(file) {
@@ -203,10 +216,13 @@ async function prepareImageForUpload(file) {
 
   let img;
   try {
-    img = await loadImageForResize(file);
+    img = await decodeImageFile(file);
   } catch (e) {
-    // Preglednik ne zna dekodirati format - u praksi je to HEIC s iPhonea.
-    throw new Error('Ovaj format slike preglednik ne može otvoriti (najčešće HEIC s iPhonea). Spremi sliku kao JPG pa pokušaj ponovo.');
+    // Preglednik ne zna dekodirati (HEIC s iPhonea, oštećena datoteka...). Ako je
+    // datoteka ionako dovoljno mala, pošalji original kakav jest umjesto da je
+    // odbijemo unaprijed - smanjivanje je ubrzanje, ne uvjet.
+    if (file.size <= UPLOAD_FALLBACK_BYTES) return file;
+    throw new Error('Ovu sliku preglednik ne može otvoriti (najčešće HEIC s iPhonea ili oštećena datoteka), a prevelika je da bi se poslala kakva jest. Spremi je kao JPG pa pokušaj ponovo.');
   }
 
   const wOrig = img.naturalWidth  || img.width;
@@ -228,6 +244,7 @@ async function prepareImageForUpload(file) {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, w, h);
   ctx.drawImage(img, 0, 0, w, h);
+  if (typeof img.close === 'function') img.close();   // ImageBitmap drži memoriju dok ga se ne zatvori
 
   let blob = null;
   const steps = [0.85, 0.75, 0.65, 0.55];

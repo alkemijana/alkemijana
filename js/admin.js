@@ -482,6 +482,9 @@ function showPostEditor(p) {
         <button type="button" class="ap-btn ap-btn-cancel" onclick="generateCoverFromIcon()" title="Generiraj mističnu naslovnu sliku iz odabrane ikone - radi na WhatsAppu, Facebooku, itd.">
           ✨ Generiraj iz ikone
         </button>
+        <button type="button" class="ap-btn ap-btn-cancel" onclick="shrinkExistingCover()" title="Dohvati postojeću naslovnu sliku, smanji je i postavi natrag - za slike uploadane prije nego je smanjivanje uvedeno">
+          ⚡ Smanji sliku
+        </button>
         <span id="img-filename" style="font-family:'Atkinson Hyperlegible',sans-serif;color:var(--text-muted);font-size:0.9rem">
           ${p && p.imageUrl ? 'Slika učitana' : 'Nema odabrane slike'}
         </span>
@@ -542,6 +545,7 @@ function showPostEditor(p) {
     </div>`;
 
   initTagsForPost(p);
+  if (p && p.imageUrl) warnIfCoverHuge(p.imageUrl);
 }
 
 /* === TAG INPUT (chip-style) === */
@@ -614,6 +618,74 @@ async function handleBlogImageUpload(input) {
     document.getElementById('img-filename').textContent = '✅ ' + file.name;
   } catch(e) {
     status.textContent = '❌ ' + (e && e.message ? e.message : 'Greška – pokušaj ponovo');
+  }
+}
+
+/* ============================================================
+   POSTOJECE NASLOVNE SLIKE (uploadane prije nego je smanjivanje uvedeno)
+   ------------------------------------------------------------
+   Slika od 8160x6120 (50 MP, 16 MB) izgleda na kartici jednako kao ona od
+   1600 px, ali preglednik je mora skinuti i dekodirati u cijelosti - zbog
+   toga se blog i slide "najnoviji clanci" trzaju, a slika se pri prvom
+   otvaranju iscrtava red po red. Novi upload se sam smanji
+   (prepareImageForUpload), a za vec postavljene slike sluzi gumb
+   "Smanji sliku": dohvati sliku s ImgBB-a (salje Access-Control-Allow-Origin
+   pa je smijemo procitati), provuce je kroz isto smanjivanje i vrati natrag
+   kao novu sliku. Stara ostaje na ImgBB-u, samo je clanak vise ne koristi.
+   ============================================================ */
+function fmtBytes(n) {
+  return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' MB'
+                      : Math.round(n / 1024) + ' KB';
+}
+
+const COVER_WARN_BYTES = 1.5 * 1024 * 1024;
+
+async function warnIfCoverHuge(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD', signal: uploadTimeoutSignal(15000) });
+    const len = Number(res.headers.get('content-length') || 0);
+    if (!len || len < COVER_WARN_BYTES) return;
+    const el = document.getElementById('img-filename');
+    // Uredivac se u meduvremenu mogao zatvoriti ili prebaciti na drugi clanak.
+    if (!el || document.getElementById('ed-img').value !== url) return;
+    el.textContent = '⚠ Slika je velika (' + fmtBytes(len) + ') - klikni „⚡ Smanji sliku"';
+    el.style.color = '#e0b070';
+  } catch (e) {}
+}
+
+async function shrinkExistingCover() {
+  const urlEl  = document.getElementById('ed-img');
+  const status = document.getElementById('img-filename');
+  const url    = (urlEl.value || '').trim();
+  status.style.color = '';
+  if (!url) { status.textContent = 'Nema naslovne slike za smanjivanje.'; return; }
+
+  status.textContent = '⏳ Dohvaćam sliku...';
+  try {
+    // Dulji rok nego kod uploada: ovdje se SKIDA original, a upravo takve
+    // slike su i po 16 MB.
+    const res = await fetch(url, { signal: uploadTimeoutSignal(120000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob   = await res.blob();
+    const before = blob.size;
+    const name   = (url.split('/').pop() || 'naslovna.jpg').split('?')[0];
+    const file   = new File([blob], name, { type: blob.type || 'image/jpeg' });
+
+    status.textContent = '⏳ Smanjujem...';
+    const small = await prepareImageForUpload(file);
+    if (small.size >= before) {
+      status.textContent = '✅ Slika je već dovoljno mala (' + fmtBytes(before) + ') - nema što smanjivati.';
+      return;
+    }
+
+    const newUrl = await uploadToImgBB(small, { raw: true, onStatus: t => { status.textContent = t; } });
+    urlEl.value = newUrl;
+    document.getElementById('img-prev').src           = newUrl;
+    document.getElementById('img-prev').style.display = 'block';
+    status.textContent = '✅ ' + fmtBytes(before) + ' → ' + fmtBytes(small.size) + ' - spremi članak pa „↓ Spremi"';
+  } catch (e) {
+    status.style.color = '#e07070';
+    status.textContent = '❌ ' + (e && e.message ? e.message : 'Smanjivanje nije uspjelo.');
   }
 }
 

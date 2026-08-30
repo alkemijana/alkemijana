@@ -811,6 +811,23 @@ Sve slike idu kroz `uploadToImgBB(file, opts)` u `js/admin.js`:
   `_headers` i `functions/_middleware.js`). Ako dekodiranje ipak padne, datoteka do 5 MB
   se pošalje kakva jest — smanjivanje je ubrzanje, ne uvjet.
 
+**Naslovne slike i trzanje stranice:** slika od `8160x6120` (50 MP, 16 MB) izgleda na
+kartici jednako kao ona od 1600 px, ali je preglednik mora skinuti i dekodirati
+CIJELU - zato se blog i slide „najnoviji članci" trzaju, a slika se pri prvom
+otvaranju iscrtava red po red. ImgBB **nema** minijature na predvidivoj adresi
+(`.md.jpg`/`.th.jpg` vraćaju istu datoteku), pa se problem rješava na dva mjesta:
+- **Novi upload** se sam smanji (v. gore).
+- **Već postavljene slike**: gumb **„⚡ Smanji sliku"** u uređivaču članka
+  (`shrinkExistingCover`) dohvati sliku s ImgBB-a (šalje `Access-Control-Allow-Origin: *`,
+  zato je `i.ibb.co` u `connect-src`), provuče je kroz isto smanjivanje i vrati kao novu.
+  Pri otvaranju članka `warnIfCoverHuge` HEAD-om provjeri veličinu i upozori iznad 1,5 MB.
+  Izmjereno: 15,9 MB → 521 KB.
+- U `js/app.js` sve slike članaka imaju `decoding="async"` (dekodiranje ne blokira
+  glavnu dretvu usred prijelaza slidea), a kartice na **blog stranici** i „povezani
+  članci" i `loading="lazy"`. **Kartice na slideu početne NE smiju biti lazy** - ondje su
+  u DOM-u ali skrivene (`visibility:hidden`) i pomaknute izvan ekrana, pa ih preglednik
+  ne bi nikad ni počeo učitavati.
+
 **ZAMKA (bila je stvarni kvar, ne ponavljati):** `document.execCommand('insertHTML', …)`
 u Chromeu **normalizira ubačeni `<p>` u `<span>` i pritom BACI `id`**. Stari kod je tako
 ubacivao placeholder `<p id="img-ph-…">⏳ Uploadam sliku…</p>` i poslije ga tražio preko

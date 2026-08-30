@@ -631,7 +631,7 @@ function filterBlogPosts() {
   }
 
   grid.innerHTML = filtered.length
-    ? filtered.map(blogCard).join('')
+    ? filtered.map(x => blogCard(x, true)).join('')
     : `<div class="blog-empty">
          <div class="blog-empty-glyph">✦</div>
          <p>Nema članaka koji odgovaraju pretrazi.</p>
@@ -659,14 +659,19 @@ function renderHomeBlogPreview() {
       <a class="btn" onclick="showPage('blog')" id="t-blogPreviewBtn"></a>
     </div>`;
 
-  grid.innerHTML = latest.map(blogCard).join('') + moreCard;
+  grid.innerHTML = latest.map(x => blogCard(x, false)).join('') + moreCard;
 
   // gumb i tekst kartice dolaze iz TEXTS, a upravo su iznova stvoreni
   applyTexts();
   if (window.HomeSlides) window.HomeSlides.refresh();
 }
 
-function blogCard(p) {
+/* lazy = slika se dohvati tek kad kartica dode u vidno polje. NE koristiti na
+   slideu pocetne: ondje su kartice u DOM-u ali skrivene (visibility:hidden) i
+   pomaknute izvan ekrana, pa ih preglednik nikad ne bi ni pocelo ucitavati.
+   decoding="async" je svugdje - dekodiranje velike slike tako ne blokira
+   glavnu dretvu usred prijelaza slidea. */
+function blogCard(p, lazy) {
   // Tagovi se NE prikazuju na kartici početne - samo datum.
   // Ako je dio serijala, prikaži suptilni badge ispod naslova.
   const seriesBadge = p.series
@@ -676,7 +681,7 @@ function blogCard(p) {
   return `
     <div class="blog-card" onclick="openPost('${esc(p.id)}')">
       <div class="blog-image">
-        ${safeImg ? `<img src="${esc(safeImg)}" alt="">` : esc(p.icon)}
+        ${safeImg ? `<img src="${esc(safeImg)}" alt="" decoding="async"${lazy ? ' loading="lazy"' : ''}>` : esc(p.icon)}
       </div>
       <div class="blog-content">
         <div class="blog-meta">${esc(p.date)}</div>
@@ -852,7 +857,7 @@ function renderRelatedPosts(p) {
   }
   const picks = shuffled.slice(0, 3);
 
-  grid.innerHTML = picks.map(blogCard).join('');
+  grid.innerHTML = picks.map(x => blogCard(x, true)).join('');
   wrap.style.display = 'block';
 }
 
@@ -887,7 +892,7 @@ function renderSeriesNav(p) {
     const safeXImg = safeImgSrc(x.imageUrl);
     return `
     <div class="series-nav-thumb">
-      ${safeXImg ? `<img src="${esc(safeXImg)}" alt="">` : `<span class="series-nav-thumb-icon">${esc(x.icon || '✦')}</span>`}
+      ${safeXImg ? `<img src="${esc(safeXImg)}" alt="" decoding="async" loading="lazy">` : `<span class="series-nav-thumb-icon">${esc(x.icon || '✦')}</span>`}
     </div>
     <div class="series-nav-text">
       <div class="series-nav-num">Dio ${esc(x.seriesPart || '')}</div>

@@ -489,6 +489,10 @@ function showPostEditor(p) {
           ${p && p.imageUrl ? 'Slika učitana' : 'Nema odabrane slike'}
         </span>
       </div>
+      <p style="font-family:'Atkinson Hyperlegible',sans-serif;font-style:italic;color:var(--text-muted);font-size:0.85rem;margin:0.5rem 0 0">
+        Slike se pri uploadu automatski smanje (najviše 1600 px, oko 900 KB). Naslovna slika veća od 1,5 MB
+        usporava i trza cijelu stranicu - blog i početnu - pa je smanji gumbom „⚡ Smanji sliku".
+      </p>
       <input type="hidden" id="ed-img" value="${p && p.imageUrl ? esc(p.imageUrl) : ''}">
       <img id="img-prev" class="img-preview-thumb"
         src="${p && p.imageUrl ? p.imageUrl : ''}"
@@ -608,15 +612,28 @@ async function handleBlogImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
   const status = document.getElementById('img-filename');
+  status.style.color = '';
   status.textContent = '⏳ Pripremam sliku...';
 
   try {
-    const url = await uploadToImgBB(file, { onStatus: t => { status.textContent = t; } });
+    // Smanjivanje se radi ovdje (a ne unutar uploada) da znamo KOLIKA je slika
+    // na kraju - Jana tako uvijek vidi brojku, a ne samo "gotovo".
+    const small = await prepareImageForUpload(file);
+    const url   = await uploadToImgBB(small, { raw: true, onStatus: t => { status.textContent = t; } });
     document.getElementById('ed-img').value           = url;
     document.getElementById('img-prev').src           = url;
     document.getElementById('img-prev').style.display = 'block';
-    document.getElementById('img-filename').textContent = '✅ ' + file.name;
+    // Vecina slika ovdje zavrsi ispod 900 KB. Prode li ipak nesto veliko
+    // (animirani GIF, SVG, format koji preglednik ne zna otvoriti), neka to
+    // bude ODMAH jasno - inace se veliki naslovni GIF objavi neprimijeceno.
+    if (small.size > COVER_WARN_BYTES) {
+      status.style.color = '#e0b070';
+      status.textContent = hugeCoverMsg(small.size);
+    } else {
+      status.textContent = '✅ ' + file.name + ' (' + fmtBytes(small.size) + ')';
+    }
   } catch(e) {
+    status.style.color = '#e07070';
     status.textContent = '❌ ' + (e && e.message ? e.message : 'Greška – pokušaj ponovo');
   }
 }
@@ -640,6 +657,14 @@ function fmtBytes(n) {
 
 const COVER_WARN_BYTES = 1.5 * 1024 * 1024;
 
+/* Upozorenje mora reci POSLJEDICU, ne samo broj megabajta - "slika je velika"
+   se lako preskoci kao sitnica, a rezultat je stranica koja se trza. */
+function hugeCoverMsg(bytes) {
+  return '⚠ PREVELIKA SLIKA (' + fmtBytes(bytes) + ') - zbog nje šteka cijela stranica '
+       + '(blog i početna se trzaju, slika se otvara red po red). '
+       + 'Klikni „⚡ Smanji sliku" pa spremi.';
+}
+
 async function warnIfCoverHuge(url) {
   try {
     const res = await fetch(url, { method: 'HEAD', signal: uploadTimeoutSignal(15000) });
@@ -648,7 +673,7 @@ async function warnIfCoverHuge(url) {
     const el = document.getElementById('img-filename');
     // Uredivac se u meduvremenu mogao zatvoriti ili prebaciti na drugi clanak.
     if (!el || document.getElementById('ed-img').value !== url) return;
-    el.textContent = '⚠ Slika je velika (' + fmtBytes(len) + ') - klikni „⚡ Smanji sliku"';
+    el.textContent = hugeCoverMsg(len);
     el.style.color = '#e0b070';
   } catch (e) {}
 }
@@ -674,7 +699,16 @@ async function shrinkExistingCover() {
     status.textContent = '⏳ Smanjujem...';
     const small = await prepareImageForUpload(file);
     if (small.size >= before) {
-      status.textContent = '✅ Slika je već dovoljno mala (' + fmtBytes(before) + ') - nema što smanjivati.';
+      // GIF i SVG prolaze nedirnuti (animacija, odnosno vektor) pa se velik GIF
+      // ovdje ne moze smanjiti - bez ove grane bi Jana dobila "vec je dovoljno
+      // mala" na slici koju je maloprije upozorenje proglasilo prevelikom.
+      if (before > COVER_WARN_BYTES) {
+        status.style.color = '#e0b070';
+        status.textContent = '⚠ Ovu sliku ne mogu smanjiti (' + fmtBytes(before) + ') - GIF i SVG '
+                           + 'se ne diraju zbog animacije. Spremi je kao JPG pa uploadaj ponovo.';
+      } else {
+        status.textContent = '✅ Slika je već dovoljno mala (' + fmtBytes(before) + ') - nema što smanjivati.';
+      }
       return;
     }
 

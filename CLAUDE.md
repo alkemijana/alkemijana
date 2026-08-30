@@ -820,7 +820,12 @@ otvaranju iscrtava red po red. ImgBB **nema** minijature na predvidivoj adresi
 - **Već postavljene slike**: gumb **„⚡ Smanji sliku"** u uređivaču članka
   (`shrinkExistingCover`) dohvati sliku s ImgBB-a (šalje `Access-Control-Allow-Origin: *`,
   zato je `i.ibb.co` u `connect-src`), provuče je kroz isto smanjivanje i vrati kao novu.
-  Pri otvaranju članka `warnIfCoverHuge` HEAD-om provjeri veličinu i upozori iznad 1,5 MB.
+  Veličina se provjerava na TRI mjesta i poruka uvijek kaže POSLJEDICU, ne samo broj
+  megabajta (`hugeCoverMsg`) - „slika je velika" se preskoči kao sitnica:
+  **pri otvaranju članka** (`warnIfCoverHuge`, HEAD zahtjev, prag 1,5 MB), **odmah nakon
+  uploada** (ondje se ispiše i konačna veličina, npr. „✅ foto.jpg (312 KB)") i kao
+  **trajna napomena** ispod gumba za naslovnu sliku. Uređivač je za novi i za postojeći
+  članak isti markup (`showPostEditor` mijenja samo naslov), pa sve troje vrijedi i za novi članak.
   Izmjereno: 15,9 MB → 521 KB.
 - U `js/app.js` sve slike članaka imaju `decoding="async"` (dekodiranje ne blokira
   glavnu dretvu usred prijelaza slidea), a kartice na **blog stranici** i „povezani

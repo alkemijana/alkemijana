@@ -2620,6 +2620,35 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
   font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--text-muted);
 }
+/* Datum kao tri polja: dan / mjesec / godina (js/natal-date.js). Nativni
+   kalendar je na mobitelu za datum rođenja bio neupotrebljiv - godina se
+   birala listanjem. Tri polja rade i mišem i prstom, a na mobitelu podižu
+   brojkovnu tipkovnicu (inputmode="numeric"). */
+.nt-dmy { display: flex; gap: 0.5rem; align-items: stretch; }
+.nt-dmy .nt-dmy-f { width: auto; min-width: 0; }
+.nt-dmy-d { flex: 0 1 5rem; text-align: center; }
+.nt-dmy-y { flex: 0 1 6.5rem; text-align: center; }
+.nt-dmy-m { flex: 1 1 7rem; }
+/* Strelica padaćeg popisa bliže rubu - ime mjeseca treba svaki piksel širine. */
+.form-group .nt-dmy-m { padding-left: 0.8rem; padding-right: 1.9rem; background-position: right 0.65rem center; }
+@media (max-width: 420px) {
+  .nt-dmy { gap: 0.35rem; }
+  .nt-dmy .nt-dmy-f { padding-left: 0.5rem; padding-right: 0.5rem; font-size: 1rem; }
+  .form-group .nt-dmy-m { padding-right: 1.6rem; background-position: right 0.5rem center; }
+  .nt-dmy-d { flex: 0 1 3.6rem; }
+  .nt-dmy-y { flex: 0 1 5rem; }
+}
+/* U panelu tranzita polja su sitnija (uz gumb „Sada“ u istom redu). */
+.tr-anchor .nt-dmy { gap: 0.35rem; flex: 1 1 15rem; }
+.tr-anchor .nt-dmy-f {
+  background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 0; padding: 0.4rem 0.5rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;
+  appearance: none; -webkit-appearance: none;
+}
+.tr-anchor .nt-dmy-d { flex: 0 1 3.4rem; }
+.tr-anchor .nt-dmy-y { flex: 0 1 4.4rem; }
+.tr-anchor .nt-dmy-m { flex: 1 1 6rem; }
+.nt-dmy-f:focus { outline: none; border-color: var(--lavender); }
 .tr-anchor input[type="date"], .tr-anchor input[type="time"] {
   background: var(--form-bg); color: var(--text); border: 1px solid var(--border);
   border-radius: 0; padding: 0.4rem 0.6rem; font-family: 'Quicksand', sans-serif; font-size: 0.86rem;

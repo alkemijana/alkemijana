@@ -35,6 +35,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-calc.js               ← Natalna karta: astronomski izračun (computeChart, Placidus, Kiron, aspekti)
 │   ├── natal-render.js             ← Natalna karta: SVG kotač + tablice na stranici
 │   ├── natal-pdf.js                ← Natalna karta + sinastrija: PDF eksport (poster A4–A0 + radna A4)
+│   ├── natal-date.js               ← Datum kao 3 polja (dan/mjesec/godina) — prije natal.js
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
 │   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
 │   ├── natal-transit.js            ← Tranziti: kontrola vremena (5 slidera), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
@@ -352,6 +353,21 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   **str. 1** = velika karta + legenda aspekata + aspektna tablica + dominante;
   **str. 2** = pozicije planeta + kuće (Placidus) + popis aspekata.
   TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
+- **Datum se ne unosi nativnim kalendarom** (`js/natal-date.js`). Na Androidu je
+  `<input type="date">` za datum ROĐENJA bio mučenje: kalendar se otvori na današnjem
+  mjesecu, a godina se bira listanjem duge liste. Zato skripta svaki `<input type="date">`
+  na stranici nadogradi u **tri polja — dan · mjesec (imena mjeseci) · godina**; dan i
+  godina imaju `inputmode="numeric"` (brojkovna tipkovnica), a fokus sam skače dalje.
+  - **Izvorni `<input type="date">` ostaje u DOM-u, samo skriven, i i dalje je jedini
+    izvor istine** (`YYYY-MM-DD`) — `natal.js`, `natal-synastry.js` i `natal-transit.js`
+    čitaju ga i pišu u njega **nepromijenjeni**.
+  - Na tom skrivenom polju je `value` presložen (getter/setter) pa se tri vidljiva polja
+    osvježe i kad datum postavi KOD (vraćanje zadnjeg unosa, „⟳ Sada" kod tranzita,
+    popunjavanje druge osobe). Namjerno — da nova mjesta ne moraju pamtiti poziv za
+    sinkronizaciju. **Ne vraćati na ručno sinkroniziranje.**
+  - Datum se sastavi tek kad su sva tri polja ispravna (godina 4 znamenke), pa poluupisan
+    datum ne može proći. Raspon 1900.–2099. i dalje provjerava `natal.js` (ista poruka).
+  - Skrivanje radi JS, ne HTML — bez skripte ostaje nativni datum koji radi kao prije.
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
 - Pri izradi karte šalje se anoniman signal na `/log-natal` (samo hash unosa) za brojač — vidi Admin → Brojač karata.
 

@@ -5,6 +5,24 @@
 // ===ALKEMIJANA:BLOG_POSTS:START===
 let BLOG_POSTS = [
   {
+    "id": "uvod-u-tarot",
+    "title": "Uvod u Tarot",
+    "date": "30.08.2026.",
+    "tags": [
+      "tarot",
+      "povijest",
+      "špilovi"
+    ],
+    "icon": "🃏",
+    "imageUrl": "https://i.ibb.co/G3fBQcN4/d4ea88a21a83.jpg",
+    "excerpt": "",
+    "content": "\n        <p>Tarot nastaje kao kartaška igra početkom 15.\nstoljeća, razvija se u Italiji pod nazivom <i>Tarocco</i>. Širenjem u Francusku\nmijenja se i njegovo ime u ono nama poznato danas, <i>Tarot</i>. Najpoznatiji\nšpil iz tog doba naziva se Visconti–Sforza Tarot. Ovaj najraniji, djelomično\nsačuvani tarot špil zapravo je kombinacija 15 špilova iz sredine 15. stoljeća\nkoji se trenutno nalaze u raznim muzejima, knjižnicama i privatnim kolekcijama\ndiljem svijeta. Upravo te karte imale su značajan utjecaj na Tarot karte i\nnjihovu strukturu kakvu poznajemo danas.&nbsp;Najraniji strukturirani sustav tarota naziva\nse Marsejski Tarot (<i>Tarot de Marseille</i>).⏳ Uploadam sliku...&nbsp;Formira se kroz 17. i 18.\nstoljeće, prvo kao kartaška igra, dok se u 18. stoljeću počinje koristiti kao\nalat za divinaciju.&nbsp;</p><blockquote>U Marsejskom tarotu prvi put vidimo klasičnu strukturu\ntarota:&nbsp;22 karte velike arkane&nbsp;i 56 karata male arkane, odnosno špil od ukupno\n78 karata.&nbsp;</blockquote><p>Velike arkane nam prikazuju arhetipove ličnosti, životne faze koje\nsvi prolazimo na vlastitom putu individuacije, i to često i nekoliko puta u\nživotu. Mala arkana sastoji se od 4 palube, odnosno boje – Mačevi, Štapovi,\nPehari i Novčići; one nam ukazuju na različite dijelove nas i našeg života. U\nMarsejskom tarotu oni nemaju slikovne prikaze scena, već simbole, zbog čega je\ni zahtjevniji za čitanje.&nbsp;</p><blockquote>Naznake tarota u kartaškim igrama vidimo i danas;\nTršćanske karte (Triestine), koje se na Jadranskoj obali koriste za\nkartanje Briškule i Trešete, vrlo su slične upravo Marsejskom tarotu te dijele\nisto podrijetlo.</blockquote><p>Početkom 20. stoljeća nastaje najpoznatiji\ntarot špil koji je baza za većinu modernih tarot špilova, a to je Rider–Waite\nšpil kojeg je oslikala Pamela Colman Smith.&nbsp;⏳ Uploadam sliku...&nbsp;Ovaj špil nastaje u okviru\nkolektiva Zlatne Zore; špil je nadogradnja na Marsejski Tarot uz dodatak kabale\ni astrologije koje su utjecale na njegov dizajn.&nbsp;</p><blockquote>Najveća razlika između ova dva\nsustava je upravo u maloj arkani; Rider–Waiteov špil sadrži slikovite scene u\nmaloj arkani. U velikoj arkani postoji razlika u numerologiji karata Snage i\nPravde.</blockquote><p>&nbsp;Prilikom izrade špila članovi Zlatne Zore „preveli“ su simboličke\nkodove male arkane Marsejskog tarota te ih prikazali slikovito.</p><p>Najmlađi sustav tarota naziva se Thoth Tarot.\nNaslikala ga je Lady Frieda Harris za Aleistera Crowleyja sredinom 20.\nstoljeća.&nbsp;⏳ Uploadam sliku...&nbsp;Crowley je promijenio nazive nekih velikih arkana, njihovu\nnumerologiju te astrološke i kabalističke znakove povezane s njima. Također je\npromijenio i nazive dvorskih karata te dodao nazive malim arkanama.</p><p>\n\n\n\n\n\n\n\n\n\n</p><p>Danas postoji mnoštvo špilova, najveći broj\nje napravljen po Rider–Waiteovu sustavu. Također postoje i špilovi koji\nmiješaju sustave.&nbsp;</p><blockquote>Prilikom kupovine prvog špila najvažnije je voditi se\nvlastitom preferencijom; čitanje tarota je duboko intuitivna praksa pa bi i sam\nodabir špila trebao biti intuitivan proces.&nbsp;</blockquote><p>Najbolji sustav je upravo onaj koji\nnama najviše odgovara, a možemo koristiti i različite sustave ili različite\nšpilove za različite svrhe.</p>\n      ",
+    "sources": "",
+    "series": "Osnove Tarota",
+    "seriesPart": 1,
+    "archived": false
+  },
+  {
     "id": "sto-su-asocijativne-karte",
     "title": "ŠTO SU ASOCIJATIVNE KARTE?",
     "date": "07.06.2026.",

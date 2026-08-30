@@ -1535,7 +1535,12 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .af-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .af-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
 
-.editor-toolbar { display: flex; gap: 0.35rem; padding: 0.5rem; background: rgba(6, 8, 15, 0.5); border: 1px solid var(--border); border-bottom: none; flex-wrap: wrap; }
+/* Alatna traka OSTAJE PRILIJEPLJENA na vrh dok se piše dugi članak - bez toga se
+   za svako podebljavanje moralo scrollati na početak polja i natrag. Scroll
+   kontejner je .blog-editor-col, a sticky vrijedi dok je polje sa sadržajem u
+   vidnom polju (traka je unutar tog .af bloka). Pozadina MORA biti neprozirna -
+   tekst članka prolazi ispod trake. */
+.editor-toolbar { display: flex; gap: 0.35rem; padding: 0.5rem; background: #100e26; border: 1px solid var(--border); border-bottom: none; flex-wrap: wrap; position: sticky; top: 0; z-index: 6; box-shadow: 0 6px 14px rgba(6, 8, 15, 0.45); }
 .editor-toolbar button { padding: 0.22rem 0.6rem; background: transparent; border: 1px solid var(--border); color: var(--text); font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 @media (hover: hover) {
   .editor-toolbar button:hover { border-color: var(--lavender); color: var(--lavender); }
@@ -1544,6 +1549,9 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 @media (hover: hover) {
   .editor-toolbar .ed-img-upload:hover { border-color: var(--lavender); color: var(--lavender); }
 }
+/* Status uploada slike – stoji u alatnoj traci, ne u tekstu članka, pa se ne
+   može objaviti zajedno s njim. */
+.editor-toolbar .ed-img-status { align-self: center; margin-left: auto; font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 700; color: var(--sage); }
 
 /* Editor je dizajniran da PRELAMA tekst na isti način kao i objavljeni članak:
    ista širina, font, font-size i line-height kao .post-body. Tako autor vidi

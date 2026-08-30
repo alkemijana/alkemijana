@@ -775,6 +775,38 @@ pa Pages projekt → Settings → Functions → KV namespace bindings → bindin
 Bez bindinga brojač tiho ne radi (admin pokaže napomenu), izrada karte radi normalno.
 **Privatnost:** ništa osobno se ne sprema → nema GDPR obveze obavijesti/privole za ovaj brojač.
 
+### Upload slika u adminu (ImgBB) — smanjivanje, timeout i zamka s `execCommand`
+Sve slike idu kroz `uploadToImgBB(file, opts)` u `js/admin.js`:
+- **Slika se prije slanja smanji** (`prepareImageForUpload`): dulja stranica na max
+  **1600 px**, JPEG s kvalitetom koja pada 0.85 → 0.55 dok ne padne ispod **900 KB**.
+  Razlog: na ImgBB se slika šalje kao **base64** (~33 % veći prijenos), pa je fotografija
+  s mobitela od 10+ MB značila upload koji traje minutama. Ne diraju se: animirani GIF,
+  SVG i sve ispod 400 KB (nema smisla ponovno enkodirati).
+  `opts.raw = true` preskače smanjivanje — koriste ga naslovnice koje sami crtamo na
+  canvasu (`generateCoverFromIcon`, skupno generiranje u `downloadSite`).
+- **Timeout 60 s** (`AbortSignal.timeout`) + poruke o greškama koje kažu ŠTO je pošlo po
+  zlu (prespora veza, format koji preglednik ne zna otvoriti = HEIC s iPhonea, odgovor
+  ImgBB-a). Prije nije bilo timeouta pa se zaglavljeni upload nije imao kako prekinuti.
+- **`opts.onStatus`** dojavljuje "Pripremam / Uploadam" pozivatelju.
+
+**ZAMKA (bila je stvarni kvar, ne ponavljati):** `document.execCommand('insertHTML', …)`
+u Chromeu **normalizira ubačeni `<p>` u `<span>` i pritom BACI `id`**. Stari kod je tako
+ubacivao placeholder `<p id="img-ph-…">⏳ Uploadam sliku…</p>` i poslije ga tražio preko
+`getElementById` — element se nikad nije mogao naći, pa je natpis "Uploadam sliku…" ostajao
+u članku **i kad je upload odavno uspio**, a poruka o grešci se nije imala gdje ispisati.
+Zato `insertImageInContent` sada odmah ubaci pravu `<figure class="post-inline-img">` sa
+slikom iz same datoteke (**blob URL**) — `figure`, `class` i `src` **preživljavaju**
+`insertHTML` — pa se slika poslije nađe preko `img[src="<blob>"]` i samo joj se zamijeni
+`src`. Status uploada ide u **alatnu traku** (`.ed-img-status`), nikad u tekst članka, pa
+se ni u jednom scenariju ne može objaviti. Ako upload padne, privremena `<figure>` se
+ukloni (blob URL ionako ne preživi `sanitizeContentHtml` — `<img>` s nedopuštenim `src`
+se briše pri spremanju).
+
+**Alatna traka editora je `position: sticky; top: 0`** (`.editor-toolbar` u style.css) —
+scroll kontejner je `.blog-editor-col`, pa traka stoji na vrhu dok je polje sa sadržajem u
+vidnom polju. Pozadina **mora ostati neprozirna** (`#100e26`) jer tekst članka prolazi
+ispod nje.
+
 ### Kako auto-save radi
 Admin "Spremi" gumb šalje POST na `/save-data` s podacima i lozinkom.
 Cloudflare Pages funkcija provjeri lozinku i koristi GitHub API token (Cloudflare env var `GITHUB_TOKEN`) za commit na repo.

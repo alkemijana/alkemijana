@@ -149,39 +149,150 @@ document.getElementById('aj-pass').addEventListener('keydown', e => {
    VIDLJIVOST RECENZIJA (toggle u admin baru)
    ============================================================ */
 
-async function uploadToImgBB(file) {
+/* ============================================================
+   UPLOAD SLIKA NA ImgBB
+   ------------------------------------------------------------
+   Slike s mobitela znaju biti 10+ MB, a na ImgBB idu kao base64 (~33% veći
+   prijenos od same datoteke). Takav upload traje minutama ili se potpuno
+   zaglavi, a ranije nije bilo ni timeouta ni ograničenja veličine - pa je
+   poruka "Uploadam sliku..." znala visjeti unedogled bez ijedne greške.
+   Zato sada: slika se prije slanja smanji na canvasu, zahtjev ima timeout,
+   a svaka greška ima svoj tekst umjesto općeg "pokušaj ponovo".
+   ============================================================ */
+const UPLOAD_MAX_PX         = 1600;         // dulja stranica nakon smanjivanja
+const UPLOAD_TARGET_BYTES   = 900 * 1024;   // ciljana veličina poslane datoteke
+const UPLOAD_PASSTHRU_BYTES = 400 * 1024;   // manje od ovoga se ne dira (bez gubitka)
+const UPLOAD_TIMEOUT_MS     = 60000;
+
+function uploadTimeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const ctl = new AbortController();
+  setTimeout(() => ctl.abort(), ms);
+  return ctl.signal;
+}
+
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64 = reader.result.split(',')[1];
-        const formData = new FormData();
-        formData.append('key', IMGBB_KEY);
-        formData.append('image', base64);
-        const res  = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) resolve(data.data.url);
-        else reject(new Error(data.error ? data.error.message : 'Upload neuspješan'));
-      } catch(e) { reject(e); }
-    };
-    reader.onerror = () => reject(new Error('Čitanje datoteke neuspješno'));
+    reader.onload  = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('Čitanje datoteke nije uspjelo.'));
     reader.readAsDataURL(file);
   });
+}
+
+function loadImageForResize(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('DECODE')); };
+    img.src = url;
+  });
+}
+
+/* Vrati datoteku spremnu za upload. Animirani GIF i SVG idu kako jesu (canvas
+   bi ubio animaciju, odnosno vektor), male slike se ne diraju, sve ostalo se
+   smanji na UPLOAD_MAX_PX i sprema kao JPEG s padajućom kvalitetom dok ne
+   padne ispod UPLOAD_TARGET_BYTES. */
+async function prepareImageForUpload(file) {
+  if (!file || !file.type || file.type.indexOf('image/') !== 0)
+    throw new Error('Odabrana datoteka nije slika.');
+
+  if (file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+  if (file.size <= UPLOAD_PASSTHRU_BYTES) return file;
+
+  let img;
+  try {
+    img = await loadImageForResize(file);
+  } catch (e) {
+    // Preglednik ne zna dekodirati format - u praksi je to HEIC s iPhonea.
+    throw new Error('Ovaj format slike preglednik ne može otvoriti (najčešće HEIC s iPhonea). Spremi sliku kao JPG pa pokušaj ponovo.');
+  }
+
+  const wOrig = img.naturalWidth  || img.width;
+  const hOrig = img.naturalHeight || img.height;
+  if (!wOrig || !hOrig) return file;
+
+  const scale = Math.min(1, UPLOAD_MAX_PX / Math.max(wOrig, hOrig));
+  if (scale === 1 && file.size <= UPLOAD_TARGET_BYTES) return file;
+
+  const w = Math.max(1, Math.round(wOrig * scale));
+  const h = Math.max(1, Math.round(hOrig * scale));
+  const canvas  = document.createElement('canvas');
+  canvas.width  = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  // JPEG nema prozirnost - bez ove podloge bi prozirni dijelovi ispali crni.
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+
+  let blob = null;
+  const steps = [0.85, 0.75, 0.65, 0.55];
+  for (let i = 0; i < steps.length; i++) {
+    blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', steps[i]));
+    if (!blob || blob.size <= UPLOAD_TARGET_BYTES) break;
+  }
+  if (!blob || blob.size >= file.size) return file;   // original je već manji
+
+  const base = (file.name || 'slika').replace(/\.[^.]+$/, '');
+  return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+}
+
+/* opts.raw      - preskoči smanjivanje (slike koje smo sami nacrtali na canvasu)
+   opts.onStatus - povratni poziv s tekstom statusa (Pripremam / Uploadam) */
+async function uploadToImgBB(file, opts) {
+  opts = opts || {};
+  const note = typeof opts.onStatus === 'function' ? opts.onStatus : function () {};
+
+  let toSend = file;
+  if (!opts.raw) {
+    note('\u23F3 Pripremam sliku...');
+    toSend = await prepareImageForUpload(file);
+  }
+
+  note('\u23F3 Uploadam sliku...');
+  const base64   = await fileToBase64(toSend);
+  const formData = new FormData();
+  formData.append('key', IMGBB_KEY);
+  formData.append('image', base64);
+
+  let res;
+  try {
+    res = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST', body: formData, signal: uploadTimeoutSignal(UPLOAD_TIMEOUT_MS)
+    });
+  } catch (e) {
+    if (e && (e.name === 'AbortError' || e.name === 'TimeoutError'))
+      throw new Error('Upload predugo traje – veza je prespora ili je pukla. Pokušaj ponovo.');
+    throw new Error('Nema veze s poslužiteljem slika. Provjeri internet pa pokušaj ponovo.');
+  }
+
+  let data = null;
+  try { data = await res.json(); } catch (e) {}
+  if (data && data.success && data.data && data.data.url) return data.data.url;
+
+  const msg = (data && data.error && data.error.message) ? data.error.message : ('HTTP ' + res.status);
+  throw new Error('Slika nije prihvaćena (' + msg + ').');
 }
 
 async function handleAboutImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
+  const label = input.parentElement;
   try {
-    input.parentElement.textContent = '⏳ Uploadam...';
-    const url = await uploadToImgBB(file);
+    const url = await uploadToImgBB(file, { onStatus: t => { label.textContent = t; } });
     SITE_SETTINGS.aboutImageUrl = url;
     applySettings();
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
+    // label, ne input.parentElement: postavljanje statusa je maknulo <input> iz
+    // labela pa mu parentElement više nije ništa.
+    label.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
     alert('Slika je postavljena!');
   } catch(e) {
-    alert('Greška pri uploadu slike. Pokušaj ponovo.');
-    input.parentElement.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
+    alert(e && e.message ? e.message : 'Greška pri uploadu slike. Pokušaj ponovo.');
+    label.innerHTML = '📷 Moja slika <input type="file" accept="image/*" style="display:none" onchange="handleAboutImageUpload(this)">';
   }
 }
 
@@ -385,6 +496,7 @@ function showPostEditor(p) {
           🖼 Slika
           <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this)">
         </label>
+        <span class="ed-img-status"></span>
       </div>
       <div id="blog-content-ed" contenteditable="true" onpaste="handleEditorPaste(event)">
         ${p ? p.content : '<p>Počni pisati ovdje...</p>'}
@@ -474,16 +586,17 @@ function selectBlogEmoji(emoji, el) {
 async function handleBlogImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  document.getElementById('img-filename').textContent = '⏳ Uploadam...';
+  const status = document.getElementById('img-filename');
+  status.textContent = '⏳ Pripremam sliku...';
 
   try {
-    const url = await uploadToImgBB(file);
+    const url = await uploadToImgBB(file, { onStatus: t => { status.textContent = t; } });
     document.getElementById('ed-img').value           = url;
     document.getElementById('img-prev').src           = url;
     document.getElementById('img-prev').style.display = 'block';
     document.getElementById('img-filename').textContent = '✅ ' + file.name;
   } catch(e) {
-    document.getElementById('img-filename').textContent = '❌ Greška - pokušaj ponovo';
+    status.textContent = '❌ ' + (e && e.message ? e.message : 'Greška – pokušaj ponovo');
   }
 }
 
@@ -535,27 +648,64 @@ function restoreEditorSelection(edId) {
 }
 
 /* Ubaci sliku u tijelo članka - uploada na ImgBB i umetne <img> točno na
-   mjestu gdje je kursor bio kad je user kliknuo gumb. */
+   mjestu gdje je kursor bio kad je user kliknuo gumb.
+
+   ZASTO OVAKO: ranije se ubacivao placeholder <p id="..."> pa se poslije
+   tražio preko getElementById. Chrome kod execCommand('insertHTML') takav
+   odlomak normalizira u <span> i USPUT BACI id - element se onda više nije
+   mogao naći, pa je natpis "Uploadam sliku..." zauvijek ostajao u članku
+   i kad je upload odavno uspio (a ni poruka o grešci se nije imala gdje
+   ispisati). Zato se sada odmah ubaci prava <figure> sa slikom iz same
+   datoteke (blob URL): figure, class i src PREŽIVLJAVAJU insertHTML, pa je
+   src ujedno pouzdana oznaka po kojoj sliku poslije nađemo i zamijenimo
+   pravim ImgBB URL-om. Jana usput odmah vidi gdje je slika sjela.
+   Status uploada ide u alatnu traku (sticky pa je uvijek na ekranu), a ne u
+   tekst članka - tako se ni u jednom scenariju ne može objaviti. */
 async function insertImageInContent(input, edId) {
   const file = input.files[0];
   if (!file) return;
 
+  const ed      = document.getElementById(edId || 'blog-content-ed');
+  const toolbar = input.closest('.editor-toolbar');
+  const status  = toolbar ? toolbar.querySelector('.ed-img-status') : null;
+  const note    = (txt, isErr) => {
+    if (!status) return;
+    status.textContent = txt;
+    status.style.color = isErr ? '#e07070' : '';
+  };
+
   restoreEditorSelection(edId);
-  const placeholderId = 'img-ph-' + Date.now();
+  const previewUrl = URL.createObjectURL(file);
   document.execCommand('insertHTML', false,
-    `<p id="${placeholderId}" style="color:var(--text-muted);font-style:italic">⏳ Uploadam sliku...</p>`);
+    `<figure class="post-inline-img"><img src="${previewUrl}" alt=""></figure><p>&nbsp;</p>`);
   _savedEditorRange = null;
 
+  const findImg = () => (ed ? ed.querySelector(`img[src="${previewUrl}"]`) : null);
+
   try {
-    const url = await uploadToImgBB(file);
-    const ph  = document.getElementById(placeholderId);
-    if (ph) {
-      ph.outerHTML = `<figure class="post-inline-img"><img src="${url}" alt=""></figure><p>&nbsp;</p>`;
+    const url = await uploadToImgBB(file, { onStatus: note });
+    const img = findImg();
+    if (img) {
+      img.src = url;
+    } else if (ed) {
+      // Privremena slika je u međuvremenu obrisana - ne bacaj upload, dodaj na kraj.
+      ed.insertAdjacentHTML('beforeend',
+        `<figure class="post-inline-img"><img src="${url}" alt=""></figure><p>&nbsp;</p>`);
     }
+    note('✅ Slika je dodana');
+    setTimeout(() => {
+      if (status && status.textContent === '✅ Slika je dodana') note('');
+    }, 5000);
   } catch (e) {
-    const ph = document.getElementById(placeholderId);
-    if (ph) ph.outerHTML = '<p style="color:#e07070">❌ Slika nije uploadana, pokušaj ponovo.</p>';
+    // Makni privremenu sliku - blob URL ionako ne preživi spremanje članka.
+    const img = findImg();
+    if (img) {
+      const fig = img.closest('figure') || img;
+      if (fig.parentNode) fig.parentNode.removeChild(fig);
+    }
+    note('❌ ' + (e && e.message ? e.message : 'Slika nije uploadana, pokušaj ponovo.'), true);
   } finally {
+    URL.revokeObjectURL(previewUrl);
     input.value = '';
   }
 }
@@ -583,7 +733,7 @@ async function generateCoverFromIcon() {
     const blob = await renderCoverCanvas({ icon, title, date, category: cat });
     filenameEl.textContent = '⏳ Uploadam sliku...';
     const file = new File([blob], `cover-${Date.now()}.png`, { type: 'image/png' });
-    const url  = await uploadToImgBB(file);
+    const url  = await uploadToImgBB(file, { raw: true });
 
     document.getElementById('ed-img').value           = url;
     document.getElementById('img-prev').src           = url;
@@ -1016,6 +1166,7 @@ function showGuideEditor(g) {
           🖼 Slika
           <input type="file" accept="image/*" style="display:none" onchange="insertImageInContent(this,'guide-content-ed')">
         </label>
+        <span class="ed-img-status"></span>
       </div>
       <div id="guide-content-ed" contenteditable="true" onpaste="handleEditorPaste(event)">
         ${g.content || '<p>Počni pisati ovdje...</p>'}
@@ -1776,7 +1927,7 @@ async function downloadSite() {
           icon: p.icon, title: p.title, date: p.date, category: firstTag
         });
         const file = new File([blob], `cover-${p.id}-${Date.now()}.png`, { type: 'image/png' });
-        p.imageUrl = await uploadToImgBB(file);
+        p.imageUrl = await uploadToImgBB(file, { raw: true });
       } catch (e) {
         console.warn('Cover gen failed for', p.id, e);
       }

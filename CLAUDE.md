@@ -368,6 +368,18 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   - Datum se sastavi tek kad su sva tri polja ispravna (godina 4 znamenke), pa poluupisan
     datum ne može proći. Raspon 1900.–2099. i dalje provjerava `natal.js` (ista poruka).
   - Skrivanje radi JS, ne HTML — bez skripte ostaje nativni datum koji radi kao prije.
+  - **Širina: sve je fluidno, bez prijelomne točke.** Tri polja se smiju stisnuti
+    (`flex-shrink`), a razmak i unutarnji odmak idu na `clamp()` s **postotkom** —
+    postotak se računa od širine same trojke, dakle od stvarnog prostora, ne od
+    širine ekrana. Polazne širine su u omjeru onoga što u polju piše
+    ("dan" : "listopad" : "godina") pa taj omjer ostane i kad se sve stisne.
+    Uz to `.form-row > * { min-width: 0 }`: **grid stavka se inače nikad ne suzi
+    ispod min-content svog sadržaja**, pa je polje datuma izlazilo iz kartice
+    obrasca. Prije je ovdje bila jedna prijelomna točka (420px) s fiksnim
+    širinama i kutije su bježale van okvira na **dva** raspona: uski Androidi
+    (~320–365px) i **769–900px**, gdje `.form-row` opet postaje dvostupčan pa je
+    polje datuma široko tek pola obrasca. Ako se mjere ikad vraćaju na fiksne,
+    provjeri OBA raspona (i tranzitni `.tr-anchor`, koji ima svoje mjere).
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
 - Pri izradi karte šalje se anoniman signal na `/log-natal` (samo hash unosa) za brojač — vidi Admin → Brojač karata.
 

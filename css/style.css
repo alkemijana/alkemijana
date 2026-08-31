@@ -783,6 +783,10 @@ body > svg[viewBox="0 0 1920 1080"] {
 .form-group select option { background: var(--bg-mid); color: var(--text); }
 .form-group textarea { resize: vertical; min-height: 150px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+/* Grid stavka se bez ovoga NIKAD ne suzi ispod min-content svog sadržaja:
+   stupac ostane 1fr, a sadržaj mu izađe van okvira. Zbog toga su tri polja
+   datuma (.nt-dmy) "bježala" iz kartice obrasca. */
+.form-row > * { min-width: 0; }
 
 .form-success { display: none; text-align: center; padding: 3rem 2rem; }
 .form-success.show { display: block; animation: fadeIn 0.6s ease; }
@@ -2623,20 +2627,36 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 /* Datum kao tri polja: dan / mjesec / godina (js/natal-date.js). Nativni
    kalendar je na mobitelu za datum rođenja bio neupotrebljiv - godina se
    birala listanjem. Tri polja rade i mišem i prstom, a na mobitelu podižu
-   brojkovnu tipkovnicu (inputmode="numeric"). */
-.nt-dmy { display: flex; gap: 0.5rem; align-items: stretch; }
+   brojkovnu tipkovnicu (inputmode="numeric").
+
+   ŠIRINA - sve je "od-do", bez fiksnih mjera i bez prijelomne točke:
+   polja se SMIJU stisnuti (flex-shrink), a razmak i unutarnji odmak idu na
+   clamp() s POSTOTKOM, koji se računa od širine same trojke - dakle od
+   stvarnog prostora, ne od širine ekrana. Prije je ovo bila jedna prijelomna
+   točka (420px) s fiksnim širinama pa su polja izlazila iz kartice obrasca
+   na dva mjesta: uski Androidi (~360px) i raspon 769-900px, gdje .form-row
+   opet postaje dvostupčan pa je polje datuma široko tek pola obrasca.
+   Ako se mjere ikad vraćaju na fiksne, provjeri OBA ta raspona. */
+.nt-dmy { display: flex; gap: clamp(0.3rem, 2%, 0.5rem); align-items: stretch; min-width: 0; }
 .nt-dmy .nt-dmy-f { width: auto; min-width: 0; }
-.nt-dmy-d { flex: 0 1 5rem; text-align: center; }
-.nt-dmy-y { flex: 0 1 6.5rem; text-align: center; }
-.nt-dmy-m { flex: 1 1 7rem; }
-/* Strelica padaćeg popisa bliže rubu - ime mjeseca treba svaki piksel širine. */
-.form-group .nt-dmy-m { padding-left: 0.8rem; padding-right: 1.9rem; background-position: right 0.65rem center; }
-@media (max-width: 420px) {
-  .nt-dmy { gap: 0.35rem; }
-  .nt-dmy .nt-dmy-f { padding-left: 0.5rem; padding-right: 0.5rem; font-size: 1rem; }
-  .form-group .nt-dmy-m { padding-right: 1.6rem; background-position: right 0.5rem center; }
-  .nt-dmy-d { flex: 0 1 3.6rem; }
-  .nt-dmy-y { flex: 0 1 5rem; }
+.form-group .nt-dmy-f { padding-left: clamp(0.35rem, 3%, 1.1rem); padding-right: clamp(0.35rem, 3%, 1.1rem); }
+/* Polazne širine su namjerno u omjeru onoga što u polju stvarno piše
+   ("dan" : "listopad" : "godina"). Kod stiskanja se svako polje smanjuje
+   razmjerno svojoj polaznoj širini (flex-shrink: 1), pa taj omjer ostane -
+   i na 320px sva tri natpisa još stanu. */
+.nt-dmy-d { flex: 0 1 4.6rem; text-align: center; }
+.nt-dmy-y { flex: 0 1 6rem; text-align: center; }
+.nt-dmy-m { flex: 1 1 7.6rem; }
+/* Strelica padajućeg popisa bliže rubu - ime mjeseca treba svaki piksel širine. */
+.form-group .nt-dmy-m {
+  padding-left: clamp(0.35rem, 3%, 0.8rem);
+  padding-right: clamp(1.1rem, 9%, 1.9rem);
+  background-position: right clamp(0.25rem, 2.5%, 0.65rem) center;
+}
+/* Sitniji tekst na uskom ekranu - ne mijenja raspored (polja su ionako
+   fluidna), samo spriječi da se "godina"/"listopad" odrežu. */
+@media (max-width: 520px) {
+  .nt-dmy .nt-dmy-f { font-size: 0.95rem; }
 }
 /* U panelu tranzita polja su sitnija (uz gumb „Sada“ u istom redu). */
 .tr-anchor .nt-dmy { gap: 0.35rem; flex: 1 1 15rem; }

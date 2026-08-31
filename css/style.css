@@ -888,24 +888,6 @@ body > svg[viewBox="0 0 1920 1080"] {
   position: absolute; inset: 0;
   background: radial-gradient(circle at center, transparent 30%, rgba(6, 8, 15, 0.55));
 }
-.blog-image::before {
-  content: '✦';
-  position: absolute;
-  top: 0.8rem; right: 1rem;
-  font-size: 1.1rem;
-  color: var(--silver-light);
-  opacity: 0;
-  text-shadow: 0 0 12px rgba(216, 212, 236, 0.8);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-  transform: scale(0.4) rotate(-30deg);
-  z-index: 1;
-}
-@media (hover: hover) {
-  .blog-card:hover .blog-image::before {
-    opacity: 0.85;
-    transform: scale(1) rotate(0deg);
-  }
-}
 .blog-content { padding: 2rem; }
 .blog-meta    { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--lavender); margin-bottom: 1rem; }
 .blog-content h3 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--silver-light); margin-bottom: 1rem; line-height: 1.3; }
@@ -1280,7 +1262,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 }
 .post-sources li:last-child { border-bottom: none; }
 .post-sources li::before {
-  content: '✦';
+  content: '·';
   position: absolute;
   left: 0;
   top: 0.55rem;

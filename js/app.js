@@ -551,7 +551,7 @@ function renderBlogList() {
     }
 
     const renderChips = arr => arr.map(c => chip(esc(c), c, counts[c])).join('');
-    const allChip = chip('✦ Sve', '');
+    const allChip = chip('Sve', '');
 
     let html = allChip + renderChips(visible);
     if (overLimit) {
@@ -633,7 +633,6 @@ function filterBlogPosts() {
   grid.innerHTML = filtered.length
     ? filtered.map(x => blogCard(x, true)).join('')
     : `<div class="blog-empty">
-         <div class="blog-empty-glyph">✦</div>
          <p>Nema članaka koji odgovaraju pretrazi.</p>
          <button type="button" class="blog-empty-reset" onclick="resetBlogFilters()">Očisti filtere</button>
        </div>`;
@@ -675,7 +674,7 @@ function blogCard(p, lazy) {
   // Tagovi se NE prikazuju na kartici početne - samo datum.
   // Ako je dio serijala, prikaži suptilni badge ispod naslova.
   const seriesBadge = p.series
-    ? `<div class="blog-card-series">✦ ${esc(p.series)}${p.seriesPart ? ' · Dio ' + esc(p.seriesPart) : ''}</div>`
+    ? `<div class="blog-card-series">${esc(p.series)}${p.seriesPart ? ' · Dio ' + esc(p.seriesPart) : ''}</div>`
     : '';
   const safeImg = safeImgSrc(p.imageUrl);
   return `

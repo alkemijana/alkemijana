@@ -1649,7 +1649,7 @@ async function loadNatalLog() {
     if (!data.ok) { el.innerHTML = '<p style="color:#c08090">Greška: ' + esc(data.error || 'nepoznata') + '</p>'; return; }
 
     let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem">' +
-      bigStatCard('Ukupno izrađenih karata', data.total || 0, '✦') +
+      bigStatCard('Ukupno izrađenih karata', data.total || 0, '☾') +
       bigStatCard('Zadnjih 30 dana', data.last30 || 0, '☾') +
       bigStatCard('Zadnjih 7 dana', data.last7 || 0, '✧') +
       '</div>';

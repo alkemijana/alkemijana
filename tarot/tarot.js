@@ -46,7 +46,7 @@
       <a class="vtar-cotd" href="#tarot" onclick="showPage('tarot'); return false;" aria-label="Karta dana - otvori virtualni tarot i izvuci vlastite karte">
         <div class="vtar-cotd-visual"><img class="vtar-cotd-img" src="${img}" alt="Karta dana: ${name}" loading="lazy"></div>
         <div class="vtar-cotd-text">
-          <span class="vtar-cotd-eyebrow">✦ Karta dana</span>
+          <span class="vtar-cotd-eyebrow">Karta dana</span>
           <h3 class="vtar-cotd-name">${name}</h3>
           <p class="vtar-cotd-desc">${desc}</p>
           <span class="vtar-cotd-cta">Otvori virtualni tarot i izvuci vlastite karte →</span>

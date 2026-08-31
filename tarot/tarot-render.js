@@ -65,7 +65,7 @@ function createTarotUI(engine, root) {
               <span class="vtar-switch-track"><span class="vtar-switch-thumb"></span></span>
               <span class="vtar-switch-label">Značenja</span>
             </label>
-            <button type="button" class="vtar-btn" id="vtar-btn-new-reading">✦ Novi spread</button>
+            <button type="button" class="vtar-btn" id="vtar-btn-new-reading">Novi spread</button>
             <button type="button" class="vtar-btn vtar-btn-fs" id="vtar-btn-fs" title="Cijeli zaslon" aria-label="Cijeli zaslon">⛶ Cijeli zaslon</button>
           </div>
         </div>
@@ -284,7 +284,7 @@ function createTarotUI(engine, root) {
 
   /* Mobilna fiksna traka na dnu: po uključenom špilu gumb za izvlačenje +
      mali ⟲ (promiješaj sve), pa gumb iskorištenih karata (vraća ih u špil)
-     i ✦ novi spread - na mobitelu zamjenjuje bočne trake (skrivene CSS-om). */
+     i + novi spread - na mobitelu zamjenjuje bočne trake (skrivene CSS-om). */
   function renderMobileDrawbar(activeDecks) {
     els.mobileBar.innerHTML = '';
     activeDecks.forEach(deck => {
@@ -330,7 +330,7 @@ function createTarotUI(engine, root) {
       nw.type = 'button';
       nw.title = 'Novi spread';
       nw.setAttribute('aria-label', 'Novi spread');
-      nw.textContent = '✦';
+      nw.textContent = '+';
       nw.addEventListener('click', () => engine.newSpreadReading());
       els.mobileBar.appendChild(nw);
     }
@@ -764,7 +764,7 @@ function createTarotUI(engine, root) {
     if (engine.isFree()) {
       els.hint.textContent = 'Klikni na špil - karte se slažu redom, koliko god želiš. Klik na kartu ju poveća.' + drag;
     } else if (engine.isSpreadFull()) {
-      els.hint.textContent = 'Raspored je pun. Klik na kartu ju poveća; „✦ Novi spread" za novo čitanje.' + drag;
+      els.hint.textContent = 'Raspored je pun. Klik na kartu ju poveća; „Novi spread" za novo čitanje.' + drag;
     } else {
       els.hint.textContent = 'Klikni na špil da izvučeš kartu. Klik na izvučenu kartu ju poveća.' + drag;
     }

@@ -69,10 +69,10 @@ function applyModeTexts(mode) {
   }
   const btn = document.getElementById('natal-submit');
   if (btn) {
-    btn.textContent = mode === 'synastry' ? (T.natalBtnSynastry || '✦ Izračunaj sinastriju')
-      : mode === 'transit' ? (T.natalBtnTransit || '✦ Prikaži tranzite')
-      : mode === 'acg' ? (T.natalBtnAcg || '✦ Prikaži astrokartografiju')
-      : (T.natalBtn || '✦ Izračunaj natalnu kartu');
+    btn.textContent = mode === 'synastry' ? (T.natalBtnSynastry || 'Izračunaj sinastriju')
+      : mode === 'transit' ? (T.natalBtnTransit || 'Prikaži tranzite')
+      : mode === 'acg' ? (T.natalBtnAcg || 'Prikaži astrokartografiju')
+      : (T.natalBtn || 'Izračunaj natalnu kartu');
   }
 }
 

@@ -284,7 +284,7 @@ function createTarotUI(engine, root) {
 
   /* Mobilna fiksna traka na dnu: po uključenom špilu gumb za izvlačenje +
      mali ⟲ (promiješaj sve), pa gumb iskorištenih karata (vraća ih u špil)
-     i + novi spread - na mobitelu zamjenjuje bočne trake (skrivene CSS-om). */
+     i gumb za novi spread - na mobitelu zamjenjuje bočne trake (skrivene CSS-om). */
   function renderMobileDrawbar(activeDecks) {
     els.mobileBar.innerHTML = '';
     activeDecks.forEach(deck => {
@@ -330,7 +330,7 @@ function createTarotUI(engine, root) {
       nw.type = 'button';
       nw.title = 'Novi spread';
       nw.setAttribute('aria-label', 'Novi spread');
-      nw.textContent = '+';
+      nw.textContent = 'Novi';
       nw.addEventListener('click', () => engine.newSpreadReading());
       els.mobileBar.appendChild(nw);
     }

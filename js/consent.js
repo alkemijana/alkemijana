@@ -156,7 +156,6 @@
     banner.innerHTML =
       '<div class="cc-banner-inner">' +
         '<div class="cc-text">' +
-          '<span class="cc-star">✧</span> ' +
           'Ova stranica koristi kolačiće. ' +
           '<a href="#privatnost" onclick="showPage(\'privatnost\')">Više informacija</a>.' +
         '</div>' +

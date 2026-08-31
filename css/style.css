@@ -323,7 +323,6 @@ body > svg[viewBox="0 0 1920 1080"] {
   max-width: 300px;
 }
 .divider .line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--lavender), transparent); }
-.divider .star { color: var(--lavender); font-size: 1.2rem; }
 
 /* ---- GUMBI ---- */
 .btn {
@@ -1255,21 +1254,11 @@ body > svg[viewBox="0 0 1920 1080"] {
   line-height: 1.7;
 }
 .post-sources li {
-  padding: 0.55rem 0 0.55rem 1.4rem;
-  position: relative;
+  padding: 0.55rem 0;
   border-bottom: 1px solid rgba(168,144,208,0.08);
   word-break: break-word;
 }
 .post-sources li:last-child { border-bottom: none; }
-.post-sources li::before {
-  content: '·';
-  position: absolute;
-  left: 0;
-  top: 0.55rem;
-  color: var(--lavender);
-  opacity: 0.55;
-  font-size: 0.9rem;
-}
 .post-sources a {
   color: var(--silver-light);
   text-decoration: underline;
@@ -2896,7 +2885,6 @@ html.cc-blocking body > *:not(.cc-banner):not(.cc-overlay):not(#aj-loader) {
   font-family: 'Atkinson Hyperlegible', sans-serif;
   font-size: 0.88rem; line-height: 1.5; color: var(--text);
 }
-.cc-star { color: var(--lavender); }
 .cc-text a { color: var(--lavender); text-decoration: underline; text-underline-offset: 3px; }
 .cc-actions { display: flex; gap: 0.7rem; flex: 0 0 auto; flex-wrap: wrap; }
 

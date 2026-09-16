@@ -1136,6 +1136,13 @@
       <p class="nt-mode-hint" id="natal-mode-hint"></p>
 
       <div class="form-section nt-form-wrap" id="natal-form-wrap" data-natal-mode="natal">
+        <!-- Očisti obrazac - isti gumb za sve astro alate (dijele ista polja) -->
+        <button type="button" class="nt-clear-btn" id="natal-clear-btn" onclick="resetNatalForm()" title="Očisti sva polja" aria-label="Očisti sva polja">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M20 11.5a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 3.5v4.2h-4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <form id="natal-form">
           <!-- Osoba 1 -->
           <div class="nt-person" id="natal-person1">

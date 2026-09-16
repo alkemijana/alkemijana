@@ -252,6 +252,51 @@ function showNatalError(msg) {
   err.style.display = 'block';
 }
 
+/* Očisti obrazac - gumb ⟳ u gornjem desnom kutu kartice (id 'natal-clear-btn').
+   Svi astro alati (natalna karta, sinastrija, tranziti, ACG) dijele ista polja,
+   pa jedna funkcija pokriva sve modove. Uz polja se briše i spremljeni zadnji
+   unos i sakriva prikazani rezultat - da podaci prethodnog klijenta ne ostanu
+   ni na ekranu ni nakon osvježavanja stranice. */
+function resetNatalForm() {
+  ['', '-2'].forEach(sfx => {
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+    set('natal-name' + sfx, '');
+    set('natal-place' + sfx, '');
+    // natal-date.js ima setter na 'value' pa se tri vidljiva polja sama isprazne
+    set('natal-date' + sfx, '');
+    set('natal-time' + sfx, '');
+    const nt = document.getElementById('natal-notime' + sfx);
+    if (nt) nt.checked = false;
+    const tm = document.getElementById('natal-time' + sfx);
+    if (tm) tm.disabled = false;
+    const ok = document.getElementById('natal-place-ok' + sfx);
+    if (ok) ok.style.display = 'none';
+    const dd = document.getElementById('natal-place-dd' + sfx);
+    if (dd) { dd.style.display = 'none'; dd.innerHTML = ''; }
+  });
+
+  selectedPlace = null;
+  if (typeof selectedPlace2 !== 'undefined') selectedPlace2 = null;
+
+  const err = document.getElementById('natal-error');
+  if (err) { err.textContent = ''; err.style.display = 'none'; }
+
+  // sakrij rezultat prethodnog klijenta (svi modovi)
+  ['natal-result', 'synastry-result', 'transit-result', 'acg-result'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  if (window.AInatal) window.AInatal.setChart(null);
+
+  try {
+    localStorage.removeItem('aj_natal_form');
+    localStorage.removeItem('aj_synastry_form');
+  } catch (e) {}
+
+  const first = document.getElementById('natal-name');
+  if (first) first.focus();
+}
+
 /* Anoniman brojač izrada - šalje SAMO hash unosa (bez imena i bez ikakvih osobnih
    podataka u čistom obliku). Server broji jedinstvene hasheve. Ne blokira/ne ruši UI. */
 function logNatalCreation(chart) {

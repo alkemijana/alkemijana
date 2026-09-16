@@ -138,9 +138,10 @@
     dayEl.addEventListener('input', function () {
       var clean = digits(dayEl.value).slice(0, 2);
       if (clean !== dayEl.value) dayEl.value = clean;
+      /* NAMJERNO nema automatskog skoka na mjesec nakon dvije znamenke:
+         smetalo je pri ispravljanju dana (fokus pobjegne usred tipkanja).
+         Redoslijed polja bira korisnik - tabom ili dodirom. */
       compose();
-      // Dva upisana broja - skok na mjesec, da se ne mora ciljati prstom.
-      if (clean.length === 2) monEl.focus();
     });
     dayEl.addEventListener('blur', function () {
       var n = parseInt(digits(dayEl.value), 10);

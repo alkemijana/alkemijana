@@ -1756,7 +1756,28 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
    NATALNA KARTA
    ============================================================ */
 
-.nt-form-wrap { max-width: 760px; margin: 0 auto 3rem; padding: 2.6rem; }
+.nt-form-wrap { position: relative; max-width: 760px; margin: 0 auto 3rem; padding: 2.6rem; }
+
+/* Gumb "Očisti sva polja" u gornjem desnom kutu kartice obrasca.
+   Isti za sve astro alate (natalna, sinastrija, tranziti, ACG) jer dijele
+   ista polja. Sjedi u paddingu kartice pa ne pomiče ništa u obrascu. */
+.nt-clear-btn {
+  position: absolute; top: 0.85rem; right: 0.85rem; z-index: 5;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.35rem; height: 2.35rem; padding: 0;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
+  color: var(--lavender); cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease, transform 0.4s ease;
+}
+.nt-clear-btn svg { width: 1.15rem; height: 1.15rem; display: block; }
+@media (hover: hover) {
+  .nt-clear-btn:hover {
+    color: var(--silver-bright); border-color: var(--lavender);
+    background: var(--card-bg-hover); transform: rotate(-180deg);
+  }
+}
+.nt-clear-btn:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; }
+.nt-clear-btn:active { transform: scale(0.92); }
 
 .nt-place-group { position: relative; }
 .nt-place-ok { color: #6a9478; font-weight: 700; margin-left: 4px; }
@@ -2794,7 +2815,10 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 .nt-shape-note { font-family: 'Quicksand', sans-serif; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.9rem; }
 
 @media (max-width: 760px) {
-  .nt-form-wrap { padding: 1.6rem; }
+  /* Na mobitelu je kartica uža - gumb bliže rubu, a obrazac dobiva zračni
+     prostor gore da natpis prve kućice ne dođe pod njega. */
+  .nt-form-wrap { padding: 1.6rem; padding-top: 3.6rem; }
+  .nt-clear-btn { top: 0.6rem; right: 0.6rem; width: 2.2rem; height: 2.2rem; }
   .nt-downloads, .nt-tables { grid-template-columns: 1fr; }
   .nt-chart-head h3 { font-size: 2.2rem; }
   .nt-dom-grid { grid-template-columns: 1fr; }

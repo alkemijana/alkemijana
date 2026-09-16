@@ -291,6 +291,13 @@ index.html) — svaka s ručno crtanim SVG motivom (kotač/dvostruki krug/orbita
 `var(--lavender)`/`var(--sage)` boje, prati temu), naslovom i kratkim opisom;
 tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
 
+- **Gumb „Očisti sva polja" (`#natal-clear-btn`, `.nt-clear-btn`)** — ⟳ u gornjem
+  desnom kutu kartice obrasca, isti za sva četiri alata jer svi dijele ista polja.
+  `resetNatalForm()` (natal.js) isprazni Osobu 1 i Osobu 2, nulira
+  `selectedPlace`/`selectedPlace2`, sakrije sve četiri rezultatske sekcije, javi
+  `AInatal.setChart(null)` i obriše `aj_natal_form`/`aj_synastry_form` iz
+  localStoragea — da podaci prethodnog klijenta ne ostanu ni na ekranu ni nakon
+  osvježavanja stranice (Jana radi jedno čitanje za drugim).
 - **`openAstroTool(mode)`** (natal.js) — zajednička ulazna točka: `showPage('natal')`
   + `window.Synastry.setNatalMode(mode, true)` + scroll do forme. Koriste je i
   4 kartice (`onclick="openAstroTool('natal')"` itd.) i kolut "Izradi vlastitu
@@ -357,7 +364,11 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   `<input type="date">` za datum ROĐENJA bio mučenje: kalendar se otvori na današnjem
   mjesecu, a godina se bira listanjem duge liste. Zato skripta svaki `<input type="date">`
   na stranici nadogradi u **tri polja — dan · mjesec (imena mjeseci) · godina**; dan i
-  godina imaju `inputmode="numeric"` (brojkovna tipkovnica), a fokus sam skače dalje.
+  godina imaju `inputmode="numeric"` (brojkovna tipkovnica). **Nakon upisanog dana
+  fokus NE skače na mjesec** — skok je uklonjen na zahtjev jer je smetao pri
+  ispravljanju dana (fokus pobjegne usred tipkanja); polja se biraju tabom ili
+  dodirom. Nakon odabira mjeseca fokus i dalje ide na godinu (izbor iz popisa je
+  ionako završen pa ondje ne smeta).
   - **Izvorni `<input type="date">` ostaje u DOM-u, samo skriven, i i dalje je jedini
     izvor istine** (`YYYY-MM-DD`) — `natal.js`, `natal-synastry.js` i `natal-transit.js`
     čitaju ga i pišu u njega **nepromijenjeni**.

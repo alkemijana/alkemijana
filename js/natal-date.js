@@ -154,8 +154,8 @@
     });
 
     monEl.addEventListener('change', function () {
+      // Ni ovdje nema automatskog skoka na godinu - v. napomenu uz polje dana.
       compose();
-      if (monEl.value && !digits(yearEl.value)) yearEl.focus();
     });
 
     yearEl.addEventListener('input', function () {

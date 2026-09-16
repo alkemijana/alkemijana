@@ -293,6 +293,7 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
 
 - **Gumb „Očisti sva polja" (`#natal-clear-btn`, `.nt-clear-btn`)** — ⟳ u gornjem
   desnom kutu kartice obrasca, isti za sva četiri alata jer svi dijele ista polja.
+  Na hoveru se vrti SAMO strelica (`.nt-clear-btn:hover svg`), ne i okvir gumba.
   `resetNatalForm()` (natal.js) isprazni Osobu 1 i Osobu 2, nulira
   `selectedPlace`/`selectedPlace2`, sakrije sve četiri rezultatske sekcije, javi
   `AInatal.setChart(null)` i obriše `aj_natal_form`/`aj_synastry_form` iz
@@ -364,11 +365,11 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   `<input type="date">` za datum ROĐENJA bio mučenje: kalendar se otvori na današnjem
   mjesecu, a godina se bira listanjem duge liste. Zato skripta svaki `<input type="date">`
   na stranici nadogradi u **tri polja — dan · mjesec (imena mjeseci) · godina**; dan i
-  godina imaju `inputmode="numeric"` (brojkovna tipkovnica). **Nakon upisanog dana
-  fokus NE skače na mjesec** — skok je uklonjen na zahtjev jer je smetao pri
-  ispravljanju dana (fokus pobjegne usred tipkanja); polja se biraju tabom ili
-  dodirom. Nakon odabira mjeseca fokus i dalje ide na godinu (izbor iz popisa je
-  ionako završen pa ondje ne smeta).
+  godina imaju `inputmode="numeric"` (brojkovna tipkovnica). **Fokus NIKAD ne
+  skače sam** — ni s dana na mjesec ni s mjeseca na godinu. Oba skoka su uklonjena
+  na zahtjev jer su smetala pri ispravljanju već upisanog datuma (fokus pobjegne
+  usred tipkanja); polja se biraju tabom ili dodirom. Ne vraćati `.focus()` u te
+  handlere.
   - **Izvorni `<input type="date">` ostaje u DOM-u, samo skriven, i i dalje je jedini
     izvor istine** (`YYYY-MM-DD`) — `natal.js`, `natal-synastry.js` i `natal-transit.js`
     čitaju ga i pišu u njega **nepromijenjeni**.

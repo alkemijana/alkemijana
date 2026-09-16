@@ -1767,14 +1767,19 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   width: 2.35rem; height: 2.35rem; padding: 0;
   background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
   color: var(--lavender); cursor: pointer;
-  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease, transform 0.4s ease;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease, transform 0.15s ease;
 }
-.nt-clear-btn svg { width: 1.15rem; height: 1.15rem; display: block; }
+/* Vrti se SAMO strelica, ne i okvir gumba. */
+.nt-clear-btn svg {
+  width: 1.15rem; height: 1.15rem; display: block;
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+}
 @media (hover: hover) {
   .nt-clear-btn:hover {
     color: var(--silver-bright); border-color: var(--lavender);
-    background: var(--card-bg-hover); transform: rotate(-180deg);
+    background: var(--card-bg-hover);
   }
+  .nt-clear-btn:hover svg { transform: rotate(-180deg); }
 }
 .nt-clear-btn:focus-visible { outline: 2px solid var(--lavender); outline-offset: 2px; }
 .nt-clear-btn:active { transform: scale(0.92); }

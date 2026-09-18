@@ -143,15 +143,22 @@ const POSTER_THEMES = {
   },
   light: {
     pal: () => PALETTES.ink, acg: 'light',
-    bg: ['#ffffff', '#faf8fd', '#f1ecf8'],
+    bg: '#ffffff',   // čisto bijelo - za ispis, bez gradijenta
     star: '#9a8fc0', spark: '#b8a2dd', starOp: 0.55,
     frame: '106,78,160', accent: '#6a4ea0',
     title: '#2e2752', data: '#4a3f6e', trio: '#6a5d8c', brand: '#4a3a78', foot: '#8a7dac'
   }
 };
 
-/* Pozadina postera (gradijent + zvjezdice) za zadanu temu. */
+/* Pozadina postera (gradijent + zvjezdice) za zadanu temu.
+   PAZI: svg2pdf pamti gradijente po id-u za CIJELI dokument - druga stranica
+   s istim id-om dobije gradijent s prve (svijetli poster je tako ispao taman).
+   Zato id nosi naziv teme, a svijetla tema je ionako puna boja bez gradijenta. */
 function posterBackground(w, h, gradId, seed, avoid, t) {
+  if (typeof t.bg === 'string') {
+    return '<rect width="' + w + '" height="' + h + '" fill="' + t.bg + '"/>' + posterStars(w, h, seed, avoid, t);
+  }
+  gradId += '-' + t.acg;
   return '<defs><radialGradient id="' + gradId + '" cx="50%" cy="32%" r="85%">' +
     '<stop offset="0%" stop-color="' + t.bg[0] + '"/><stop offset="55%" stop-color="' + t.bg[1] + '"/><stop offset="100%" stop-color="' + t.bg[2] + '"/>' +
     '</radialGradient></defs>' +

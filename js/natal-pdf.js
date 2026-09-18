@@ -130,9 +130,48 @@ async function drawGlyphPdf(doc, key, x, y, sizeMm, color) {
 
 const PAGE_MM = { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] };
 
+/* Teme postera: 'dark' = izvorni tamni dizajn (1. stranica PDF-a),
+   'light' = svijetla verzija za ispis u boji (2. stranica) - isti raspored,
+   samo boje. frame = RGB ukrasnog okvira/linija (alfa se dodaje na mjestu). */
+const POSTER_THEMES = {
+  dark: {
+    pal: () => PALETTES.poster, acg: 'dark',
+    bg: ['#1a1538', '#0e0c24', '#06080f'],
+    star: '#cfc8e8', spark: '#d8d2ee', starOp: 1,
+    frame: '168,144,208', accent: '#b8a2dd',
+    title: '#e4e0f4', data: '#c4c0d8', trio: '#9d95c0', brand: '#d8d2ee', foot: '#8a82ac'
+  },
+  light: {
+    pal: () => PALETTES.ink, acg: 'light',
+    bg: ['#ffffff', '#faf8fd', '#f1ecf8'],
+    star: '#9a8fc0', spark: '#b8a2dd', starOp: 0.55,
+    frame: '106,78,160', accent: '#6a4ea0',
+    title: '#2e2752', data: '#4a3f6e', trio: '#6a5d8c', brand: '#4a3a78', foot: '#8a7dac'
+  }
+};
+
+/* Pozadina postera (gradijent + zvjezdice) za zadanu temu. */
+function posterBackground(w, h, gradId, seed, avoid, t) {
+  return '<defs><radialGradient id="' + gradId + '" cx="50%" cy="32%" r="85%">' +
+    '<stop offset="0%" stop-color="' + t.bg[0] + '"/><stop offset="55%" stop-color="' + t.bg[1] + '"/><stop offset="100%" stop-color="' + t.bg[2] + '"/>' +
+    '</radialGradient></defs>' +
+    '<rect width="' + w + '" height="' + h + '" fill="url(#' + gradId + ')"/>' +
+    posterStars(w, h, seed, avoid, t);
+}
+
+/* Ubaci SVG u PDF kao jednu stranicu (addPage osim za prvu). */
+async function addPosterPage(doc, svgStr, w, h, first, format, orientation) {
+  if (!first) doc.addPage(format, orientation);
+  const el = svgToElement(svgStr);
+  document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
+  try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
+  finally { el.remove(); }
+}
+
 /* Zvjezdano nebo za poster (deterministički pseudo-random).
    avoid = {x, y, r} - krug kotača u kojem ne crtamo veće ✦ iskre. */
-function posterStars(w, h, seed, avoid) {
+function posterStars(w, h, seed, avoid, t) {
+  t = t || POSTER_THEMES.dark;
   let s = seed;
   const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
   let out = '';
@@ -140,8 +179,8 @@ function posterStars(w, h, seed, avoid) {
   for (let i = 0; i < n; i++) {
     const x = (rnd() * w).toFixed(1), y = (rnd() * h).toFixed(1);
     const r = (0.2 + rnd() * 0.7).toFixed(2);
-    const op = (0.25 + rnd() * 0.6).toFixed(2);
-    out += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#cfc8e8" opacity="' + op + '"/>';
+    const op = ((0.25 + rnd() * 0.6) * t.starOp).toFixed(2);
+    out += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + t.star + '" opacity="' + op + '"/>';
   }
   // nekoliko ✦ iskri - izvan kotača da ne smetaju karti
   let placed = 0, guard = 0;
@@ -149,9 +188,9 @@ function posterStars(w, h, seed, avoid) {
   while (placed < want && guard++ < want * 30) {
     const x = +(rnd() * w).toFixed(1), y = +(rnd() * h).toFixed(1);
     const sc = 1.2 + rnd() * 2.2;
-    const op = (0.4 + rnd() * 0.4).toFixed(2);
+    const op = ((0.4 + rnd() * 0.4) * t.starOp).toFixed(2);
     if (avoid && Math.hypot(x - avoid.x, y - avoid.y) < avoid.r + sc * 3.5) continue;
-    out += '<path transform="translate(' + x + ',' + y + ') scale(' + sc.toFixed(2) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#d8d2ee" opacity="' + op + '"/>';
+    out += '<path transform="translate(' + x + ',' + y + ') scale(' + sc.toFixed(2) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="' + t.spark + '" opacity="' + op + '"/>';
     placed++;
   }
   return out;
@@ -188,8 +227,9 @@ function svgCenteredText(text, cx, y, sizePx, fill, pdfFamily, cssFamily, weight
 }
 
 /* Poster SVG - dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
-function buildPosterSVG(chart, w, h) {
-  const pal = PALETTES.poster;
+function buildPosterSVG(chart, w, h, theme) {
+  const t = POSTER_THEMES[theme] || POSTER_THEMES.dark;
+  const pal = t.pal();
   const cx = w / 2;
   const chartSize = w * 0.86;
   const chartX = (w - chartSize) / 2;
@@ -207,41 +247,37 @@ function buildPosterSVG(chart, w, h) {
 
   let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
   // pozadina - duboko ljubičasti gradijent
-  s += '<defs><radialGradient id="pgrad" cx="50%" cy="32%" r="85%">' +
-       '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
-       '</radialGradient></defs>';
-  s += '<rect width="' + w + '" height="' + h + '" fill="url(#pgrad)"/>';
-  s += posterStars(w, h, 977, { x: cx, y: chartY + chartSize / 2, r: chartSize / 2 });
+  s += posterBackground(w, h, 'pgrad', 977, { x: cx, y: chartY + chartSize / 2, r: chartSize / 2 }, t);
 
   // tanki ukrasni okvir
   const m = w * 0.045;
   s += '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + (h - 2 * m) +
-       '" fill="none" stroke="rgba(168,144,208,0.4)" stroke-width="' + (w * 0.0012) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.4)" stroke-width="' + (w * 0.0012) + '"/>';
   s += '<rect x="' + (m + w * 0.008) + '" y="' + (m + w * 0.008) + '" width="' + (w - 2 * m - w * 0.016) + '" height="' + (h - 2 * m - w * 0.016) +
-       '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0007) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.18)" stroke-width="' + (w * 0.0007) + '"/>';
 
   // naslov - font koji prikazuje sva slova (č, ć, š, ž, đ), suzi se ako je predugačak
   const maxTextW = w * 0.84;
   const f1 = fitFontSize(name, 'Dancing Script', '700', w * 0.105, maxTextW);
-  s += svgCenteredText(name, cx, h * 0.105, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
+  s += svgCenteredText(name, cx, h * 0.105, f1, t.title, 'DancingScript', 'Dancing Script', '700');
   // linija s zvjezdicom
   const ly = h * 0.125, lw = w * 0.3;
-  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
-  s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
-  s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
+  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="' + t.accent + '"/>';
   // podaci rođenja
   const fData = fitFontSize(dataLine, 'Playfair Display', null, w * 0.0235, maxTextW);
-  s += svgCenteredText(dataLine, cx, h * 0.152, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(dataLine, cx, h * 0.152, fData, t.data, 'PlayfairDisplay', 'Playfair Display', null);
   const fTrio = fitFontSize(trio, 'Quicksand', null, w * 0.0185, maxTextW);
-  s += svgCenteredText(trio, cx, h * 0.175, fTrio, '#9d95c0', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText(trio, cx, h * 0.175, fTrio, t.trio, 'Quicksand', 'Quicksand', null);
 
   // kotač (unutarnje koordinate -60..1060 → 1120 jedinica)
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
+  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, t.brand, 'Tangerine', 'Tangerine', '700');
   s += svgCenteredText(chart.noTime ? 'alkemijana.com · tropski zodijak' : 'alkemijana.com · Placidus · tropski zodijak',
-    cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
+    cx, h * 0.945, w * 0.016, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }
@@ -261,11 +297,9 @@ async function downloadPoster() {
     const [w, h] = PAGE_MM[size];
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: size.toLowerCase() });
     registerFonts(doc);
-    const el = svgToElement(buildPosterSVG(currentChart, w, h));
-    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
-    try {
-      await doc.svg(el, { x: 0, y: 0, width: w, height: h });
-    } finally { el.remove(); }
+    // 1. stranica tamna, 2. svijetla (za ispis u boji bez puno tinte)
+    await addPosterPage(doc, buildPosterSVG(currentChart, w, h, 'dark'), w, h, true);
+    await addPosterPage(doc, buildPosterSVG(currentChart, w, h, 'light'), w, h, false, size.toLowerCase(), 'portrait');
     doc.save(pdfFileName('poster-' + size));
   });
 }
@@ -844,9 +878,10 @@ function synBiwheelSVG(chartA, chartB, pal, extra, cfg) {
 }
 
 /* ── Poster sinastrije (vektorski, tamni dizajn - kao natalni poster) ── */
-function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
+function buildSynastryPosterSVG(chartA, chartB, w, h, cfg, theme) {
   cfg = cfg || {};
-  const pal = PALETTES.poster;
+  const t = POSTER_THEMES[theme] || POSTER_THEMES.dark;
+  const pal = t.pal();
   const cx = w / 2;
   const chartSize = w * 0.82;
   const chartX = (w - chartSize) / 2;
@@ -863,33 +898,29 @@ function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
   const inner = synBiwheelSVG(chartA, chartB, pal, null, cfg).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
 
   let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-  s += '<defs><radialGradient id="sgrad" cx="50%" cy="32%" r="85%">' +
-       '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
-       '</radialGradient></defs>';
-  s += '<rect width="' + w + '" height="' + h + '" fill="url(#sgrad)"/>';
-  s += posterStars(w, h, 1483, { x: cx, y: chartY + chartSize / 2, r: chartSize / 2 });
+  s += posterBackground(w, h, 'sgrad', 1483, { x: cx, y: chartY + chartSize / 2, r: chartSize / 2 }, t);
 
   // ukrasni okvir
   const m = w * 0.045;
   s += '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + (h - 2 * m) +
-       '" fill="none" stroke="rgba(168,144,208,0.4)" stroke-width="' + (w * 0.0012) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.4)" stroke-width="' + (w * 0.0012) + '"/>';
   s += '<rect x="' + (m + w * 0.008) + '" y="' + (m + w * 0.008) + '" width="' + (w - 2 * m - w * 0.016) + '" height="' + (h - 2 * m - w * 0.016) +
-       '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0007) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.18)" stroke-width="' + (w * 0.0007) + '"/>';
 
   // naslov (imena)
   const maxTextW = w * 0.84;
   const f1 = fitFontSize(title, 'Dancing Script', '700', w * 0.092, maxTextW);
-  s += svgCenteredText(title, cx, h * 0.098, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
+  s += svgCenteredText(title, cx, h * 0.098, f1, t.title, 'DancingScript', 'Dancing Script', '700');
   // linija sa zvjezdicom
   const ly = h * 0.118, lw = w * 0.3;
-  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
-  s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0011) + '"/>';
-  s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="#b8a2dd"/>';
+  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.022) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<line x1="' + (cx + w * 0.022) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0011) + '"/>';
+  s += '<path transform="translate(' + cx + ',' + ly + ') scale(' + (w * 0.0042) + ')" d="M0,-3 C0.4,-1 1,-0.4 3,0 C1,0.4 0.4,1 0,3 C-0.4,1 -1,0.4 -3,0 C-1,-0.4 -0.4,-1 0,-3 Z" fill="' + t.accent + '"/>';
   // "Sinastrija" + dvije linije podataka rođenja
-  s += svgCenteredText(kindLabel, cx, h * 0.137, w * 0.019, '#b8a2dd', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText(kindLabel, cx, h * 0.137, w * 0.019, t.accent, 'Quicksand', 'Quicksand', null);
   const fData = fitFontSize(birthDataLine(chartA), 'Playfair Display', null, w * 0.0185, maxTextW);
-  s += svgCenteredText(birthDataLine(chartA), cx, h * 0.158, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
-  s += svgCenteredText(subLineB, cx, h * 0.176, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(birthDataLine(chartA), cx, h * 0.158, fData, t.data, 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(subLineB, cx, h * 0.176, fData, t.data, 'PlayfairDisplay', 'Playfair Display', null);
 
   // kotač (interne koord. -60..1060 → 1120 jedinica)
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
@@ -909,8 +940,8 @@ function buildSynastryPosterSVG(chartA, chartB, w, h, cfg) {
   s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + outerColor + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameB) + '</text>';
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
-  s += svgCenteredText('alkemijana.com · ' + footerKind + ' · tropski zodijak', cx, h * 0.945, w * 0.016, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, t.brand, 'Tangerine', 'Tangerine', '700');
+  s += svgCenteredText('alkemijana.com · ' + footerKind + ' · tropski zodijak', cx, h * 0.945, w * 0.016, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }
@@ -925,10 +956,8 @@ async function downloadSynastryPoster() {
     const [w, h] = PAGE_MM[size];
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: size.toLowerCase() });
     registerFonts(doc);
-    const el = svgToElement(buildSynastryPosterSVG(currentSynastry.a, currentSynastry.b, w, h));
-    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
-    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
-    finally { el.remove(); }
+    await addPosterPage(doc, buildSynastryPosterSVG(currentSynastry.a, currentSynastry.b, w, h, null, 'dark'), w, h, true);
+    await addPosterPage(doc, buildSynastryPosterSVG(currentSynastry.a, currentSynastry.b, w, h, null, 'light'), w, h, false, size.toLowerCase(), 'portrait');
     doc.save(synPdfFileName('poster-' + size));
   });
 }
@@ -1168,10 +1197,9 @@ async function downloadTransitPoster() {
     const [w, h] = PAGE_MM[size];
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: size.toLowerCase() });
     registerFonts(doc);
-    const el = svgToElement(buildSynastryPosterSVG(currentTransit.natal, currentTransit.transit, w, h, transitPdfCfg()));
-    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
-    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
-    finally { el.remove(); }
+    const cfg = transitPdfCfg();
+    await addPosterPage(doc, buildSynastryPosterSVG(currentTransit.natal, currentTransit.transit, w, h, cfg, 'dark'), w, h, true);
+    await addPosterPage(doc, buildSynastryPosterSVG(currentTransit.natal, currentTransit.transit, w, h, cfg, 'light'), w, h, false, size.toLowerCase(), 'portrait');
     doc.save(transitPdfFileName('poster-' + size));
   });
 }
@@ -1602,7 +1630,8 @@ async function downloadAcgWorking() {
 }
 
 /* ── POSTER (landscape, tamni dizajn kao ostali posteri) ── */
-function buildAcgPosterSVG(acg, projMode, w, h) {
+function buildAcgPosterSVG(acg, projMode, w, h, theme) {
+  const t = POSTER_THEMES[theme] || POSTER_THEMES.dark;
   const meta = ACG_PROJ_META[projMode] || ACG_PROJ_META.mundo;
   const cx = w / 2;
 
@@ -1614,18 +1643,14 @@ function buildAcgPosterSVG(acg, projMode, w, h) {
   const mapY = h * 0.215;
 
   let s = '<svg viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
-  s += '<defs><radialGradient id="acggrad" cx="50%" cy="32%" r="85%">' +
-       '<stop offset="0%" stop-color="#1a1538"/><stop offset="55%" stop-color="#0e0c24"/><stop offset="100%" stop-color="#06080f"/>' +
-       '</radialGradient></defs>';
-  s += '<rect width="' + w + '" height="' + h + '" fill="url(#acggrad)"/>';
-  s += posterStars(w, h, 2411, { x: cx, y: mapY + mapH / 2, r: Math.hypot(mapW, mapH) / 2 * 0.72 });
+  s += posterBackground(w, h, 'acggrad', 2411, { x: cx, y: mapY + mapH / 2, r: Math.hypot(mapW, mapH) / 2 * 0.72 }, t);
 
   // ukrasni okvir (kao ostali posteri)
   const m = w * 0.032;
   s += '<rect x="' + m + '" y="' + m + '" width="' + (w - 2 * m) + '" height="' + (h - 2 * m) +
-       '" fill="none" stroke="rgba(168,144,208,0.4)" stroke-width="' + (w * 0.0009) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.4)" stroke-width="' + (w * 0.0009) + '"/>';
   s += '<rect x="' + (m + w * 0.006) + '" y="' + (m + w * 0.006) + '" width="' + (w - 2 * m - w * 0.012) + '" height="' + (h - 2 * m - w * 0.012) +
-       '" fill="none" stroke="rgba(168,144,208,0.18)" stroke-width="' + (w * 0.0005) + '"/>';
+       '" fill="none" stroke="rgba(' + t.frame + ',0.18)" stroke-width="' + (w * 0.0005) + '"/>';
 
   // naslov (ime) - Dancing Script kao natalni poster; baseline spuštena tako
   // da ni uzlazni potezi rukopisnog fonta ne izlaze iznad ukrasnog okvira
@@ -1633,30 +1658,30 @@ function buildAcgPosterSVG(acg, projMode, w, h) {
   const maxTextW = w * 0.8;
   const f1 = fitFontSize(title, 'Dancing Script', '700', w * 0.046, maxTextW);
   const titleY = Math.max(h * 0.098, m + f1 * 1.02);
-  s += svgCenteredText(title, cx, titleY, f1, '#e4e0f4', 'DancingScript', 'Dancing Script', '700');
+  s += svgCenteredText(title, cx, titleY, f1, t.title, 'DancingScript', 'Dancing Script', '700');
 
   // linija sa zvjezdicom
   const ly = h * 0.118, lw = w * 0.24;
-  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.016) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0008) + '"/>';
-  s += '<line x1="' + (cx + w * 0.016) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(168,144,208,0.55)" stroke-width="' + (w * 0.0008) + '"/>';
-  s += acgStarMark(cx, ly, w * 0.003, '#b8a2dd');
+  s += '<line x1="' + (cx - lw) + '" y1="' + ly + '" x2="' + (cx - w * 0.016) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0008) + '"/>';
+  s += '<line x1="' + (cx + w * 0.016) + '" y1="' + ly + '" x2="' + (cx + lw) + '" y2="' + ly + '" stroke="rgba(' + t.frame + ',0.55)" stroke-width="' + (w * 0.0008) + '"/>';
+  s += acgStarMark(cx, ly, w * 0.003, t.accent);
 
   // "Astrokartografija · projekcija" + podaci rođenja
-  s += svgCenteredText('Astrokartografija · ' + meta.label, cx, h * 0.141, w * 0.0135, '#b8a2dd', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText('Astrokartografija · ' + meta.label, cx, h * 0.141, w * 0.0135, t.accent, 'Quicksand', 'Quicksand', null);
   const sub = (acg.dateV || '') + ' · ' + (acg.timeV || '') + ' · ' + (acg.place ? acg.place.label : '');
   const fData = fitFontSize(sub, 'Playfair Display', null, w * 0.016, maxTextW);
-  s += svgCenteredText(sub, cx, h * 0.164, fData, '#c4c0d8', 'PlayfairDisplay', 'Playfair Display', null);
+  s += svgCenteredText(sub, cx, h * 0.164, fData, t.data, 'PlayfairDisplay', 'Playfair Display', null);
 
   // karta
-  s += acgMapBlock(acg, projMode, { x: mapX, y: mapY, w: mapW, h: mapH, gutter: G }, 'dark');
+  s += acgMapBlock(acg, projMode, { x: mapX, y: mapY, w: mapW, h: mapH, gutter: G }, t.acg);
 
   // legenda + napomena
-  const leg = acgLegendBlock(acg, projMode, cx, mapY + mapH + G + h * 0.028, w * 0.9, 'dark');
+  const leg = acgLegendBlock(acg, projMode, cx, mapY + mapH + G + h * 0.028, w * 0.9, t.acg);
   s += leg.svg;
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.036, '#d8d2ee', 'Tangerine', 'Tangerine', '700');
-  s += svgCenteredText('alkemijana.com · astrokartografija · tropski zodijak', cx, h * 0.947, w * 0.011, '#8a82ac', 'Quicksand', 'Quicksand', null);
+  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.036, t.brand, 'Tangerine', 'Tangerine', '700');
+  s += svgCenteredText('alkemijana.com · astrokartografija · tropski zodijak', cx, h * 0.947, w * 0.011, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
 }
@@ -1674,10 +1699,8 @@ async function downloadAcgPoster() {
     const doc = new window.jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: size.toLowerCase() });
     registerFonts(doc);
     const projMode = (document.getElementById('acg-projection') || {}).value || 'mundo';
-    const el = svgToElement(buildAcgPosterSVG(currentAcg, projMode, w, h));
-    document.body.appendChild(el); el.style.position = 'absolute'; el.style.left = '-99999px';
-    try { await doc.svg(el, { x: 0, y: 0, width: w, height: h }); }
-    finally { el.remove(); }
+    await addPosterPage(doc, buildAcgPosterSVG(currentAcg, projMode, w, h, 'dark'), w, h, true);
+    await addPosterPage(doc, buildAcgPosterSVG(currentAcg, projMode, w, h, 'light'), w, h, false, size.toLowerCase(), 'landscape');
     const projSlug = (ACG_PROJ_META[projMode] || ACG_PROJ_META.mundo).slug;
     doc.save(acgPdfFileName('poster-' + projSlug + '-' + size));
   });

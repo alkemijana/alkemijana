@@ -361,6 +361,11 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   **str. 1** = velika karta + legenda aspekata + aspektna tablica + dominante;
   **str. 2** = pozicije planeta + kuće (Placidus) + popis aspekata.
   TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
+- **Poster PDF ima DVIJE stranice** (vrijedi za sva četiri alata): 1. tamna verzija,
+  2. ista u svijetloj verziji za ispis u boji bez puno tinte. Boje su u `POSTER_THEMES`
+  (natal-pdf.js, `dark`/`light` — kotač u svijetloj koristi `PALETTES.ink`); builderi
+  (`buildPosterSVG`, `buildSynastryPosterSVG`, `buildAcgPosterSVG`) primaju `theme`, a
+  stranice dodaje `addPosterPage()`. Nova boja na posteru ide u temu, ne kao literal.
 - **Datum se ne unosi nativnim kalendarom** (`js/natal-date.js`). Na Androidu je
   `<input type="date">` za datum ROĐENJA bio mučenje: kalendar se otvori na današnjem
   mjesecu, a godina se bira listanjem duge liste. Zato skripta svaki `<input type="date">`

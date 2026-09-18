@@ -896,7 +896,7 @@ function buildSynastryPosterSVG(chartA, chartB, w, h, cfg, theme) {
 
   const nameA = chartA.input.name || 'Prva osoba';
   const nameB = cfg.outerName || chartB.input.name || 'Druga osoba';
-  const title = cfg.title || (nameA + '  &  ' + nameB);
+  const title = cfg.posterTitle || cfg.title || (nameA + '  &  ' + nameB);
   const kindLabel = cfg.kindLabel || 'Sinastrija';
   const subLineB = cfg.outerSubLine || birthDataLine(chartB);
   const footerKind = cfg.footerKind || 'sinastrija';
@@ -1185,6 +1185,7 @@ function transitPdfCfg() {
     outerKey: 'planetT',
     kindLabel: 'Tranziti',
     title: nameN + '  ·  tranziti',
+    posterTitle: nameN,           // na posteru samo ime - "Tranziti" piše ispod
     outerName: 'Tranziti',
     outerSubLine: label ? ('Tranzit: ' + label) : 'Tranzit',
     footerKind: 'tranziti',

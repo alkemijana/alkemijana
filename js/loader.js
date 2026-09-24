@@ -40,6 +40,19 @@
 
   function loader() { return document.getElementById('aj-loader'); }
 
+  /* ---- Animacija loga: „Znak A" pa preobrazba u šešir (js/alkemijana-anim.js) ----
+     Šešir ostaje dok se stranica ne učita; ako se učita prije kraja animacije,
+     ekran se jednostavno otkrije (animacija ne mora završiti). */
+  var logoAnim = null;
+  (function startLogo() {
+    var el = loader(), host = el && el.querySelector('.ajl-logo');
+    if (!host || !window.AlkemijanaAnim) return;
+    try {
+      logoAnim = window.AlkemijanaAnim.create(host, { vrsta: 'uvod', autoplay: false, mirovanje: false });
+      logoAnim.play();
+    } catch (e) { logoAnim = null; }
+  })();
+
   /* ---- Traka napretka ----
      Jedna jedina tranzicija `transform: scaleX()` (v. css/loader.css):
        - puzanje: od 6 % do 90 % kroz CREEP_MS, s jakim usporavanjem pri
@@ -92,7 +105,6 @@
     /* document.fonts.ready sam po sebi zna biti prerano razriješen, pa
        eksplicitno tražimo fontove koji se vide "iznad pregiba". */
     Promise.all([
-      document.fonts.load('400 1em Tangerine'),
       document.fonts.load('700 1em "Playfair Display"'),
       document.fonts.load('400 1em "Atkinson Hyperlegible"'),
       document.fonts.load('700 1em "Atkinson Hyperlegible"'),
@@ -150,7 +162,13 @@
       root.classList.add('aj-reveal');      // pokreće ulaznu animaciju sadržaja
       if (el) el.classList.add('ajl-out');
 
-      setTimeout(function () { if (el) el.remove(); }, OUT_MS);
+      setTimeout(function () {
+        if (logoAnim) logoAnim.destroy();   // zaustavi animaciju ako još teče
+        if (el) el.remove();
+      }, OUT_MS);
+
+      /* hero na početnoj čeka ovaj događaj prije nego krene ispisivati potpis */
+      document.dispatchEvent(new CustomEvent('aj:revealed'));
 
       /* Klasa se skida kad ulazna animacija završi - inače bi se kaskada
          ponavljala pri SVAKOJ promjeni stranice (showPage prebacuje

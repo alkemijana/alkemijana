@@ -1,5 +1,5 @@
 /* ============================================================
-   Alkemijana - Ekran učitavanja (astro/tarot) + ulazna animacija
+   Alkemijana - Ekran učitavanja (animacija loga) + ulazna animacija
    ------------------------------------------------------------
    ZAŠTO POSTOJI: prije ovoga se stranica iscrtavala odmah - s
    fallback fontovima (font-display:swap), praznim naslovima (TEXTS
@@ -9,7 +9,9 @@
    KAKO RADI (tri dijela, v. i js/loader.js):
      1. inline skripta u <head> stavi .aj-loading na <html>  -> sadržaj
         je visibility:hidden PRIJE prvog iscrtavanja
-     2. #aj-loader (astro kotač + tarot karte) je jedino vidljivo
+     2. #aj-loader je jedino vidljivo: logo se ispisuje („Znak A") i
+        pretvara u šešir (js/alkemijana-anim.js, vrsta 'uvod'), ispod je traka.
+        Stari ekran s natalnim krugom je u BACKUP ALKEMIJANA/ekran-ucitavanja-natalni-krug/
      3. kad su fontovi spremni I app.js je odradio init (događaj
         'aj:ready'), js/loader.js skida .aj-loading, dodaje .aj-reveal
         i sadržaj se animirano otvori
@@ -85,108 +87,13 @@ html.aj-loading body > *:not(#aj-loader) {
   animation: ajlTwinkle 4.5s ease-in-out infinite;
 }
 
-/* ---- Astro kotač + tarot karte ---- */
+/* ---- Logo (Znak A → šešir) ----
+   Animaciju crta js/alkemijana-anim.js; boja prati temu (--lavender).
+   Omjer je viewBox znaka A (31.25 × 26.342), pa visina ide sama. */
 
-.ajl-wheel {
-  width: min(52vw, 230px);
-  height: auto;
-  overflow: visible;
-}
-
-/* transform-origin je u koordinatama viewBoxa (0 0 200 200) -> središte */
-.ajl-spin,
-.ajl-spin-rev,
-.ajl-orbit {
-  transform-origin: 100px 100px;
-  /* nagovještaj kompozitoru da rotaciju ne mora računati na glavnoj
-     dretvi - baš dok se ekran vidi ona je najzauzetija (init, kotač,
-     zagrijavanje deka) pa bi se vrtnja trzala */
-  will-change: transform;
-}
-
-.ajl-spin     { animation: ajlSpin 34s linear infinite; }
-.ajl-spin-rev { animation: ajlSpin 26s linear infinite reverse; }
-.ajl-orbit    { animation: ajlSpin 9s  linear infinite; }
-
-.ajl-ring {
-  fill: none;
-  stroke: var(--lavender, #a890d0);
-  stroke-opacity: 0.38;
-  stroke-width: 0.9;
-}
-
-.ajl-ring-dash {
-  fill: none;
-  stroke: var(--sage, #c4c0d8);
-  stroke-opacity: 0.32;
-  stroke-width: 0.8;
-  stroke-dasharray: 3 7;
-}
-
-.ajl-tick {
-  stroke: var(--lavender, #a890d0);
-  stroke-opacity: 0.6;
-  stroke-width: 1.1;
-  stroke-linecap: round;
-}
-
-.ajl-dot {
-  fill: var(--silver, #c4c0d8);
-  fill-opacity: 0.5;
-}
-
-.ajl-planet {
-  fill: var(--silver-bright, #e4e0f4);
-  filter: drop-shadow(0 0 4px var(--lavender, #a890d0));
-}
-
-/* Tri tarot karte u sredini kotača - dišu jedna za drugom */
-.ajl-card {
-  fill: var(--bg-light, #1c1840);
-  fill-opacity: 0.55;
-  stroke: var(--lavender, #a890d0);
-  stroke-opacity: 0.65;
-  stroke-width: 1;
-}
-
-.ajl-card-star {
-  fill: var(--silver-bright, #e4e0f4);
-  fill-opacity: 0.85;
-}
-
-.ajl-card-g {
-  animation: ajlCardBreath 3.4s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-}
-
-/* stagger ide preko izričitih klasa, NE preko :nth-of-type - u SVG-u su
-   sve grupe <g> pa bi nth-of-type brojao i prstenove ispred karata */
-.ajl-card-g.ajl-c1 { animation-delay: 0s; }     /* lijeva */
-.ajl-card-g.ajl-c2 { animation-delay: 0.36s; }  /* desna */
-.ajl-card-g.ajl-c3 { animation-delay: 0.18s; }  /* srednja (na vrhu) */
-
-/* ---- Natpis (Tangerine) - pojavi se TEK kad je font stvarno spreman,
-        inače bi i ovdje bljesnuo fallback font ---- */
-
-.ajl-text {
-  text-align: center;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-#aj-loader.ajl-fonts .ajl-text {
-  opacity: 1;
-  transform: none;
-}
-
-.ajl-word {
-  font-family: 'Tangerine', cursive;
-  font-size: clamp(3rem, 11vw, 4.6rem);
-  line-height: 1;
-  color: var(--silver-bright, #e4e0f4);
-  text-shadow: 0 0 24px rgba(168, 144, 208, 0.55);
+.ajl-logo {
+  width: min(46vw, 200px);
+  aspect-ratio: 31.25 / 26.342;
 }
 
 /* ---- Traka napretka ---- */
@@ -224,20 +131,11 @@ html.aj-loading body > *:not(#aj-loader) {
 
 /* ---- Keyframes ---- */
 
-@keyframes ajlSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
 @keyframes ajlTwinkle {
   0%, 100% { opacity: calc(var(--ajl-star-op) * 0.55); }
   50%      { opacity: var(--ajl-star-op); }
 }
 
-@keyframes ajlCardBreath {
-  0%, 100% { transform: translateY(0)     scale(1);    opacity: 0.75; }
-  50%      { transform: translateY(-3px)  scale(1.03); opacity: 1; }
-}
 
 
 /* ============================================================
@@ -300,10 +198,6 @@ html.aj-reveal footer {
 /* ---- Pristupačnost: bez animacija ako ih korisnik ne želi ---- */
 
 @media (prefers-reduced-motion: reduce) {
-  .ajl-spin,
-  .ajl-spin-rev,
-  .ajl-orbit,
-  .ajl-card-g,
   #aj-loader::before {
     animation: none !important;
   }

@@ -39,6 +39,10 @@
   --search-grad-1-focus: rgba(28, 24, 64, 0.85);
   --search-grad-2-focus: rgba(14, 12, 36, 0.85);
   --search-text: var(--silver-bright);
+
+  /* animacije loga (js/alkemijana-anim.js): zvjezdica na vrhu pera, oreol bljeska */
+  --aa-iskra: #f4f0ff;
+  --aa-sjaj: #c9b6f0;
 }
 
 /* MISTIČNA SVIJETLA TEMA - pastelni lavender/krem, kao osvjetljen pergament */
@@ -77,6 +81,9 @@
   --search-grad-1-focus: rgba(255, 255, 255, 0.95);
   --search-grad-2-focus: rgba(237, 228, 245, 0.95);
   --search-text: var(--text);
+
+  --aa-iskra: #8a6dc4;
+  --aa-sjaj: #b9a3e6;
 }
 
 /* Smooth color transitions when theme changes (osim za circular reveal koji
@@ -146,16 +153,46 @@ body::after {
 
 #main-nav > * { pointer-events: auto; }
 
+/* Logo u traci = ŠEŠIR (js/logo.js). Na mobitelu statičan; na desktopu (miš) se na
+   hover pretvori u A pa dopiše „lkemijana" — slova se ispisuju UDESNO, preko prazne
+   trake, pa je okvir širok samo koliko šešir, a SVG (cijeli potpis) viri van.
+   --logo-h = visina cijelog potpisa; šešir zauzima prvih 1,15 × visine u širinu. */
 .logo {
-  font-family: 'Tangerine', cursive;
-  font-size: 1.6rem;
-  font-weight: 400;
+  --logo-h: 52px;
   color: var(--lavender);
-  letter-spacing: 0.1em;
   cursor: pointer;
-  text-shadow: 0 0 20px rgba(168, 144, 208, 0.3);
+  line-height: 0;
 }
-.logo span { color: var(--lavender); font-style: normal; }
+.logo-art {
+  display: block;
+  position: relative;
+  height: var(--logo-h);
+  width: calc(var(--logo-h) * 1.15);
+}
+.logo-art .aa-svg {                 /* animirani: cijeli potpis, šešir u lijevom dijelu */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: auto;
+  height: 100%;
+}
+.logo-art.is-static {               /* mobitel: samo šešir (viewBox šešira 31.25 × 25.2) */
+  width: calc(var(--logo-h) * 0.92 * 1.24);
+  height: calc(var(--logo-h) * 0.92);
+}
+.logo-art.is-static svg { display: block; width: 100%; height: 100%; }
+/* dok je logo otvoren (A / ispisani potpis), hover-područje pokriva i slova */
+.logo.is-open::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--logo-h) * 2.815 + 2.2rem);
+}
+@media (max-width: 768px) {
+  .logo { --logo-h: 44px; }
+}
 
 /* .nav-links živi u kliznoj ladici (#nd-drawer) - raspored je u
    css/nav-drawer.css, ovdje ostaje samo tipografija linkova. */
@@ -258,22 +295,19 @@ body > svg[viewBox="0 0 1920 1080"] {
   padding: 4.5rem 2rem 0.8rem;
 }
 
-.hero h1 {
-  font-family: 'Tangerine', cursive;
-  font-weight: 400;
-  font-size: clamp(6rem, 22vw, 11rem);
-  animation: heroGlow 10s ease-in-out infinite;
+/* Hero naslov = logo „Potpis" (js/logo.js): prvi dolazak na početnu ga ispiše,
+   svaki sljedeći put je statičan. <h1> zadržava tekst „Alkemijana" (skriven) za
+   tražilice i čitače ekrana; omjer je viewBox potpisa (77.435 × 27.511). */
+.hero h1.hero-logo {
+  width: clamp(240px, 70vw, 720px);
+  margin: 0 auto 1.2rem;
+  line-height: 0;
   color: var(--lavender);
-  letter-spacing: 0.05em;
-  line-height: 1;
-  margin-bottom: 1.2rem;
-  text-shadow: 0 0 50px rgba(168, 144, 208, 0.45);
 }
-.hero h1 .amp {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
-  font-style: italic;
-  color: var(--silver-light);
-  font-size: 0.7em;
+.hero-logo-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 77.435 / 27.511;
 }
 
 
@@ -284,20 +318,6 @@ body > svg[viewBox="0 0 1920 1080"] {
   100% { opacity: 0; transform: scale(0.1) rotate(45deg); }
 }
 
-@keyframes heroGlow {
-  0%, 100% { text-shadow: 0 0 50px rgba(168, 144, 208, 0.45), 0 0 100px rgba(168, 144, 208, 0.2); }
-  50%       { text-shadow: 0 0 90px rgba(168, 144, 208, 1), 0 0 180px rgba(168, 144, 208, 0.6), 0 0 280px rgba(168, 144, 208, 0.25); }
-}
-
-@media (max-width: 768px) {
-  .hero h1 {
-    text-shadow: 0 0 35px rgba(168, 144, 208, 0.6);
-  }
-  @keyframes heroGlow {
-    0%, 100% { text-shadow: 0 0 35px rgba(168, 144, 208, 0.6), 0 0 65px rgba(168, 144, 208, 0.3); }
-    50%       { text-shadow: 0 0 60px rgba(168, 144, 208, 1), 0 0 110px rgba(168, 144, 208, 0.7), 0 0 160px rgba(168, 144, 208, 0.35); }
-  }
-}
 
 .hero-desc {
   font-family: 'Cormorant Garamond', serif;
@@ -1308,7 +1328,10 @@ body > svg[viewBox="0 0 1920 1080"] {
 
 /* ---- FOOTER ---- */
 footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-align: center; margin-top: 6rem; background: var(--nav-bg); transition: background-color 0.6s ease; }
-.footer-logo    { font-family: 'Tangerine', cursive; font-size: 3.2rem; font-weight: 700; color: var(--lavender); letter-spacing: 0.08em; margin-bottom: 1rem; }
+/* statičan logo „Potpis" (js/logo.js ga ubaci) — omjer viewBoxa potpisa */
+.footer-logo    { width: min(230px, 70vw); margin: 0 auto 1rem; color: var(--lavender); line-height: 0; }
+.footer-logo-art { display: block; width: 100%; aspect-ratio: 77.435 / 27.511; }
+.footer-logo-art svg { display: block; width: 100%; height: 100%; }
 .footer-tagline { font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 0.18em; font-size: 1.45rem; }
 .footer-social  { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
 .footer-copy    { color: var(--text-muted); font-family: 'Quicksand', sans-serif; font-size: 0.82rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); letter-spacing: 0.08em; }

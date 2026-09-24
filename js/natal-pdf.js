@@ -9,7 +9,6 @@
 'use strict';
 
 const FONT_FILES = [
-  { file: 'assets/fonts/Tangerine-Bold.ttf',        name: 'Tangerine',        style: 'bold' },
   { file: 'assets/fonts/DancingScript.ttf',         name: 'DancingScript',    style: 'bold' },
   { file: 'assets/fonts/PlayfairDisplay-Regular.ttf', name: 'PlayfairDisplay', style: 'normal' },
   { file: 'assets/fonts/Quicksand-Medium.ttf',      name: 'Quicksand',        style: 'normal' }
@@ -233,6 +232,19 @@ function svgCenteredText(text, cx, y, sizePx, fill, pdfFamily, cssFamily, weight
   return '<text x="' + cx + '" y="' + y + '"' + attrs + ' text-anchor="middle">' + escHtml(text) + '</text>';
 }
 
+/* Logo „Potpis" u podnožju postera (umjesto nekadašnjeg natpisa „Alkemijana" u
+   Tangerineu). Vektorski oblik iz js/alkemijana-anim.js - bez fonta i bez maski,
+   pa ga svg2pdf prenese točno. Stoji iznad retka „alkemijana.com · …":
+   donji rub oboda je malo iznad tog retka, visina ≈ 1,15 × nekadašnja veličina fonta.
+     cx - sredina, footY/footFs - osnovna linija i veličina retka ispod,
+     brandFs - nekadašnja veličina natpisa, fill - boja,
+     k - visina kao udio brandFs (ACG poster ima legendu odmah iznad pa je logo niži) */
+function posterBrand(cx, footY, footFs, brandFs, fill, k = 1.15) {
+  if (!window.AlkemijanaAnim) return '';
+  const hgt = brandFs * k, bottom = footY - footFs * 1.3;
+  return window.AlkemijanaAnim.staticPlaced('potpis', cx, bottom - hgt, { h: hgt, anchor: 'middle', fill });
+}
+
 /* Poster SVG - dizajn u mm jedinicama (1 user unit = 1 mm na A-formatu) */
 function buildPosterSVG(chart, w, h, theme) {
   const t = POSTER_THEMES[theme] || POSTER_THEMES.dark;
@@ -282,7 +294,7 @@ function buildPosterSVG(chart, w, h, theme) {
   s += '<g transform="translate(' + chartX + ',' + chartY + ') scale(' + (chartSize / 1120) + ') translate(60,60)">' + inner + '</g>';
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, t.brand, 'Tangerine', 'Tangerine', '700');
+  s += posterBrand(cx, h * 0.945, w * 0.016, w * 0.052, t.brand);
   s += svgCenteredText(chart.noTime ? 'alkemijana.com · tropski zodijak' : 'alkemijana.com · Placidus · tropski zodijak',
     cx, h * 0.945, w * 0.016, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
@@ -497,7 +509,7 @@ async function downloadWorking() {
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     registerFonts(doc);
     await renderWorkingContent(doc);
-    addFooters(doc);
+    await addFooters(doc);
     doc.save(pdfFileName('radna-A4'));
   });
 }
@@ -721,19 +733,33 @@ async function renderWorkingContent(doc) {
 
 }
 
-/* Podnožja na SVE stranice (s točnim ukupnim brojem stranica).
+/* Podnožja na SVE stranice (s točnim ukupnim brojem stranica) + logo „Znak A"
+   u gornjem lijevom kutu svake stranice radnih verzija.
    Dimenzije čitamo po stranici - radi ispravno i za landscape/A4 mješavine. */
-function addFooters(doc) {
+const WORK_LOGO = { x: 4, y: 3, h: 8.5, fill: '#4a3a78' };   // mm; ljubičasta kao natpisi radnog PDF-a
+async function addFooters(doc) {
   const PAGE_M = 5;
   const total = doc.getNumberOfPages();
+  let logoEl = null;
+  if (window.AlkemijanaAnim) {
+    const [, , vw, vh] = window.AlkemijanaAnim.viewBox('znak');
+    logoEl = svgToElement(window.AlkemijanaAnim.staticSvg('znak', { fill: WORK_LOGO.fill, attrs: 'width="' + vw + '" height="' + vh + '"' }));
+    logoEl.style.position = 'absolute'; logoEl.style.left = '-99999px';
+    document.body.appendChild(logoEl);
+  }
   for (let i = 1; i <= total; i++) {
     doc.setPage(i);
+    if (logoEl) {
+      const [, , vw, vh] = window.AlkemijanaAnim.viewBox('znak');
+      try { await doc.svg(logoEl, { x: WORK_LOGO.x, y: WORK_LOGO.y, width: WORK_LOGO.h * vw / vh, height: WORK_LOGO.h }); } catch (err) { /* logo nije nužan */ }
+    }
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
     doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.5); doc.setTextColor(138, 130, 172);
     doc.text('Alkemijana · alkemijana.com', W / 2, H - 8, { align: 'center' });
     doc.text(i + ' / ' + total, W - PAGE_M, H - 8, { align: 'right' });
   }
+  if (logoEl) logoEl.remove();
 }
 
 /* ── AI UVIDI U PDF (Janin radni alat) ──────────────────────────────────
@@ -811,7 +837,7 @@ async function downloadInsights(insightsText) {
   const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   registerFonts(doc);
   renderInsightsPages(doc, insightsText, currentChart);
-  addFooters(doc);
+  await addFooters(doc);
   doc.save(pdfFileName('uvidi-A4'));
 }
 
@@ -823,7 +849,7 @@ async function downloadWorkingWithInsights(insightsText) {
   await renderWorkingContent(doc);
   doc.addPage();
   renderInsightsPages(doc, insightsText, currentChart);
-  addFooters(doc);
+  await addFooters(doc);
   doc.save(pdfFileName('radna-uvidi-A4'));
 }
 
@@ -947,7 +973,7 @@ function buildSynastryPosterSVG(chartA, chartB, w, h, cfg, theme) {
   s += '<text x="' + (x0 + dot * 2 + padd).toFixed(2) + '" y="' + legY.toFixed(2) + '" fill="' + outerColor + '" font-family="Quicksand" font-size="' + legFs + '">' + escHtml(nameB) + '</text>';
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.052, t.brand, 'Tangerine', 'Tangerine', '700');
+  s += posterBrand(cx, h * 0.945, w * 0.016, w * 0.052, t.brand);
   s += svgCenteredText('alkemijana.com · ' + footerKind + ' · tropski zodijak', cx, h * 0.945, w * 0.016, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;
@@ -978,7 +1004,7 @@ async function downloadSynastryWorking() {
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     registerFonts(doc);
     await renderSynastryWorkingContent(doc);
-    addFooters(doc);
+    await addFooters(doc);
     doc.save(synPdfFileName('radna-A4'));
   });
 }
@@ -1220,7 +1246,7 @@ async function downloadTransitWorking() {
     const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     registerFonts(doc);
     await renderSynastryWorkingContent(doc, transitPdfCfg());
-    addFooters(doc);
+    await addFooters(doc);
     doc.save(transitPdfFileName('radna-A4'));
   });
 }
@@ -1632,7 +1658,7 @@ async function downloadAcgWorking() {
       finally { el.remove(); }
     }
 
-    addFooters(doc);
+    await addFooters(doc);
     doc.save(acgPdfFileName('radna-A4'));
   });
 }
@@ -1688,7 +1714,7 @@ function buildAcgPosterSVG(acg, projMode, w, h, theme) {
   s += leg.svg;
 
   // podnožje
-  s += svgCenteredText('Alkemijana', cx, h * 0.925, w * 0.036, t.brand, 'Tangerine', 'Tangerine', '700');
+  s += posterBrand(cx, h * 0.947, w * 0.011, w * 0.036, t.brand, 0.82);
   s += svgCenteredText('alkemijana.com · astrokartografija · tropski zodijak', cx, h * 0.947, w * 0.011, t.foot, 'Quicksand', 'Quicksand', null);
   s += '</svg>';
   return s;

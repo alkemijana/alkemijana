@@ -171,8 +171,8 @@ html.hs-lock body {
 
 #home .hero { padding: 0 1rem; }
 
-#home .hero h1 {
-  font-size: clamp(3rem, min(22vw, 17vh), 13rem);
+#home .hero h1.hero-logo {
+  width: clamp(220px, min(76vw, 58vh), 820px);
   margin-bottom: clamp(0.3rem, 1.4vh, 1.4rem);
 }
 
@@ -759,7 +759,7 @@ html.hs-lock body {
 
   .hs-dots button { width: 8px; height: 8px; }
 
-  #home .hero h1 { font-size: clamp(3.6rem, 19vw, 7rem); }
+  #home .hero h1.hero-logo { width: min(86vw, 460px); }
 
   /* Kotač na mobitelu MORA ostati kvadrat (style.css mu daje
      `aspect-ratio: 1/1`). Ovdje je prije stajao `max-height: 46dvh` i to
@@ -786,7 +786,7 @@ html.hs-lock body {
 @media (max-height: 560px) {
   .hs-slide { padding: 4.5rem 1rem 2.6rem; }
   .hs-hint { display: none; }
-  #home .hero h1 { font-size: clamp(2.8rem, 11vh, 5rem); }
+  #home .hero h1.hero-logo { width: min(62vw, 64vh); }
 
   /* kotač: visinu diktira ekran, a `aspect-ratio` iz style.css drži kvadrat */
   #home .home-live-natal-wrap { width: min(58dvh, 92vw); }

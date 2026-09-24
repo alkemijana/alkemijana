@@ -197,7 +197,6 @@
        Preload za fontove "iznad pregiba" - ekran učitavanja čeka fontove
        pa ih vrijedi dohvatiti što ranije (latin + latin-ext za hrvatske
        dijakritike). -->
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/IurY6Y5j_oScZZow4VOxCZZM.woff2"><!-- Tangerine 400 -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2"><!-- Playfair Display 700 -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2"><!-- Atkinson 400 latin -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G07JIoSwQ.woff2"><!-- Atkinson 400 latin-ext -->
@@ -210,93 +209,21 @@
   <link rel="stylesheet" href="css/home-slides.css">
   <link rel="stylesheet" href="tarot/tarot.css">
 
+  <!-- Animacije loga (ekran učitavanja, hero, traka) — mora prije loader.js -->
+  <script src="js/alkemijana-anim.js" defer></script>
   <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
   <script src="js/loader.js" defer></script>
 </head>
 <body>
 
 <!-- ============================================================
-     EKRAN UČITAVANJA (astro kotač + tarot karte)
-     Stilovi: css/loader.css | Logika: js/loader.js
-     Uklanja se iz DOM-a nakon otkrivanja stranice.
+     EKRAN UČITAVANJA — logo se ispisuje („Znak A") i pretvara u šešir
+     Animacija: js/alkemijana-anim.js (vrsta 'uvod'), pokreće je js/loader.js
+     Stilovi: css/loader.css | Uklanja se iz DOM-a nakon otkrivanja stranice.
+     (Stari ekran s natalnim krugom: BACKUP ALKEMIJANA/ekran-ucitavanja-natalni-krug/)
      ============================================================ -->
 <div id="aj-loader" role="status" aria-live="polite" aria-label="Stranica se učitava">
-  <svg class="ajl-wheel" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-
-    <!-- vanjski prsten s 12 crtica (30° = jedan znak zodijaka) -->
-    <g class="ajl-spin">
-      <circle class="ajl-ring" cx="100" cy="100" r="88"/>
-      <g class="ajl-tick">
-        <line x1="100"    y1="19"     x2="100"    y2="12"/>
-        <line x1="140.50" y1="29.85"  x2="144.00" y2="23.79"/>
-        <line x1="170.15" y1="59.50"  x2="176.21" y2="56.00"/>
-        <line x1="181"    y1="100"    x2="188"    y2="100"/>
-        <line x1="170.15" y1="140.50" x2="176.21" y2="144.00"/>
-        <line x1="140.50" y1="170.15" x2="144.00" y2="176.21"/>
-        <line x1="100"    y1="181"    x2="100"    y2="188"/>
-        <line x1="59.50"  y1="170.15" x2="56.00"  y2="176.21"/>
-        <line x1="29.85"  y1="140.50" x2="23.79"  y2="144.00"/>
-        <line x1="19"     y1="100"    x2="12"     y2="100"/>
-        <line x1="29.85"  y1="59.50"  x2="23.79"  y2="56.00"/>
-        <line x1="59.50"  y1="29.85"  x2="56.00"  y2="23.79"/>
-      </g>
-    </g>
-
-    <!-- srednji, isprekidani prsten (vrti se u suprotnom smjeru) -->
-    <g class="ajl-spin-rev">
-      <circle class="ajl-ring-dash" cx="100" cy="100" r="70"/>
-    </g>
-
-    <!-- unutarnji prsten od 12 točaka -->
-    <g class="ajl-spin-rev">
-      <g class="ajl-dot">
-        <circle cx="100"    cy="42"     r="1.6"/>
-        <circle cx="129.00" cy="49.77"  r="1.6"/>
-        <circle cx="150.23" cy="71.00"  r="1.6"/>
-        <circle cx="158"    cy="100"    r="1.6"/>
-        <circle cx="150.23" cy="129.00" r="1.6"/>
-        <circle cx="129.00" cy="150.23" r="1.6"/>
-        <circle cx="100"    cy="158"    r="1.6"/>
-        <circle cx="71.00"  cy="150.23" r="1.6"/>
-        <circle cx="49.77"  cy="129.00" r="1.6"/>
-        <circle cx="42"     cy="100"    r="1.6"/>
-        <circle cx="49.77"  cy="71.00"  r="1.6"/>
-        <circle cx="71.00"  cy="49.77"  r="1.6"/>
-      </g>
-    </g>
-
-    <!-- planet koji kruži po vanjskom prstenu -->
-    <g class="ajl-orbit">
-      <circle class="ajl-planet" cx="100" cy="12" r="3.2"/>
-    </g>
-
-    <!-- Tri tarot karte u lepezi (srednja je na vrhu).
-         PAZI na dvije grupe po karti: rotacija lepeze mora biti na VANJSKOJ
-         grupi kao transform ATRIBUT, a animacija "disanja" na unutarnjoj kao
-         CSS transform - CSS transform nadjačava atribut, pa bi inače
-         animacija poništila rotaciju i karte bi se složile jedna na drugu. -->
-    <g transform="rotate(-17 100 124)">
-      <g class="ajl-card-g ajl-c1">
-        <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
-        <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
-      </g>
-    </g>
-    <g transform="rotate(17 100 124)">
-      <g class="ajl-card-g ajl-c2">
-        <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
-        <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
-      </g>
-    </g>
-    <g class="ajl-card-g ajl-c3">
-      <rect class="ajl-card" x="87" y="80" width="26" height="40" rx="3"/>
-      <path class="ajl-card-star" d="M100 94 C100.7 97.6 102.4 99.3 106 100 C102.4 100.7 100.7 102.4 100 106 C99.3 102.4 97.6 100.7 94 100 C97.6 99.3 99.3 97.6 100 94 Z"/>
-    </g>
-  </svg>
-
-  <!-- natpis se pojavi TEK kad je Tangerine stvarno učitan (klasa .ajl-fonts) -->
-  <div class="ajl-text">
-    <div class="ajl-word">Alkemijana</div>
-  </div>
+  <div class="ajl-logo" aria-hidden="true"></div>
 
   <div class="ajl-bar"><i></i></div>
 </div>
@@ -588,7 +515,8 @@
        u verziji 1: syncNavBar() u js/app.js preseli #navLinks i prekidač
        teme u #nd-bar. V. css/nav-drawer.css. -->
   <nav id="main-nav">
-    <div class="logo" onclick="goHome()">Alkemijana</div>
+    <!-- logo = šešir; js/logo.js ga iscrta (desktop: animacija na hover) -->
+    <div class="logo" id="nav-logo" onclick="goHome()"><span class="visually-hidden">Alkemijana</span><span class="logo-art" aria-hidden="true"></span></div>
     <div class="nd-bar" id="nd-bar"></div>
     <button class="nd-toggle" id="nd-toggle" onclick="toggleMenu()"
             aria-label="Otvori izbornik" aria-expanded="false" aria-controls="nd-drawer">
@@ -643,7 +571,8 @@
         <div class="hs-inner">
           <div class="hero">
             <div>
-              <h1>Alkemijana</h1>
+              <!-- logo „Potpis": prvi dolazak ga ispiše, poslije je statičan (js/logo.js) -->
+              <h1 class="hero-logo"><span class="visually-hidden">Alkemijana</span><span class="hero-logo-art" id="hero-logo" aria-hidden="true"></span></h1>
               <p class="hero-desc" id="t-heroDesc"></p>
               <div class="divider"><div class="line"></div></div>
             </div>
@@ -1817,7 +1746,7 @@
   </section>
 
   <footer>
-    <div class="footer-logo">Alkemijana</div>
+    <div class="footer-logo"><span class="visually-hidden">Alkemijana</span><span class="footer-logo-art" id="footer-logo" aria-hidden="true"></span></div>
     <div class="footer-social">
       <a href="https://www.instagram.com/alkemijana" target="_blank" rel="noopener" class="social-link">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"/></svg>
@@ -2029,6 +1958,7 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/home-slides.js"></script><!-- slide deck početne (nakon app.js) -->
+<script src="js/logo.js"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
 <script src="js/admin.js"></script>
 <script src="js/natal-chiron.js"></script>
 <script src="js/natal-data.js"></script>

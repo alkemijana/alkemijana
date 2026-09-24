@@ -995,6 +995,10 @@ function downloadPostPdf(id) {
   const content  = p.content || '';
   const titleEsc = esc(p.title);
   const safeFile = (p.title || 'clanak').replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-').toLowerCase().slice(0, 80) || 'clanak';
+  // logo (js/alkemijana-anim.js): šešir gore lijevo + cijeli „Potpis" umjesto natpisa u Tangerineu
+  const AA = window.AlkemijanaAnim;
+  const logoHat   = AA ? AA.staticSvg('sesir',  { fill: '#3d245a', attrs: 'aria-hidden="true"' }) : '';
+  const logoBrand = AA ? AA.staticSvg('potpis', { fill: '#3d245a', attrs: 'role="img" aria-label="Alkemijana"' }) : 'Alkemijana';
 
   const html = `<!DOCTYPE html>
 <html lang="hr">
@@ -1048,12 +1052,20 @@ function downloadPostPdf(id) {
     min-height: 30mm;
   }
   .pdf-brand {
-    font-family: 'Tangerine', cursive;
-    font-size: 48pt;
+    width: 62mm;
+    margin: 0 auto;
+    line-height: 0;
     color: #3d245a;
-    line-height: 1;
-    margin: 0;
   }
+  .pdf-brand svg { display: block; width: 100%; height: auto; }
+  .pdf-hat {
+    position: absolute;
+    top: 2mm;
+    left: 2mm;
+    width: 22mm;
+    line-height: 0;
+  }
+  .pdf-hat svg { display: block; width: 100%; height: auto; }
   .pdf-cover-frame {
     position: absolute;
     top: 2mm;
@@ -1166,8 +1178,9 @@ function downloadPostPdf(id) {
 
   <div class="sheet">
     <header class="pdf-header">
+      <div class="pdf-hat">${logoHat}</div>
       ${cover ? `<div class="pdf-cover-frame"><img class="pdf-cover" src="${esc(cover)}" alt=""></div>` : ''}
-      <div class="pdf-brand">Alkemijana</div>
+      <div class="pdf-brand">${logoBrand}</div>
     </header>
 
     ${dateStr ? `<div class="pdf-meta">${esc(dateStr)}</div>` : ''}

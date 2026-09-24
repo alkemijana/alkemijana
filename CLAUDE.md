@@ -44,10 +44,12 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
-│   ├── loader.js                   ← Ekran učitavanja: čeka fontove + 'aj:ready' iz app.js, pa otkrije stranicu
+│   ├── loader.js                   ← Ekran učitavanja: animacija loga + čeka fontove i 'aj:ready' iz app.js, pa otkrije stranicu
+│   ├── alkemijana-anim.js          ← Logo: animacije + statični SVG (GENERIRAN iz logo/animacije/ — ne uređivati ručno)
+│   ├── logo.js                     ← Logo na stranici: hero (Potpis prvi put), traka (šešir + hover), podnožje
 │   ├── home-slides.js              ← Slide deck početne: kotačić/tipkovnica/swipe, vodoravni blog slide
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
-├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Tangerine, Playfair, Quicksand)
+├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Playfair, Quicksand, Dancing Script; Tangerine se više ne koristi)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
 │   ├── tarot-data.js               ← 78 kanonskih karata, definicije špilova, 12 spreadova (pozicije+značenja)
@@ -86,7 +88,23 @@ napuhne `clone`. Ne predlagati commitanje te mape ni na „commitaj sve".
 ## Vizualni identitet
 
 - **Boje:** tamno ljubičasta, lavender, sage green, srebrna; **NIKAD** zlatna
-- **Glavni font (logo, hero):** Tangerine (cursive, mistično rukopisno) — NE mijenjati
+- **Logo (od 24. 9. 2026.) umjesto natpisa u Tangerineu** — Janin rukom crtani znak, tri oblika:
+  **„Potpis"** (A s obodom šešira + „lkemijana"), **„Znak A"** i **„Šešir"**. Tangerine se na
+  stranici i u PDF-ovima VIŠE NE KORISTI (`@font-face` je ostao u fonts.css samo zbog lakšeg
+  povratka starog ekrana učitavanja). Gdje je koji oblik:
+  - ekran učitavanja: „Znak A" se ispiše pa preobrazi u šešir (vrsta `uvod`), šešir ostaje
+  - hero na početnoj: „Potpis" se ispiše SAMO prvi put kad se hero vidi, poslije je statičan
+  - traka gore lijevo: šešir; mobitel/dodir statičan, desktop (miš) na hover šešir → A →
+    dopiše se „lkemijana", na odlazak brisanje (ako su slova počela) pa natrag u šešir.
+    UVIJEK bez bljeska, zvjezdica i lebdenja (`pero:false`).
+  - podnožje: statičan „Potpis"
+  - PDF posteri (sva 4 alata): „Potpis" umjesto natpisa „Alkemijana"; radne verzije:
+    „Znak A" gore lijevo na SVAKOJ stranici (`addFooters`, zato je async); PDF članka
+    bloga: šešir gore lijevo + „Potpis" umjesto natpisa
+  - **Izvor animacija je `logo/animacije/`** (izvan repoa, u .gitignore): `anim-src.js` +
+    `izradi.js` → `node logo/animacije/izradi.js` zapiše `js/alkemijana-anim.js`. Sve o
+    tome kako animacije rade (maske po središnjim linijama, blokade, preobrazba) je u
+    `logo/README.md`. Zadani tempo je 1,7, bez iskri (Jana).
 - **Ime iznad natalne karte:** Dancing Script (`.nt-chart-head`) — NE mijenjati
 - **Naslovi sekcija:** Playfair Display
 - **Podnaslovi sekcija (`.section-subtitle`) i sitne oznake:** Quicksand (verzalka, blaži
@@ -105,7 +123,7 @@ napuhne `clone`. Ne predlagati commitanje te mape ni na „commitaj sve".
   viša nego šira; drugi broj je isti polumjer izražen u % visine pa je kut prava četvrtina
   kruga, kao na tiskanoj karti. Admin panel (`.abt`, `.ep-btn`…) je namjerno ostao na 2–3 px.
 - **Pozadina:** 12 horoskopskih zviježđa kao SVG (samo zvijezde, bez linija/imena)
-- **Animacije:** suptilan glow na "Alkemijana" naslovu (10s ciklus); povremeni glare ✦ bljesak na pozadini (svakih 30–60s)
+- **Animacije:** povremeni glare ✦ bljesak na pozadini (svakih 30–60s). (Glow na naslovu „Alkemijana" je uklonjen zajedno s Tangerineom.)
 - **HOVER SAMO NA MIŠU:** svako pravilo s `:hover` **mora** biti unutar
   `@media (hover: hover)`. Na dodirnom zaslonu hover „ostane zalijepljen" nakon dodira
   (kartica ostane podignuta/osvijetljena dok se ne dodirne nešto drugo) — to je smetalo pa
@@ -357,7 +375,7 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
 - **Glifovi znakova:** DejaVu Sans (slobodni font, bez obveze atribucije), obrisi
   izvučeni i normalizirani u `viewBox 0 0 24 24` kao fill path-evi u `GLYPHS`.
 - **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
-  zvijezdama, Tangerine naslov) i radna A4 verzija (svijetla). Radna A4:
+  zvijezdama, logo „Potpis" u podnožju) i radna A4 verzija (svijetla, „Znak A" gore lijevo). Radna A4:
   **str. 1** = velika karta + legenda aspekata + aspektna tablica + dominante;
   **str. 2** = pozicije planeta + kuće (Placidus) + popis aspekata.
   TTF fontovi iz `assets/fonts/` ugrađuju se u PDF pri preuzimanju.
@@ -1089,12 +1107,16 @@ Tok (tri koraka):
 2. `html.aj-loading body > *:not(#aj-loader)` → `visibility:hidden`. **Namjerno
    `visibility`, ne `display:none`** — skriveni elementi tako i dalje sudjeluju u layoutu
    pa preglednik POKRENE učitavanje fontova (s `display:none` bi se `document.fonts.ready`
-   razriješio prerano i FOUT bi se ipak vidio). Vidljiv je samo `#aj-loader`: astro kotač
-   (3 prstena + planet u orbiti) s tri tarot karte u lepezi, natpis „Alkemijana" i traka.
+   razriješio prerano i FOUT bi se ipak vidio). Vidljiv je samo `#aj-loader`: logo koji se
+   ispiše („Znak A") i preobrazi u šešir (`js/alkemijana-anim.js`, vrsta `uvod`) i traka.
+   Ispod loga NEMA natpisa (Jana). Stari ekran s natalnim krugom i natpisom u Tangerineu je
+   u `BACKUP ALKEMIJANA/ekran-ucitavanja-natalni-krug/` (s uputama za povratak).
 3. `js/loader.js` čeka **oba** uvjeta — fontovi učitani (`document.fonts.load` za
-   Tangerine/Playfair/Atkinson/Quicksand + `fonts.ready`) **i** događaj `aj:ready` koji
+   Playfair/Atkinson/Quicksand + `fonts.ready`) **i** događaj `aj:ready` koji
    `initSite()` u app.js pošalje na kraju inicijalizacije — pa skine `aj-loading`, doda
-   `aj-reveal` i ukloni loader iz DOM-a.
+   `aj-reveal`, pošalje `aj:revealed` (na njega čeka hero u `js/logo.js`) i ukloni loader.
+   Animacija loga NE mora završiti — ako je stranica spremna ranije, ekran se otkrije.
+   `alkemijana-anim.js` je `defer` u `<head>` PRIJE `loader.js` (defer čuva redoslijed).
 
 Detalji na koje treba paziti:
 - **`initSite()` u app.js ide na `DOMContentLoaded`, ne na `window.load`** — `load` čeka i
@@ -1102,10 +1124,6 @@ Detalji na koje treba paziti:
 - `aj-reveal` se **skida nakon ~2.2 s** (ENTER_MS) — inače bi se kaskadna ulazna animacija
   ponavljala pri svakoj promjeni stranice (`showPage` prebacuje `.page.active`, a tamo već
   postoji `fadeIn` iz style.css).
-- U SVG-u loadera **rotacija lepeze karata mora biti `transform` ATRIBUT na vanjskoj `<g>`,
-  a animacija na unutarnjoj** — CSS `transform` iz animacije nadjačava atribut pa bi se
-  inače karte složile jedna na drugu. Iz istog razloga stagger karata ide preko izričitih
-  klasa `ajl-c1/2/3`, ne `:nth-of-type` (sve grupe u SVG-u su `<g>`).
 - **`MIN_MS` je namjerno dulji nego što treba** — ulaz je dio dojma, pa se ekran zadržava i kad
   je sve spremno: **1800 ms** prvi dolazak, **800 ms** ponovni posjet u istoj sesiji
   (`sessionStorage.aj_loader_seen`). Ne dizati preko ~2 s.

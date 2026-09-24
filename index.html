@@ -17,15 +17,23 @@
   <meta name="geo.placename" content="Rab, Hrvatska">
   <meta http-equiv="content-language" content="hr-HR">
 
-  <!-- Favicon - prava PNG datoteka (Google rezultati traže pravu datoteku, ne data: URI) -->
-  <link rel="icon" type="image/png" sizes="144x144" href="/favicon.png">
-  <link rel="apple-touch-icon" href="/favicon.png">
+  <!-- Favicon - prava PNG datoteka (Google rezultati traže pravu datoteku, ne data: URI).
+       Logo „Znak A" u krugu, 192×192 (Google traži kvadrat, višekratnik od 48 px).
+       ?v= povećati kad se slika promijeni, da preglednici ne drže staru iz predmemorije. -->
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png?v=2">
+  <link rel="apple-touch-icon" href="/favicon.png?v=2">
 
   <!-- Open Graph (preview za WhatsApp, Facebook, Instagram, LinkedIn) -->
   <meta id="og-type"        property="og:type"        content="website">
   <meta id="og-title"       property="og:title"       content="Alkemijana - Astrologija & Tarot">
   <meta id="og-description" property="og:description" content="Astrologija i tarot na hrvatskom: besplatna natalna karta, sinastrija, tranziti, astrokartografija i virtualni tarot. Besplatno, bez registracije.">
-  <meta id="og-image"       property="og:image"       content="https://alkemijana.com/og/home.svg">
+  <!-- og:image mora biti PNG/JPG — Facebook, WhatsApp i LinkedIn ne prikazuju SVG. Logo je u
+       središnjem kvadratu jer ga Google u rezultatima zna izrezati u kvadrat. -->
+  <meta id="og-image"       property="og:image"       content="https://alkemijana.com/assets/og/home.jpg">
+  <meta                     property="og:image:type"  content="image/jpeg">
+  <meta                     property="og:image:width" content="1200">
+  <meta                     property="og:image:height" content="630">
+  <meta                     property="og:image:alt"   content="Alkemijana - logo">
   <meta id="og-url"         property="og:url"         content="https://alkemijana.com/">
   <meta                     property="og:site_name"   content="Alkemijana">
   <meta                     property="og:locale"      content="hr_HR">
@@ -34,7 +42,7 @@
   <meta                     name="twitter:card"        content="summary_large_image">
   <meta id="tw-title"       name="twitter:title"       content="Alkemijana - Astrologija & Tarot">
   <meta id="tw-description" name="twitter:description" content="Besplatna natalna karta, sinastrija, tranziti, astrokartografija i virtualni tarot. Astrologija i tarot na hrvatskom, bez registracije.">
-  <meta id="tw-image"       name="twitter:image"       content="https://alkemijana.com/og/home.svg">
+  <meta id="tw-image"       name="twitter:image"       content="https://alkemijana.com/assets/og/home.jpg">
 
   <!-- JSON-LD: blog + tool za izradu natalne karte + FAQ -->
   <script type="application/ld+json">

@@ -755,7 +755,7 @@ function setPostMetaTags(p) {
   const url     = baseUrl + '#post/' + p.id;
   const plain   = (p.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const desc    = (p.excerpt && p.excerpt.trim()) || plain.slice(0, 160);
-  const img     = safeImgSrc(p.imageUrl) || baseUrl + 'og/home.svg';
+  const img     = safeImgSrc(p.imageUrl) || baseUrl + 'assets/og/home.jpg';
   const title   = `${p.title} - Alkemijana`;
 
   document.title = title;
@@ -791,7 +791,7 @@ function setPostMetaTags(p) {
     "publisher": {
       "@type": "Organization",
       "name": "Alkemijana",
-      "logo": { "@type": "ImageObject", "url": baseUrl + "og/home.svg" }
+      "logo": { "@type": "ImageObject", "url": baseUrl + "assets/og/logo.png" }
     },
     "mainEntityOfPage": { "@type": "WebPage", "@id": url },
     "keywords": (getPostTags(p) || []).join(", ")
@@ -802,7 +802,7 @@ function resetPostMetaTags() {
   const baseUrl = 'https://alkemijana.com/';
   const title   = 'Alkemijana - Tarot & Astrologija';
   const desc    = 'Alkemijana - osobni blog o tarotu, astrologiji i samospoznaji. Mistični kutak za unutarnje istraživanje i razmišljanje. Već znate - karte samo pokazuju put.';
-  const img     = baseUrl + 'og/home.svg';
+  const img     = baseUrl + 'assets/og/home.jpg';
 
   document.title = title;
   const set = (id, attr, val) => { const el = document.getElementById(id); if (el) el.setAttribute(attr, val); };

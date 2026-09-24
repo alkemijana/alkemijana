@@ -18,6 +18,10 @@ export async function onRequest(context) {
     }
   } catch (e) {}
 
+  // Nepoznat članak → slika stranice s logom (inače bi ovdje nastala generička slika
+  // „✦ Alkemijana / TAROT & ASTROLOGIJA", koju je Google uzeo i za početnu stranicu).
+  if (!post) return Response.redirect(origin + '/assets/og/home.jpg', 302);
+
   const icon     = post && post.icon ? post.icon : '✦';
   const title    = post && post.title ? post.title : 'Alkemijana';
   const firstTag = post && Array.isArray(post.tags) && post.tags[0] ? post.tags[0] : (post && post.category) || '';

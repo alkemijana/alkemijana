@@ -22,9 +22,10 @@ export async function onRequest(context) {
   const description = post
     ? truncate(stripHtml(post.excerpt || post.content || ''), 200)
     : 'Mistični kutak za tarot i astrologiju. Već znaš. Karte samo pokazuju put.';
+  // članak bez slike → generirana slika članka; nepoznat članak → slika stranice s logom
   const image    = post && post.imageUrl
     ? post.imageUrl
-    : `${origin}/og/${encodeURIComponent(slug)}.svg`;
+    : post ? `${origin}/og/${encodeURIComponent(slug)}.svg` : `${origin}/assets/og/home.jpg`;
   const canonical = `${origin}/post/${slug}`;
   const redirect  = `${origin}/#post/${slug}`;
 

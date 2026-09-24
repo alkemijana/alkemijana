@@ -115,7 +115,14 @@ napuhne `clone`. Ne predlagati commitanje te mape ni na „commitaj sve".
   (sans-serif, biran radi čitljivosti / disleksije — zamijenio Cormorant Infant + Cormorant Garamond;
   ima PRAVI kurziv, lakši/tanji od Lexenda; samo težine 400/700 pa se 500/600 zaokruže)
 - **UI elementi/labels:** Quicksand (također u natalnom SVG kotaču i PDF-ovima — zbog ugrađivanja TTF-a u PDF ostaje Quicksand)
-  OG social-share slike (`og/home.svg`, `functions/og/[slug].js`) i dalje koriste Cormorant/Georgia — nisu tekst na stranici.
+  **Slika za dijeljenje / Google** je `assets/og/home.jpg` (1200×630, logo „Potpis" u središnjem
+  kvadratu jer ga Google zna izrezati u kvadrat; JPEG jer Facebook/WhatsApp ne prikazuju SVG i
+  vole < 300 KB), logo za JSON-LD `assets/og/logo.png` (512, „Znak A" u krugu), favicon
+  `favicon.png` (192, isti krug; `?v=` u `<link>` povećati kad se slika promijeni).
+  **ZAMKA:** ništa statično NE stavljati u `/og/` — ruta `functions/og/[slug].js` presreće SVE
+  pod `/og/` (i `/og/home.svg`, koji zato nikad nije bio posluživan — Google je dobivao
+  generičku sliku „✦ Alkemijana"). Nepoznat slug sada preusmjerava na `assets/og/home.jpg`.
+  Generirane slike članaka bez slike (`/og/<slug>.svg`) i dalje koriste Playfair/Quicksand.
 - **Kutovi (verzija 2):** sve je **pravokutno, `border-radius: 0`** — nema pilula (`999px`)
   ni zaobljenih kartica. Iznimke su namjerne: **krugovi** (`50%`: točkice u legendi, prekidači,
   badgevi, avatari, živi kotač) i **kutovi karata**. Kut karte se piše u obliku

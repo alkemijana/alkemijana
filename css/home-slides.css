@@ -202,6 +202,29 @@ html.hs-lock body {
 }
 #home .hero-desc > span { display: block; }
 
+/* ZAMKA: element s `transform` postaje containing block za apsolutno
+   pozicionirane potomke. Ulazni pomak (`.hs-inner > *` dobiva
+   translateY(26px) dok slide nije aktivan) bi zato na `.hero` prebacio
+   rečenicu s dna SLIDEA na dno LOGA - vidjelo se kao tekst preko loga pri
+   omatanju decka (zadnji -> prvi slide). `.hero` zato ostaje bez transforma,
+   a isti pomak dobivaju logo i rečenica svaki za sebe. */
+#home .hs-slide .hs-inner > .hero { transform: none; }
+#home .hs-slide .hero h1.hero-logo,
+#home .hs-slide .hero-desc {
+  transform: translateY(26px);
+  transition: transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1) 0.16s;
+}
+#home .hs-slide.hs-active .hero h1.hero-logo,
+#home .hs-slide.hs-active .hero-desc,
+#home .hs-slide.hs-past .hero h1.hero-logo,
+#home .hs-slide.hs-past .hero-desc,
+#home .hs-deck.hs-warm .hero h1.hero-logo,
+#home .hs-deck.hs-warm .hero-desc {
+  transform: none;
+}
+#home .hs-slide.hs-past .hero h1.hero-logo,
+#home .hs-slide.hs-past .hero-desc { transition: none; }
+
 #home .section-title {
   font-size: clamp(1.6rem, min(6vw, 4.6vh), 4rem);
   margin-bottom: clamp(0.3rem, 1vh, 1rem);
@@ -828,6 +851,8 @@ html.hs-lock body {
 @media (prefers-reduced-motion: reduce) {
   .hs-slide,
   .hs-slide .hs-inner > *,
+  #home .hs-slide .hero h1.hero-logo,
+  #home .hs-slide .hero-desc,
   .hs-rail-track,
   .hs-rail-track > *,
   #sky-bg {

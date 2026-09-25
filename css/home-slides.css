@@ -173,14 +173,34 @@ html.hs-lock body {
 
 #home .hero h1.hero-logo {
   width: clamp(220px, min(76vw, 58vh), 820px);
-  margin-bottom: clamp(0.3rem, 1.4vh, 1.4rem);
+  margin-bottom: 0;
 }
 
+/* Rečenica ispod loga (verzija 4, rujan 2026.): logo stoji sam u sredini,
+   a rečenica je mala i prigušena pri dnu slidea, iznad strelice. Kurzivni
+   Cormorant se uz rukopisni logo tukao - Josefin Sans (kurziv 300, lokalno
+   u fonts.css) je dovoljno drugačiji da mu ne konkurira.
+   Centriranje ide preko left/right + margin:auto, NE preko transform:
+   ulazna animacija (ajHeroIn u loader.css) animira transform i pregazila bi
+   translateX(-50%). Širina je zadana pa se element ne razvuče.
+   Rečenice idu svaka u svoj red - applyTexts() u app.js ih razlomi u <span>. */
 #home .hero-desc {
-  font-size: clamp(1.1rem, min(5.6vw, 3.4vh), 3rem);
-  max-width: min(62ch, 86vw);
-  margin-bottom: clamp(0.9rem, 2.4vh, 2.6rem);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(5.5rem, 15vh, 11rem);
+  width: min(46ch, 86vw);
+  max-width: none;
+  margin: 0 auto;
+  font-family: 'Josefin Sans', sans-serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(0.85rem, min(3.4vw, 1.9vh), 1.2rem);
+  line-height: 1.7;
+  color: var(--silver);
+  opacity: 0.7;
 }
+#home .hero-desc > span { display: block; }
 
 #home .section-title {
   font-size: clamp(1.6rem, min(6vw, 4.6vh), 4rem);
@@ -786,7 +806,8 @@ html.hs-lock body {
 @media (max-height: 560px) {
   .hs-slide { padding: 4.5rem 1rem 2.6rem; }
   .hs-hint { display: none; }
-  #home .hero h1.hero-logo { width: min(62vw, 64vh); }
+  #home .hero h1.hero-logo { width: min(62vw, 58vh); }
+  #home .hero-desc { bottom: 1.2rem; }
 
   /* kotač: visinu diktira ekran, a `aspect-ratio` iz style.css drži kvadrat */
   #home .home-live-natal-wrap { width: min(58dvh, 92vw); }

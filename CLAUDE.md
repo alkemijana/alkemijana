@@ -106,6 +106,10 @@ napuhne `clone`. Ne predlagati commitanje te mape ni na „commitaj sve".
     tome kako animacije rade (maske po središnjim linijama, blokade, preobrazba) je u
     `logo/README.md`. Zadani tempo je 1,7, bez iskri (Jana).
 - **Ime iznad natalne karte:** Dancing Script (`.nt-chart-head`) — NE mijenjati
+- **Rečenica ispod loga na početnoj (`#home .hero-desc`):** Josefin Sans kurziv 300
+  (lokalno u fonts.css, samo ta težina), mala i prigušena **pri dnu slidea** iznad
+  strelice, logo stoji sam u sredini. Svaka rečenica u svoj red (`applyTexts()` je
+  razlomi u `<span>`). Bivši kurzivni Cormorant se tukao s rukopisnim logom.
 - **Naslovi sekcija:** Playfair Display
 - **Podnaslovi sekcija (`.section-subtitle`) i sitne oznake:** Quicksand (verzalka, blaži
   razmak). Prije je to bio **kurzivni Atkinson u verzalki** — izbačen na zahtjev jer se

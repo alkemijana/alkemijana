@@ -1281,7 +1281,17 @@ function applyTexts() {
   const svc = SITE_SETTINGS.showServices;
 
   // Početna (hero nema podnaslov - v2 pokazuje samo naslov + opis)
-  set('t-heroDesc',         t.heroDesc);
+  // Hero opis: svaka rečenica u svoj red (CSS: #home .hero-desc > span).
+  // Gradi se preko textContent, ne innerHTML - tekst dolazi iz admina.
+  const heroDesc = document.getElementById('t-heroDesc');
+  if (heroDesc) {
+    heroDesc.textContent = '';
+    String(t.heroDesc || '').split(/(?<=[.!?…])\s+/).filter(Boolean).forEach(s => {
+      const span = document.createElement('span');
+      span.textContent = s;
+      heroDesc.appendChild(span);
+    });
+  }
   set('t-servicesTitle',    svc ? t.servicesTitle : '');
   set('t-servicesSub',      svc ? t.servicesSub   : '');
   set('t-ctaTitle',         svc ? t.ctaTitle      : '');

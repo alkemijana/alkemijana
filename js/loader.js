@@ -32,6 +32,10 @@
   try { seen = sessionStorage.getItem(SEEN_KEY) === '1'; } catch (e) {}
   var MIN_MS = seen ? 800 : 1800;
 
+  /* Halloween tjedan (js/halloween.js): na prvi posjet pričeka da se šešir
+     dovrši (animacija 'uvod' ~2,7 s), pa šešir odleti na metli prije gašenja. */
+  var HW = window.AJHalloween && window.AJHalloween.active ? window.AJHalloween : null;
+
   var started    = Date.now();
   var appReady   = false;
   var fontsReady = false;
@@ -142,7 +146,9 @@
       : Promise.resolve();
 
     warm.catch(function () {}).then(function () {
-      setTimeout(reveal, Math.max(0, MIN_MS - (Date.now() - started)));
+      var minMs = MIN_MS;
+      if (HW && !seen && logoAnim) minMs = Math.max(minMs, logoAnim.duration * 1000 + 150);
+      setTimeout(reveal, Math.max(0, minMs - (Date.now() - started)));
     });
   }
 
@@ -155,6 +161,7 @@
     var el = loader();
     if (el) el.classList.add('ajl-done');
     finishBar();   // traka dovrši potez prije nego ekran nestane
+    var flyMs = HW ? HW.flyLoader(el, logoAnim) : 0;   // Halloween: šešir odleti na metli
 
     setTimeout(function () {
       var root = document.documentElement;
@@ -174,7 +181,7 @@
          ponavljala pri SVAKOJ promjeni stranice (showPage prebacuje
          .page.active), a tamo već postoji fadeIn iz style.css. */
       setTimeout(function () { root.classList.remove('aj-reveal'); }, ENTER_MS);
-    }, 300);   // koliko traje dovršetak trake (finishBar)
+    }, Math.max(300, flyMs));   // dovršetak trake (finishBar) ili let metle
   }
 
   setTimeout(reveal, FAILSAFE_MS);

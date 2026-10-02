@@ -26,6 +26,7 @@ ALKEMIJANA WEBSITE/
 ├── css/loader.css                  ← Ekran učitavanja + ulazna animacija stranice (prefiks ajl-/aj-)
 ├── css/nav-drawer.css              ← Izbornik: gumb ☰ + panel odozgo, okvir logotipa (prefiks nd-)
 ├── css/home-slides.css             ← Slide deck početne stranice (prefiks hs-)
+├── css/halloween.css               ← Halloween tjedan (prefiks hw-, sve pod html.hw-on)
 ├── css/fonts.css                   ← @font-face za lokalno hostane fontove
 ├── js/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke, TAROT_CARD_TEXTS)
@@ -44,6 +45,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-birthcard.js          ← Tarot karta rođenja (Greer) iznad PDF gumbi natalne karte + blok u radnom PDF-u, natal + sinastrija (samostalan)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
+│   ├── halloween.js                ← Halloween tjedan 25. 10.–1. 11.: sablasna tema, Mjesec, šišmiši, metla, Samhain (samostalan, SINKRONO u <head>)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
 │   ├── loader.js                   ← Ekran učitavanja: animacija loga + čeka fontove i 'aj:ready' iz app.js, pa otkrije stranicu
 │   ├── alkemijana-anim.js          ← Logo: animacije + statični SVG (GENERIRAN iz logo/animacije/ — ne uređivati ručno)
@@ -1173,6 +1175,28 @@ Detalji na koje treba paziti:
 - `prefers-reduced-motion` gasi sve animacije (i loadera i ulazne).
 - Boja zvjezdica loadera ide preko `--ajl-star` s posebnom vrijednošću za svijetlu temu
   (`--silver-bright` je tamo taman pa bi „zvijezde" bile mrlje).
+
+### Halloween tjedan (js/halloween.js + css/halloween.css, prefiks `hw-`)
+Uključuje se **sam od 25. 10. do 1. 11.** (uključivo, `Europe/Zagreb`) i sam se gasi. Pregled bilo kad:
+`?halloween` (uključi) / `?halloween=0` (isključi) — samo za taj učitani prikaz, ništa se ne sprema.
+Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === true`:
+- **Sablasna tema na cijeloj stranici:** crna paleta preko istih CSS varijabli (`:root.hw-on`), vinjeta
+  (`body::before`), magla pri dnu (`.hw-fog`). **Svijetla tema je isključena** — `MutationObserver` skida
+  `data-theme="light"`, prekidač teme (`.nd-theme`) je skriven; `aj_theme` se NE dira, pa se nakon tjedna
+  vrati posjetiteljev izbor.
+- **Pozadina = zatamnjen Mjesec UMJESTO zviježđa** (`#sky-bg` je `display:none`; `.hw-moon` je statičan SVG
+  s teksturom i morima na stvarnim mjestima, `opacity` 0.2). Oblaci su probani i izbačeni (izgledali su kao pruge).
+- **Ekran učitavanja:** na prvi posjet loader pričeka kraj animacije „Znak A → šešir" (~2,7 s), pa šešir
+  sjedne na metlu i odleti (`AJHalloween.flyLoader`, zove ga `reveal()` u loader.js i čeka vraćene ms).
+  Ponovni posjet u sesiji: animacija se preskoči do šešira i odmah leti. Ovo je jedina iznimka od
+  pravila „ekran ne dulje od ~2 s" i vrijedi samo taj tjedan.
+- **Šišmiši:** povremeno prelete preko neba (WAAPI, samo transform) — **umjesto** ✦ bljeska (`spawnGlare`
+  u app.js se taj tjedan ne pali); mali šišmiš povremeno obleti šešir u traci (`.hw-navbat`).
+- **Tarot:** raspored **Samhain – veo između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
+  iza „Slobodnog slaganja", pa je taj tjedan zadani. Zato je `halloween.js` **sinkron** u `<head>`
+  (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
+- `prefers-reduced-motion`: bez leta, šišmiša i pokreta magle (tema i raspored ostaju).
+- **BEZ paukova** (izričit zahtjev) i bez narančasto-crne/zlatne — boje iz palete stranice.
 
 ### Zvjezdice na pozadini
 SVG s ručno postavljenim circle elementima na koordinatama stvarnih horoskopskih zviježđa (RA/Dec).

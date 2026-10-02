@@ -1536,6 +1536,7 @@ function safeImgSrc(u) {
 /* ---- AMBIENT ANIMACIJE (glare zvjezdice) ---- */
 
 function spawnGlare() {
+  if (window.AJHalloween && window.AJHalloween.active) return;   // Halloween tjedan: umjesto bljeska lete šišmiši (js/halloween.js)
   const el   = document.createElement('span');
   const size = 10 + Math.random() * 18;
   el.textContent = '✦';

@@ -402,5 +402,21 @@ window.TAROT_CARD_SETS = TAROT_CARD_SETS;
 window.TAROT_CARD_DEF_BY_ID = TAROT_CARD_DEF_BY_ID;
 window.tarotDeckCardDefs = tarotDeckCardDefs;
 window.TAROT_DECKS = TAROT_DECKS;
+/* Samhain - samo u Halloween tjednu (js/halloween.js postavi AJHalloween.active).
+   Ubacuje se odmah iza "Slobodnog slaganja" pa je taj tjedan zadani raspored. */
+const TAROT_SAMHAIN_SPREAD = {
+  id: 'samhain',
+  name: 'Samhain - veo između svjetova',
+  short: 'Samo ovaj tjedan: što puštam · što me vodi · što dolazi.',
+  seasonal: 'halloween',
+  cols: 3, rows: 2,
+  positions: [
+    { gx: 0, gy: 0.7, label: 'Što puštam', meaning: 'Ono što s godinom koja se gasi ostavljaš iza sebe.' },
+    { gx: 1, gy: 0, label: 'Što me vodi', meaning: 'Mudrost predaka i unutarnji glas koji te vodi kroz tamni dio godine.' },
+    { gx: 2, gy: 0.7, label: 'Što dolazi', meaning: 'Sjeme koje sada sadiš - što se budi iza vela.' }
+  ]
+};
+if (window.AJHalloween && window.AJHalloween.active) TAROT_SPREADS.splice(1, 0, TAROT_SAMHAIN_SPREAD);
+
 window.TAROT_SPREADS = TAROT_SPREADS;
 window.tarotCardImage = tarotCardImage;

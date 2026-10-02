@@ -1,0 +1,227 @@
+/* ============================================================
+   Alkemijana - Halloween tjedan (js/halloween.js), prefiks hw-
+   Sve vrijedi samo pod html.hw-on (25. 10. - 1. 11. ili ?halloween).
+   Boje iz palete stranice - bez narančasto-crne i bez zlatne.
+   ============================================================ */
+
+:root {
+  --hw-bat: #4a3d70;
+  --hw-bat-glow: rgba(168, 144, 208, 0.7);
+}
+:root[data-theme="light"] {
+  --hw-bat: #3b2c62;
+  --hw-bat-glow: rgba(120, 96, 176, 0.25);
+}
+
+/* ---- Šišmiš (zajednički) ---- */
+.hw-bat svg,
+.hw-navbat svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  fill: var(--hw-bat);
+  filter: drop-shadow(0 0 1.5px var(--hw-bat-glow)) drop-shadow(0 0 5px rgba(168, 144, 208, 0.3));
+}
+.hw-flap {
+  transform-box: view-box;
+  transform-origin: 32px 15px;
+  animation: hwFlap var(--hw-flap, 0.2s) ease-in-out infinite alternate;
+}
+@keyframes hwFlap {
+  from { transform: scaleY(1); }
+  to   { transform: scaleY(0.15) translateY(-1px); }
+}
+
+/* ---- Šišmiši na nebu ---- */
+.hw-bat {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 3;            /* kao glare zvjezdice - iznad neba, ispod sadržaja */
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ---- Šišmiš oko šešira u traci ----
+   Ciklus 24 s: većinu vremena ga nema, zadnjih ~3 s napravi krug oko šešira. */
+.hw-navbat {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 17px;
+  margin-left: -8px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  animation: hwNavBat 24s linear 4s infinite;
+}
+.hw-navbat .hw-flap { --hw-flap: 0.14s; }
+@keyframes hwNavBat {
+  0%, 86%  { opacity: 0; transform: translate(46px, 6px) scale(0.6); }
+  88%      { opacity: 1; transform: translate(40px, -14px) scale(0.85); }
+  91%      { transform: translate(12px, -30px) scale(1) rotate(-8deg); }
+  94%      { transform: translate(-30px, -16px) scale(0.95) rotate(-14deg); }
+  97%      { opacity: 1; transform: translate(-12px, 14px) scale(0.9) rotate(6deg); }
+  100%     { opacity: 0; transform: translate(60px, -8px) scale(0.6) rotate(12deg); }
+}
+
+/* ---- Ekran učitavanja: metla + let ---- */
+.hw-on .ajl-logo { position: relative; }
+.hw-broom {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0;
+  transform: translateY(6%);
+  animation: hwBroomIn 0.32s ease-out forwards;
+}
+.hw-broom-stick { stroke: var(--lavender, #a890d0); stroke-width: 0.9; }
+.hw-broom-tie   { stroke: var(--lavender, #a890d0); stroke-width: 0.8; }
+.hw-broom-straw { stroke: var(--sage, #8fae9a); stroke-width: 0.55; }
+@keyframes hwBroomIn {
+  to { opacity: 1; transform: none; }
+}
+
+.ajl-logo.hw-fly {
+  animation: hwFly 1.3s cubic-bezier(0.55, 0, 0.75, 0.4) forwards;
+}
+@keyframes hwFly {
+  0%   { transform: none; }
+  22%  { transform: translate(-3%, 5%) rotate(5deg); }        /* čučne */
+  34%  { transform: translate(2%, -2%) rotate(-6deg); }       /* odraz */
+  100% { transform: translate(78vw, -72vh) rotate(-16deg) scale(0.3); }
+}
+/* traka napretka se makne s puta dok šešir polijeće */
+.hw-on #aj-loader:has(.hw-fly) .ajl-bar { opacity: 0; transition: opacity 0.3s; }
+
+.hw-spark {
+  position: fixed;
+  z-index: 1;
+  pointer-events: none;
+  line-height: 1;
+  color: var(--lavender, #a890d0);
+  text-shadow: 0 0 6px rgba(168, 144, 208, 0.9);
+  animation: hwSpark 0.9s ease-out forwards;
+}
+@keyframes hwSpark {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to   { opacity: 0; transform: translate(-50%, 40%) scale(0.4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw-bat, .hw-navbat, .hw-spark { display: none !important; }
+  .ajl-logo.hw-fly { animation: none; }
+}
+
+/* ============================================================
+   SABLASNA TEMA - cijela stranica crna i tamna dok traje tjedan.
+   Svijetla tema je isključena (js/halloween.js skida data-theme="light",
+   aj_theme u localStorageu ostaje pa se nakon tjedna sve vrati),
+   prekidač teme je skriven. Samo varijable + tri sloja (vinjeta,
+   magla, Mjesec) - bez blur filtera, pokreti samo preko transforma.
+   BEZ paukova (Jana/vlasnik).
+   ============================================================ */
+:root.hw-on {
+  --bg-deep: #020203;
+  --bg-mid: #08070c;
+  --bg-light: #121019;
+  --navy: #050409;
+  --lavender: #9d87c9;
+  --lavender-soft: #5e4a8c;
+  --silver-bright: #dcd8e6;
+  --silver: #aaa5b8;
+  --silver-light: #c8c3d4;
+  --sage: #a6bfae;              /* blijeda, „duhovska" zelena */
+  --forest: #1e3a2c;
+  --text: #a9a4b6;
+  --text-muted: #57526a;
+  --border: rgba(140, 115, 190, 0.16);
+
+  --body-grad-1: rgba(64, 14, 50, 0.32);    /* tamni vinski sjaj gore lijevo */
+  --body-grad-2: rgba(2, 2, 5, 0.75);
+  --body-grad-3: rgba(80, 140, 100, 0.09);  /* zelenkasta magla pri dnu */
+  --card-bg: rgba(10, 8, 16, 0.74);
+  --card-bg-hover: rgba(18, 14, 28, 0.82);
+  --nav-bg: rgba(2, 2, 3, 0.86);
+  --form-bg: rgba(8, 6, 12, 0.78);
+  --noise-opacity: 0.08;
+  --transition-cover: #020203;
+  --card-text: #cfc9dc;
+  --panel-grad-1: rgba(12, 10, 20, 0.6);
+  --panel-grad-2: rgba(3, 3, 6, 0.8);
+  --search-grad-1: rgba(12, 10, 20, 0.8);
+  --search-grad-2: rgba(3, 3, 6, 0.8);
+  --search-grad-1-focus: rgba(16, 13, 26, 0.9);
+  --search-grad-2-focus: rgba(5, 4, 9, 0.9);
+  --aa-sjaj: #b9a3e3;
+}
+
+.hw-on .nd-theme { display: none !important; }
+
+/* Vinjeta + magla: jedan fiksni sloj iznad neba (z 0), ispod sadržaja (z 2).
+   body::before u style.css nije zauzet (samo je u popisu tranzicija). */
+.hw-on body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+}
+.hw-fog {
+  position: fixed;
+  left: -50%;
+  bottom: -6vh;
+  width: 200%;
+  height: 42vh;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.55;
+  background:
+    radial-gradient(ellipse 18% 55% at 12% 70%, rgba(150, 175, 160, 0.10), transparent 70%),
+    radial-gradient(ellipse 22% 60% at 34% 80%, rgba(140, 125, 175, 0.09), transparent 70%),
+    radial-gradient(ellipse 20% 50% at 58% 72%, rgba(150, 175, 160, 0.08), transparent 70%),
+    radial-gradient(ellipse 24% 60% at 82% 82%, rgba(140, 125, 175, 0.10), transparent 70%);
+  animation: hwFog 70s linear infinite alternate;
+  will-change: transform;
+}
+@keyframes hwFog {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(25%, -2vh, 0); }
+}
+
+/* Pozadina = velik zatamnjen Mjesec UMJESTO zviježđa (#sky-bg je skriven).
+   Fiksan iza svega (z 0), na svim stranicama. Mora se samo vrlo blago nazirati
+   kroz poluprozirne kartice, zato je taman i nisko kontrastan. Statičan. */
+.hw-on #sky-bg { display: none !important; }
+.hw-moon {
+  --hw-moon-w: min(62vmin, 600px);
+  position: fixed;
+  top: 50%;
+  right: -4vw;
+  width: var(--hw-moon-w);
+  aspect-ratio: 1;
+  margin-top: calc(var(--hw-moon-w) / -2);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.2;
+  box-shadow:
+    0 0 60px 14px rgba(200, 195, 225, 0.45),
+    0 0 200px 80px rgba(120, 100, 170, 0.28);
+}
+.hw-moon svg { display: block; width: 100%; height: 100%; }
+@media (max-width: 768px) {
+  .hw-moon { --hw-moon-w: min(96vw, 460px); right: calc(50% - var(--hw-moon-w) / 2); top: 40%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw-fog { animation: none; }
+}

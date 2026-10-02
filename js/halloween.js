@@ -316,9 +316,9 @@
           { transform: 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)' },
           { transform: 'translate(' + f1(x1) + 'px, ' + f1(y1) + 'px) scale(0.7)' }
         ], {
-          // dio sa šišmišima je namjerno kratak (~1,1 s) - duplo kraći od prvotnog (vlasnik)
-          duration: 750 + (1 - depth) * 650 + Math.random() * 150,
-          delay: Math.pow(Math.random(), 1.4) * 1000,             // gušće na početku, kao da kuljaju van
+          // dio sa šišmišima je kratak (~1,5 s) - prvotnih 2,2 s je bilo predugo, 1,1 s malo prekratko (vlasnik)
+          duration: 1000 + (1 - depth) * 850 + Math.random() * 200,
+          delay: Math.pow(Math.random(), 1.4) * 1350,             // gušće na početku, kao da kuljaju van
           easing: 'linear', fill: 'both'
         });
       }
@@ -357,7 +357,7 @@
     at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
     at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
     at(6600, swarm);
-    at(7700, finale);      // šišmiši ~1,1 s (duplo kraće od prvotnih 2,2 s)
+    at(8100, finale);      // šišmiši ~1,5 s
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */

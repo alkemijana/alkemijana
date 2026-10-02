@@ -1227,6 +1227,18 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Munje** su kanal, ne linija: `jag()` (pomicanje sredine, sitni+krupni lomovi), grane koje se granaju, debljina
   pada prema granama, munja traje samo ~0,45 s (0,9 s je bilo predugo), tri sloja (`.hwi-b-glow` zamućen / `-halo` / `-core`), osvjetljenje neba (`.hwi-skyglow`),
   treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).
+- **iPhone (Safari) - NEMA SVG filtera nigdje u uvodu ni na Mjesecu.** Safari ih je računao u svakom kadru
+  (sve je zapinjalo) i znao ostaviti crveni obrub (drop-shadow krvavog sloja). Zato:
+  - **Mjesec je CANVAS** (`renderMoon`): tekstura (šum, multiply), mora (meki ovali), sjaj (shadowBlur ispune
+    koju prekrije tekstura), faza (`arc`+`ellipse` clip), nagib; krvava verzija = piksel-preslikavanje u tamnu
+    krv. Platno ima 25 % ruba za sjaj (`.hw-moon-cv` 150 %). Isti renderer za pozadinu, ekran učitavanja i uvod.
+  - **Munja** bez feGaussianBlur: sjaj = dva široka prozirna sloja (`.hwi-b-glow`, `-glow2`).
+  - **Jato**: dvije GOTOVE slike (krila gore/dolje) s ugrađenim zamućenjem, u pripremi pretvorene u PNG;
+    mahanje = izmjena slika (`.hwi-bf-a/-b`, samo opacity). Bez CSS blura i SMIL-a na 60 elemenata.
+- **Priprema prije prve munje** (`prepare()` u mountIntro; vlasnik: „sve se učita pa tek onda krene"): čeka
+  `aj:ready` (init stranice), astronomy-engine, font rečenice, PNG šišmiše i iscrta oba Mjeseca; za to vrijeme
+  vidi se normalni ekran učitavanja. Svaki korak ima rok (`within()` - `img.decode()` zna zapeti), ukupno
+  najviše 8 s. Munja dolazi 0,4 s nakon pripreme (ili na ~2,1 s ako je priprema brža).
 - **Mobitel / performanse:** u pokretu se animiraju SAMO `opacity` i `transform`. Krvavljenje = pretapanje
   drugog sloja sa STATIČNIM filterom (`.hwi-ml-r`), ne tranzicija filtera; potamnjenje neba = tamni sloj
   (`.hwi-sky::after`), ne `grayscale()`; Mjesec ima `will-change`. Filter u pokretu preko teksture Mjeseca

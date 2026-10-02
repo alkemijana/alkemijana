@@ -41,6 +41,12 @@
   window.AJHalloween = { active };
   if (!active) return;
 
+  // obećanje s rokom: nijedan korak pripreme uvoda ne smije zaglaviti cijeli uvod
+  // (npr. img.decode() zna zapeti u kartici u pozadini)
+  const within = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), new Promise(r => setTimeout(r, ms))]);
+  // stranica gotova s initom (app.js šalje 'aj:ready') - uvod čeka to prije prve munje
+  const pageReady = new Promise(r => document.addEventListener('aj:ready', r, { once: true }));
+
   /* Paleta natalnog kotača NA EKRANU (natal-render.js currentScreenPalette i
      natal-live.js je preuzmu umjesto ljubičaste). PDF palete se ne diraju. */
   window.AJHalloween.wheelPalette = {
@@ -139,6 +145,34 @@
      kandži i poskakivanja tijela - sitan i brz, pa detalji samo smetaju. */
   const SW_UP   = 'M-1.5 -1 Q-9 -10 -21 -13 Q-17 -6 -18 -2 Q-12 -4 -9 1 Q-5 0 -1.5 3 Z';
   const SW_DOWN = 'M-1.5 -1 Q-9 2 -19 12 Q-13 9 -11 11 Q-9 6 -6 7 Q-4 3 -1.5 3 Z';
+  /* Za jato: dvije GOTOVE slike (krila gore / dolje) s već ugrađenim zamućenjem;
+     mahanje = izmjena tih dviju slika (samo opacity). 60 elemenata s CSS blurom i
+     SMIL animacijom bilo je preteško za iPhone. */
+  let swarmImgs = null;
+  function swarmBatImgs() {
+    if (swarmImgs) return swarmImgs;
+    const mk = d => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -24 64 48" width="64" height="48">' +
+      '<defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>' +
+      '<g filter="url(#b)" fill="#000"><path d="' + d + '"/><path d="' + d + '" transform="scale(-1 1)"/>' +
+      '<ellipse cx="0" cy="1" rx="2.4" ry="4.2"/><path d="M-2 -2 L-1.6 -5.6 L-0.4 -3 Z M2 -2 L1.6 -5.6 L0.4 -3 Z"/></g></svg>');
+    return (swarmImgs = [mk(SW_UP), mk(SW_DOWN)]);
+  }
+  // u pripremi uvoda: SVG (s filterom) → gotov PNG, pa se pri letu samo skalira bitmapa
+  async function rasterSwarmImgs() {
+    const src = swarmBatImgs();
+    try {
+      const out = await Promise.all(src.map(async u => {
+        const im = new Image(); im.src = u; await within(im.decode(), 1500);
+        if (!im.complete || !im.naturalWidth) throw new Error('nije učitano');   // inače bi PNG bio prazan
+        const c = document.createElement('canvas'); c.width = 192; c.height = 144;
+        c.getContext('2d').drawImage(im, 0, 0, 192, 144);
+        return c.toDataURL('image/png');
+      }));
+      await Promise.all(out.map(u => { const i = new Image(); i.src = u; return within(i.decode(), 1500); }));
+      swarmImgs = out;
+    } catch (e) { /* ostaju SVG slike - rade, samo sporije */ }
+  }
   function swarmBatSvg(beat) {
     const dur = beat.toFixed(3) + 's', begin = (-Math.random() * beat).toFixed(3) + 's';
     const wing = '<path class="hw-wing" d="' + SW_UP + '"><animate attributeName="d" dur="' + dur + '" begin="' + begin +
@@ -198,13 +232,13 @@
       // dva sloja: običan i krvavi (statičan filter) - krvavljenje je samo pretapanje
       // prozirnosti, bez filtera u pokretu (na mobitelu je to zapinjalo)
       '<div class="hwi-moon hw-moon-geo">' +
-        '<div class="hwi-ml hwi-ml-n">' + moonSvg('i') + '</div>' +
-        '<div class="hwi-ml hwi-ml-r">' + moonSvg('r') + '</div>' +
+        '<div class="hwi-ml hwi-ml-n"></div>' +
+        '<div class="hwi-ml hwi-ml-r"></div>' +
       '</div>' +
       '<div class="hwi-vig"></div>' +
       '<div class="hwi-bats"></div>' +
       '<div class="hwi-skyglow"></div>' +
-      '<svg class="hwi-bolts"><defs><filter id="hwiBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs></svg>' +
+      '<svg class="hwi-bolts"></svg>' +
       '<p class="hwi-text">Veo između svjetova je tanak…</p>' +
       '<div class="hwi-flash"></div>';
     document.body.prepend(ov);
@@ -263,7 +297,9 @@
       let html = '';
       for (const c of chans) {
         const d = toD(c.p);
-        html += '<path class="hwi-b-glow" d="' + d + '" stroke-width="' + f1(c.w * 7) + '"/>' +
+        // sjaj = široki prozirni slojevi (bez filtera zamućenja - Safari ga je računao u svakom kadru)
+        html += '<path class="hwi-b-glow" d="' + d + '" stroke-width="' + f1(c.w * 11) + '"/>' +
+          '<path class="hwi-b-glow2" d="' + d + '" stroke-width="' + f1(c.w * 5.5) + '"/>' +
           '<path class="hwi-b-halo" d="' + d + '" stroke-width="' + f1(c.w * 2.4) + '"/>' +
           '<path class="hwi-b-core" d="' + d + '" stroke-width="' + c.w.toFixed(2) + '"/>';
       }
@@ -300,10 +336,11 @@
         const size = m * (0.025 + depth * 0.055) + 10;            // mali
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';
-        el.innerHTML = swarmBatSvg(0.07 + Math.random() * 0.04);
-        el.style.width = size + 'px';
+        const im = swarmBatImgs(), fl = (0.07 + Math.random() * 0.04).toFixed(3) + 's', ph = (-Math.random() * 0.1).toFixed(3) + 's';
+        el.innerHTML = '<img class="hwi-bf hwi-bf-a" alt="" src="' + im[0] + '" style="animation-duration:' + fl + ';animation-delay:' + ph + '">' +
+                       '<img class="hwi-bf hwi-bf-b" alt="" src="' + im[1] + '" style="animation-duration:' + fl + ';animation-delay:' + ph + '">';
+        el.style.width = f1(size * 64 / 48) + 'px';                 // slika ima rub za zamućenje
         el.style.zIndex = String(Math.round(depth * 10));
-        el.style.filter = 'blur(' + f1(2 + depth * 3) + 'px)';      // jako zamućeni (statično) = dojam brzine
         host.appendChild(el);
         // iz kuta (malo raspršeno) RAVNO PREKO MJESECA: cilj je nasumična točka na
         // disku Mjeseca (geometrija kao .hw-moon-geo), pa let nastavi van ekrana
@@ -347,20 +384,42 @@
       setTimeout(() => ov.remove(), tOut + 1200);
     }
 
-    /* Prve ~2 s overlay je PROZIRAN: vidi se normalni (ljubičasti) ekran
-       učitavanja koji crta „Znak A". Udar munje ga prekine i pokrije nebom
-       (.hwi-covered) - dalje ide uvod. Namjerno samo DVA bljeska (ovaj i
-       završni) - s više sijevanja bilo je previše bljeskova (vlasnik). */
-    at(2100, () => {
-      strike(0.9);
-      setTimeout(() => ov.classList.add('hwi-covered'), 60);      // ispod vrha bljeska
-      setTimeout(() => $('.hwi-sky').classList.add('hwi-gray'), 250);
-    });
-    // faza tek sad: astronomy-engine (loadScript iz natal-data.js) na početku još ne postoji
-    at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
-    at(5200, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
-    at(5400, swarm);
-    at(6900, finale);      // šišmiši ~1,5 s
+    /* PRIPREMA prije prve munje (vlasnik: „sve se učita prije nego krene"):
+       - stranica dovrši init (aj:ready iz app.js) - inače teški JS (živi kotač…)
+         radi usred animacije i na iPhoneu zapinje
+       - astronomy-engine + oba Mjeseca (obični i krvavi) unaprijed iscrtana
+       - šišmiši jata pretvoreni u gotove slike (rasterSwarmImgs), font rečenice
+       Za to vrijeme vidi se normalni ekran učitavanja. Strop 8 s pa ide svejedno. */
+    const t0 = performance.now();
+    async function prepare() {
+      if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
+      const lib = window.Astronomy ? null :
+        (typeof loadScript === 'function' ? loadScript('js/lib/astronomy.browser.min.js').catch(() => {}) : null);
+      const fonts = document.fonts && document.fonts.load ? document.fonts.load('italic 400 1em "Playfair Display"').catch(() => {}) : null;
+      await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(rasterSwarmImgs(), 4000)]);
+      paintMoon($('.hwi-ml-n'), currentMoon(), false);
+      paintMoon($('.hwi-ml-r'), currentMoon(), true);
+      await new Promise(r => setTimeout(r, 60));          // neka se iscrtano jednom prikaže (skriveno) prije pokreta
+    }
+    function startTimeline() {
+      /* Prve ~2 s overlay je PROZIRAN: vidi se normalni (ljubičasti) ekran
+         učitavanja koji crta „Znak A". Udar munje ga prekine i pokrije nebom
+         (.hwi-covered) - dalje ide uvod. Namjerno samo DVA bljeska (ovaj i
+         završni) - s više sijevanja bilo je previše bljeskova (vlasnik).
+         Ako je priprema trajala dulje, munja dolazi 0,4 s nakon nje. */
+      if (!$('.hwi-ml-n canvas')) { paintMoon($('.hwi-ml-n'), currentMoon(), false); paintMoon($('.hwi-ml-r'), currentMoon(), true); }
+      const sh = Math.max(400, 2100 - (performance.now() - t0)) - 2100;
+      at(2100 + sh, () => {
+        strike(0.9);
+        setTimeout(() => ov.classList.add('hwi-covered'), 60);      // ispod vrha bljeska
+        setTimeout(() => $('.hwi-sky').classList.add('hwi-gray'), 250);
+      });
+      at(3000 + sh, () => $('.hwi-moon').classList.add('hwi-moon-in'));
+      at(5200 + sh, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
+      at(5400 + sh, swarm);
+      at(6900 + sh, finale);      // šišmiši ~1,5 s
+    }
+    Promise.race([prepare(), new Promise(r => setTimeout(r, 8000))]).catch(() => {}).then(startTimeline);
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */
@@ -430,61 +489,116 @@
      Neosvijetljeni dio se samo nazire (Zemljin odsjaj).
      ============================================================ */
   const RAB = { lat: 44.757, lon: 14.760 };
-  const MOON_SVG =
-    '<svg viewBox="0 0 200 200" aria-hidden="true" focusable="false">' +
-      '<defs>' +
-        '<radialGradient id="hwMg" cx="46%" cy="44%" r="60%">' +
-          '<stop offset="0" stop-color="#ddd5c6"/><stop offset="0.6" stop-color="#ada392"/>' +
-          '<stop offset="0.9" stop-color="#6e6458"/><stop offset="1" stop-color="#463e36"/>' +
-        '</radialGradient>' +
-        '<filter id="hwMt" x="0" y="0" width="100%" height="100%">' +
-          '<feTurbulence type="fractalNoise" baseFrequency="0.11" numOctaves="3" seed="11" result="n"/>' +
-          '<feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0.55 0.55 0 0 -0.4" result="m"/>' +
-          '<feComposite in="m" in2="SourceGraphic" operator="in" result="mm"/>' +
-          '<feBlend in="SourceGraphic" in2="mm" mode="multiply"/>' +
-        '</filter>' +
-        '<filter id="hwMb" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.2"/></filter>' +
-        '<filter id="hwMe" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.6"/></filter>' +
-        '<clipPath id="hwMc"><circle cx="100" cy="100" r="100"/></clipPath>' +
-        '<g id="hwMface">' +
-          '<circle cx="100" cy="100" r="100" fill="url(#hwMg)" filter="url(#hwMt)"/>' +
-          '<g clip-path="url(#hwMc)"><g filter="url(#hwMb)" fill="#2e2620" opacity="0.42">' +
-            '<ellipse cx="52" cy="96" rx="24" ry="40"/>' +            // Oceanus Procellarum
-            '<ellipse cx="80" cy="62" rx="23" ry="18"/>' +            // Imbrium
-            '<ellipse cx="119" cy="70" rx="13" ry="12"/>' +           // Serenitatis
-            '<ellipse cx="133" cy="94" rx="17" ry="13"/>' +           // Tranquillitatis
-            '<ellipse cx="166" cy="78" rx="9" ry="7.5"/>' +           // Crisium
-            '<ellipse cx="156" cy="117" rx="9" ry="13"/>' +           // Fecunditatis
-            '<ellipse cx="97" cy="137" rx="17" ry="11"/>' +           // Nubium
-            '<ellipse cx="70" cy="137" rx="8" ry="8"/>' +             // Humorum
-          '</g>' +
-          '<circle cx="101" cy="167" r="2.4" fill="#efedf3" opacity="0.5" filter="url(#hwMb)"/></g>' +  // Tycho
-        '</g>' +
-        '<mask id="hwMm" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">' +
-          '<path class="hw-moon-lit" fill="#fff" filter="url(#hwMe)" d="M100 0 A100 100 0 0 1 100 200 A100 100 0 0 1 100 0 Z"/>' +
-        '</mask>' +
-      '</defs>' +
-      '<g class="hw-moon-face">' +
-        '<use href="#hwMface" class="hw-moon-earthshine"/>' +
-        '<use href="#hwMface" mask="url(#hwMm)"/>' +
-      '</g>' +
-    '</svg>';
-
-  // isti Mjesec s drugim id-evima (uvod i pozadina su istovremeno u DOM-u)
-  function moonSvg(sfx) { return MOON_SVG.replace(/hwM([a-z]+)/g, 'hwM$1' + sfx); }
-  function drawMoonWhenReady(el) {
-    const draw = () => updateMoon(el);
+  /* Mjesec se crta JEDNOM u canvas (obična slika) - NE kao SVG s filterima.
+     Safari na iPhoneu je SVG filtere (feTurbulence tekstura, zamućenje mora,
+     drop-shadow sjaj, maska) računao u svakom kadru: uvod je zapinjao, a sjaj
+     krvavog sloja znao je ostati kao crveni obrub. Canvas = isti izgled
+     (tekstura, mora na stvarnim mjestima, sjaj, faza i nagib), ali se poslije
+     animira samo prozirnost gotove slike. Krvavi Mjesec je druga gotova slika. */
+  const MARIA = [                                   // [cx, cy, rx, ry] u koordinatama 0-200
+    [52, 96, 24, 40], [80, 62, 23, 18], [119, 70, 13, 12], [133, 94, 17, 13],   // Procellarum, Imbrium, Serenitatis, Tranquillitatis
+    [166, 78, 9, 7.5], [156, 117, 9, 13], [97, 137, 17, 11], [70, 137, 8, 8]    // Crisium, Fecunditatis, Nubium, Humorum
+  ];
+  function noiseCanvas(n) {
+    const c = document.createElement('canvas'); c.width = c.height = n;
+    const x = c.getContext('2d'), id = x.createImageData(n, n);
+    for (let i = 0; i < id.data.length; i += 4) {
+      const v = 120 + Math.random() * 135 | 0;
+      id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255;
+    }
+    x.putImageData(id, 0, 0);
+    return c;
+  }
+  let texCache = null;
+  function moonTexture(D) {                          // pun Mjesec bez faze (lice), D x D
+    if (texCache && texCache.D === D) return texCache.c;
+    const c = document.createElement('canvas'); c.width = c.height = D;
+    const x = c.getContext('2d'), R = D / 2, u = D / 200;
+    x.save();
+    x.beginPath(); x.arc(R, R, R, 0, Math.PI * 2); x.clip();
+    const g = x.createRadialGradient(D * 0.46, D * 0.44, 0, D * 0.46, D * 0.44, D * 0.62);
+    g.addColorStop(0, '#ddd5c6'); g.addColorStop(0.6, '#ada392'); g.addColorStop(0.9, '#6e6458'); g.addColorStop(1, '#463e36');
+    x.fillStyle = g; x.fillRect(0, 0, D, D);
+    x.globalCompositeOperation = 'multiply';         // zrnata tekstura (dvije veličine šuma)
+    x.imageSmoothingEnabled = true;
+    x.globalAlpha = 0.5; x.drawImage(noiseCanvas(40), 0, 0, D, D);
+    x.globalAlpha = 0.35; x.drawImage(noiseCanvas(120), 0, 0, D, D);
+    x.globalAlpha = 1;
+    for (const [cx, cy, rx, ry] of MARIA) {          // mora: mekani tamni ovali
+      x.save(); x.translate(cx * u, cy * u); x.scale(rx * u, ry * u);
+      const mg = x.createRadialGradient(0, 0, 0, 0, 0, 1.25);
+      mg.addColorStop(0, 'rgba(70,58,48,0.62)'); mg.addColorStop(0.65, 'rgba(70,58,48,0.5)'); mg.addColorStop(1, 'rgba(70,58,48,0)');
+      x.fillStyle = mg; x.beginPath(); x.arc(0, 0, 1.25, 0, Math.PI * 2); x.fill();
+      x.restore();
+    }
+    x.globalCompositeOperation = 'source-over';
+    const tg = x.createRadialGradient(101 * u, 167 * u, 0, 101 * u, 167 * u, 6 * u);   // Tycho
+    tg.addColorStop(0, 'rgba(239,237,243,0.5)'); tg.addColorStop(1, 'rgba(239,237,243,0)');
+    x.fillStyle = tg; x.fillRect(0, 0, D, D);
+    x.restore();
+    texCache = { D, c };
+    return c;
+  }
+  // gotov Mjesec u fazi g: platno (D + 25 % ruba za sjaj sa svake strane), CSS ga razvuče na 150 %
+  function renderMoon(D, g, blood) {
+    const P = Math.round(D * 0.25), W = D + 2 * P, R = D / 2;
+    const c = document.createElement('canvas'); c.width = c.height = W;
+    const x = c.getContext('2d'), tex = moonTexture(D);
+    x.translate(W / 2, W / 2);
+    x.rotate(g.faceDeg * Math.PI / 180);             // lice (mora) nagnuto kao na nebu
+    x.globalAlpha = 0.12; x.drawImage(tex, -R, -R); x.globalAlpha = 1;   // Zemljin odsjaj
+    const rot = (g.limbDeg - g.faceDeg) * Math.PI / 180;
+    function litPath() {                             // osvijetljeni dio, rub prema Suncu
+      x.beginPath();
+      if (g.k >= 0.995) { x.arc(0, 0, R, 0, Math.PI * 2); return true; }
+      if (g.k <= 0.005) return false;
+      x.save(); x.rotate(rot);
+      x.arc(0, 0, R, -Math.PI / 2, Math.PI / 2, false);
+      x.ellipse(0, 0, Math.max(R * Math.abs(1 - 2 * g.k), 0.01), R, 0, Math.PI / 2, -Math.PI / 2, g.k <= 0.5);
+      x.closePath(); x.restore();
+      return true;
+    }
+    if (litPath()) {
+      // sjaj: ispuna sa sjenom (ispunu poslije prekrije tekstura, ostane samo sjaj izvan ruba)
+      x.save(); x.fillStyle = '#9d9384';
+      x.shadowColor = 'rgba(215,200,175,0.4)'; x.shadowBlur = D * 0.2; litPath(); x.fill();
+      x.shadowColor = 'rgba(220,210,190,0.45)'; x.shadowBlur = D * 0.05; litPath(); x.fill();
+      x.restore();
+      x.save(); litPath(); x.clip(); x.drawImage(tex, -R, -R); x.restore();
+    }
+    if (blood) {                                     // tamna krv: svjetlina → crvena (piksel po piksel, jednom)
+      const id = x.getImageData(0, 0, W, W), d = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const l = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
+        d[i] = l * 0.42; d[i + 1] = l * 0.035; d[i + 2] = l * 0.045;
+      }
+      x.putImageData(id, 0, 0);
+    }
+    return c;
+  }
+  // promjer Mjeseca u CSS px (isto kao .hw-moon-geo) - kad element još nema mjeru
+  function moonCssDiam() {
+    const vw = scrW(), vh = scrH();
+    return vw <= 768 ? Math.min(vw * 0.92, 440) : Math.min(Math.min(vw, vh) * 0.58, 560);
+  }
+  function paintMoon(el, g, blood) {
+    const css = el.getBoundingClientRect().width || moonCssDiam();
+    const D = Math.max(200, Math.min(1100, Math.round(css * Math.min(window.devicePixelRatio || 1, 2))));
+    const c = renderMoon(D, g, blood);
+    c.className = 'hw-moon-cv';
+    const old = el.querySelector('canvas');
+    if (old) old.replaceWith(c); else el.appendChild(c);
+    el.classList.add('hw-moon-ready');
+    window.AJHalloween.moon = g;   // za provjeru u konzoli
+  }
+  function currentMoon() {
+    try { return moonGeometry(new Date()); } catch (e) { return { k: 1, limbDeg: 0, faceDeg: 0 }; }
+  }
+  function drawMoonWhenReady(el, blood) {
+    const draw = () => paintMoon(el, currentMoon(), blood);
     const lib = window.Astronomy ? Promise.resolve() :
       (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
     lib.then(draw, draw);                 // bez biblioteke: pun Mjesec
-  }
-
-  // osvijetljeni dio za udio k, s osvijetljenim rubom DESNO (zakreće se poslije)
-  function litPath(k) {
-    if (k >= 0.995) return 'M100 0 A100 100 0 0 1 100 200 A100 100 0 0 1 100 0 Z';
-    if (k <= 0.005) return 'M100 100 Z';
-    const rx = f1(100 * Math.abs(1 - 2 * k));
-    return 'M100 0 A100 100 0 0 1 100 200 A' + rx + ' 100 0 0 ' + (k > 0.5 ? 1 : 0) + ' 100 0 Z';
   }
 
   function moonGeometry(date) {
@@ -505,19 +619,6 @@
     return { k, limbDeg, faceDeg: q / D };
   }
 
-  function updateMoon(moonEl) {
-    let g;
-    try { g = moonGeometry(new Date()); } catch (e) { g = { k: 1, limbDeg: 0, faceDeg: 0 }; }
-    const lit = moonEl.querySelector('.hw-moon-lit');
-    const face = moonEl.querySelector('.hw-moon-face');
-    // osvijetljeni dio: zakret oboda + zakret lica (maska je unutar lica pa se lice „vraća")
-    lit.setAttribute('d', litPath(g.k));
-    lit.setAttribute('transform', 'rotate(' + f1(g.limbDeg - g.faceDeg) + ' 100 100)');
-    face.setAttribute('transform', 'rotate(' + f1(g.faceDeg) + ' 100 100)');
-    moonEl.classList.add('hw-moon-ready');
-    window.AJHalloween.moon = g;   // za provjeru u konzoli
-  }
-
   /* Mjesec i na EKRANU UČITAVANJA (svako učitavanje u tjednu): isti Mjesec, isto
      mjesto i veličina (.hw-moon-geo) kao u uvodu i u pozadini, krvav kao na kraju
      uvoda - pa se prijelazi uvod → učitavanje → stranica ne vide. instant = bez
@@ -528,7 +629,6 @@
     const m = document.createElement('div');
     m.className = 'ajl-hwmoon hw-moon-geo' + (instant ? ' ajl-hwmoon-instant' : '');
     m.setAttribute('aria-hidden', 'true');
-    m.innerHTML = moonSvg('l');
     ld.prepend(m);
     drawMoonWhenReady(m);
   }
@@ -539,7 +639,6 @@
     const moon = document.createElement('div');
     moon.className = 'hw-moon hw-moon-geo';
     moon.setAttribute('aria-hidden', 'true');
-    moon.innerHTML = moonSvg('');
     const fog = document.createElement('div');
     fog.className = 'hw-fog';
     fog.setAttribute('aria-hidden', 'true');
@@ -547,7 +646,7 @@
     else { document.body.prepend(fog); document.body.prepend(moon); }
 
     drawMoonWhenReady(moon);
-    setInterval(() => { if (window.Astronomy) updateMoon(moon); }, 10 * 60 * 1000);   // faza i nagib se mijenjaju
+    setInterval(() => { if (window.Astronomy) paintMoon(moon, currentMoon()); }, 10 * 60 * 1000);   // faza i nagib se mijenjaju
   }
 
   document.addEventListener('DOMContentLoaded', function () {

@@ -135,6 +135,21 @@
   const KS = '0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1';
   const WING_V = ORDER.map(k => wingPath(POSES[k])).join(';');
 
+  /* Jednostavan šišmiš za JATO u uvodu: krilo = vrh + jedan urez, bez prstiju,
+     kandži i poskakivanja tijela - sitan i brz, pa detalji samo smetaju. */
+  const SW_UP   = 'M-1.5 -1 Q-9 -10 -21 -13 Q-17 -6 -18 -2 Q-12 -4 -9 1 Q-5 0 -1.5 3 Z';
+  const SW_DOWN = 'M-1.5 -1 Q-9 2 -19 12 Q-13 9 -11 11 Q-9 6 -6 7 Q-4 3 -1.5 3 Z';
+  function swarmBatSvg(beat) {
+    const dur = beat.toFixed(3) + 's', begin = (-Math.random() * beat).toFixed(3) + 's';
+    const wing = '<path class="hw-wing" d="' + SW_UP + '"><animate attributeName="d" dur="' + dur + '" begin="' + begin +
+      '" repeatCount="indefinite" values="' + SW_UP + ';' + SW_DOWN + ';' + SW_UP + '"/></path>';
+    return '<svg viewBox="-24 -16 48 32" aria-hidden="true" focusable="false">' +
+      wing + '<g transform="scale(-1 1)">' + wing + '</g>' +
+      '<ellipse class="hw-body" cx="0" cy="1" rx="2.4" ry="4.2"/>' +
+      '<path class="hw-body" d="M-2 -2 L-1.6 -5.6 L-0.4 -3 Z M2 -2 L1.6 -5.6 L0.4 -3 Z"/>' +
+    '</svg>';
+  }
+
   function batSvg(beat) {
     const dur = beat.toFixed(3) + 's';
     const begin = (-Math.random() * beat).toFixed(3) + 's';
@@ -267,45 +282,43 @@
       flash(peak, 700);
       shake(520, 16);
     }
-    /* JATO - kao šišmiši koji izlijeću iz špilje: dolaze ODOZDO i prelijeću
-       preko Mjeseca prema gore, svaki sa svojom „dubinom":
-         bliži  = veći, brži, sporije mašu, blago zamućeni od brzine, iznad ostalih
-         dalji  = manji, sporiji, brže mašu
-       Let je nemiran (trzaji lijevo-desno, šišmiš lovi), nagib prati smjer,
-       a dok se penje lagano se smanjuje (odlazi u daljinu). Prijašnje jato je
-       „eksplodiralo" iz sredine i raslo - to nije izgledalo prirodno. */
+    /* JATO - šišmiši izlijeću iz DONJEG LIJEVOG KUTA i lete ravno PREKO
+       MJESECA (svaki cilja nasumičnu točku na disku) i dalje van ekrana. Mali, puno njih (~60), JEDNOSTAVNA
+       silueta (swarmBatSvg - krilo s jednim urezom, bez detalja), zamućeni od
+       brzine i u RAVNOJ crti: bez lelujanja, nagiba i poskakivanja.
+       (Prijašnje verzije - veliki detaljni šišmiši s nemirnim letom -
+       izgledale su kao leptirići.) Bliži su malo veći i brži. */
     function swarm() {
       const host = $('.hwi-bats');
-      const vw = scrW(), vh = scrH(), m = Math.min(vw, vh);
-      for (let i = 0; i < 22; i++) {
-        const depth = Math.random();                            // 0 = daleko, 1 = blizu
-        const size = m * (0.08 + depth * 0.34) + 24;
+      const vw = scrW(), vh = scrH(), m = Math.min(vw, vh), D = Math.hypot(vw, vh) * 1.15;
+      // Mjesec (isto kao .hw-moon-geo u css/halloween.css)
+      const mob = vw <= 768;
+      const moonR = (mob ? Math.min(vw * 0.92, 440) : Math.min(m * 0.58, 560)) / 2;
+      const moonX = vw / 2, moonY = vh * (mob ? 0.46 : 0.5);
+      for (let i = 0; i < 60; i++) {
+        const depth = Math.random();                              // 0 = daleko, 1 = blizu
+        const size = m * (0.025 + depth * 0.055) + 10;            // mali
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';
-        el.innerHTML = batSvg(0.085 + depth * 0.06);
+        el.innerHTML = swarmBatSvg(0.07 + Math.random() * 0.04);
         el.style.width = size + 'px';
         el.style.zIndex = String(Math.round(depth * 10));
-        if (depth > 0.82) el.style.filter = 'blur(' + f1(1 + (depth - 0.82) * 8) + 'px)';   // statično - samo dojam brzine
+        el.style.filter = 'blur(' + f1(0.8 + depth * 1.6) + 'px)';    // statično zamućenje = dojam brzine
         host.appendChild(el);
-
-        const K = 7, frames = [];
-        const x0 = vw * (0.1 + Math.random() * 0.8) - size / 2;
-        const y0 = vh + size * 0.4, y1 = -size * 1.4;
-        const drift = (Math.random() - 0.5) * vw * 0.9;
-        let jit = 0, px = x0, py = y0;
-        for (let k = 0; k <= K; k++) {
-          const t = k / K;
-          if (k > 0 && k < K) jit += (Math.random() - 0.5) * size * 1.3;   // trzaj u stranu
-          const x = x0 + drift * t + jit;
-          const y = y0 + (y1 - y0) * t + (k > 0 && k < K ? (Math.random() - 0.5) * size * 0.4 : 0);
-          const dx = k ? x - px : 0, dy = k ? y - py : -1;
-          const tilt = Math.max(-35, Math.min(35, Math.atan2(dx, Math.abs(dy)) * 57.3 * 0.8));
-          frames.push({ transform: 'translate(' + f1(x) + 'px, ' + f1(y) + 'px) rotate(' + f1(tilt) + 'deg) scale(' + (1 - 0.3 * t).toFixed(3) + ')', offset: t });
-          px = x; py = y;
-        }
-        el.animate(frames, {
-          duration: 1300 + (1 - depth) * 1900 + Math.random() * 500,
-          delay: Math.random() * 1700,
+        // iz kuta (malo raspršeno) RAVNO PREKO MJESECA: cilj je nasumična točka na
+        // disku Mjeseca (geometrija kao .hw-moon-geo), pa let nastavi van ekrana
+        const x0 = -size - Math.random() * vw * 0.06, y0 = vh + Math.random() * vh * 0.06;
+        const a = Math.random() * Math.PI * 2, rr = moonR * 1.05 * Math.sqrt(Math.random());
+        const tx = moonX + Math.cos(a) * rr - size / 2, ty = moonY + Math.sin(a) * rr - size / 2;
+        const len = Math.hypot(tx - x0, ty - y0) || 1;
+        const x1 = x0 + (tx - x0) / len * D, y1 = y0 + (ty - y0) / len * D;
+        el.animate([
+          { transform: 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)' },
+          { transform: 'translate(' + f1(x1) + 'px, ' + f1(y1) + 'px) scale(0.7)' }
+        ], {
+          // dio sa šišmišima je namjerno kratak (~1,1 s) - duplo kraći od prvotnog (vlasnik)
+          duration: 750 + (1 - depth) * 650 + Math.random() * 150,
+          delay: Math.pow(Math.random(), 1.4) * 1000,             // gušće na početku, kao da kuljaju van
           easing: 'linear', fill: 'both'
         });
       }
@@ -344,7 +357,7 @@
     at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
     at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
     at(6600, swarm);
-    at(8800, finale);
+    at(7700, finale);      // šišmiši ~1,1 s (duplo kraće od prvotnih 2,2 s)
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */

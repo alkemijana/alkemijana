@@ -1229,8 +1229,10 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).
 - **iPhone (Safari) - NEMA SVG filtera nigdje u uvodu ni na Mjesecu.** Safari ih je računao u svakom kadru
   (sve je zapinjalo) i znao ostaviti crveni obrub (drop-shadow krvavog sloja). Zato:
-  - **Mjesec je CANVAS** (`renderMoon`): tekstura (šum, multiply), mora (meki ovali), sjaj (shadowBlur ispune
-    koju prekrije tekstura), faza (`arc`+`ellipse` clip), nagib; krvava verzija = piksel-preslikavanje u tamnu
+  - **Mjesec je CANVAS** (`renderMoon`), osvjetljenje se RAČUNA kao na kugli (piksel po piksel, jednom):
+    normala diska + smjer Sunca iz faze i ruba, Lommel-Seeliger (+25 % Lamberta) → meka, nepravilna granica
+    (ne oštar rez maskom = „naljepnica"). Karta mora `MARIA` po stvarnom Mjesecu (13 povezanih, `darken` da se
+    preklapanja ne zbrajaju - odvojeni ovali su bili pjege), šum preko njih; sjaj = sjena maske svjetla; krvava verzija = piksel-preslikavanje u tamnu
     krv. Platno ima 25 % ruba za sjaj (`.hw-moon-cv` 150 %). Isti renderer za pozadinu, ekran učitavanja i uvod.
   - **Munja** bez feGaussianBlur: sjaj = dva široka prozirna sloja (`.hwi-b-glow`, `-glow2`).
   - **Jato**: dvije GOTOVE slike (krila gore/dolje) s ugrađenim zamućenjem, u pripremi pretvorene u PNG;

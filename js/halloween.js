@@ -495,15 +495,29 @@
      krvavog sloja znao je ostati kao crveni obrub. Canvas = isti izgled
      (tekstura, mora na stvarnim mjestima, sjaj, faza i nagib), ali se poslije
      animira samo prozirnost gotove slike. Krvavi Mjesec je druga gotova slika. */
-  const MARIA = [                                   // [cx, cy, rx, ry] u koordinatama 0-200
-    [52, 96, 24, 40], [80, 62, 23, 18], [119, 70, 13, 12], [133, 94, 17, 13],   // Procellarum, Imbrium, Serenitatis, Tranquillitatis
-    [166, 78, 9, 7.5], [156, 117, 9, 13], [97, 137, 17, 11], [70, 137, 8, 8]    // Crisium, Fecunditatis, Nubium, Humorum
+  /* Karta mora kao na stvarnom Mjesecu (sjever gore, pogled sa Zemlje), u koordinatama
+     diska 0-200: [cx, cy, rx, ry, kut°]. Mora se preklapaju u povezane tamne površine
+     („lice u Mjesecu") - odvojeni mali ovali su izgledali kao pjege. */
+  const MARIA = [
+    [40, 100, 26, 50, 8],     // Oceanus Procellarum (veliki, lijevo)
+    [58, 128, 20, 18, 0],     //   … njegov južni dio prema Humorumu
+    [78, 62, 28, 24, -10],    // Mare Imbrium
+    [92, 34, 42, 8, -6],      // Mare Frigoris (tanki pojas na sjeveru)
+    [118, 66, 17, 16, 0],     // Mare Serenitatis
+    [100, 86, 12, 9, 0],      // Mare Vaporum / spoj
+    [80, 100, 13, 11, 0],     // Mare Insularum / spoj
+    [131, 92, 22, 16, 15],    // Mare Tranquillitatis
+    [168, 76, 11, 9, 0],      // Mare Crisium
+    [157, 113, 11, 17, 10],   // Mare Fecunditatis
+    [139, 122, 9, 9, 0],      // Mare Nectaris
+    [96, 138, 20, 13, 0],     // Mare Nubium
+    [66, 142, 10, 10, 0]      // Mare Humorum
   ];
-  function noiseCanvas(n) {
+  function noiseCanvas(n, lo) {            // lo = najtamnija vrijednost (manji kontrast = blaži šum)
     const c = document.createElement('canvas'); c.width = c.height = n;
     const x = c.getContext('2d'), id = x.createImageData(n, n);
     for (let i = 0; i < id.data.length; i += 4) {
-      const v = 120 + Math.random() * 135 | 0;
+      const v = lo + Math.random() * (255 - lo) | 0;
       id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255;
     }
     x.putImageData(id, 0, 0);
@@ -517,20 +531,24 @@
     x.save();
     x.beginPath(); x.arc(R, R, R, 0, Math.PI * 2); x.clip();
     const g = x.createRadialGradient(D * 0.46, D * 0.44, 0, D * 0.46, D * 0.44, D * 0.62);
-    g.addColorStop(0, '#ddd5c6'); g.addColorStop(0.6, '#ada392'); g.addColorStop(0.9, '#6e6458'); g.addColorStop(1, '#463e36');
+    g.addColorStop(0, '#d8d0c1'); g.addColorStop(0.7, '#cbc2b2'); g.addColorStop(1, '#b4aa99');   // albedo - svjetlo/sjenu daje renderMoon
     x.fillStyle = g; x.fillRect(0, 0, D, D);
-    x.globalCompositeOperation = 'multiply';         // zrnata tekstura (dvije veličine šuma)
-    x.imageSmoothingEnabled = true;
-    x.globalAlpha = 0.5; x.drawImage(noiseCanvas(40), 0, 0, D, D);
-    x.globalAlpha = 0.35; x.drawImage(noiseCanvas(120), 0, 0, D, D);
-    x.globalAlpha = 1;
-    for (const [cx, cy, rx, ry] of MARIA) {          // mora: mekani tamni ovali
-      x.save(); x.translate(cx * u, cy * u); x.scale(rx * u, ry * u);
-      const mg = x.createRadialGradient(0, 0, 0, 0, 0, 1.25);
-      mg.addColorStop(0, 'rgba(70,58,48,0.62)'); mg.addColorStop(0.65, 'rgba(70,58,48,0.5)'); mg.addColorStop(1, 'rgba(70,58,48,0)');
-      x.fillStyle = mg; x.beginPath(); x.arc(0, 0, 1.25, 0, Math.PI * 2); x.fill();
+    x.globalCompositeOperation = 'darken';     // preklapanja mora se NE zbrajaju u tamnije mrlje
+    // mora: mekane preklopljene površine (crtaju se PRIJE šuma, pa im šum razbije rubove)
+    for (const [cx, cy, rx, ry, ang] of MARIA) {
+      x.save(); x.translate(cx * u, cy * u); x.rotate(ang * Math.PI / 180); x.scale(rx * u, ry * u);
+      const mg = x.createRadialGradient(0, 0, 0, 0, 0, 1.45);     // dugi mekani rub - bez vidljivog ovala
+      mg.addColorStop(0, 'rgba(92,82,70,0.85)'); mg.addColorStop(0.45, 'rgba(92,82,70,0.7)'); mg.addColorStop(0.8, 'rgba(92,82,70,0.25)'); mg.addColorStop(1, 'rgba(92,82,70,0)');
+      x.fillStyle = mg; x.beginPath(); x.arc(0, 0, 1.45, 0, Math.PI * 2); x.fill();
       x.restore();
     }
+    // zrnata tekstura preko svega (multiply) - razbija rubove mora
+    x.globalCompositeOperation = 'multiply';
+    x.imageSmoothingEnabled = true;
+    x.globalAlpha = 0.6; x.drawImage(noiseCanvas(9, 215), 0, 0, D, D);    // blage krupne mrlje (gorje) - mali kontrast, inače su pjege
+    x.globalAlpha = 0.3; x.drawImage(noiseCanvas(40, 150), 0, 0, D, D);
+    x.globalAlpha = 0.2; x.drawImage(noiseCanvas(140, 120), 0, 0, D, D);
+    x.globalAlpha = 1;
     x.globalCompositeOperation = 'source-over';
     const tg = x.createRadialGradient(101 * u, 167 * u, 0, 101 * u, 167 * u, 6 * u);   // Tycho
     tg.addColorStop(0, 'rgba(239,237,243,0.5)'); tg.addColorStop(1, 'rgba(239,237,243,0)');
@@ -539,38 +557,66 @@
     texCache = { D, c };
     return c;
   }
-  // gotov Mjesec u fazi g: platno (D + 25 % ruba za sjaj sa svake strane), CSS ga razvuče na 150 %
+  /* gotov Mjesec u fazi g: platno (D + 25 % ruba za sjaj sa svake strane), CSS ga razvuče na 150 %.
+     Osvjetljenje se RAČUNA kao na kugli, piksel po piksel (jednom): normala točke na disku,
+     smjer Sunca iz faze (k = (1 + cos i) / 2) i smjera osvijetljenog ruba, pa Lommel-Seeliger
+     zakon (vrijedi za Mjesečevu površinu): I = 2·μ0 / (μ0 + μ). Zato je granica svjetla i
+     tame mekana i postupna, uz nju je površina sve tamnija, a pun Mjesec ostaje jednoliko
+     svijetao do ruba - kao pravi. (Prije: oštar rez maskom + plošan disk = „naljepnica".) */
   function renderMoon(D, g, blood) {
     const P = Math.round(D * 0.25), W = D + 2 * P, R = D / 2;
+    // 1) lice zakrenuto kao na nebu
+    const face = document.createElement('canvas'); face.width = face.height = D;
+    const fx = face.getContext('2d');
+    fx.translate(R, R); fx.rotate(g.faceDeg * Math.PI / 180); fx.drawImage(moonTexture(D), -R, -R);
+    fx.setTransform(1, 0, 0, 1, 0, 0);
+    const img = fx.getImageData(0, 0, D, D), d = img.data;
+    const mask = fx.createImageData(D, D), m = mask.data;
+    // 2) smjer Sunca u koordinatama ekrana (x desno, y dolje, z prema gledatelju)
+    const ph = Math.acos(Math.max(-1, Math.min(1, 2 * g.k - 1)));   // fazni kut (0 = pun Mjesec)
+    const L = g.limbDeg * Math.PI / 180;
+    const sx = Math.sin(ph) * Math.cos(L), sy = Math.sin(ph) * Math.sin(L), sz = Math.cos(ph);
+    const EARTH = 0.07;                                              // Zemljin odsjaj na tamnom dijelu
+    for (let y = 0, k = 0; y < D; y++) {
+      const ny = (y + 0.5 - R) / R;
+      for (let x = 0; x < D; x++, k += 4) {
+        const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
+        if (r2 >= 1) { d[k + 3] = 0; m[k + 3] = 0; continue; }
+        const nz = Math.sqrt(1 - r2);
+        const edge = Math.min(1, (1 - Math.sqrt(r2)) * R * 1.2);     // zaglađen rub diska
+        // hrapava granica: svjetlina teksture malo pomakne granicu (planine/kráteri uz terminator)
+        const tl = (d[k] + d[k + 1] + d[k + 2]) / 765;
+        const mu0 = nx * sx + ny * sy + nz * sz + (tl - 0.72) * 0.07;
+        let lit = 0;
+        if (mu0 > -0.1) {
+          const m0 = Math.max(mu0, 0);
+          // Lommel-Seeliger (pravi Mjesec) + malo Lamberta = postupno tamnjenje prema granici
+          lit = Math.min(1.1, 0.75 * (2 * m0 / (m0 + nz + 1e-4)) + 0.25 * m0);
+          const t = Math.min(1, Math.max(0, (mu0 + 0.1) / 0.4));    // široki mekani prijelaz
+          lit *= t * t * (3 - 2 * t);
+        }
+        const shade = EARTH + (1 - EARTH) * lit * 0.95;
+        d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge;
+        m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
+      }
+    }
+    fx.putImageData(img, 0, 0);
+    const mc = document.createElement('canvas'); mc.width = mc.height = D;
+    mc.getContext('2d').putImageData(mask, 0, 0);
+    // 3) sastavi: sjaj SAMO od osvijetljenog dijela (sjena maske - maska sama ostane izvan platna), pa Mjesec
     const c = document.createElement('canvas'); c.width = c.height = W;
-    const x = c.getContext('2d'), tex = moonTexture(D);
-    x.translate(W / 2, W / 2);
-    x.rotate(g.faceDeg * Math.PI / 180);             // lice (mora) nagnuto kao na nebu
-    x.globalAlpha = 0.12; x.drawImage(tex, -R, -R); x.globalAlpha = 1;   // Zemljin odsjaj
-    const rot = (g.limbDeg - g.faceDeg) * Math.PI / 180;
-    function litPath() {                             // osvijetljeni dio, rub prema Suncu
-      x.beginPath();
-      if (g.k >= 0.995) { x.arc(0, 0, R, 0, Math.PI * 2); return true; }
-      if (g.k <= 0.005) return false;
-      x.save(); x.rotate(rot);
-      x.arc(0, 0, R, -Math.PI / 2, Math.PI / 2, false);
-      x.ellipse(0, 0, Math.max(R * Math.abs(1 - 2 * g.k), 0.01), R, 0, Math.PI / 2, -Math.PI / 2, g.k <= 0.5);
-      x.closePath(); x.restore();
-      return true;
-    }
-    if (litPath()) {
-      // sjaj: ispuna sa sjenom (ispunu poslije prekrije tekstura, ostane samo sjaj izvan ruba)
-      x.save(); x.fillStyle = '#9d9384';
-      x.shadowColor = 'rgba(215,200,175,0.4)'; x.shadowBlur = D * 0.2; litPath(); x.fill();
-      x.shadowColor = 'rgba(220,210,190,0.45)'; x.shadowBlur = D * 0.05; litPath(); x.fill();
-      x.restore();
-      x.save(); litPath(); x.clip(); x.drawImage(tex, -R, -R); x.restore();
-    }
+    const x = c.getContext('2d'), OFF = W * 3;
+    x.save();
+    x.shadowOffsetX = OFF;
+    x.shadowColor = 'rgba(215,200,175,0.35)'; x.shadowBlur = D * 0.18; x.drawImage(mc, P - OFF, P);
+    x.shadowColor = 'rgba(225,215,195,0.4)';  x.shadowBlur = D * 0.045; x.drawImage(mc, P - OFF, P);
+    x.restore();
+    x.drawImage(face, P, P);
     if (blood) {                                     // tamna krv: svjetlina → crvena (piksel po piksel, jednom)
-      const id = x.getImageData(0, 0, W, W), d = id.data;
-      for (let i = 0; i < d.length; i += 4) {
-        const l = d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11;
-        d[i] = l * 0.42; d[i + 1] = l * 0.035; d[i + 2] = l * 0.045;
+      const id = x.getImageData(0, 0, W, W), q = id.data;
+      for (let n = 0; n < q.length; n += 4) {
+        const l = q[n] * 0.3 + q[n + 1] * 0.59 + q[n + 2] * 0.11;
+        q[n] = l * 0.42; q[n + 1] = l * 0.035; q[n + 2] = l * 0.045;
       }
       x.putImageData(id, 0, 0);
     }

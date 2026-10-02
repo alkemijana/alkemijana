@@ -36,13 +36,22 @@
     var el = document.getElementById('hero-logo');
     if (!el) return;
     var anim = A.create(el, { vrsta: 'potpis', autoplay: false, mirovanje: false });
-    var played = false, visible = false;
+    var played = false, visible = false, flashT = 0;
     var revealed = !document.documentElement.classList.contains('aj-loading');
 
     function tryPlay() {
       if (played || !revealed || !visible) return;
       played = true;
       anim.play();
+      /* Završni bljesak („bloom" u alkemijana-anim.js) traje 1,3 s / tempo (1,7)
+         i završava s animacijom - tad se javi 'aj:hero-flash' (Halloween: lice
+         Jack-o'-lanterna iza loga). Bez kretanja nema ni bljeska. */
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var FLASH = 1.3 / 1.7;
+      flashT = setTimeout(function () {
+        flashT = 0;
+        el.dispatchEvent(new CustomEvent('aj:hero-flash', { bubbles: true, detail: { dur: FLASH } }));
+      }, Math.max(0, anim.duration - FLASH) * 1000);
     }
     document.addEventListener('aj:revealed', function () {
       revealed = true;
@@ -55,7 +64,7 @@
     new IntersectionObserver(function (es) {
       visible = es.some(function (e) { return e.isIntersecting; });
       if (visible) tryPlay();
-      else if (played) anim.seek(anim.duration + 1);
+      else if (played) { anim.seek(anim.duration + 1); clearTimeout(flashT); flashT = 0; }
     }, { threshold: 0.35 }).observe(el);
   }
 

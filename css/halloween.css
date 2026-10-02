@@ -369,3 +369,42 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 @keyframes hwiMoonFade { from { opacity: 0; } to { opacity: 0.15; } }
 .hw-on #aj-loader > .ajl-logo,
 .hw-on #aj-loader > .ajl-bar { position: relative; z-index: 1; }
+
+/* Lice Jack-o'-lanterna iza hero loga (js/halloween.js initJack): vidi se SAMO
+   dok traje završni bljesak ispisa „Potpisa" - naglo se upali s bljeskom
+   (vrh u ~0,38 s, kao i bljesak), dvaput trepne kao svijeća i ugasi se.
+   Samo obris, užaren; animira se samo opacity (filter je statičan). */
+.hw-on #home .hero h1.hero-logo { position: relative; }
+.hw-on #home .hero h1.hero-logo > .hero-logo-art { position: relative; z-index: 1; }
+.hw-jack {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: 104%;
+  aspect-ratio: 200 / 160;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.hw-jack svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: #ff7a3c;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px #ff5a1f) drop-shadow(0 0 10px rgba(214, 60, 20, 0.85));
+}
+.hw-jack.hw-jack-on { animation: hwJack 1.35s linear both; }
+@keyframes hwJack {
+  0%   { opacity: 0; }
+  28%  { opacity: 0.95; }
+  40%  { opacity: 0.55; }
+  48%  { opacity: 0.9; }
+  60%  { opacity: 0.4; }
+  66%  { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .hw-jack { display: none; } }

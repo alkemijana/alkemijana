@@ -820,8 +820,49 @@
     setInterval(() => { if (window.Astronomy) idle(() => paintMoon(moon, currentMoon())); }, 30 * 60 * 1000);
   }
 
+  /* Lice Jack-o'-lanterna iza hero loga - upali se SAMO za završni bljesak
+     ispisa „Potpisa" (logo.js šalje 'aj:hero-flash'), pa se ugasi uz treptaj
+     svijeće. Samo obris (oči + nazubljena usta), animira se samo opacity. */
+  function jackSvg() {
+    const W = 200, x0 = 22, x1 = 178, n = 5;            // n zuba gore i dolje
+    const arcY = (x, base, depth) => base + depth * (1 - Math.pow((x - 100) / ((x1 - x0) / 2), 2));
+    const zig = (from, to, base, depth, tooth) => {
+      const pts = [];
+      for (let i = 0; i <= n * 2; i++) {
+        const x = from + (to - from) * i / (n * 2);
+        const edge = i === 0 || i === n * 2;
+        pts.push(x.toFixed(1) + ' ' + (arcY(x, base, depth) + (edge || i % 2 === 0 ? 0 : tooth)).toFixed(1));
+      }
+      return pts;
+    };
+    const top = zig(x0, x1, 96, 18, 14);                // zubi gore vise prema dolje
+    const bot = zig(x1, x0, 96, 50, -14);               // zubi dolje strše prema gore
+    const mouth = 'M' + top.join(' L') + ' L' + bot.join(' L') + ' Z';
+    const eye = 'M34 10 L86 34 Q78 50 60 48 Q36 44 34 10 Z';   // ljutito: vanjski kut gore, unutarnji šiljat
+    return `<svg viewBox="0 0 ${W} 160" xmlns="http://www.w3.org/2000/svg">` +
+      `<path d="${eye}"/><path d="${eye}" transform="matrix(-1 0 0 1 ${W} 0)"/>` +
+      `<path d="${mouth}"/></svg>`;
+  }
+  function initJack() {
+    const art = document.getElementById('hero-logo');
+    const h1 = art && art.parentNode;
+    if (!h1) return;
+    const face = document.createElement('span');
+    face.className = 'hw-jack';
+    face.setAttribute('aria-hidden', 'true');
+    face.innerHTML = jackSvg();
+    h1.insertBefore(face, art);
+    art.addEventListener('aj:hero-flash', function () {
+      face.classList.remove('hw-jack-on');
+      void face.offsetWidth;                            // ponovno pokretanje animacije
+      face.classList.add('hw-jack-on');
+    });
+    face.addEventListener('animationend', () => face.classList.remove('hw-jack-on'));
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initScenery();
+    initJack();
     if (!wantIntro) addLoaderMoon(false);   // s uvodom ga doda završni bljesak
     if (reduced()) return;
     initNavBat();

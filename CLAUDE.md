@@ -53,6 +53,7 @@ ALKEMIJANA WEBSITE/
 │   ├── logo.js                     ← Logo na stranici: hero (Potpis prvi put), traka (šešir + hover), podnožje
 │   ├── home-slides.js              ← Slide deck početne: kotačić/tipkovnica/swipe, vodoravni blog slide
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
+├── assets/halloween/moon-lroc-1k.jpg ← NASA karta Mjeseca (javno vlasništvo, NASA SVS) za Halloween Mjesec
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Playfair, Quicksand, Dancing Script; Tangerine se više ne koristi)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
@@ -1229,7 +1230,14 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).
 - **iPhone (Safari) - NEMA SVG filtera nigdje u uvodu ni na Mjesecu.** Safari ih je računao u svakom kadru
   (sve je zapinjalo) i znao ostaviti crveni obrub (drop-shadow krvavog sloja). Zato:
-  - **Mjesec je CANVAS** (`renderMoon`), osvjetljenje se RAČUNA kao na kugli (piksel po piksel, jednom):
+  - **Mjesec = PRAVA NASA FOTOGRAFIJA** `assets/halloween/moon-lroc-1k.jpg` — karta cijele površine (LRO,
+    „CGI Moon Kit", NASA's Scientific Visualization Studio, svs.gsfc.nasa.gov/4720; **javno vlasništvo**, NASA
+    moli navođenje izvora; 1024×512, 139 KB). `renderMoon` je omota oko kugle: za svaku točku diska širina/dužina
+    (uz zakret lica za nagib) → bilinearno uzorkovanje karte. Ako se karta ne učita, ostaje Mjesec crtan kodom
+    (`moonTexture`). **Backup crtane verzije:** git tag `backup/halloween-mjesec-crtani` + kopija u
+    `BACKUP ALKEMIJANA/halloween-mjesec-crtani/`. Nacrtani Mjeseci se pamte (`moonCache`, strop D = 900 px),
+    pa pozadina/ekran učitavanja/uvod isti Mjesec samo kopiraju (fotografija se na iPhoneu crta stotine ms).
+  - Osvjetljenje se RAČUNA kao na kugli (piksel po piksel, jednom):
     normala diska + smjer Sunca iz faze i ruba, Lommel-Seeliger (+25 % Lamberta) → meka, nepravilna granica
     (ne oštar rez maskom = „naljepnica"). Karta mora `MARIA` po stvarnom Mjesecu (13 povezanih, `darken` da se
     preklapanja ne zbrajaju - odvojeni ovali su bili pjege), šum preko njih; sjaj = sjena maske svjetla; krvava verzija = piksel-preslikavanje u tamnu

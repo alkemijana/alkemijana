@@ -396,7 +396,7 @@
       const lib = window.Astronomy ? null :
         (typeof loadScript === 'function' ? loadScript('js/lib/astronomy.browser.min.js').catch(() => {}) : null);
       const fonts = document.fonts && document.fonts.load ? document.fonts.load('italic 400 1em "Playfair Display"').catch(() => {}) : null;
-      await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(rasterSwarmImgs(), 4000)]);
+      await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(rasterSwarmImgs(), 4000), within(loadMoonMap(), 5000)]);
       paintMoon($('.hwi-ml-n'), currentMoon(), false);
       paintMoon($('.hwi-ml-r'), currentMoon(), true);
       await new Promise(r => setTimeout(r, 60));          // neka se iscrtano jednom prikaže (skriveno) prije pokreta
@@ -563,14 +563,73 @@
      zakon (vrijedi za Mjesečevu površinu): I = 2·μ0 / (μ0 + μ). Zato je granica svjetla i
      tame mekana i postupna, uz nju je površina sve tamnija, a pun Mjesec ostaje jednoliko
      svijetao do ruba - kao pravi. (Prije: oštar rez maskom + plošan disk = „naljepnica".) */
+  /* PRAVA FOTOGRAFIJA: NASA karta cijele površine Mjeseca (LRO, „CGI Moon Kit",
+     NASA's Scientific Visualization Studio, svs.gsfc.nasa.gov/4720 - javno vlasništvo,
+     NASA moli navođenje izvora). Ekvidistantna projekcija 1024×512: dužina -180..180
+     slijeva nadesno (0 = sredina bliske strane), širina +90 gore. renderMoon je
+     „omota" oko kugle: za svaku točku diska izračuna širinu/dužinu i uzme boju s karte.
+     Ako se karta ne učita, ostaje Mjesec crtan kodom (moonTexture) - backup je i tag
+     backup/halloween-mjesec-crtani. */
+  const MOON_MAP = 'assets/halloween/moon-lroc-1k.jpg';
+  let mapData = null, mapPromise = null;
+  function loadMoonMap() {
+    if (mapPromise) return mapPromise;
+    return (mapPromise = new Promise(res => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+          const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+          mapData = { w: c.width, h: c.height, d: x.getImageData(0, 0, c.width, c.height).data };
+        } catch (e) { mapData = null; }
+        res();
+      };
+      im.onerror = () => res();
+      im.src = MOON_MAP;
+    }));
+  }
+
   function renderMoon(D, g, blood) {
     const P = Math.round(D * 0.25), W = D + 2 * P, R = D / 2;
-    // 1) lice zakrenuto kao na nebu
+    // 1) lice: NASA fotografija omotana oko kugle (ili, bez nje, tekstura crtana kodom), zakrenuto kao na nebu
     const face = document.createElement('canvas'); face.width = face.height = D;
     const fx = face.getContext('2d');
-    fx.translate(R, R); fx.rotate(g.faceDeg * Math.PI / 180); fx.drawImage(moonTexture(D), -R, -R);
-    fx.setTransform(1, 0, 0, 1, 0, 0);
-    const img = fx.getImageData(0, 0, D, D), d = img.data;
+    const map = mapData;
+    let img;
+    if (map) {
+      img = fx.createImageData(D, D);
+      const t = img.data, mw = map.w, mh = map.h, md = map.d;
+      const fa = -g.faceDeg * Math.PI / 180, cf = Math.cos(fa), sf = Math.sin(fa);
+      for (let y = 0, k = 0; y < D; y++) {
+        const ny = (y + 0.5 - R) / R;
+        for (let x = 0; x < D; x++, k += 4) {
+          const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
+          if (r2 >= 1) continue;
+          const nz = Math.sqrt(1 - r2);
+          const px = nx * cf - ny * sf, py = nx * sf + ny * cf;          // natrag u koordinate lica (sjever gore)
+          const lat = Math.asin(Math.max(-1, Math.min(1, -py)));
+          const lon = Math.atan2(px, nz);
+          // bilinearno uzorkovanje karte
+          let u = (lon / (2 * Math.PI) + 0.5) * mw - 0.5, v = (0.5 - lat / Math.PI) * mh - 0.5;
+          if (u < 0) u += mw; if (v < 0) v = 0; if (v > mh - 1.001) v = mh - 1.001;
+          const x0 = u | 0, y0 = v | 0, x1 = (x0 + 1) % mw, ax = u - x0, ay = v - y0;
+          const i00 = (y0 * mw + x0) * 4, i10 = (y0 * mw + x1) * 4, i01 = ((y0 + 1) * mw + x0) * 4, i11 = ((y0 + 1) * mw + x1) * 4;
+          for (let ch = 0; ch < 3; ch++) {
+            const a = md[i00 + ch] + (md[i10 + ch] - md[i00 + ch]) * ax;
+            const b = md[i01 + ch] + (md[i11 + ch] - md[i01 + ch]) * ax;
+            let val = (a + (b - a) * ay) / 255;
+            val = Math.max(0, Math.min(1, (val - 0.55) * 1.3 + 0.55));     // malo više kontrasta mora/gorja
+            t[k + ch] = val * 255 * (ch === 0 ? 1 : ch === 1 ? 0.97 : 0.9);  // blago topla boja kosti
+          }
+          t[k + 3] = 255;
+        }
+      }
+    } else {
+      fx.translate(R, R); fx.rotate(g.faceDeg * Math.PI / 180); fx.drawImage(moonTexture(D), -R, -R);
+      fx.setTransform(1, 0, 0, 1, 0, 0);
+      img = fx.getImageData(0, 0, D, D);
+    }
+    const d = img.data;
     const mask = fx.createImageData(D, D), m = mask.data;
     // 2) smjer Sunca u koordinatama ekrana (x desno, y dolje, z prema gledatelju)
     const ph = Math.acos(Math.max(-1, Math.min(1, 2 * g.k - 1)));   // fazni kut (0 = pun Mjesec)
@@ -627,10 +686,19 @@
     const vw = scrW(), vh = scrH();
     return vw <= 768 ? Math.min(vw * 0.92, 440) : Math.min(Math.min(vw, vh) * 0.58, 560);
   }
+  /* Nacrtani Mjeseci se pamte (ključ = veličina + faza + varijanta): pozadina, ekran
+     učitavanja i uvod traže ISTI Mjesec, a crtanje fotografije traje (na iPhoneu stotine
+     ms) - drugi put se samo kopira, pa u završnom bljesku ništa ne zapne. */
+  const moonCache = new Map();
   function paintMoon(el, g, blood) {
     const css = el.getBoundingClientRect().width || moonCssDiam();
-    const D = Math.max(200, Math.min(1100, Math.round(css * Math.min(window.devicePixelRatio || 1, 2))));
-    const c = renderMoon(D, g, blood);
+    // strop 900 px: Mjesec je prigušen, veća rezolucija se ne vidi, a crtanje je sporije
+    const D = Math.max(200, Math.min(900, Math.round(css * Math.min(window.devicePixelRatio || 1, 2))));
+    const key = [D, g.k.toFixed(3), g.limbDeg.toFixed(1), g.faceDeg.toFixed(1), blood ? 1 : 0, mapData ? 1 : 0].join('|');
+    let src = moonCache.get(key);
+    if (!src) { if (moonCache.size > 6) moonCache.clear(); src = renderMoon(D, g, blood); moonCache.set(key, src); }
+    const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+    c.getContext('2d').drawImage(src, 0, 0);
     c.className = 'hw-moon-cv';
     const old = el.querySelector('canvas');
     if (old) old.replaceWith(c); else el.appendChild(c);
@@ -644,7 +712,7 @@
     const draw = () => paintMoon(el, currentMoon(), blood);
     const lib = window.Astronomy ? Promise.resolve() :
       (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
-    lib.then(draw, draw);                 // bez biblioteke: pun Mjesec
+    Promise.all([lib.catch(() => {}), within(loadMoonMap(), 5000)]).then(draw, draw);   // bez biblioteke: pun Mjesec
   }
 
   function moonGeometry(date) {

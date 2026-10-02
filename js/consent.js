@@ -323,12 +323,39 @@
 
   /* ---------- start ---------- */
 
+  /* Traka (i zamrzavanje stranice) dolazi tek kad je hero gotov: ispis
+     loga „Potpis" + završni bljesak (js/logo.js šalje 'aj:hero-done').
+     Do tada se GA ionako ne učitava, pa čekanje ne mijenja ništa pravno.
+     Rezervni rokovi da traka NIKAD ne izostane: 8 s nakon otkrivanja
+     stranice ('aj:revealed') i 40 s od starta (Halloween uvod traje do 25 s).
+     Rokovi se broje samo dok je kartica VIDLJIVA - u kartici otvorenoj u
+     pozadini hero se ne ispisuje, pa bi traka inače dočekala posjetitelja
+     usred ispisa loga kad se vrati. */
+  function visibleTimeout(fn, ms) {
+    var left = ms, t = 0, since = 0;
+    function arm() { since = Date.now(); t = setTimeout(fn, left); }
+    if (!document.hidden) arm();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { if (t) { clearTimeout(t); t = 0; left -= Date.now() - since; } }
+      else if (!t) arm();
+    });
+  }
+  function whenHeroDone(fn) {
+    var done = false;
+    function go() { if (!done) { done = true; fn(); } }
+    if (window.AJHeroDone) { go(); return; }
+    document.addEventListener('aj:hero-done', go);
+    document.addEventListener('aj:revealed', function () { visibleTimeout(go, 8000); });
+    visibleTimeout(go, 40000);
+  }
+
   function init() {
     var c = readConsent();
     if (c) {
       applyConsent(c.analytics);   // ranija odluka - bez bannera
     } else {
-      showBanner();
+      // u međuvremenu je mogao odlučiti sam (poveznica u podnožju) - tad bez trake
+      whenHeroDone(function () { if (!readConsent()) showBanner(); });
     }
   }
 

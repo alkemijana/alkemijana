@@ -32,9 +32,19 @@
     if (el) el.innerHTML = A.staticSvg('potpis', { attrs: NO_A11Y });
   }
 
+  /* 'aj:hero-done' = hero je gotov (ispisan, preskočen ili se uopće ne
+     prikazuje) - na njega čeka traka za kolačiće (js/consent.js), da ne
+     uleti usred ispisa loga. Javi se TOČNO JEDNOM; window.AJHeroDone ostaje
+     true za skripte koje se jave kasnije. */
+  function heroDone() {
+    if (window.AJHeroDone) return;
+    window.AJHeroDone = true;
+    document.dispatchEvent(new CustomEvent('aj:hero-done'));
+  }
+
   function initHero(A) {
     var el = document.getElementById('hero-logo');
-    if (!el) return;
+    if (!el) { heroDone(); return; }
     var anim = A.create(el, { vrsta: 'potpis', autoplay: false, mirovanje: false });
     var played = false, visible = false, flashT = 0;
     var revealed = !document.documentElement.classList.contains('aj-loading');
@@ -43,10 +53,12 @@
       if (played || !revealed || !visible) return;
       played = true;
       anim.play();
+      // kraj ispisa + završni bljesak (i Halloween lice) + kratki predah
+      setTimeout(heroDone, anim.duration * 1000 + 500);
       /* Završni bljesak („bloom" u alkemijana-anim.js) traje 1,3 s / tempo (1,7)
          i završava s animacijom - tad se javi 'aj:hero-flash' (Halloween: lice
          Jack-o'-lanterna iza loga). Bez kretanja nema ni bljeska. */
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { heroDone(); return; }
       var FLASH = 1.3 / 1.7;
       flashT = setTimeout(function () {
         flashT = 0;
@@ -56,6 +68,22 @@
     document.addEventListener('aj:revealed', function () {
       revealed = true;
       setTimeout(tryPlay, 250);   // neka se sadržaj prvo pojavi
+      /* Hero nije na ekranu (npr. ulaz ravno na #blog) - nema što čekati.
+         Odluka po stanju stranice, NE po IntersectionObserveru: on se u
+         kartici u pozadini ne javi, pa bi „nije vidljiv" bio lažan. Ako je
+         hero slide aktivan, čeka se ispis - uz rok od 3 s, koji se broji tek
+         kad je kartica vidljiva (otvorena u pozadini = još ništa ne vidi). */
+      var slide = el.closest('.hs-slide');
+      var onScreen = document.getElementById('home').classList.contains('active') &&
+        (!slide || slide.classList.contains('hs-active'));
+      if (!onScreen) { heroDone(); return; }
+      var arm = function () { setTimeout(function () { if (!played) heroDone(); }, 3000); };
+      if (!document.hidden) arm();
+      else document.addEventListener('visibilitychange', function once() {
+        if (document.hidden) return;
+        document.removeEventListener('visibilitychange', once);
+        arm();
+      });
     });
     if (!('IntersectionObserver' in window)) { visible = true; tryPlay(); return; }
     /* Hero je vidljiv samo kad je početna aktivna I hero slide na ekranu
@@ -64,7 +92,7 @@
     new IntersectionObserver(function (es) {
       visible = es.some(function (e) { return e.isIntersecting; });
       if (visible) tryPlay();
-      else if (played) { anim.seek(anim.duration + 1); clearTimeout(flashT); flashT = 0; }
+      else if (played) { anim.seek(anim.duration + 1); clearTimeout(flashT); flashT = 0; heroDone(); }
     }, { threshold: 0.35 }).observe(el);
   }
 
@@ -101,7 +129,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     var A = window.AlkemijanaAnim;
-    if (!A) return;
+    if (!A) { heroDone(); return; }
     initFooter(A);
     initHero(A);
     initNav(A);

@@ -999,6 +999,14 @@ izričit pristanak PRIJE učitavanja.
       otključava (to bi bio „cookie wall” i privola više ne bi bila dobrovoljna).
     - Nuspojava: dok odluke nema, ni admin prijava (`#admin`) nije klikabilna — Jana prvo
       odabere kolačiće, pa se prijavi.
+  - **Traka (i zamrzavanje) dolazi tek NAKON hero animacije** (ispis „Potpisa" + završni bljesak,
+    i u običnoj i u Halloween verziji): `js/logo.js` javi `aj:hero-done` (+ `window.AJHeroDone`),
+    `whenHeroDone()` u consent.js ga čeka. Hero se ne čeka ako početna nije na ekranu (ulaz ravno
+    na `#blog`…), uz smanjeno kretanje, ni ako ga posjetitelj odscrolla. Rezervni rokovi: 3 s ako
+    se ispis ne pokrene, 8 s od otkrivanja, 40 s od starta — **svi se broje samo dok je kartica
+    vidljiva** (u pozadinskoj kartici se ništa ne ispisuje, a IntersectionObserver se ne javlja;
+    odluka „hero je na ekranu" zato ide po klasama `#home.active`/`.hs-active`, ne po IO-u).
+    GA se do odluke ionako ne učitava, pa čekanje pravno ništa ne mijenja.
   - Zatvaranje panela bez odluke vraća banner (`maybeReshowBanner`) — posjetitelj ne smije
     ostati bez izbora.
   - Javni API: `window.AJConsent.open()` / `.get()`, plus `openCookieSettings()` za podnožje.

@@ -1272,7 +1272,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   Bez localStoragea i uz `prefers-reduced-motion` uvoda nema. Ponovni pregled: `?halloween=intro`.
 - **Jack-o'-lantern iza hero loga** (`initJack`, `.hw-jack`): obris očiju i nazubljenih usta PRECRTAN s
   poslane slike (koordinate u pikselima slike 192x120, zrcaljeno oko x = 96), iza „Potpisa" na početnoj.
-  Naglo se upali na vrhu završnog bljeska ispisa i polako izblijedi (~0,9 s). Trenutak javlja `js/logo.js`
+  Naglo se upali na vrhu završnog bljeska ispisa i izblijedi (~0,45 s). Trenutak javlja `js/logo.js`
   događajem `aj:hero-flash` (bljesak = `bloom` u alkemijana-anim.js, 1,3 s / tempo 1,7 na kraju animacije).
   **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi).
   Uz `prefers-reduced-motion` ga nema.

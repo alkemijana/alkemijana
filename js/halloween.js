@@ -303,7 +303,7 @@
         el.innerHTML = swarmBatSvg(0.07 + Math.random() * 0.04);
         el.style.width = size + 'px';
         el.style.zIndex = String(Math.round(depth * 10));
-        el.style.filter = 'blur(' + f1(0.8 + depth * 1.6) + 'px)';    // statično zamućenje = dojam brzine
+        el.style.filter = 'blur(' + f1(2 + depth * 3) + 'px)';      // jako zamućeni (statično) = dojam brzine
         host.appendChild(el);
         // iz kuta (malo raspršeno) RAVNO PREKO MJESECA: cilj je nasumična točka na
         // disku Mjeseca (geometrija kao .hw-moon-geo), pa let nastavi van ekrana

@@ -1211,16 +1211,22 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Tarot:** raspored **Samhain – veo između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
   iza „Slobodnog slaganja", pa je taj tjedan zadani. Zato je `halloween.js` **sinkron** u `<head>`
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
-- **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~11 s: stranica krene u
-  NORMALNOJ temi (ljubičasta noć) → sijevanje → munja (bljesak, potres) → boje se isperu u sivo → izlazi
-  Mjesec → zacrveni uz „otkucaje srca" → jato šišmiša → završna munja: **u bljesku se doda `hw-on`** (tema
-  se zamijeni) → na crnom „Veo između svjetova je tanak…" → overlay nestane i tek tada kreće ekran
-  učitavanja. `js/loader.js` zato čeka `AJHalloween.introPromise` (funkcija `begin()`: logo, traka i
-  failsafe kreću tek nakon uvoda; strop 20 s). Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+- **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~16 s do otvaranja stranice:
+  ekran učitavanja krene **normalno** (ljubičasto, „Znak A" se crta; overlay je proziran) → **munja ga prekine**
+  i overlay ga pokrije nebom → boje se isperu u sivo → **sporo izlazi Mjesec** (isti realistični SVG kao u
+  pozadini, stvarna faza) → zakrvavi (filter) uz „otkucaje srca" → jato šišmiša → završna munja: **u bljesku
+  se doda `hw-on`** → na crnom „Veo između svjetova je tanak…" → overlay nestane, a ekran učitavanja crta logo
+  **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
+  preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
+  otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+- **Mjesec ostaje cijelo vrijeme:** kad se u uvodu pojavi, ostaje kroz bljesak i tekst; završni bljesak doda
+  isti (krvavi) Mjesec na **ekran učitavanja** (`addLoaderMoon`, `.ajl-hwmoon`), a na stranici je onaj u pozadini.
+  Sva tri dijele `.hw-moon-geo` (isto mjesto i veličina), pa se prijelazi ne vide. Ekran učitavanja ima taj
+  Mjesec **pri SVAKOM učitavanju u tjednu**, a logo je na njemu u boji kosti (`--aa-boja`), da se vidi.
+  `moonSvg(sfx)` daje svakom Mjesecu vlastite id-eve (sva tri su u DOM-u istovremeno).
   Pamti se u **localStorage `aj_hw_intro` = godina** (navedeno u Pravilima privatnosti, t. 6 — ne uklanjati),
   pa se svako sljedeće učitavanje tog tjedna odmah otvara u Halloween temi, a iduće godine uvod opet ide.
-  Klik/dodir/tipka preskače na završetak. Bez localStoragea i uz `prefers-reduced-motion` uvoda nema.
-  Bljeskovi su razmaknuti i nijedan nije crven (fotosenzitivnost). Ponovni pregled: `?halloween=intro`.
+  Bez localStoragea i uz `prefers-reduced-motion` uvoda nema. Ponovni pregled: `?halloween=intro`.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
 - **BEZ paukova** (izričit zahtjev) i bez narančasto-crne/zlatne — boje iz palete stranice.

@@ -34,6 +34,8 @@
 
   var started    = Date.now();
   var begun      = false;   // animacija/traka/failsafe krenuli (v. begin na dnu)
+  var introDone  = true;    // Halloween uvod (js/halloween.js) - dok traje, nema otkrivanja
+  var fullLogo   = false;   // nakon uvoda: logo se odigra do kraja prije otkrivanja
   var appReady   = false;
   var fontsReady = false;
   var revealed   = false;
@@ -128,7 +130,7 @@
   /* ---- 3. Otkrivanje stranice ---- */
 
   function maybeReveal() {
-    if (!begun || !appReady || !fontsReady || warming) return;
+    if (!begun || !introDone || !appReady || !fontsReady || warming) return;
     warming = true;
 
     /* Prije otkrivanja pusti deck početne da se "zagrije": svaki slide
@@ -141,7 +143,9 @@
       : Promise.resolve();
 
     warm.catch(function () {}).then(function () {
-      setTimeout(reveal, Math.max(0, MIN_MS - (Date.now() - started)));
+      /* nakon Halloween uvoda logo se mora odigrati DO KRAJA (Znak A → šešir) */
+      var minMs = (fullLogo && logoAnim) ? Math.max(MIN_MS, logoAnim.duration * 1000 + 400) : MIN_MS;
+      setTimeout(reveal, Math.max(0, minMs - (Date.now() - started)));
     });
   }
 
@@ -177,23 +181,37 @@
   }
 
   /* ---- Početak: logo, traka, failsafe ----
-     Halloween tjedan, prvi posjet (js/halloween.js): prvo ide dramatični uvod
-     preko cijelog ekrana, a ekran učitavanja kreće tek kad on završi. Fontovi i
-     init stranice se za to vrijeme normalno učitavaju. */
+     Halloween tjedan, prvi posjet (js/halloween.js): ekran učitavanja krene
+     NORMALNO (ljubičasto, „Znak A" se crta), a onda ga uvod prekine munjom i
+     prekrije. Dok uvod traje nema otkrivanja ni failsafea. Kad završi, logo
+     se iscrta ISPOČETKA (sad u Halloween boji) i stranica se otkrije tek kad
+     se do kraja pretvori u šešir (fullLogo). */
   function begin() {
     if (begun) return;
     begun = true;
     started = Date.now();
     startLogo();
     startBar();
-    setTimeout(reveal, FAILSAFE_MS);
+    if (introDone) setTimeout(reveal, FAILSAFE_MS);
+    maybeReveal();
+  }
+  function afterIntro() {
+    if (introDone) return;
+    introDone = true;
+    fullLogo = true;
+    if (logoAnim) { try { logoAnim.destroy(); } catch (e) {} logoAnim = null; }
+    var host = loader() && loader().querySelector('.ajl-logo');
+    if (host) host.innerHTML = '';
+    startLogo();
+    started = Date.now();
+    setTimeout(reveal, FAILSAFE_MS + 3000);
     maybeReveal();
   }
   var intro = window.AJHalloween && window.AJHalloween.introPromise;
   if (intro) {
-    intro.then(begin, begin);
-    setTimeout(begin, 20000);   // ako uvod iz bilo kojeg razloga zapne
-  } else {
-    begin();
+    introDone = false;
+    intro.then(afterIntro, afterIntro);
+    setTimeout(afterIntro, 25000);   // ako uvod iz bilo kojeg razloga zapne
   }
+  begin();
 })();

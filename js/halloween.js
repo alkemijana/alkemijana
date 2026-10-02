@@ -150,12 +150,15 @@
 
   /* ============================================================
      UVOD (#hw-intro, stilovi .hwi-* u css/halloween.css) - ~11 s:
-       mirna ljubičasta noć → sijevanje u daljini → udar munje (bljesak,
+       normalni ekran učitavanja → udar munje (bljesak,
        potres) → boje se isperu u sivo → izlazi Mjesec → zacrveni (otkucaji
        srca) → jato šišmiša → završna munja: u bljesku se tema zamijeni →
-       na crnom rečenica → overlay nestane i kreće ekran učitavanja.
+       na crnom rečenica → overlay nestane i ekran učitavanja krene ISPOČETKA
+       u Halloween boji i odigra se do kraja (šešir) - v. js/loader.js.
+     Na početku se vidi NORMALNI ekran učitavanja (overlay je proziran) dok ga
+     munja ne prekine. Ne može se preskočiti (vlasnik).
      Bljeskovi su razmaknuti (najviše ~2-3 u sekundi, nijedan crveni) zbog
-     fotosenzitivnosti. Klik / dodir / tipka → odmah na završetak.
+     fotosenzitivnosti.
      ============================================================ */
   function mountIntro() {
     const ov = document.createElement('div');
@@ -169,14 +172,13 @@
     }
     ov.innerHTML =
       '<div class="hwi-sky"><div class="hwi-stars" style="box-shadow:' + stars.join(',') + '"></div></div>' +
-      '<div class="hwi-moon"><div class="hwi-blood"></div></div>' +
+      '<div class="hwi-black"></div>' +
+      '<div class="hwi-moon hw-moon-geo">' + moonSvg('i') + '</div>' +
       '<div class="hwi-vig"></div>' +
       '<div class="hwi-bats"></div>' +
       '<svg class="hwi-bolts" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>' +
-      '<div class="hwi-black"></div>' +
       '<p class="hwi-text">Veo između svjetova je tanak…</p>' +
-      '<div class="hwi-flash"></div>' +
-      '<span class="hwi-skip">dodirni za preskakanje</span>';
+      '<div class="hwi-flash"></div>';
     document.body.prepend(ov);
 
     const $ = s => ov.querySelector(s);
@@ -243,7 +245,7 @@
       }
     }
 
-    function finale(fast) {
+    function finale() {
       if (finished) return;
       finished = true;
       timers.forEach(clearTimeout);
@@ -252,29 +254,31 @@
       flash(1, 1100, true);
       shake(700, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
-      setTimeout(() => { goSpooky(); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
-      const tText = fast ? 900 : 1300, tOut = fast ? 2300 : 4100;
-      setTimeout(() => { if (!fast) $('.hwi-text').classList.add('hwi-text-in'); }, tText);
+      setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
+      const tText = 1300, tOut = 4100;
+      setTimeout(() => $('.hwi-text').classList.add('hwi-text-in'), tText);
       setTimeout(() => $('.hwi-text').classList.remove('hwi-text-in'), tOut - 900);
       setTimeout(() => {
         ov.classList.add('hwi-out');
         if (window.AJHalloween._introDone) window.AJHalloween._introDone();   // loader kreće
       }, tOut);
-      setTimeout(() => { ov.remove(); document.removeEventListener('pointerdown', skip, true); document.removeEventListener('keydown', skip, true); }, tOut + 1200);
+      setTimeout(() => ov.remove(), tOut + 1200);
     }
-    function skip() { finale(true); }
-    document.addEventListener('pointerdown', skip, true);
-    document.addEventListener('keydown', skip, true);
 
-    at(1100, () => flash(0.16, 380));
-    at(1550, () => flash(0.1, 320));
-    at(2000, () => $('.hwi-skip').classList.add('hwi-skip-in'));
-    at(2500, () => { strike(0.85); $('.hwi-sky').classList.add('hwi-gray'); });
-    at(3350, () => flash(0.32, 500));
-    at(3900, () => $('.hwi-moon').classList.add('hwi-moon-in'));
-    at(5300, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
-    at(5800, swarm);
-    at(7400, () => finale(false));
+    /* Prve ~2 s overlay je PROZIRAN: vidi se normalni (ljubičasti) ekran
+       učitavanja koji crta „Znak A". Udar munje ga prekine i pokrije nebom
+       (.hwi-covered) - dalje ide uvod. Namjerno samo DVA bljeska (ovaj i
+       završni) - s više sijevanja bilo je previše bljeskova (vlasnik). */
+    at(2100, () => {
+      strike(0.9);
+      setTimeout(() => ov.classList.add('hwi-covered'), 60);      // ispod vrha bljeska
+      setTimeout(() => $('.hwi-sky').classList.add('hwi-gray'), 250);
+    });
+    // faza tek sad: astronomy-engine (loadScript iz natal-data.js) na početku još ne postoji
+    at(3000, () => { drawMoonWhenReady($('.hwi-moon')); $('.hwi-moon').classList.add('hwi-moon-in'); });
+    at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
+    at(7000, swarm);
+    at(8800, finale);
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */
@@ -392,6 +396,15 @@
       '</g>' +
     '</svg>';
 
+  // isti Mjesec s drugim id-evima (uvod i pozadina su istovremeno u DOM-u)
+  function moonSvg(sfx) { return MOON_SVG.replace(/hwM([a-z]+)/g, 'hwM$1' + sfx); }
+  function drawMoonWhenReady(el) {
+    const draw = () => updateMoon(el);
+    const lib = window.Astronomy ? Promise.resolve() :
+      (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
+    lib.then(draw, draw);                 // bez biblioteke: pun Mjesec
+  }
+
   // osvijetljeni dio za udio k, s osvijetljenim rubom DESNO (zakreće se poslije)
   function litPath(k) {
     if (k >= 0.995) return 'M100 0 A100 100 0 0 1 100 200 A100 100 0 0 1 100 0 Z';
@@ -431,27 +444,41 @@
     window.AJHalloween.moon = g;   // za provjeru u konzoli
   }
 
+  /* Mjesec i na EKRANU UČITAVANJA (svako učitavanje u tjednu): isti Mjesec, isto
+     mjesto i veličina (.hw-moon-geo) kao u uvodu i u pozadini, krvav kao na kraju
+     uvoda - pa se prijelazi uvod → učitavanje → stranica ne vide. instant = bez
+     fade-a (poslije uvoda je već bio na ekranu). */
+  function addLoaderMoon(instant) {
+    const ld = document.getElementById('aj-loader');
+    if (!ld || ld.querySelector('.ajl-hwmoon')) return;
+    const m = document.createElement('div');
+    m.className = 'ajl-hwmoon hw-moon-geo' + (instant ? ' ajl-hwmoon-instant' : '');
+    m.setAttribute('aria-hidden', 'true');
+    m.innerHTML = moonSvg('l');
+    ld.prepend(m);
+    drawMoonWhenReady(m);
+  }
+
   // Magla pri dnu + Mjesec u pozadini (css/halloween.css) - umjesto zviježđa
   function initScenery() {
     const sky = document.getElementById('sky-bg');
     const moon = document.createElement('div');
-    moon.className = 'hw-moon';
+    moon.className = 'hw-moon hw-moon-geo';
     moon.setAttribute('aria-hidden', 'true');
-    moon.innerHTML = MOON_SVG;
+    moon.innerHTML = moonSvg('');
     const fog = document.createElement('div');
     fog.className = 'hw-fog';
     fog.setAttribute('aria-hidden', 'true');
     if (sky && sky.parentNode) { sky.after(fog); sky.after(moon); }
     else { document.body.prepend(fog); document.body.prepend(moon); }
 
-    const draw = () => updateMoon(moon);
-    const lib = (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
-    lib.then(draw, draw);                 // bez biblioteke: pun Mjesec
-    setInterval(() => { if (window.Astronomy) draw(); }, 10 * 60 * 1000);   // faza i nagib se mijenjaju
+    drawMoonWhenReady(moon);
+    setInterval(() => { if (window.Astronomy) updateMoon(moon); }, 10 * 60 * 1000);   // faza i nagib se mijenjaju
   }
 
   document.addEventListener('DOMContentLoaded', function () {
     initScenery();
+    if (!wantIntro) addLoaderMoon(false);   // s uvodom ga doda završni bljesak
     if (reduced()) return;
     initNavBat();
     setTimeout(scheduleBats, 15000 + Math.random() * 15000);

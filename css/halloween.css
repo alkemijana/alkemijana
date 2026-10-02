@@ -97,14 +97,20 @@
    (fade) tek kad je faza izračunata, da ne bljesne pun Mjesec.
    ============================================================ */
 .hw-on #sky-bg { display: none !important; }
-.hw-moon {
+/* zajednička geometrija: pozadina, uvod i ekran učitavanja - isto mjesto i veličina */
+.hw-moon-geo {
   --hw-moon-w: min(58vmin, 560px);
-  position: fixed;
   left: 50%;
   top: 50%;
   width: var(--hw-moon-w);
-  aspect-ratio: 1;
+  height: var(--hw-moon-w);
   margin: calc(var(--hw-moon-w) / -2) 0 0 calc(var(--hw-moon-w) / -2);
+}
+@media (max-width: 768px) {
+  .hw-moon-geo { --hw-moon-w: min(92vw, 440px); top: 46%; }
+}
+.hw-moon {
+  position: fixed;
   z-index: 0;
   pointer-events: none;
   opacity: 0;
@@ -119,9 +125,6 @@
   filter: drop-shadow(0 0 14px rgba(215, 200, 175, 0.4)) drop-shadow(0 0 60px rgba(90, 90, 96, 0.35));
 }
 .hw-moon-earthshine { opacity: 0.12; }
-@media (max-width: 768px) {
-  .hw-moon { --hw-moon-w: min(92vw, 440px); top: 46%; }
-}
 
 /* ============================================================
    ŠIŠMIŠI - potpuno crna silueta, bez obruba. Najbolje se vide preko
@@ -202,10 +205,11 @@
   inset: 0;
   z-index: 100001;
   overflow: hidden;
-  background: #06080f;
+  background: transparent;     /* na početku se kroz njega vidi normalni ekran učitavanja */
   pointer-events: none;
   transition: opacity 1.1s ease;
 }
+#hw-intro.hwi-covered { background: #06080f; }
 /* ekran učitavanja skriva svu djecu <body> osim sebe, a traka kolačića
    ih poblijedi - uvod mora ostati vidljiv (specifičnost veća od oba pravila) */
 html.aj-loading body > #hw-intro#hw-intro,
@@ -222,8 +226,10 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
     radial-gradient(circle at 50% 42%, rgba(61, 40, 120, 0.45) 0%, transparent 62%),
     radial-gradient(ellipse at 20% 10%, rgba(61, 40, 120, 0.3) 0%, transparent 50%),
     #06080f;
+  opacity: 0;
   transition: filter 2.8s ease;
 }
+.hwi-covered .hwi-sky { opacity: 1; }
 .hwi-sky.hwi-gray { filter: grayscale(1) brightness(0.45) contrast(1.1); }
 .hwi-stars {
   position: absolute;
@@ -236,37 +242,26 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 }
 @keyframes hwiTwinkle { from { opacity: 0.65; } to { opacity: 1; } }
 
+/* isti realistični Mjesec kao u pozadini (moonSvg + stvarna faza); krvavi se
+   filterom (iste funkcije u oba stanja da tranzicija bude glatka) */
 .hwi-moon {
-  --w: min(62vmin, 560px);
   position: absolute;
-  left: 50%;
-  top: 48%;
-  width: var(--w);
-  height: var(--w);
-  margin: calc(var(--w) / -2) 0 0 calc(var(--w) / -2);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 40%, rgba(40, 34, 30, 0.35) 0 12%, transparent 18%),
-    radial-gradient(circle at 58% 34%, rgba(40, 34, 30, 0.3) 0 9%, transparent 14%),
-    radial-gradient(circle at 52% 62%, rgba(40, 34, 30, 0.28) 0 13%, transparent 19%),
-    radial-gradient(circle at 44% 42%, #e0d8ca 0%, #aea493 58%, #6a6055 88%, #3e3730 100%);
-  box-shadow: 0 0 80px 20px rgba(220, 210, 190, 0.25), 0 0 220px 80px rgba(150, 150, 160, 0.15);
   opacity: 0;
-  transform: translateY(30vh) scale(0.92);
-  transition: opacity 2.2s ease, transform 2.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: translateY(32vh) scale(0.9);
+  transition: opacity 3.6s ease, transform 5s cubic-bezier(0.25, 0.6, 0.2, 1);   /* sporo izlazi */
 }
 .hwi-moon.hwi-moon-in { opacity: 0.85; transform: none; }
-.hwi-blood {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 45% 42%, rgba(150, 20, 24, 0.55), rgba(70, 4, 8, 0.85));
-  mix-blend-mode: multiply;
-  opacity: 0;
+.hwi-moon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: grayscale(0) sepia(0) saturate(1) hue-rotate(0deg) brightness(1) contrast(1) drop-shadow(0 0 30px rgba(220, 215, 200, 0.35));
+  transition: filter 1.8s ease;
 }
-.hwi-moon-blood .hwi-blood { animation: hwiBlood 2.2s ease-in-out forwards; }
-@keyframes hwiBlood {
-  0% { opacity: 0; } 35% { opacity: 1; } 60% { opacity: 0.75; } 100% { opacity: 0.9; }
+.hwi-moon-blood svg,
+.ajl-hwmoon svg {
+  filter: grayscale(1) sepia(1) saturate(9) hue-rotate(-48deg) brightness(0.36) contrast(1.25) drop-shadow(0 0 40px rgba(110, 4, 10, 0.55));
 }
 /* otkucaji srca - tamnocrveni rub ekrana (sporo, nije bljesak) */
 .hwi-vig {
@@ -325,17 +320,19 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   background: #f6f4ff;
   opacity: 0;
 }
-.hwi-skip {
+
+/* Mjesec na ekranu učitavanja (Halloween tjedan): isti kao na kraju uvoda -
+   krvav, iza loga i trake (zato logo/traka dobivaju z-index). */
+.ajl-hwmoon {
   position: absolute;
-  left: 50%;
-  bottom: 4vh;
-  transform: translateX(-50%);
-  font-family: 'Quicksand', sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(228, 224, 244, 0.35);
-  opacity: 0;
-  transition: opacity 1s ease;
+  opacity: 0.85;
+  pointer-events: none;
+  animation: hwiMoonFade 1.4s ease both;
 }
-.hwi-skip.hwi-skip-in { opacity: 1; }
+.ajl-hwmoon.ajl-hwmoon-instant { animation: none; }
+.ajl-hwmoon svg { display: block; width: 100%; height: 100%; overflow: visible; }
+@keyframes hwiMoonFade { from { opacity: 0; } to { opacity: 0.85; } }
+.hw-on #aj-loader > .ajl-logo,
+.hw-on #aj-loader > .ajl-bar { position: relative; z-index: 1; }
+/* logo na ekranu učitavanja u boji kosti - crven bi se izgubio na krvavom Mjesecu */
+.hw-on #aj-loader .ajl-logo { --aa-boja: var(--silver-bright); }

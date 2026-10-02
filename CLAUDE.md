@@ -1237,6 +1237,15 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     (`moonTexture`). **Backup crtane verzije:** git tag `backup/halloween-mjesec-crtani` + kopija u
     `BACKUP ALKEMIJANA/halloween-mjesec-crtani/`. Nacrtani Mjeseci se pamte (`moonCache`, strop D = 900 px),
     pa pozadina/ekran učitavanja/uvod isti Mjesec samo kopiraju (fotografija se na iPhoneu crta stotine ms).
+    Karta se učita SMANJENA na 384×192 i s blagim kontrastom (puna oštrina = „previše detalja" uz ostatak
+    stranice); tamni dio gotovo crn (Zemljin odsjaj 0.025); u uvodu nakon prve munje opacity 0.5.
+  - **Fluidnost:** `renderMoon` je ASYNC i radi u komadima od ~8 ms (`yieldFrame`) - jedno crtanje u komadu
+    blokiralo je ~0,3 s i zamrznulo animaciju loga. Jedan prolaz po pikselu (uzorak + osvjetljenje + maska);
+    sjaj se računa na 1/4 veličine pa poveća; krvava verzija = preobojena obična (`bloodFrom`). `currentMoon()`
+    vrijedi 10 min, `moonSize()` je ista svugdje → uvod, ekran učitavanja i pozadina = JEDNO crtanje
+    (`paintMoon` iz memorije umeće sinkrono). Munje (`buildBolt`, red `boltQueue`) i jato (`buildSwarm`)
+    slažu se u pripremi; pozadinski Mjesec se s uvodom crta tek u završnom bljesku (iz memorije), osvježava
+    se svakih 30 min u `requestIdleCallback`. Izmjereno: nijedan zastoj > 80 ms kroz cijeli uvod (prije 288 ms).
   - Osvjetljenje se RAČUNA kao na kugli (piksel po piksel, jednom):
     normala diska + smjer Sunca iz faze i ruba, Lommel-Seeliger (+25 % Lamberta) → meka, nepravilna granica
     (ne oštar rez maskom = „naljepnica"). Karta mora `MARIA` po stvarnom Mjesecu (13 povezanih, `darken` da se

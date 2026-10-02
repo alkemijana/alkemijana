@@ -273,7 +273,20 @@
       const l = jag(ax, ay, mx, my, rough, depth - 1);
       return l.concat(jag(mx, my, bx, by, rough, depth - 1).slice(1));
     }
+    /* Munje se grade UNAPRIJED (u pripremi): buildBolt složi kanal i ubaci ga
+       nevidljivog; bolt() samo uzme gotovu iz reda i pokrene treperenje. */
+    const boltQueue = [];
     function bolt(xFrac) {
+      const b = boltQueue.shift() || buildBolt(xFrac);
+      const flick = [{ opacity: 0 }, { opacity: 1, offset: 0.04 }, { opacity: 0.15, offset: 0.14 }, { opacity: 0.95, offset: 0.22 },
+                     { opacity: 0.3, offset: 0.4 }, { opacity: 0.7, offset: 0.5 }, { opacity: 0 }];
+      b.g.animate(flick, { duration: 450, easing: 'ease-out', fill: 'forwards' }).onfinish = () => b.g.remove();
+      // osvjetljenje neba oko munje
+      const glow = $('.hwi-skyglow');
+      glow.style.left = f1(b.x0) + 'px';
+      glow.animate(flick, { duration: 450, easing: 'ease-out' });   // munja kratka (~0,45 s) - 0,9 s je bilo predugo
+    }
+    function buildBolt(xFrac) {
       const svg = $('.hwi-bolts');
       const W = scrW(), H = scrH(), U = Math.max(0.6, Math.min(W, H) / 800);
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
@@ -304,14 +317,9 @@
           '<path class="hwi-b-core" d="' + d + '" stroke-width="' + c.w.toFixed(2) + '"/>';
       }
       g.innerHTML = html;
+      g.style.opacity = '0';
       svg.appendChild(g);
-      const flick = [{ opacity: 0 }, { opacity: 1, offset: 0.04 }, { opacity: 0.15, offset: 0.14 }, { opacity: 0.95, offset: 0.22 },
-                     { opacity: 0.3, offset: 0.4 }, { opacity: 0.7, offset: 0.5 }, { opacity: 0 }];
-      g.animate(flick, { duration: 450, easing: 'ease-out', fill: 'forwards' }).onfinish = () => g.remove();
-      // osvjetljenje neba oko munje
-      const glow = $('.hwi-skyglow');
-      glow.style.left = f1(x0) + 'px';
-      glow.animate(flick, { duration: 450, easing: 'ease-out' });   // munja kratka (~0,45 s) - 0,9 s je bilo predugo
+      return { g, x0 };
     }
     function strike(peak) {
       bolt(0.2 + Math.random() * 0.6);
@@ -324,7 +332,16 @@
        brzine i u RAVNOJ crti: bez lelujanja, nagiba i poskakivanja.
        (Prijašnje verzije - veliki detaljni šišmiši s nemirnim letom -
        izgledale su kao leptirići.) Bliži su malo veći i brži. */
+    /* Jato se SLOŽI UNAPRIJED (buildSwarm u pripremi): 60 elemenata je već u DOM-u,
+       slike dekodirane, na startnim položajima izvan ekrana - swarm() samo pokrene
+       animacije (inače je stvaranje 60 elemenata usred animacije znalo zapeti). */
+    let swarmPlan = null;
     function swarm() {
+      const plan = swarmPlan || buildSwarm();
+      for (const p of plan) p.el.animate(p.frames, p.opts);
+    }
+    function buildSwarm() {
+      const plan = [];
       const host = $('.hwi-bats');
       const vw = scrW(), vh = scrH(), m = Math.min(vw, vh), D = Math.hypot(vw, vh) * 1.15;
       // Mjesec (isto kao .hw-moon-geo u css/halloween.css)
@@ -349,16 +366,18 @@
         const tx = moonX + Math.cos(a) * rr - size / 2, ty = moonY + Math.sin(a) * rr - size / 2;
         const len = Math.hypot(tx - x0, ty - y0) || 1;
         const x1 = x0 + (tx - x0) / len * D, y1 = y0 + (ty - y0) / len * D;
-        el.animate([
+        el.style.transform = 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)';   // čeka izvan ekrana
+        plan.push({ el, frames: [
           { transform: 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)' },
           { transform: 'translate(' + f1(x1) + 'px, ' + f1(y1) + 'px) scale(0.7)' }
-        ], {
+        ], opts: {
           // dio sa šišmišima je kratak (~1,5 s) - prvotnih 2,2 s je bilo predugo, 1,1 s malo prekratko (vlasnik)
           duration: 1000 + (1 - depth) * 850 + Math.random() * 200,
           delay: Math.pow(Math.random(), 1.4) * 1350,             // gušće na početku, kao da kuljaju van
           easing: 'linear', fill: 'both'
-        });
+        } });
       }
+      return plan;
     }
 
     function finale() {
@@ -370,7 +389,7 @@
       flash(1, 700, true);
       shake(450, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
-      setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
+      setTimeout(() => { goSpooky(); addLoaderMoon(true); paintBgMoon(); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
       // rečenica ~3 s na ekranu; dok traje, Mjesec se zatamni da se jedva vidi, pa se
       // prije nestanka overlaya vrati na razinu pozadine (0.15) - prijelaz se ne vidi
       const tText = 1300, tOut = 5300;
@@ -397,8 +416,11 @@
         (typeof loadScript === 'function' ? loadScript('js/lib/astronomy.browser.min.js').catch(() => {}) : null);
       const fonts = document.fonts && document.fonts.load ? document.fonts.load('italic 400 1em "Playfair Display"').catch(() => {}) : null;
       await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(rasterSwarmImgs(), 4000), within(loadMoonMap(), 5000)]);
-      paintMoon($('.hwi-ml-n'), currentMoon(), false);
-      paintMoon($('.hwi-ml-r'), currentMoon(), true);
+      const g = currentMoon();
+      await paintMoon($('.hwi-ml-n'), g, false);
+      await paintMoon($('.hwi-ml-r'), g, true);
+      boltQueue.push(buildBolt(0.2 + Math.random() * 0.6), buildBolt(0.25 + Math.random() * 0.15), buildBolt(0.6 + Math.random() * 0.15));
+      swarmPlan = buildSwarm();
       await new Promise(r => setTimeout(r, 60));          // neka se iscrtano jednom prikaže (skriveno) prije pokreta
     }
     function startTimeline() {
@@ -578,8 +600,9 @@
       const im = new Image();
       im.onload = () => {
         try {
-          const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
-          const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+          // smanjena na 384×192 = mekša, manje detalja (puna oštrina je djelovala „previše" uz ostatak stranice)
+          const c = document.createElement('canvas'); c.width = 384; c.height = 192;
+          const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(im, 0, 0, 384, 192);
           mapData = { w: c.width, h: c.height, d: x.getImageData(0, 0, c.width, c.height).data };
         } catch (e) { mapData = null; }
         res();
@@ -589,61 +612,54 @@
     }));
   }
 
-  function renderMoon(D, g, blood) {
+  /* Crtanje je POSTUPNO (async): radi se u komadima od ~8 ms s predahom između, pa
+     animacija loga koja se tada vrti ne zapne (u jednom komadu je blokiralo ~0,3 s).
+     Jedan prolaz po pikselu: uzorak fotografije + osvjetljenje + maska svjetla. */
+  const yieldFrame = () => new Promise(r => setTimeout(r, 0));
+  async function renderMoon(D, g) {
     const P = Math.round(D * 0.25), W = D + 2 * P, R = D / 2;
-    // 1) lice: NASA fotografija omotana oko kugle (ili, bez nje, tekstura crtana kodom), zakrenuto kao na nebu
     const face = document.createElement('canvas'); face.width = face.height = D;
     const fx = face.getContext('2d');
     const map = mapData;
     let img;
-    if (map) {
-      img = fx.createImageData(D, D);
-      const t = img.data, mw = map.w, mh = map.h, md = map.d;
-      const fa = -g.faceDeg * Math.PI / 180, cf = Math.cos(fa), sf = Math.sin(fa);
-      for (let y = 0, k = 0; y < D; y++) {
-        const ny = (y + 0.5 - R) / R;
-        for (let x = 0; x < D; x++, k += 4) {
-          const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
-          if (r2 >= 1) continue;
-          const nz = Math.sqrt(1 - r2);
-          const px = nx * cf - ny * sf, py = nx * sf + ny * cf;          // natrag u koordinate lica (sjever gore)
-          const lat = Math.asin(Math.max(-1, Math.min(1, -py)));
-          const lon = Math.atan2(px, nz);
-          // bilinearno uzorkovanje karte
-          let u = (lon / (2 * Math.PI) + 0.5) * mw - 0.5, v = (0.5 - lat / Math.PI) * mh - 0.5;
-          if (u < 0) u += mw; if (v < 0) v = 0; if (v > mh - 1.001) v = mh - 1.001;
-          const x0 = u | 0, y0 = v | 0, x1 = (x0 + 1) % mw, ax = u - x0, ay = v - y0;
-          const i00 = (y0 * mw + x0) * 4, i10 = (y0 * mw + x1) * 4, i01 = ((y0 + 1) * mw + x0) * 4, i11 = ((y0 + 1) * mw + x1) * 4;
-          for (let ch = 0; ch < 3; ch++) {
-            const a = md[i00 + ch] + (md[i10 + ch] - md[i00 + ch]) * ax;
-            const b = md[i01 + ch] + (md[i11 + ch] - md[i01 + ch]) * ax;
-            let val = (a + (b - a) * ay) / 255;
-            val = Math.max(0, Math.min(1, (val - 0.55) * 1.3 + 0.55));     // malo više kontrasta mora/gorja
-            t[k + ch] = val * 255 * (ch === 0 ? 1 : ch === 1 ? 0.97 : 0.9);  // blago topla boja kosti
-          }
-          t[k + 3] = 255;
-        }
-      }
-    } else {
+    if (map) img = fx.createImageData(D, D);
+    else {                                            // bez fotografije: tekstura crtana kodom
       fx.translate(R, R); fx.rotate(g.faceDeg * Math.PI / 180); fx.drawImage(moonTexture(D), -R, -R);
       fx.setTransform(1, 0, 0, 1, 0, 0);
       img = fx.getImageData(0, 0, D, D);
     }
-    const d = img.data;
-    const mask = fx.createImageData(D, D), m = mask.data;
-    // 2) smjer Sunca u koordinatama ekrana (x desno, y dolje, z prema gledatelju)
+    const d = img.data, mask = fx.createImageData(D, D), m = mask.data;
+    const fa = -g.faceDeg * Math.PI / 180, cf = Math.cos(fa), sf = Math.sin(fa);
+    // smjer Sunca u koordinatama ekrana (x desno, y dolje, z prema gledatelju)
     const ph = Math.acos(Math.max(-1, Math.min(1, 2 * g.k - 1)));   // fazni kut (0 = pun Mjesec)
     const L = g.limbDeg * Math.PI / 180;
     const sx = Math.sin(ph) * Math.cos(L), sy = Math.sin(ph) * Math.sin(L), sz = Math.cos(ph);
-    const EARTH = 0.07;                                              // Zemljin odsjaj na tamnom dijelu
+    const EARTH = 0.025;                              // Zemljin odsjaj na tamnom dijelu - jedva (vlasnik: tamnije)
+    const TINT = [1, 0.97, 0.9];                      // blago topla boja kosti
+    let until = performance.now() + 8;
     for (let y = 0, k = 0; y < D; y++) {
       const ny = (y + 0.5 - R) / R;
       for (let x = 0; x < D; x++, k += 4) {
         const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
         if (r2 >= 1) { d[k + 3] = 0; m[k + 3] = 0; continue; }
         const nz = Math.sqrt(1 - r2);
+        if (map) {                                    // NASA karta omotana oko kugle (bilinearno)
+          const px = nx * cf - ny * sf, py = nx * sf + ny * cf;
+          const lat = Math.asin(Math.max(-1, Math.min(1, -py))), lon = Math.atan2(px, nz);
+          const mw = map.w, mh = map.h, md = map.d;
+          let u = (lon / (2 * Math.PI) + 0.5) * mw - 0.5, v = (0.5 - lat / Math.PI) * mh - 0.5;
+          if (u < 0) u += mw; if (v < 0) v = 0; if (v > mh - 1.001) v = mh - 1.001;
+          const x0 = u | 0, y0 = v | 0, x1 = (x0 + 1) % mw, ax = u - x0, ay = v - y0;
+          const i00 = (y0 * mw + x0) * 4, i10 = (y0 * mw + x1) * 4, i01 = ((y0 + 1) * mw + x0) * 4, i11 = ((y0 + 1) * mw + x1) * 4;
+          for (let ch = 0; ch < 3; ch++) {
+            const p = md[i00 + ch] + (md[i10 + ch] - md[i00 + ch]) * ax;
+            const q = md[i01 + ch] + (md[i11 + ch] - md[i01 + ch]) * ax;
+            const val = Math.max(0, Math.min(1, ((p + (q - p) * ay) / 255 - 0.55) * 0.95 + 0.55));   // blag kontrast
+            d[k + ch] = val * 255 * TINT[ch];
+          }
+        }
         const edge = Math.min(1, (1 - Math.sqrt(r2)) * R * 1.2);     // zaglađen rub diska
-        // hrapava granica: svjetlina teksture malo pomakne granicu (planine/kráteri uz terminator)
+        // hrapava granica: svjetlina teksture malo pomakne granicu (planine/krateri uz terminator)
         const tl = (d[k] + d[k + 1] + d[k + 2]) / 765;
         const mu0 = nx * sx + ny * sy + nz * sz + (tl - 0.72) * 0.07;
         let lit = 0;
@@ -658,27 +674,40 @@
         d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge;
         m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
       }
+      if (performance.now() > until) { await yieldFrame(); until = performance.now() + 8; }
     }
     fx.putImageData(img, 0, 0);
-    const mc = document.createElement('canvas'); mc.width = mc.height = D;
-    mc.getContext('2d').putImageData(mask, 0, 0);
-    // 3) sastavi: sjaj SAMO od osvijetljenog dijela (sjena maske - maska sama ostane izvan platna), pa Mjesec
+    // sjaj SAMO od osvijetljenog dijela: sjena maske, računana na 1/4 veličine (16× manje posla) pa povećana
+    const q = 4, gW = Math.ceil(W / q), gD = Math.ceil(D / q), gP = Math.round(P / q);
+    const ms = document.createElement('canvas'); ms.width = ms.height = gD;
+    const mx = ms.getContext('2d'); mx.putImageData(mask, 0, 0);          // (puna maska; crta se smanjeno niže)
+    const mfull = document.createElement('canvas'); mfull.width = mfull.height = D; mfull.getContext('2d').putImageData(mask, 0, 0);
+    mx.clearRect(0, 0, gD, gD); mx.drawImage(mfull, 0, 0, gD, gD);
+    const gc = document.createElement('canvas'); gc.width = gc.height = gW;
+    const gx = gc.getContext('2d'), OFF = gW * 3;
+    gx.shadowOffsetX = OFF;
+    gx.shadowColor = 'rgba(215,200,175,0.35)'; gx.shadowBlur = gD * 0.18; gx.drawImage(ms, gP - OFF, gP);
+    gx.shadowColor = 'rgba(225,215,195,0.4)';  gx.shadowBlur = gD * 0.045; gx.drawImage(ms, gP - OFF, gP);
+    await yieldFrame();
     const c = document.createElement('canvas'); c.width = c.height = W;
-    const x = c.getContext('2d'), OFF = W * 3;
-    x.save();
-    x.shadowOffsetX = OFF;
-    x.shadowColor = 'rgba(215,200,175,0.35)'; x.shadowBlur = D * 0.18; x.drawImage(mc, P - OFF, P);
-    x.shadowColor = 'rgba(225,215,195,0.4)';  x.shadowBlur = D * 0.045; x.drawImage(mc, P - OFF, P);
-    x.restore();
+    const x = c.getContext('2d');
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(gc, 0, 0, W, W);
     x.drawImage(face, P, P);
-    if (blood) {                                     // tamna krv: svjetlina → crvena (piksel po piksel, jednom)
-      const id = x.getImageData(0, 0, W, W), q = id.data;
-      for (let n = 0; n < q.length; n += 4) {
-        const l = q[n] * 0.3 + q[n + 1] * 0.59 + q[n + 2] * 0.11;
-        q[n] = l * 0.42; q[n + 1] = l * 0.035; q[n + 2] = l * 0.045;
-      }
-      x.putImageData(id, 0, 0);
+    return c;
+  }
+  // krvava verzija = preobojena obična (ne crta se ponovno), također postupno
+  async function bloodFrom(src) {
+    const W = src.width, c = document.createElement('canvas'); c.width = c.height = W;
+    const x = c.getContext('2d'); x.drawImage(src, 0, 0);
+    const id = x.getImageData(0, 0, W, W), q = id.data, row = W * 4;
+    let until = performance.now() + 8;
+    for (let n = 0; n < q.length; n += 4) {
+      const l = q[n] * 0.3 + q[n + 1] * 0.59 + q[n + 2] * 0.11;
+      q[n] = l * 0.42; q[n + 1] = l * 0.035; q[n + 2] = l * 0.045;
+      if (n % row === 0 && performance.now() > until) { await yieldFrame(); until = performance.now() + 8; }
     }
+    x.putImageData(id, 0, 0);
     return c;
   }
   // promjer Mjeseca u CSS px (isto kao .hw-moon-geo) - kad element još nema mjeru
@@ -690,13 +719,24 @@
      učitavanja i uvod traže ISTI Mjesec, a crtanje fotografije traje (na iPhoneu stotine
      ms) - drugi put se samo kopira, pa u završnom bljesku ništa ne zapne. */
   const moonCache = new Map();
-  function paintMoon(el, g, blood) {
-    const css = el.getBoundingClientRect().width || moonCssDiam();
+  function moonKey(D, g, blood) {
+    return [D, g.k.toFixed(3), g.limbDeg.toFixed(1), g.faceDeg.toFixed(1), blood ? 1 : 0, mapData ? 1 : 0].join('|');
+  }
+  function moonSize() {
     // strop 900 px: Mjesec je prigušen, veća rezolucija se ne vidi, a crtanje je sporije
-    const D = Math.max(200, Math.min(900, Math.round(css * Math.min(window.devicePixelRatio || 1, 2))));
-    const key = [D, g.k.toFixed(3), g.limbDeg.toFixed(1), g.faceDeg.toFixed(1), blood ? 1 : 0, mapData ? 1 : 0].join('|');
+    return Math.max(200, Math.min(900, Math.round(moonCssDiam() * Math.min(window.devicePixelRatio || 1, 2))));
+  }
+  async function moonCanvas(g, blood) {
+    const D = moonSize(), key = moonKey(D, g, blood);
     let src = moonCache.get(key);
-    if (!src) { if (moonCache.size > 6) moonCache.clear(); src = renderMoon(D, g, blood); moonCache.set(key, src); }
+    if (src) return src;
+    if (moonCache.size > 6) moonCache.clear();
+    if (blood) src = await bloodFrom(await moonCanvas(g, false));
+    else src = await renderMoon(D, g);
+    moonCache.set(key, src);
+    return src;
+  }
+  function putMoon(el, src, g) {
     const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
     c.getContext('2d').drawImage(src, 0, 0);
     c.className = 'hw-moon-cv';
@@ -705,8 +745,18 @@
     el.classList.add('hw-moon-ready');
     window.AJHalloween.moon = g;   // za provjeru u konzoli
   }
+  // ako je Mjesec već nacrtan (memorija) - umetne se ODMAH, sinkrono (završni bljesak); inače postupno
+  function paintMoon(el, g, blood) {
+    const src = moonCache.get(moonKey(moonSize(), g, blood));
+    if (src) { putMoon(el, src, g); return Promise.resolve(); }
+    return moonCanvas(g, blood).then(c => putMoon(el, c, g));
+  }
+  // izračun vrijedi 10 min (uvod, ekran učitavanja i pozadina tako dobiju ISTI Mjesec = jedno crtanje)
+  let moonNow = null, moonNowT = 0;
   function currentMoon() {
-    try { return moonGeometry(new Date()); } catch (e) { return { k: 1, limbDeg: 0, faceDeg: 0 }; }
+    if (moonNow && Date.now() - moonNowT < 10 * 60 * 1000) return moonNow;
+    if (!window.Astronomy) return { k: 1, limbDeg: 0, faceDeg: 0 };
+    try { moonNow = moonGeometry(new Date()); moonNowT = Date.now(); return moonNow; } catch (e) { return { k: 1, limbDeg: 0, faceDeg: 0 }; }
   }
   function drawMoonWhenReady(el, blood) {
     const draw = () => paintMoon(el, currentMoon(), blood);
@@ -747,6 +797,9 @@
     drawMoonWhenReady(m);
   }
 
+  let bgMoonEl = null;
+  function paintBgMoon() { if (bgMoonEl && !bgMoonEl.querySelector('canvas')) paintMoon(bgMoonEl, currentMoon(), false); }
+
   // Magla pri dnu + Mjesec u pozadini (css/halloween.css) - umjesto zviježđa
   function initScenery() {
     const sky = document.getElementById('sky-bg');
@@ -759,8 +812,12 @@
     if (sky && sky.parentNode) { sky.after(fog); sky.after(moon); }
     else { document.body.prepend(fog); document.body.prepend(moon); }
 
-    drawMoonWhenReady(moon);
-    setInterval(() => { if (window.Astronomy) paintMoon(moon, currentMoon()); }, 10 * 60 * 1000);   // faza i nagib se mijenjaju
+    bgMoonEl = moon;
+    // s uvodom: NE crtati sad (teško crtanje bi zapelo usred animacije loga) - nacrta ga završni bljesak iz memorije
+    if (!wantIntro) drawMoonWhenReady(moon);
+    // faza i nagib se mijenjaju - osvježi svakih 30 min, kad je preglednik slobodan
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 200));
+    setInterval(() => { if (window.Astronomy) idle(() => paintMoon(moon, currentMoon())); }, 30 * 60 * 1000);
   }
 
   document.addEventListener('DOMContentLoaded', function () {

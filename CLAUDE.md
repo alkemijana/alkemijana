@@ -1181,7 +1181,7 @@ Detalji na koje treba paziti:
 
 ### Halloween tjedan (js/halloween.js + css/halloween.css, prefiks `hw-`)
 Uključuje se **sam od 25. 10. do 1. 11.** (uključivo, `Europe/Zagreb`) i sam se gasi. Pregled bilo kad:
-`?halloween` (uključi) / `?halloween=0` (isključi) — samo za taj učitani prikaz, ništa se ne sprema.
+`?halloween` (uključi) / `?halloween=intro` (uključi + ponovi uvod) / `?halloween=0` (isključi) — samo za taj prikaz.
 Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === true`:
 - **Paleta „KRV I KOST" na cijeloj stranici** (izabrao vlasnik): **crno-siva** pozadina, kartice i obrubi —
   BEZ crvenog sjaja (bio je pa je izbačen), tekst boje stare kosti, naslovi/gumbi/logo **tamna krv**
@@ -1211,7 +1211,17 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Tarot:** raspored **Samhain – veo između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
   iza „Slobodnog slaganja", pa je taj tjedan zadani. Zato je `halloween.js` **sinkron** u `<head>`
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
-- Ekran učitavanja je **isti kao inače** (let šešira na metli je napravljen pa izbačen na zahtjev).
+- **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~11 s: stranica krene u
+  NORMALNOJ temi (ljubičasta noć) → sijevanje → munja (bljesak, potres) → boje se isperu u sivo → izlazi
+  Mjesec → zacrveni uz „otkucaje srca" → jato šišmiša → završna munja: **u bljesku se doda `hw-on`** (tema
+  se zamijeni) → na crnom „Veo između svjetova je tanak…" → overlay nestane i tek tada kreće ekran
+  učitavanja. `js/loader.js` zato čeka `AJHalloween.introPromise` (funkcija `begin()`: logo, traka i
+  failsafe kreću tek nakon uvoda; strop 20 s). Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+  Pamti se u **localStorage `aj_hw_intro` = godina** (navedeno u Pravilima privatnosti, t. 6 — ne uklanjati),
+  pa se svako sljedeće učitavanje tog tjedna odmah otvara u Halloween temi, a iduće godine uvod opet ide.
+  Klik/dodir/tipka preskače na završetak. Bez localStoragea i uz `prefers-reduced-motion` uvoda nema.
+  Bljeskovi su razmaknuti i nijedan nije crven (fotosenzitivnost). Ponovni pregled: `?halloween=intro`.
+- Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
 - **BEZ paukova** (izričit zahtjev) i bez narančasto-crne/zlatne — boje iz palete stranice.
 

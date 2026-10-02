@@ -33,6 +33,7 @@
   var MIN_MS = seen ? 800 : 1800;
 
   var started    = Date.now();
+  var begun      = false;   // animacija/traka/failsafe krenuli (v. begin na dnu)
   var appReady   = false;
   var fontsReady = false;
   var revealed   = false;
@@ -44,14 +45,14 @@
      Šešir ostaje dok se stranica ne učita; ako se učita prije kraja animacije,
      ekran se jednostavno otkrije (animacija ne mora završiti). */
   var logoAnim = null;
-  (function startLogo() {
+  function startLogo() {
     var el = loader(), host = el && el.querySelector('.ajl-logo');
     if (!host || !window.AlkemijanaAnim) return;
     try {
       logoAnim = window.AlkemijanaAnim.create(host, { vrsta: 'uvod', autoplay: false, mirovanje: false });
       logoAnim.play();
     } catch (e) { logoAnim = null; }
-  })();
+  }
 
   /* ---- Traka napretka ----
      Jedna jedina tranzicija `transform: scaleX()` (v. css/loader.css):
@@ -88,8 +89,6 @@
     b.style.transition = 'transform 300ms cubic-bezier(0.3, 0.8, 0.4, 1)';
     b.style.transform  = 'scaleX(1)';
   }
-
-  startBar();
 
   /* ---- 1. Fontovi ---- */
 
@@ -129,7 +128,7 @@
   /* ---- 3. Otkrivanje stranice ---- */
 
   function maybeReveal() {
-    if (!appReady || !fontsReady || warming) return;
+    if (!begun || !appReady || !fontsReady || warming) return;
     warming = true;
 
     /* Prije otkrivanja pusti deck početne da se "zagrije": svaki slide
@@ -177,5 +176,24 @@
     }, 300);   // koliko traje dovršetak trake (finishBar)
   }
 
-  setTimeout(reveal, FAILSAFE_MS);
+  /* ---- Početak: logo, traka, failsafe ----
+     Halloween tjedan, prvi posjet (js/halloween.js): prvo ide dramatični uvod
+     preko cijelog ekrana, a ekran učitavanja kreće tek kad on završi. Fontovi i
+     init stranice se za to vrijeme normalno učitavaju. */
+  function begin() {
+    if (begun) return;
+    begun = true;
+    started = Date.now();
+    startLogo();
+    startBar();
+    setTimeout(reveal, FAILSAFE_MS);
+    maybeReveal();
+  }
+  var intro = window.AJHalloween && window.AJHalloween.introPromise;
+  if (intro) {
+    intro.then(begin, begin);
+    setTimeout(begin, 20000);   // ako uvod iz bilo kojeg razloga zapne
+  } else {
+    begin();
+  }
 })();

@@ -54,19 +54,46 @@
   };
 
   const root = document.documentElement;
-  root.classList.add('hw-on');
+  function reduced() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  const f1 = n => n.toFixed(1);
 
   /* Sablasna tema je uvijek tamna: svijetla se taj tjedan ne pali (ni iz
      localStorage-a u app.js). aj_theme se NE dira, pa se nakon tjedna
      posjetitelju vrati tema koju je sam izabrao. */
   function noLight() { if (root.getAttribute('data-theme') === 'light') root.removeAttribute('data-theme'); }
-  noLight();
-  new MutationObserver(noLight).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-
-  function reduced() {
-    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function goSpooky() {
+    root.classList.add('hw-on');
+    root.classList.remove('hw-intro');
+    noLight();
+    new MutationObserver(noLight).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
   }
-  const f1 = n => n.toFixed(1);
+
+  /* ---- UVOD: prvi posjet u tjednu ----
+     Prvi put (po pregledniku, po godini) stranica se pojavi u NORMALNOJ temi pa
+     je dramatičan uvod (#hw-intro, mountIntro niže) prebaci u Halloween - tema se
+     zamijeni u završnom bljesku. js/loader.js čeka AJHalloween.introPromise prije
+     nego što pokrene svoju animaciju. Pamti se u localStorage 'aj_hw_intro' =
+     godina (navedeno u Pravilima privatnosti, t. 6). ?halloween=intro ga ponovi. */
+  const INTRO_KEY = 'aj_hw_intro';
+  const YEAR = String(new Date().getFullYear());
+  let wantIntro = false;
+  try {
+    wantIntro = new URLSearchParams(location.search).get('halloween') === 'intro' ||
+      localStorage.getItem(INTRO_KEY) !== YEAR;
+  } catch (e) { wantIntro = false; }      // bez pohrane ne možemo zapamtiti - bez uvoda
+  if (reduced()) wantIntro = false;
+
+  if (wantIntro) {
+    root.classList.add('hw-intro');
+    window.AJHalloween.introPromise = new Promise(res => { window.AJHalloween._introDone = res; });
+    // overlay čim <body> postoji - prije nego se išta drugo iscrta
+    const mo = new MutationObserver(() => { if (document.body) { mo.disconnect(); mountIntro(); } });
+    if (document.body) mountIntro(); else mo.observe(root, { childList: true });
+  } else {
+    goSpooky();
+  }
 
   /* ============================================================
      ŠIŠMIŠ - silueta s pravim krilom (podlaktica + 4 prsta, nazubljen
@@ -119,6 +146,135 @@
         '<path class="hw-body" d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/>' +
       '</g>' +
     '</svg>';
+  }
+
+  /* ============================================================
+     UVOD (#hw-intro, stilovi .hwi-* u css/halloween.css) - ~11 s:
+       mirna ljubičasta noć → sijevanje u daljini → udar munje (bljesak,
+       potres) → boje se isperu u sivo → izlazi Mjesec → zacrveni (otkucaji
+       srca) → jato šišmiša → završna munja: u bljesku se tema zamijeni →
+       na crnom rečenica → overlay nestane i kreće ekran učitavanja.
+     Bljeskovi su razmaknuti (najviše ~2-3 u sekundi, nijedan crveni) zbog
+     fotosenzitivnosti. Klik / dodir / tipka → odmah na završetak.
+     ============================================================ */
+  function mountIntro() {
+    const ov = document.createElement('div');
+    ov.id = 'hw-intro';
+    ov.setAttribute('aria-hidden', 'true');
+    // zvijezde: jedan 1px element s puno box-shadowa (jeftino)
+    const stars = [];
+    for (let i = 0; i < 170; i++) {
+      const s = (Math.random() < 0.85 ? 1 : 2);
+      stars.push(`${f1(Math.random() * 100)}vw ${f1(Math.random() * 100)}vh 0 ${s === 1 ? 0 : 0.6}px rgba(228,224,244,${(0.35 + Math.random() * 0.6).toFixed(2)})`);
+    }
+    ov.innerHTML =
+      '<div class="hwi-sky"><div class="hwi-stars" style="box-shadow:' + stars.join(',') + '"></div></div>' +
+      '<div class="hwi-moon"><div class="hwi-blood"></div></div>' +
+      '<div class="hwi-vig"></div>' +
+      '<div class="hwi-bats"></div>' +
+      '<svg class="hwi-bolts" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>' +
+      '<div class="hwi-black"></div>' +
+      '<p class="hwi-text">Veo između svjetova je tanak…</p>' +
+      '<div class="hwi-flash"></div>' +
+      '<span class="hwi-skip">dodirni za preskakanje</span>';
+    document.body.prepend(ov);
+
+    const $ = s => ov.querySelector(s);
+    const timers = [];
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    let finished = false;
+
+    function flash(peak, ms, hold) {
+      return $('.hwi-flash').animate(
+        [{ opacity: 0 }, { opacity: peak, offset: 0.08 }, { opacity: peak, offset: hold ? 0.3 : 0.1 }, { opacity: 0 }],
+        { duration: ms, easing: 'ease-out' });
+    }
+    function shake(ms, px) {
+      const k = [];
+      for (let i = 0; i <= 10; i++) k.push({ transform: `translate(${f1((Math.random() - 0.5) * px * (1 - i / 10))}px, ${f1((Math.random() - 0.5) * px * (1 - i / 10))}px)` });
+      k[10] = { transform: 'none' };
+      $('.hwi-sky').animate(k, { duration: ms });
+    }
+    // munja: izlomljena linija od vrha + 1-2 grane
+    function bolt(x0) {
+      const svg = $('.hwi-bolts');
+      let x = x0, y = -20;
+      const yEnd = 550 + Math.random() * 400;
+      const pts = [[x, y]];
+      while (y < yEnd) { y += 30 + Math.random() * 55; x += (Math.random() - 0.5) * 90; pts.push([x, y]); }
+      const toD = p => 'M' + p.map(q => f1(q[0]) + ' ' + f1(q[1])).join(' L');
+      let d = toD(pts);
+      for (let b = 0; b < 2; b++) {
+        const st = pts[2 + Math.floor(Math.random() * (pts.length - 4))];
+        let bx = st[0], by = st[1];
+        const br = [[bx, by]], dir = Math.random() < 0.5 ? -1 : 1;
+        for (let i = 0; i < 4 + Math.random() * 3; i++) { by += 25 + Math.random() * 40; bx += dir * (15 + Math.random() * 45); br.push([bx, by]); }
+        d += ' ' + toD(br);
+      }
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      svg.appendChild(p);
+      p.animate([{ opacity: 0 }, { opacity: 1, offset: 0.05 }, { opacity: 0.25, offset: 0.25 }, { opacity: 1, offset: 0.4 }, { opacity: 0 }],
+        { duration: 650, easing: 'ease-out', fill: 'forwards' }).onfinish = () => p.remove();
+    }
+    function strike(peak) {
+      bolt(150 + Math.random() * 700);
+      flash(peak, 700);
+      shake(520, 16);
+    }
+    function swarm() {
+      const host = $('.hwi-bats');
+      const vw = innerWidth, vh = innerHeight, R = Math.hypot(vw, vh) * 0.62;
+      for (let i = 0; i < 24; i++) {
+        const el = document.createElement('div');
+        el.className = 'hw-bat hwi-bat';
+        el.innerHTML = batSvg(0.12 + Math.random() * 0.08);
+        const size = 26 + Math.random() * 60;
+        el.style.width = size + 'px';
+        host.appendChild(el);
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.7;   // uglavnom prema gore i u stranu
+        const tx = Math.cos(a) * R, ty = Math.sin(a) * R;
+        const cx = vw / 2 - size / 2, cy = vh * 0.48;
+        el.animate([
+          { transform: `translate(${f1(cx)}px, ${f1(cy)}px) scale(0.15)`, opacity: 0 },
+          { transform: `translate(${f1(cx + tx * 0.25)}px, ${f1(cy + ty * 0.25 + (Math.random() - 0.5) * 60)}px) scale(0.6)`, opacity: 1, offset: 0.3 },
+          { transform: `translate(${f1(cx + tx)}px, ${f1(cy + ty)}px) scale(1.5)`, opacity: 1 }
+        ], { duration: 1500 + Math.random() * 1100, delay: Math.random() * 1000, easing: 'cubic-bezier(0.4, 0, 0.9, 0.6)', fill: 'both' });
+      }
+    }
+
+    function finale(fast) {
+      if (finished) return;
+      finished = true;
+      timers.forEach(clearTimeout);
+      try { localStorage.setItem(INTRO_KEY, YEAR); } catch (e) {}
+      bolt(250 + Math.random() * 200); bolt(550 + Math.random() * 200);
+      flash(1, 1100, true);
+      shake(700, 26);
+      // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
+      setTimeout(() => { goSpooky(); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
+      const tText = fast ? 900 : 1300, tOut = fast ? 2300 : 4100;
+      setTimeout(() => { if (!fast) $('.hwi-text').classList.add('hwi-text-in'); }, tText);
+      setTimeout(() => $('.hwi-text').classList.remove('hwi-text-in'), tOut - 900);
+      setTimeout(() => {
+        ov.classList.add('hwi-out');
+        if (window.AJHalloween._introDone) window.AJHalloween._introDone();   // loader kreće
+      }, tOut);
+      setTimeout(() => { ov.remove(); document.removeEventListener('pointerdown', skip, true); document.removeEventListener('keydown', skip, true); }, tOut + 1200);
+    }
+    function skip() { finale(true); }
+    document.addEventListener('pointerdown', skip, true);
+    document.addEventListener('keydown', skip, true);
+
+    at(1100, () => flash(0.16, 380));
+    at(1550, () => flash(0.1, 320));
+    at(2000, () => $('.hwi-skip').classList.add('hwi-skip-in'));
+    at(2500, () => { strike(0.85); $('.hwi-sky').classList.add('hwi-gray'); });
+    at(3350, () => flash(0.32, 500));
+    at(3900, () => $('.hwi-moon').classList.add('hwi-moon-in'));
+    at(5300, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
+    at(5800, swarm);
+    at(7400, () => finale(false));
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */
@@ -178,7 +334,7 @@
   }
 
   function scheduleBats() {
-    if (!document.hidden && !root.classList.contains('aj-loading')) {
+    if (!document.hidden && root.classList.contains('hw-on') && !root.classList.contains('aj-loading')) {
       const n = Math.random() < 0.8 ? 1 : 2;   // rijetko i uglavnom po jedan
       for (let i = 0; i < n; i++) spawnBat(i * (250 + Math.random() * 700));
     }

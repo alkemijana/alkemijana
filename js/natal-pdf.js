@@ -1091,6 +1091,15 @@ async function renderSynastryWorkingContent(doc, cfg) {
     lx += 13.5 + doc.getTextWidth(label) + 8;
   }
 
+  // Tarot karte rođenja obje osobe (js/natal-birthcard.js) - samo sinastrija, ne tranziti
+  if (window.BirthCard && !cfg.inner) {
+    try {
+      const by = ly + 11, colW = (CONTENT_W - 8) / 2, yMax = H - 14;
+      await window.BirthCard.drawPdfSide(doc, chartA, PAGE_M, by, colW, yMax, 'Karta rođenja · ' + nameA);
+      await window.BirthCard.drawPdfSide(doc, chartB, PAGE_M + colW + 8, by, colW, yMax, 'Karta rođenja · ' + nameB);
+    } catch (e) { console.warn('Karta rođenja u PDF-u sinastrije:', e); }
+  }
+
   // ===== STRANICA 2: pozicije obje osobe + međuaspekti =====
   doc.addPage();
   const colGap = 6, halfW = (CONTENT_W - colGap) / 2;

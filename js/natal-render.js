@@ -576,6 +576,7 @@ function renderSynastryResult(chartA, chartB) {
   document.getElementById('synastry-wheel').innerHTML = buildSynastryWheel(chartA, chartB, pal);
 
   renderSynastryAspects(chartA, chartB, pal);
+  if (window.BirthCard) window.BirthCard.renderSynastry(chartA, chartB);
 
   document.getElementById('synastry-pos1-title').textContent = nameA;
   document.getElementById('synastry-pos2-title').textContent = nameB;

@@ -2485,6 +2485,8 @@ input[type="time"]:disabled { opacity: 0.45; }
   padding: 1.6rem 1.8rem; max-width: 860px; margin: 2.6rem auto 0 auto;
 }
 .nt-birthcard h4 { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--lavender); margin-bottom: 1rem; }
+.nt-bc-person { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sage); margin-bottom: 0.8rem; }
+.nt-bc-sep { border-top: 1px solid var(--border); margin: 1.4rem 0; }
 .nt-bc-body { display: flex; gap: 1.8rem; align-items: flex-start; }
 .nt-bc-cards { display: flex; gap: 0.9rem; flex: 0 0 auto; }
 .nt-bc-card { margin: 0; width: 130px; text-align: center; }

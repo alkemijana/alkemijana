@@ -63,10 +63,10 @@
   }
 
   /* ---------- Stranica ---------- */
-  function render(chart) {
-    const box = document.getElementById('natal-birthcard');
-    if (!box) return;
-    if (typeof TAROT_MAJOR_DEFS === 'undefined' || !chart || !chart.input) { box.style.display = 'none'; return; }
+  const NOTE_HTML = '<p class="nt-bc-note">Izračun po numerološkoj metodi Mary K. Greer.</p>';
+
+  /* Karte + izračun za jednu osobu. label = ime osobe (sinastrija), note = fusnota u stupcu teksta. */
+  function personHtml(chart, label, note) {
     const i = chart.input;
     const r = compute(i.d, i.mo, i.y);
 
@@ -86,16 +86,40 @@
     else result = 'Karta osobnosti je <b>' + esc(names[0]) + '</b>, karta duše <b>' + esc(names[2]) +
       '</b>, a <b>' + esc(names[1]) + '</b> ih povezuje.';
 
-    box.innerHTML =
-      '<h4>Tarot karta rođenja</h4>' +
+    return (label ? '<div class="nt-bc-person">' + esc(label) + '</div>' : '') +
       '<div class="nt-bc-body">' +
         '<div class="nt-bc-cards nt-bc-n' + r.cards.length + '">' + cardsHtml + '</div>' +
         '<div class="nt-bc-text">' +
           '<div class="nt-bc-calc"><span class="nt-bc-calc-lbl">Izračun za ' + i.d + '. ' + i.mo + '. ' + i.y + '.</span>' + calcHtml + '</div>' +
           '<p>' + result + '</p>' +
-          '<p class="nt-bc-note">Izračun po numerološkoj metodi Mary K. Greer.</p>' +
+          (note ? NOTE_HTML : '') +
         '</div>' +
       '</div>';
+  }
+
+  function ready(box, charts) {
+    if (!box) return false;
+    if (typeof TAROT_MAJOR_DEFS === 'undefined' || charts.some(c => !c || !c.input)) { box.style.display = 'none'; return false; }
+    return true;
+  }
+
+  // Natalna karta: #natal-birthcard
+  function render(chart) {
+    const box = document.getElementById('natal-birthcard');
+    if (!ready(box, [chart])) return;
+    box.innerHTML = '<h4>Tarot karta rođenja</h4>' + personHtml(chart, '', true);
+    box.style.display = '';
+  }
+
+  // Sinastrija: #synastry-birthcard - obje osobe jedna ispod druge, fusnota na dnu
+  function renderSynastry(chartA, chartB) {
+    const box = document.getElementById('synastry-birthcard');
+    if (!ready(box, [chartA, chartB])) return;
+    box.innerHTML = '<h4>Tarot karte rođenja</h4>' +
+      personHtml(chartA, chartA.input.name || 'Prva osoba', false) +
+      '<div class="nt-bc-sep"></div>' +
+      personHtml(chartB, chartB.input.name || 'Druga osoba', false) +
+      NOTE_HTML;
     box.style.display = '';
   }
 
@@ -162,5 +186,48 @@
     return y;
   }
 
-  window.BirthCard = { compute, render, drawPdf };
+  /* Vodoravna varijanta za radni PDF sinastrije: slike lijevo, izračun i nazivi
+     desno od njih. Crta u (x, y, širina w), slike ne niže od yMax. Vraća donji y. */
+  async function drawPdfSide(doc, chart, x, y, w, yMax, title) {
+    if (typeof TAROT_MAJOR_DEFS === 'undefined' || !chart || !chart.input) return y;
+    const i = chart.input;
+    const r = compute(i.d, i.mo, i.y);
+
+    doc.setFont('PlayfairDisplay', 'normal'); doc.setTextColor(42, 35, 72);
+    let fs = 10.5; doc.setFontSize(fs);
+    while (fs > 7 && doc.getTextWidth(title) > w) { fs -= 0.5; doc.setFontSize(fs); }
+    doc.text(title, x, y);
+    y += 4;
+
+    const n = r.cards.length, gap = 2;
+    const ch0 = Math.min(30, yMax - y);
+    const cw = Math.min(ch0 * 0.583, (w * 0.5 - gap * (n - 1)) / n);
+    const ch = cw / 0.583;
+    for (let k = 0; k < n; k++) {
+      const ci = cardInfo(r.cards[k].num);
+      const cx = x + k * (cw + gap);
+      try { doc.addImage(await imgDataUrl(ci.img), 'JPEG', cx, y, cw, ch); } catch (e) { /* samo okvir */ }
+      doc.setDrawColor(154, 143, 192); doc.setLineWidth(0.2);
+      doc.rect(cx, y, cw, ch);
+    }
+
+    const tx = x + n * cw + (n - 1) * gap + 4, tw = x + w - tx;
+    let ty = y + 3;
+    doc.setFont('Quicksand', 'normal'); doc.setFontSize(7.4); doc.setTextColor(60, 50, 100);
+    for (const s of r.steps) { doc.text(s.expr + ' = ' + s.val, tx, ty); ty += 3.2; }
+    ty += 2;
+    for (const c of r.cards) {
+      const ci = cardInfo(c.num);
+      doc.setFontSize(7.8); doc.setTextColor(42, 35, 72);
+      const lines = doc.splitTextToSize(ci.roman + ' ' + ci.name, tw);
+      doc.text(lines, tx, ty);
+      ty += lines.length * 3.3;
+      doc.setFontSize(6.6); doc.setTextColor(110, 100, 150);
+      doc.text(c.role, tx, ty);
+      ty += 3.9;
+    }
+    return Math.max(y + ch, ty);
+  }
+
+  window.BirthCard = { compute, render, renderSynastry, drawPdf, drawPdfSide };
 })();

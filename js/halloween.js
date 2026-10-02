@@ -42,7 +42,7 @@
   if (!active) return;
 
   // rečenica ispod loga na početnoj (app.js applyTexts) - samo ovaj tjedan, TEXTS ostaje netaknut
-  window.AJHalloween.heroDesc = 'Ovo i dalje nije mjesto za odgovore, no granica je tanka. Pravo je vrijeme za prava pitanja.';
+  window.AJHalloween.heroDesc = 'Granica između svjetova postaje sve tanja. Pravo je vrijeme za prava pitanja.';
 
   // obećanje s rokom: nijedan korak pripreme uvoda ne smije zaglaviti cijeli uvod
   // (npr. img.decode() zna zapeti u kartici u pozadini)

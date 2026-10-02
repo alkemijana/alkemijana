@@ -1284,12 +1284,16 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   događajem `aj:hero-flash` (bljesak = `bloom` u alkemijana-anim.js, 1,3 s / tempo 1,7 na kraju animacije).
   **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi).
   Uz `prefers-reduced-motion` ga nema.
-- **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Ovo i dalje nije mjesto za odgovore, no granica
-  je tanka. Pravo je vrijeme za prava pitanja." (**riječ „veo" se NE koristi** nigdje u Halloween temi —
+- **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Granica između svjetova postaje sve
+  tanja. Pravo je vrijeme za prava pitanja." (**riječ „veo" se NE koristi** nigdje u Halloween temi —
   vlasnik je ne želi; svugdje je „granica između svjetova") — zadana je u `AJHalloween.heroDesc` (halloween.js), a
   `applyTexts()` je uzme umjesto `TEXTS.heroDesc`. **TEXTS se namjerno NE mijenja** — inače bi admin
-  „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **Almendra kurziv** (OFL, lokalno
-  `assets/fonts/web/H4ciBX*.woff2`; Griffy je isproban i odbijen; `@font-face` u halloween.css — skida se samo dok je `hw-on`),
+  „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **IM Fell DW Pica kurziv** (OFL, lokalno
+  `assets/fonts/web/IMFellDWPica-Italic.ttf`, `@font-face` u halloween.css — skida se samo dok je `hw-on`).
+  **Mora imati „đ"** (rečenica ima „između"): zato PUNI TTF, ne Googleov woff2 (njegov podskup je samo
+  osnovna latinica). Almendra je izbačena jer nema „đ" (Griffy se nije svidio). Novi font provjeri u
+  pregledniku: širina `'đ'` u `'Font', monospace` mora se razlikovati od čistog `monospace`;
+  uz to `text-wrap: balance`
   uz `text-wrap: balance` da na mobitelu ne ostane jedna riječ sama u redu.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).

@@ -398,10 +398,10 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   stroke-linejoin: round;
   filter: drop-shadow(0 0 5px rgba(150, 146, 158, 0.7)) drop-shadow(0 0 16px rgba(140, 136, 146, 0.8)) drop-shadow(0 0 32px rgba(120, 116, 126, 0.6));
 }
-.hw-jack.hw-jack-on { animation: hwJack 0.79s both; }
+.hw-jack.hw-jack-on { animation: hwJack 0.56s both; }
 @keyframes hwJack {
   0%   { opacity: 0; animation-timing-function: steps(1, end); }
-  42%  { opacity: 1; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
+  59%  { opacity: 1; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .hw-jack { display: none; } }

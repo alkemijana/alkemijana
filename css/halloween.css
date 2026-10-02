@@ -392,16 +392,16 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   height: 100%;
   overflow: visible;
   fill: none;
-  stroke: #8d8992;
+  stroke: #625f68;
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 5px rgba(150, 146, 158, 0.7)) drop-shadow(0 0 16px rgba(140, 136, 146, 0.8)) drop-shadow(0 0 32px rgba(120, 116, 126, 0.6));
+  filter: drop-shadow(0 0 5px rgba(110, 106, 118, 0.6)) drop-shadow(0 0 16px rgba(100, 96, 106, 0.65)) drop-shadow(0 0 32px rgba(85, 82, 92, 0.5));
 }
 .hw-jack.hw-jack-on { animation: hwJack 0.56s both; }
 @keyframes hwJack {
   0%   { opacity: 0; animation-timing-function: steps(1, end); }
-  59%  { opacity: 1; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
+  59%  { opacity: 0.75; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .hw-jack { display: none; } }

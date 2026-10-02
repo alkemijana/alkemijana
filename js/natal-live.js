@@ -34,6 +34,9 @@
         tense:    '#a05468'
       });
     }
+    // Halloween tjedan: paleta „krv i kost" (js/halloween.js)
+    const hw = window.AJHalloween;
+    if (hw && hw.active && hw.wheelPalette) return Object.assign({}, PALETTES.dark, hw.wheelPalette);
     // tamna mistična paleta
     return Object.assign({}, PALETTES.dark, {
       ring:     'rgba(196,180,232,0.42)',

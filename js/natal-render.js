@@ -13,6 +13,8 @@ let currentSynastry = null;   // { a: chartA, b: chartB, aspects: [...] } - sina
 let currentTransit = null;    // { natal, transit, aspects } - tranziti (živi bi-wheel)
 
 function currentScreenPalette() {
+  const hw = window.AJHalloween;   // Halloween tjedan: kotač u paleti „krv i kost" (js/halloween.js)
+  if (hw && hw.active && hw.wheelPalette) return Object.assign({}, PALETTES.dark, hw.wheelPalette);
   return document.documentElement.getAttribute('data-theme') === 'light' ? PALETTES.light : PALETTES.dark;
 }
 

@@ -41,6 +41,18 @@
   window.AJHalloween = { active };
   if (!active) return;
 
+  /* Paleta natalnog kotača NA EKRANU (natal-render.js currentScreenPalette i
+     natal-live.js je preuzmu umjesto ljubičaste). PDF palete se ne diraju. */
+  window.AJHalloween.wheelPalette = {
+    ring: 'rgba(196,182,160,0.42)', ringSoft: 'rgba(163,38,43,0.3)',
+    bandA: 'rgba(163,38,43,0.08)', bandB: 'rgba(163,38,43,0.02)',
+    sign: '#b8383e', tick: 'rgba(190,178,158,0.32)',
+    planet: '#e2d8c4', degText: 'rgba(190,178,158,0.8)', degStrong: '#f2ead8', houseNum: 'rgba(160,148,128,0.72)',
+    cusp: 'rgba(163,38,43,0.42)', axis: '#b8383e', axisText: '#c4baa6',
+    conj: '#a89e8c', harm: '#7f9a80', tense: '#c4484d',
+    fire: '#c45a5a', earth: '#8c9a7a', air: '#bcae94', water: '#7d8ca2'
+  };
+
   const root = document.documentElement;
   root.classList.add('hw-on');
 
@@ -63,6 +75,7 @@
      zglobu, ne samo spljošti. Zamah prema dolje je brži od podizanja,
      a tijelo poskoči pri svakom zamahu (kao pravi šišmiš).
      viewBox -48 -30 96 60, tijelo u (0,0); desno krilo = zrcalo lijevog.
+     Potpuno crn, bez obruba i žilica (css/halloween.css).
      ============================================================ */
   const POSES = {
     up:   { sh: [-2, -3], wr: [-13, -17], tip: [-27, -27], f2: [-33, -15], f3: [-30, -5], f4: [-21, 1], hip: [-3, 5] },
@@ -83,15 +96,10 @@
       ' Q' + scal(w.f3, w.f4, w.sh, 0.24) + ' ' + P(w.f4) +
       ' Q' + scal(w.f4, w.hip, w.sh, 0.3) + ' ' + P(w.hip) + ' Z';
   }
-  function bonePath(w) {
-    return 'M' + P(w.sh) + ' L' + P(w.wr) + ' L' + P(w.tip) +
-      ' M' + P(w.wr) + ' L' + P(w.f2) + ' M' + P(w.wr) + ' L' + P(w.f3) + ' M' + P(w.wr) + ' L' + P(w.f4);
-  }
   const ORDER = ['up', 'mid', 'down', 'mid', 'up'];
   const KT = '0;0.2;0.42;0.72;1';
   const KS = '0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1';
   const WING_V = ORDER.map(k => wingPath(POSES[k])).join(';');
-  const BONE_V = ORDER.map(k => bonePath(POSES[k])).join(';');
 
   function batSvg(beat) {
     const dur = beat.toFixed(3) + 's';
@@ -99,8 +107,7 @@
     const anim = v => '<animate attributeName="d" dur="' + dur + '" begin="' + begin + '" repeatCount="indefinite" ' +
       'calcMode="spline" keyTimes="' + KT + '" keySplines="' + KS + '" values="' + v + '"/>';
     const wing =
-      '<path class="hw-wing" d="' + wingPath(POSES.up) + '">' + anim(WING_V) + '</path>' +
-      '<path class="hw-bone" d="' + bonePath(POSES.up) + '">' + anim(BONE_V) + '</path>';
+      '<path class="hw-wing" d="' + wingPath(POSES.up) + '">' + anim(WING_V) + '</path>';
     return '<svg viewBox="-48 -30 96 60" aria-hidden="true" focusable="false">' +
       '<g>' +
         '<animateTransform attributeName="transform" type="translate" dur="' + dur + '" begin="' + begin + '" ' +
@@ -110,7 +117,6 @@
         '<ellipse class="hw-body" cx="0" cy="2.5" rx="3.3" ry="6.8"/>' +
         '<circle class="hw-body" cx="0" cy="-5" r="3"/>' +
         '<path class="hw-body" d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/>' +
-        '<path class="hw-bone" d="M-1.4 9 L-2.2 12.2 M1.4 9 L2.2 12.2"/>' +
       '</g>' +
     '</svg>';
   }
@@ -173,10 +179,10 @@
 
   function scheduleBats() {
     if (!document.hidden && !root.classList.contains('aj-loading')) {
-      const n = Math.random() < 0.5 ? 1 : (Math.random() < 0.7 ? 2 : 3);
+      const n = Math.random() < 0.8 ? 1 : 2;   // rijetko i uglavnom po jedan
       for (let i = 0; i < n; i++) spawnBat(i * (250 + Math.random() * 700));
     }
-    setTimeout(scheduleBats, 14000 + Math.random() * 16000);
+    setTimeout(scheduleBats, 45000 + Math.random() * 45000);   // svakih 45-90 s
   }
 
   /* ============================================================
@@ -194,8 +200,8 @@
     '<svg viewBox="0 0 200 200" aria-hidden="true" focusable="false">' +
       '<defs>' +
         '<radialGradient id="hwMg" cx="46%" cy="44%" r="60%">' +
-          '<stop offset="0" stop-color="#d6d3dc"/><stop offset="0.6" stop-color="#a7a3b3"/>' +
-          '<stop offset="0.9" stop-color="#6a6677"/><stop offset="1" stop-color="#45424f"/>' +
+          '<stop offset="0" stop-color="#ddd5c6"/><stop offset="0.6" stop-color="#ada392"/>' +
+          '<stop offset="0.9" stop-color="#6e6458"/><stop offset="1" stop-color="#463e36"/>' +
         '</radialGradient>' +
         '<filter id="hwMt" x="0" y="0" width="100%" height="100%">' +
           '<feTurbulence type="fractalNoise" baseFrequency="0.11" numOctaves="3" seed="11" result="n"/>' +
@@ -208,7 +214,7 @@
         '<clipPath id="hwMc"><circle cx="100" cy="100" r="100"/></clipPath>' +
         '<g id="hwMface">' +
           '<circle cx="100" cy="100" r="100" fill="url(#hwMg)" filter="url(#hwMt)"/>' +
-          '<g clip-path="url(#hwMc)"><g filter="url(#hwMb)" fill="#2b2836" opacity="0.42">' +
+          '<g clip-path="url(#hwMc)"><g filter="url(#hwMb)" fill="#2e2620" opacity="0.42">' +
             '<ellipse cx="52" cy="96" rx="24" ry="40"/>' +            // Oceanus Procellarum
             '<ellipse cx="80" cy="62" rx="23" ry="18"/>' +            // Imbrium
             '<ellipse cx="119" cy="70" rx="13" ry="12"/>' +           // Serenitatis
@@ -292,6 +298,6 @@
     initScenery();
     if (reduced()) return;
     initNavBat();
-    setTimeout(scheduleBats, 6000 + Math.random() * 4000);
+    setTimeout(scheduleBats, 15000 + Math.random() * 15000);
   });
 })();

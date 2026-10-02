@@ -27,6 +27,7 @@ ALKEMIJANA WEBSITE/
 ├── css/nav-drawer.css              ← Izbornik: gumb ☰ + panel odozgo, okvir logotipa (prefiks nd-)
 ├── css/home-slides.css             ← Slide deck početne stranice (prefiks hs-)
 ├── css/halloween.css               ← Halloween tjedan (prefiks hw-, sve pod html.hw-on)
+├── css/halloween-palette.css       ← GENERIRAN (tools/halloween-palette.js) - ljubičaste boje → „krv i kost" pod html.hw-on
 ├── css/fonts.css                   ← @font-face za lokalno hostane fontove
 ├── js/
 │   ├── data.js                     ← Podaci (blog, usluge, cjenik, recenzije, tekstovi, postavke, TAROT_CARD_TEXTS)
@@ -73,6 +74,7 @@ ALKEMIJANA WEBSITE/
 │   ├── interpret-natal.js          ← Ruta /interpret-natal (tanki shim — pravi kod je u ai/)
 │   ├── lib/admin-auth.js           ← Zajednička provjera lozinke + lockout po IP-u (nije ruta, samo import)
 │   └── ai/                         ← AI tumačenje (server): core.js (cache+limiti+dispatch), providers.js (adapteri), prompt.js
+├── tools/halloween-palette.js      ← Dev: generira css/halloween-palette.css (node) - nije dio stranice
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
 ├── .gitignore
@@ -1180,8 +1182,14 @@ Detalji na koje treba paziti:
 Uključuje se **sam od 25. 10. do 1. 11.** (uključivo, `Europe/Zagreb`) i sam se gasi. Pregled bilo kad:
 `?halloween` (uključi) / `?halloween=0` (isključi) — samo za taj učitani prikaz, ništa se ne sprema.
 Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === true`:
-- **Sablasna tema na cijeloj stranici:** skoro crna pozadina i prigušen tekst preko istih CSS varijabli
-  (`:root.hw-on`), vinjeta (`body::before`), magla pri dnu (`.hw-fog`). Tekst za čitanje drži kontrast ≥ 6:1.
+- **Paleta „KRV I KOST" na cijeloj stranici** (izabrao vlasnik): crna pozadina, tekst boje stare kosti,
+  naslovi/gumbi/logo tamnocrveni. Varijable su ručno u `:root.hw-on` (halloween.css); sve IZRAVNO upisane
+  ljubičaste boje iz ostalih stilova preslikava **`css/halloween-palette.css` — GENERIRAN** alatom
+  `node tools/halloween-palette.js` (HSL: lavanda → krv, skoro bijela → kost, tamna → crno-crvena).
+  **Kad se u CSS-u doda/promijeni ljubičasta boja, ponovno pokreni generator.** Kotač natalne karte na
+  ekranu (natal-render.js `currentScreenPalette`, natal-live.js) uzme `AJHalloween.wheelPalette`;
+  PDF palete (`poster`/`ink`) se ne diraju. Poleđine tarot karata su slike i ostaju kakve jesu.
+  Vinjeta (`body::before`), magla pri dnu (`.hw-fog`).
   **Svijetla tema je isključena** — `MutationObserver` skida `data-theme="light"`, prekidač teme (`.nd-theme`)
   je skriven; `aj_theme` se NE dira, pa se nakon tjedna vrati posjetiteljev izbor.
 - **Pozadina = Mjesec u sredini UMJESTO zviježđa** (`#sky-bg` je `display:none`). Faza i nagib su
@@ -1191,10 +1199,11 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   (maska), tamni dio se jedva nazire (Zemljin odsjaj). Osvježava se svakih 10 min; prikaže se tek kad je
   faza izračunata. Provjereno: jutro (Sunce istok) → rub lijevo-dolje, večer (mlađak, Sunce zapad) → desno.
   Oblaci su probani i izbačeni (izgledali su kao pruge).
-- **Šišmiši:** realistična silueta (podlaktica + 4 prsta, nazubljen rub opne), mahanje je **SMIL morph**
-  između tri poze krila (zamah dolje brži od podizanja, tijelo poskoči), let nemiran (WAAPI, samo
-  transform). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali); mali šišmiš
-  povremeno obleti šešir u traci (`.hw-navbat`). Prva verzija (spljošteni obris) je izgledala „kartonski".
+- **Šišmiši:** realistična silueta (podlaktica + 4 prsta, nazubljen rub opne), **potpuno crni, bez obruba**
+  (obrub je izgledao čudno). Mahanje je **SMIL morph** između tri poze krila (zamah dolje brži od
+  podizanja, tijelo poskoči), let nemiran (WAAPI, samo transform). **Rijetko:** svakih 45–90 s, uglavnom
+  jedan (bilo ih je prečesto). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali);
+  mali šišmiš obleti šešir u traci jednom u 75 s (`.hw-navbat`). Prva verzija je izgledala „kartonski".
 - **Tarot:** raspored **Samhain – veo između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
   iza „Slobodnog slaganja", pa je taj tjedan zadani. Zato je `halloween.js` **sinkron** u `<head>`
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).

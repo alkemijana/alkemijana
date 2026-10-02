@@ -2,7 +2,7 @@
    Tarot karta rođenja - samostalan modul (window.BirthCard)
    Iz datuma rođenja natalne karte izračuna kartu (ili par/trojku
    karata) velike arkane po numerološkoj metodi Mary K. Greer.
-   Prikaz: kartica ispod PDF gumbi na stranici natalne karte
+   Prikaz: kartica iznad PDF gumbi na stranici natalne karte
    (#natal-birthcard) + mali blok u desnom stupcu 1. stranice
    radnog PDF-a (drawPdf, zove ga renderWorkingContent u natal-pdf.js).
    Slike i nazivi: RWS špil iz virtualnog tarota (tarot/tarot-data.js,
@@ -91,16 +91,9 @@
       '<div class="nt-bc-body">' +
         '<div class="nt-bc-cards nt-bc-n' + r.cards.length + '">' + cardsHtml + '</div>' +
         '<div class="nt-bc-text">' +
-          '<p>Uz natalnu kartu, datum rođenja daje i kartu (ili par karata) velike arkane - ' +
-          'arhetip koji te prati kroz cijeli život. Računa se numerološki, po metodi Mary K. Greer:</p>' +
-          '<ol class="nt-bc-steps">' +
-            '<li>Zbroje se dan, mjesec i godina rođenja kao cijeli brojevi.</li>' +
-            '<li>Znamenke zbroja se zbrajaju dok broj ne bude 22 ili manji - to je <b>karta osobnosti</b> (22 je Luda).</li>' +
-            '<li>Ako je broj dvoznamenkast, njegove se znamenke zbroje još jednom - to je <b>karta duše</b>. ' +
-            'Jednoznamenkast broj znači da su osobnost i duša ista karta.</li>' +
-          '</ol>' +
           '<div class="nt-bc-calc"><span class="nt-bc-calc-lbl">Izračun za ' + i.d + '. ' + i.mo + '. ' + i.y + '.</span>' + calcHtml + '</div>' +
-          '<p class="nt-bc-result">' + result + '</p>' +
+          '<p>' + result + '</p>' +
+          '<p class="nt-bc-note">Izračun po numerološkoj metodi Mary K. Greer.</p>' +
         '</div>' +
       '</div>';
     box.style.display = '';

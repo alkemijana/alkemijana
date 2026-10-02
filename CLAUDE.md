@@ -41,6 +41,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-transit.js            ← Tranziti: kontrola vremena (5 slidera), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
 │   ├── natal-acg.js                ← AstroCartography: submit, izračun MC/IC/ASC/DSC linija po planetu (glue — nakon natal-transit.js)
 │   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
+│   ├── natal-birthcard.js          ← Tarot karta rođenja (Greer) ispod PDF gumbi natalne karte + blok u radnom PDF-u (samostalan)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
@@ -428,6 +429,16 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
     provjeri OBA raspona (i tranzitni `.tr-anchor`, koji ima svoje mjere).
 - Zadnji unos forme čuva se u `localStorage` (`aj_natal_form`).
 - Pri izradi karte šalje se anoniman signal na `/log-natal` (samo hash unosa) za brojač — vidi Admin → Brojač karata.
+
+### Tarot karta rođenja (js/natal-birthcard.js) — samostalan modul
+Pri izradi natalne karte (samo mod natal) ispod PDF kartica se prikaže kartica **„Tarot karta rođenja”**
+(`#natal-birthcard`, CSS prefiks `nt-bc-`). Metoda Mary K. Greer: dan + mjesec + godina → zbrajanje
+znamenki dok broj nije ≤ 22 (= karta osobnosti, 22 = Luda) → dvoznamenkast se svede još jednom
+(= karta duše; 19 → 10 → 1 daje tri karte). Jednoznamenkast = ista karta. Slike i nazivi iz **RWS**
+špila virtualnog tarota (`tarotCardImage`, `TAROT_CARD_TEXTS.rws`) — RWS numeracija (8 Snaga, 11 Pravda).
+Zove ga `renderNatalResult()`; u **radnom PDF-u** (`renderWorkingContent`) `BirthCard.drawPdf` crta
+kratak izračun + sliku/e + nazive u desni stupac ispod legende aspekata. **Poster PDF se NE dira.**
+Sve se računa u pregledniku, ništa se ne šalje.
 
 ### AI uvidi za čitanje (Janin radni alat) — izdvojeno u zaseban modul
 **SAMO za prijavljenu Janu** (kartica se ne prikazuje posjetiteljima; endpoint je admin-only).

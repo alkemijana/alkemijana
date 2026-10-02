@@ -386,6 +386,7 @@ function renderNatalResult(chart) {
   renderAspectGrid(chart, pal);
   renderDominants(chart, pal);
   renderShape(chart);
+  if (window.BirthCard) window.BirthCard.render(chart);
 
   const disc = document.getElementById('natal-disclaimer');
   if (disc) {

@@ -602,6 +602,12 @@ async function renderWorkingContent(doc) {
       lyy += 9.4;
     }
 
+    // Tarot karta rođenja (js/natal-birthcard.js) ispod legende, do dna karte
+    if (window.BirthCard) {
+      try { await window.BirthCard.drawPdf(doc, chart, rightX, lyy + 4, rightW, chartY + chartSize); }
+      catch (e) { console.warn('Karta rođenja u PDF-u:', e); }
+    }
+
     // napomena za karte bez vremena rođenja
     let ly = chartY + chartSize + 1;
     if (chart.noTime) {

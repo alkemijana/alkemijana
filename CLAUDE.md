@@ -1276,6 +1276,10 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   događajem `aj:hero-flash` (bljesak = `bloom` u alkemijana-anim.js, 1,3 s / tempo 1,7 na kraju animacije).
   **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi).
   Uz `prefers-reduced-motion` ga nema.
+- **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Ovo i dalje nije mjesto za odgovore, no veo
+  je tanak. Pravo je vrijeme za prava pitanja." — zadana je u `AJHalloween.heroDesc` (halloween.js), a
+  `applyTexts()` je uzme umjesto `TEXTS.heroDesc`. **TEXTS se namjerno NE mijenja** — inače bi admin
+  „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
 - **BEZ paukova** (izričit zahtjev) i bez narančasto-crne/zlatne — boje iz palete stranice.

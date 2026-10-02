@@ -41,6 +41,9 @@
   window.AJHalloween = { active };
   if (!active) return;
 
+  // rečenica ispod loga na početnoj (app.js applyTexts) - samo ovaj tjedan, TEXTS ostaje netaknut
+  window.AJHalloween.heroDesc = 'Ovo i dalje nije mjesto za odgovore, no veo je tanak. Pravo je vrijeme za prava pitanja.';
+
   // obećanje s rokom: nijedan korak pripreme uvoda ne smije zaglaviti cijeli uvod
   // (npr. img.decode() zna zapeti u kartici u pozadini)
   const within = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), new Promise(r => setTimeout(r, ms))]);

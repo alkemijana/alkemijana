@@ -1283,10 +1283,12 @@ function applyTexts() {
   // Početna (hero nema podnaslov - v2 pokazuje samo naslov + opis)
   // Hero opis: svaka rečenica u svoj red (CSS: #home .hero-desc > span).
   // Gradi se preko textContent, ne innerHTML - tekst dolazi iz admina.
+  // Halloween tjedan ima svoj tekst (js/halloween.js) - TEXTS se ne dira, da ga
+  // admin „Spremi" ne upiše u data.js.
   const heroDesc = document.getElementById('t-heroDesc');
   if (heroDesc) {
     heroDesc.textContent = '';
-    String(t.heroDesc || '').split(/(?<=[.!?…])\s+/).filter(Boolean).forEach(s => {
+    String((window.AJHalloween && window.AJHalloween.heroDesc) || t.heroDesc || '').split(/(?<=[.!?…])\s+/).filter(Boolean).forEach(s => {
       const span = document.createElement('span');
       span.textContent = s;
       heroDesc.appendChild(span);

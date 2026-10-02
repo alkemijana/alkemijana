@@ -99,33 +99,36 @@
   }
 
   /* ============================================================
-     ŠIŠMIŠ - silueta s pravim krilom (podlaktica + 4 prsta, nazubljen
-     rub opne između vrhova prstiju). Mahanje = SMIL morph između tri
-     poze krila (gore / raširena / dolje) - krilo se pri tome savija u
-     zglobu, ne samo spljošti. Zamah prema dolje je brži od podizanja,
-     a tijelo poskoči pri svakom zamahu (kao pravi šišmiš).
+     ŠIŠMIŠ - klasična silueta: dugačak šiljat vrh krila, samo TRI velika
+     duboka luka kožice (između prstiju, lukovi se savijaju prema zglobu
+     gdje se prsti sastaju) i mala kandža na zglobu. Prijašnja verzija s
+     4 vrha i puno sitnih ureza izgledala je kao „leptirić s perjem".
+     Mahanje = SMIL morph između tri poze krila (gore / raširena / dolje);
+     zamah prema dolje je brži od podizanja, tijelo poskoči pri zamahu.
      viewBox -48 -30 96 60, tijelo u (0,0); desno krilo = zrcalo lijevog.
      Potpuno crn, bez obruba i žilica (css/halloween.css).
      ============================================================ */
   const POSES = {
-    // krila se NE dižu visoko iznad tijela (to je izgledalo kao leptir) - zamah je pretežno prema dolje
-    up:   { sh: [-2, -3], wr: [-12, -13], tip: [-30, -19], f2: [-33, -8],  f3: [-28, 0],  f4: [-19, 4],  hip: [-3, 5] },
-    mid:  { sh: [-2, -2], wr: [-17, -5],  tip: [-44, -4],  f2: [-39, 6],   f3: [-30, 11], f4: [-19, 11], hip: [-3, 6] },
-    down: { sh: [-2, -1], wr: [-15, 6],   tip: [-28, 22],  f2: [-21, 24],  f3: [-14, 21], f4: [-8, 15],  hip: [-3, 7] }
+    // sh = rame, wr = zglob, th = kandža, tip = vrh krila, f2/f3 = vrhovi prstiju, hip = kuk
+    up:   { sh: [-3, -3], wr: [-14, -15], th: [-11, -18.5], tip: [-35, -24], f2: [-35, -9], f3: [-25, -1], hip: [-4, 6] },
+    mid:  { sh: [-3, -3], wr: [-17, -9],  th: [-15.5, -13], tip: [-46, -3],  f2: [-37, 9],  f3: [-24, 12], hip: [-4, 7] },
+    down: { sh: [-3, -2], wr: [-16, 3],   th: [-18.5, -0.5], tip: [-30, 20],  f2: [-21, 22], f3: [-13, 17], hip: [-4, 8] }
   };
-  // kontrolna točka opne između dva vrha: sredina povučena prema ramenu (luk prema unutra)
-  function scal(a, b, sh, pull) {
+  // luk kožice između dva vrha: sredina tetive povučena prema ZGLOBU (tamo se prsti sastaju)
+  function arc(a, b, wr, pull) {
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-    return f1(mx + (sh[0] - mx) * pull) + ' ' + f1(my + (sh[1] - my) * pull);
+    return f1(mx + (wr[0] - mx) * pull) + ' ' + f1(my + (wr[1] - my) * pull);
   }
   const P = p => f1(p[0]) + ' ' + f1(p[1]);
   function wingPath(w) {
-    const lead = f1((w.sh[0] + w.wr[0]) / 2) + ' ' + f1((w.sh[1] + w.wr[1]) / 2 - 3.5);
-    return 'M' + P(w.sh) + ' Q' + lead + ' ' + P(w.wr) + ' L' + P(w.tip) +
-      ' Q' + scal(w.tip, w.f2, w.sh, 0.3) + ' ' + P(w.f2) +
-      ' Q' + scal(w.f2, w.f3, w.sh, 0.32) + ' ' + P(w.f3) +
-      ' Q' + scal(w.f3, w.f4, w.sh, 0.34) + ' ' + P(w.f4) +
-      ' Q' + scal(w.f4, w.hip, w.sh, 0.38) + ' ' + P(w.hip) + ' Z';
+    const lead = f1((w.sh[0] + w.wr[0]) / 2) + ' ' + f1((w.sh[1] + w.wr[1]) / 2 - 3);     // prednji rub do zgloba
+    const lead2 = f1((w.wr[0] + w.tip[0]) / 2) + ' ' + f1((w.wr[1] + w.tip[1]) / 2 - 2.5); // od zgloba do vrha
+    return 'M' + P(w.sh) + ' Q' + lead + ' ' + P(w.wr) +
+      ' L' + P(w.th) + ' L' + P([w.wr[0] - 1.2, w.wr[1] + 0.6]) +                        // kandža
+      ' Q' + lead2 + ' ' + P(w.tip) +
+      ' Q' + arc(w.tip, w.f2, w.wr, 0.42) + ' ' + P(w.f2) +
+      ' Q' + arc(w.f2, w.f3, w.wr, 0.45) + ' ' + P(w.f3) +
+      ' Q' + arc(w.f3, w.hip, w.wr, 0.35) + ' ' + P(w.hip) + ' Z';
   }
   const ORDER = ['up', 'mid', 'down', 'mid', 'up'];
   const KT = '0;0.2;0.42;0.72;1';
@@ -145,9 +148,9 @@
           'repeatCount="indefinite" calcMode="spline" keyTimes="0;0.42;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" values="0 2;0 -2;0 2"/>' +
         wing +
         '<g transform="scale(-1 1)">' + wing + '</g>' +
-        '<ellipse class="hw-body" cx="0" cy="2.5" rx="3.3" ry="6.8"/>' +
-        '<circle class="hw-body" cx="0" cy="-5" r="3"/>' +
-        '<path class="hw-body" d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/>' +
+        '<ellipse class="hw-body" cx="0" cy="3" rx="4" ry="8"/>' +
+        '<circle class="hw-body" cx="0" cy="-5.5" r="3.6"/>' +
+        '<path class="hw-body" d="M-3.2 -7 L-2.8 -12.8 L-0.6 -8.6 Z M3.2 -7 L2.8 -12.8 L0.6 -8.6 Z"/>' +
       '</g>' +
     '</svg>';
   }

@@ -1203,7 +1203,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   (maska), tamni dio se jedva nazire (Zemljin odsjaj). Osvježava se svakih 10 min; prikaže se tek kad je
   faza izračunata. Provjereno: jutro (Sunce istok) → rub lijevo-dolje, večer (mlađak, Sunce zapad) → desno.
   Oblaci su probani i izbačeni (izgledali su kao pruge).
-- **Šišmiši:** realistična silueta (podlaktica + 4 prsta, nazubljen rub opne), **potpuno crni, bez obruba**
+- **Šišmiši:** klasična silueta — dugačak šiljat vrh krila, samo **tri velika luka kožice** (savijaju se prema
+  zglobu), mala kandža, uši; **potpuno crni, bez obruba**. (4 vrha s puno sitnih ureza izgledala su kao „leptirić s perjem".)
   (obrub je izgledao čudno). Krila se ne dižu visoko (izgledalo je kao leptir), brzo mašu (~0,1 s), a let je
   ravan s naglim skretanjima, bez valovitog lebdenja. Mahanje je **SMIL morph** između tri poze krila (zamah dolje brži od
   podizanja, tijelo poskoči), let nemiran (WAAPI, samo transform). **Rijetko:** svakih 45–90 s, uglavnom

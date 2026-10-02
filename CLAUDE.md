@@ -1215,7 +1215,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
 - **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~16 s do otvaranja stranice:
   ekran učitavanja krene **normalno** (ljubičasto, „Znak A" se crta; overlay je proziran) → **munja ga prekine**
-  i overlay ga pokrije nebom → nebo potamni → **sporo izlazi Mjesec** (isti realistični SVG kao u
+  i overlay ga pokrije nebom → nebo potamni → **Mjesec se postupno stvori U SREDINI** (~2 s, samo opacity + jedva scale; NE izlazi
+  odozdo - to je bilo predugo; isti realistični SVG kao u
   pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 MALIH, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja)
   izleti iz donjeg lijevog kuta RAVNO PREKO MJESECA, traje ~1,5 s (detaljni/veliki/nemirni su izgledali kao leptirići) → završna munja: **u bljesku
   se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" (~3 s; Mjesec se za to vrijeme zatamni na 0.04 -
@@ -1224,7 +1225,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
   otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
 - **Munje** su kanal, ne linija: `jag()` (pomicanje sredine, sitni+krupni lomovi), grane koje se granaju, debljina
-  pada prema granama, tri sloja (`.hwi-b-glow` zamućen / `-halo` / `-core`), osvjetljenje neba (`.hwi-skyglow`),
+  pada prema granama, munja traje samo ~0,45 s (0,9 s je bilo predugo), tri sloja (`.hwi-b-glow` zamućen / `-halo` / `-core`), osvjetljenje neba (`.hwi-skyglow`),
   treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).
 - **Mobitel / performanse:** u pokretu se animiraju SAMO `opacity` i `transform`. Krvavljenje = pretapanje
   drugog sloja sa STATIČNIM filterom (`.hwi-ml-r`), ne tranzicija filtera; potamnjenje neba = tamni sloj

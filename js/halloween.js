@@ -271,16 +271,16 @@
       svg.appendChild(g);
       const flick = [{ opacity: 0 }, { opacity: 1, offset: 0.04 }, { opacity: 0.15, offset: 0.14 }, { opacity: 0.95, offset: 0.22 },
                      { opacity: 0.3, offset: 0.4 }, { opacity: 0.7, offset: 0.5 }, { opacity: 0 }];
-      g.animate(flick, { duration: 900, easing: 'ease-out', fill: 'forwards' }).onfinish = () => g.remove();
+      g.animate(flick, { duration: 450, easing: 'ease-out', fill: 'forwards' }).onfinish = () => g.remove();
       // osvjetljenje neba oko munje
       const glow = $('.hwi-skyglow');
       glow.style.left = f1(x0) + 'px';
-      glow.animate(flick, { duration: 900, easing: 'ease-out' });
+      glow.animate(flick, { duration: 450, easing: 'ease-out' });   // munja kratka (~0,45 s) - 0,9 s je bilo predugo
     }
     function strike(peak) {
       bolt(0.2 + Math.random() * 0.6);
-      flash(peak, 700);
-      shake(520, 16);
+      flash(peak, 420);
+      shake(360, 16);
     }
     /* JATO - šišmiši izlijeću iz DONJEG LIJEVOG KUTA i lete ravno PREKO
        MJESECA (svaki cilja nasumičnu točku na disku) i dalje van ekrana. Mali, puno njih (~60), JEDNOSTAVNA
@@ -330,8 +330,8 @@
       timers.forEach(clearTimeout);
       try { localStorage.setItem(INTRO_KEY, YEAR); } catch (e) {}
       bolt(0.25 + Math.random() * 0.15); bolt(0.6 + Math.random() * 0.15);
-      flash(1, 1100, true);
-      shake(700, 26);
+      flash(1, 700, true);
+      shake(450, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
       setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
       // rečenica ~3 s na ekranu; dok traje, Mjesec se zatamni da se jedva vidi, pa se
@@ -358,9 +358,9 @@
     });
     // faza tek sad: astronomy-engine (loadScript iz natal-data.js) na početku još ne postoji
     at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
-    at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
-    at(6600, swarm);
-    at(8100, finale);      // šišmiši ~1,5 s
+    at(5200, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
+    at(5400, swarm);
+    at(6900, finale);      // šišmiši ~1,5 s
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */

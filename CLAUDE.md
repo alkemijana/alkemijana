@@ -440,8 +440,10 @@ Zove ga `renderNatalResult()`; u **radnom PDF-u** (`renderWorkingContent`) `Birt
 kratak izračun + sliku/e + nazive u desni stupac ispod legende aspekata. **Poster PDF se NE dira.**
 Sve se računa u pregledniku, ništa se ne šalje.
 **Sinastrija:** isto za obje osobe — `#synastry-birthcard` iznad PDF kartica sinastrije
-(`renderSynastry()`, osobe jedna ispod druge, fusnota na dnu); u radnom PDF-u sinastrije
-`drawPdfSide` crta dva bloka jedan do drugog ispod legende aspekata. Tranziti dijele
+(`renderSynastry()`, osobe jedna ispod druge, fusnota na dnu) + **karta odnosa**
+(`computeRelation`: zbroj brojeva obiju karata osobnosti, Luda = 22, pa isto svođenje — to NIJE
+Greerina metoda i fusnota to tako i kaže). U radnom PDF-u sinastrije `drawPdfSynastry` crta tri
+stupca (osoba A · osoba B · karta odnosa) ispod legende aspekata. Tranziti dijele
 `renderSynastryWorkingContent`, pa je blok uvjetovan s `!cfg.inner` (tranziti ga nemaju).
 
 ### AI uvidi za čitanje (Janin radni alat) — izdvojeno u zaseban modul

@@ -74,6 +74,7 @@ ALKEMIJANA WEBSITE/
 │   ├── interpret-natal.js          ← Ruta /interpret-natal (tanki shim — pravi kod je u ai/)
 │   ├── lib/admin-auth.js           ← Zajednička provjera lozinke + lockout po IP-u (nije ruta, samo import)
 │   └── ai/                         ← AI tumačenje (server): core.js (cache+limiti+dispatch), providers.js (adapteri), prompt.js
+├── tools/halloween-backs.js        ← Dev: generira tarot/assets/decks/*/back-halloween.svg (node) - nije dio stranice
 ├── tools/halloween-palette.js      ← Dev: generira css/halloween-palette.css (node) - nije dio stranice
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
@@ -1188,7 +1189,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   `node tools/halloween-palette.js` (HSL: lavanda → krv, skoro bijela → kost, tamna → crno-crvena).
   **Kad se u CSS-u doda/promijeni ljubičasta boja, ponovno pokreni generator.** Kotač natalne karte na
   ekranu (natal-render.js `currentScreenPalette`, natal-live.js) uzme `AJHalloween.wheelPalette`;
-  PDF palete (`poster`/`ink`) se ne diraju. Poleđine tarot karata su slike i ostaju kakve jesu.
+  PDF palete (`poster`/`ink`) se ne diraju. **Poleđine tarot karata** imaju tamnocrvenu sablasnu verziju
+  `tarot/assets/decks/<špil>/back-halloween.svg` — **GENERIRANE** iz `back.svg` (`node tools/halloween-backs.js`:
+  prebojano po svjetlini + vinjeta + dva crna šišmiša); halloween.css ih pod `.hw-on` stavi umjesto back.svg.
   Vinjeta (`body::before`), magla pri dnu (`.hw-fog`).
   **Svijetla tema je isključena** — `MutationObserver` skida `data-theme="light"`, prekidač teme (`.nd-theme`)
   je skriven; `aj_theme` se NE dira, pa se nakon tjedna vrati posjetiteljev izbor.

@@ -1,0 +1,52 @@
+<!-- GENERIRANO iz back.svg - ne uređivati ručno (node tools/halloween-backs.js) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="442" viewBox="0 0 260 442" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="msBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2f0e0f"/>
+      <stop offset="55%" stop-color="#1e090a"/>
+      <stop offset="100%" stop-color="#0e0405"/>
+    </linearGradient>
+    <linearGradient id="msSilver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d5ccbd"/>
+      <stop offset="100%" stop-color="#981f25"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="260" height="442" fill="url(#msBg)"/>
+
+  <!-- dijagonalna rešetka (romb uzorak) -->
+  <g stroke="#981f25" stroke-width="1" opacity="0.4">
+    <path d="M-20,60 L60,-20 M-20,140 L140,-20 M-20,220 L220,-20 M-20,300 L300,-20 M-20,380 L380,-20 M-20,460 L460,-20 M60,460 L460,60 M140,460 L460,140 M220,460 L460,220 M300,460 L460,300"/>
+    <path d="M60,-20 L-20,60 M140,-20 L-20,140 M220,-20 L-20,220 M300,-20 L-20,300 M380,-20 L-20,380 M460,-20 L-20,460 M460,60 L60,460 M460,140 L140,460 M460,220 L220,460 M460,300 L300,460"/>
+  </g>
+  <rect x="0" y="0" width="260" height="442" fill="url(#msBg)" opacity="0.35"/>
+
+  <rect x="11" y="11" width="238" height="420" rx="4" fill="none" stroke="url(#msSilver)" stroke-width="3"/>
+  <rect x="19" y="19" width="222" height="404" rx="2" fill="none" stroke="#c1b49e" stroke-width="1" opacity="0.55"/>
+
+  <!-- središnji medaljon -->
+  <g transform="translate(130,221)">
+    <circle r="72" fill="#1e090a"/>
+    <circle r="72" fill="none" stroke="url(#msSilver)" stroke-width="2.2"/>
+    <circle r="54" fill="none" stroke="#981f25" stroke-width="1.2" opacity="0.8"/>
+    <!-- osmerokraka zvijezda -->
+    <path d="M0,-60 L14,-14 L60,0 L14,14 L0,60 L-14,14 L-60,0 L-14,-14 Z" fill="none" stroke="url(#msSilver)" stroke-width="2"/>
+    <path d="M-42,-42 L42,42 M42,-42 L-42,42" stroke="url(#msSilver)" stroke-width="1.4" opacity="0.7"/>
+    <circle r="10" fill="url(#msSilver)"/>
+    <circle r="4" fill="#1e090a"/>
+  </g>
+
+  <!-- rombovi gore/dolje -->
+  <g fill="none" stroke="url(#msSilver)" stroke-width="1.6" opacity="0.9">
+    <path d="M130,44 L150,74 L130,104 L110,74 Z"/>
+    <path d="M130,338 L150,368 L130,398 L110,368 Z"/>
+  </g>
+  <g fill="#d5ccbd">
+    <circle cx="130" cy="74" r="3"/><circle cx="130" cy="368" r="3"/>
+  </g>
+
+  <text x="130" y="418" text-anchor="middle" font-family="Georgia, serif" font-size="9.5" letter-spacing="3.5" fill="#c1b49e" opacity="0.7">ALKEMIJANA</text>
+  <!-- Halloween: vinjeta + šišmiši (tools/halloween-backs.js) -->
+  <defs><radialGradient id="hwVig" cx="50%" cy="48%" r="70%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.72"/></radialGradient></defs><rect x="0" y="0" width="260" height="442" fill="url(#hwVig)"/>
+  <g transform="translate(186 104) rotate(-12) scale(0.5)" fill="#000"><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z"/><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z" transform="scale(-1 1)"/><ellipse cx="0" cy="2.5" rx="3.3" ry="6.8"/><circle cx="0" cy="-5" r="3"/><path d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/></g><g transform="translate(212 128) rotate(8) scale(0.3)" fill="#000"><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z"/><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z" transform="scale(-1 1)"/><ellipse cx="0" cy="2.5" rx="3.3" ry="6.8"/><circle cx="0" cy="-5" r="3"/><path d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/></g>
+</svg>

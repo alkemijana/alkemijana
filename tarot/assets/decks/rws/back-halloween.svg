@@ -1,0 +1,103 @@
+<!-- GENERIRANO iz back.svg - ne uređivati ručno (node tools/halloween-backs.js) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="442" viewBox="0 0 260 442" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="rwsBg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#551115"/>
+      <stop offset="55%" stop-color="#2c0d0e"/>
+      <stop offset="100%" stop-color="#140606"/>
+    </radialGradient>
+    <linearGradient id="rwsGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d7cfc1"/>
+      <stop offset="50%" stop-color="#c2b59f"/>
+      <stop offset="100%" stop-color="#961f25"/>
+    </linearGradient>
+    <path id="rwsRosePetal" d="M0,0 C-10,-13 -9,-27 0,-38 C9,-27 10,-13 0,0 Z"/>
+    <path id="rwsLilyPetal" d="M0,0 C-6,-15 -4.5,-32 0,-45 C4.5,-32 6,-15 0,0 Z"/>
+    <path id="rwsLeaf" d="M0,0 C6,-3 11,-9 10,-17 C3,-14 -1,-7 0,0 Z"/>
+  </defs>
+
+  <rect x="0" y="0" width="260" height="442" fill="url(#rwsBg)"/>
+  <rect x="12" y="12" width="236" height="418" rx="10" fill="none" stroke="url(#rwsGold)" stroke-width="3"/>
+  <rect x="19" y="19" width="222" height="404" rx="6" fill="none" stroke="#c2b59f" stroke-width="1" opacity="0.55"/>
+
+  <!-- ugaoni cvjetni ornamenti -->
+  <g fill="none" stroke="url(#rwsGold)" stroke-width="1.3" opacity="0.85">
+    <path d="M24,24 Q40,24 40,40 M24,24 Q24,40 40,40"/>
+    <path d="M236,24 Q220,24 220,40 M236,24 Q236,40 220,40"/>
+    <path d="M24,418 Q40,418 40,402 M24,418 Q24,402 40,402"/>
+    <path d="M236,418 Q220,418 220,402 M236,418 Q236,402 220,402"/>
+  </g>
+
+  <!-- stabljika: vertikalna i horizontalna vitica koja spaja cvjetove -->
+  <g stroke="#981f25" stroke-width="1.6" opacity="0.75" fill="none">
+    <path d="M130,116 L130,326"/>
+    <path d="M78,221 L182,221"/>
+  </g>
+  <g fill="url(#rwsGold)" opacity="0.55">
+    <use href="#rwsLeaf" transform="translate(130,175) rotate(20)"/>
+    <use href="#rwsLeaf" transform="translate(130,267) rotate(200) scale(1,-1)"/>
+    <use href="#rwsLeaf" transform="translate(104,221) rotate(-70)"/>
+    <use href="#rwsLeaf" transform="translate(156,221) rotate(110) scale(-1,1)"/>
+  </g>
+
+  <!-- središnja ruža: dvostruka rozeta latica, bez koncentričnih krugova -->
+  <g transform="translate(130,221)">
+    <g fill="url(#rwsGold)" opacity="0.55">
+      <use href="#rwsRosePetal" transform="rotate(30) scale(0.8)"/>
+      <use href="#rwsRosePetal" transform="rotate(90) scale(0.8)"/>
+      <use href="#rwsRosePetal" transform="rotate(150) scale(0.8)"/>
+      <use href="#rwsRosePetal" transform="rotate(210) scale(0.8)"/>
+      <use href="#rwsRosePetal" transform="rotate(270) scale(0.8)"/>
+      <use href="#rwsRosePetal" transform="rotate(330) scale(0.8)"/>
+    </g>
+    <g fill="url(#rwsGold)">
+      <use href="#rwsRosePetal" transform="rotate(0)"/>
+      <use href="#rwsRosePetal" transform="rotate(60)"/>
+      <use href="#rwsRosePetal" transform="rotate(120)"/>
+      <use href="#rwsRosePetal" transform="rotate(180)"/>
+      <use href="#rwsRosePetal" transform="rotate(240)"/>
+      <use href="#rwsRosePetal" transform="rotate(300)"/>
+    </g>
+    <circle r="7" fill="#240a0c" stroke="url(#rwsGold)" stroke-width="1.6"/>
+  </g>
+
+  <!-- ljiljani gore i dolje -->
+  <g transform="translate(130,96)" fill="url(#rwsGold)">
+    <use href="#rwsLilyPetal" transform="rotate(-22)" opacity="0.9"/>
+    <use href="#rwsLilyPetal" transform="rotate(0)"/>
+    <use href="#rwsLilyPetal" transform="rotate(22)" opacity="0.9"/>
+  </g>
+  <g transform="translate(130,346) rotate(180)" fill="url(#rwsGold)">
+    <use href="#rwsLilyPetal" transform="rotate(-22)" opacity="0.9"/>
+    <use href="#rwsLilyPetal" transform="rotate(0)"/>
+    <use href="#rwsLilyPetal" transform="rotate(22)" opacity="0.9"/>
+  </g>
+
+  <!-- male ružice lijevo i desno -->
+  <g transform="translate(66,221) scale(0.55)" fill="url(#rwsGold)" opacity="0.9">
+    <use href="#rwsRosePetal" transform="rotate(0)"/><use href="#rwsRosePetal" transform="rotate(72)"/>
+    <use href="#rwsRosePetal" transform="rotate(144)"/><use href="#rwsRosePetal" transform="rotate(216)"/>
+    <use href="#rwsRosePetal" transform="rotate(288)"/>
+    <circle r="6" fill="#240a0c"/>
+  </g>
+  <g transform="translate(194,221) scale(0.55)" fill="url(#rwsGold)" opacity="0.9">
+    <use href="#rwsRosePetal" transform="rotate(0)"/><use href="#rwsRosePetal" transform="rotate(72)"/>
+    <use href="#rwsRosePetal" transform="rotate(144)"/><use href="#rwsRosePetal" transform="rotate(216)"/>
+    <use href="#rwsRosePetal" transform="rotate(288)"/>
+    <circle r="6" fill="#240a0c"/>
+  </g>
+
+  <!-- sitne zvjezdice u pozadini -->
+  <g fill="#d7cfc1" opacity="0.85">
+    <circle cx="45" cy="70" r="1.6"/><circle cx="215" cy="70" r="1.6"/>
+    <circle cx="45" cy="372" r="1.6"/><circle cx="215" cy="372" r="1.6"/>
+    <circle cx="130" cy="60" r="1.4"/><circle cx="130" cy="382" r="1.4"/>
+    <circle cx="30" cy="150" r="1.2"/><circle cx="230" cy="150" r="1.2"/>
+    <circle cx="30" cy="292" r="1.2"/><circle cx="230" cy="292" r="1.2"/>
+  </g>
+
+  <text x="130" y="410" text-anchor="middle" font-family="Georgia, serif" font-size="10" letter-spacing="4" fill="#c2b59f" opacity="0.75">ALKEMIJANA</text>
+  <!-- Halloween: vinjeta + šišmiši (tools/halloween-backs.js) -->
+  <defs><radialGradient id="hwVig" cx="50%" cy="48%" r="70%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.72"/></radialGradient></defs><rect x="0" y="0" width="260" height="442" fill="url(#hwVig)"/>
+  <g transform="translate(186 104) rotate(-12) scale(0.5)" fill="#000"><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z"/><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z" transform="scale(-1 1)"/><ellipse cx="0" cy="2.5" rx="3.3" ry="6.8"/><circle cx="0" cy="-5" r="3"/><path d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/></g><g transform="translate(212 128) rotate(8) scale(0.3)" fill="#000"><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z"/><path d="M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z" transform="scale(-1 1)"/><ellipse cx="0" cy="2.5" rx="3.3" ry="6.8"/><circle cx="0" cy="-5" r="3"/><path d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/></g>
+</svg>

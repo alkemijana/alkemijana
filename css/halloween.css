@@ -172,6 +172,20 @@
   100%     { opacity: 0; transform: translate(60px, -8px) scale(0.6) rotate(12deg); }
 }
 
+/* ============================================================
+   POLEĐINE TAROT KARATA - tamnocrvene, sablasne (isti motiv svakog špila,
+   prebojan + vinjeta + šišmiš). GENERIRANE: node tools/halloween-backs.js
+   (iz back.svg). Selektori su isti kao u tarot/tarot.css, samo pod .hw-on.
+   ============================================================ */
+.hw-on .vtar-back-rws .vtar-deck-card, .hw-on .vtar-back-rws .vtar-card-back, .hw-on .vtar-back-rws.vtar-discard-card, .hw-on .vtar-back-rws.vtar-deck-switch-thumb,
+.hw-on .vtar-back-rws.vtar-drawbar-swatch { background-image: url('../tarot/assets/decks/rws/back-halloween.svg'); }
+.hw-on .vtar-back-marseille .vtar-deck-card, .hw-on .vtar-back-marseille .vtar-card-back, .hw-on .vtar-back-marseille.vtar-discard-card, .hw-on .vtar-back-marseille.vtar-deck-switch-thumb,
+.hw-on .vtar-back-marseille.vtar-drawbar-swatch { background-image: url('../tarot/assets/decks/marseille/back-halloween.svg'); }
+.hw-on .vtar-back-lenormand .vtar-deck-card, .hw-on .vtar-back-lenormand .vtar-card-back, .hw-on .vtar-back-lenormand.vtar-discard-card, .hw-on .vtar-back-lenormand.vtar-deck-switch-thumb,
+.hw-on .vtar-back-lenormand.vtar-drawbar-swatch { background-image: url('../tarot/assets/decks/lenormand/back-halloween.svg'); }
+.hw-on .vtar-back-oracle .vtar-deck-card, .hw-on .vtar-back-oracle .vtar-card-back, .hw-on .vtar-back-oracle.vtar-discard-card, .hw-on .vtar-back-oracle.vtar-deck-switch-thumb,
+.hw-on .vtar-back-oracle.vtar-drawbar-swatch { background-image: url('../tarot/assets/decks/oracle/back-halloween.svg'); }
+
 @media (prefers-reduced-motion: reduce) {
   .hw-bat, .hw-navbat { display: none !important; }
   .hw-fog { animation: none; }

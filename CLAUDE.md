@@ -1219,7 +1219,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   podizanja, tijelo poskoči), let nemiran (WAAPI, samo transform). **Rijetko:** svakih 45–90 s, uglavnom
   jedan (bilo ih je prečesto). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali);
   mali šišmiš obleti šešir u traci jednom u 75 s (`.hw-navbat`). Prva verzija je izgledala „kartonski".
-- **Tarot:** raspored **Samhain – veo između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
+- **Tarot:** raspored **Samhain – granica između svjetova** (3 karte u luku) — `tarot-data.js` ga ubaci odmah
   iza „Slobodnog slaganja", pa je taj tjedan zadani. Zato je `halloween.js` **sinkron** u `<head>`
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
 - **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~16 s do otvaranja stranice:
@@ -1228,7 +1228,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   odozdo - to je bilo predugo; isti realistični SVG kao u
   pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 MALIH, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja)
   izleti iz donjeg lijevog kuta RAVNO PREKO MJESECA, traje ~1,5 s (detaljni/veliki/nemirni su izgledali kao leptirići) → završna munja: **u bljesku
-  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" (~3 s; Mjesec se za to vrijeme zatamni na 0.04 -
+  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Granica između svjetova je tanka…" (bilo je „Veo…" - vlasnik ne želi riječ „veo") (~3 s; Mjesec se za to vrijeme zatamni na 0.04 -
   jedva se vidi - pa se prije kraja vrati na 0.15 kao pozadina, `.hwi-moon-dim`) → overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
@@ -1284,8 +1284,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   događajem `aj:hero-flash` (bljesak = `bloom` u alkemijana-anim.js, 1,3 s / tempo 1,7 na kraju animacije).
   **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi).
   Uz `prefers-reduced-motion` ga nema.
-- **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Ovo i dalje nije mjesto za odgovore, no veo
-  je tanak. Pravo je vrijeme za prava pitanja." — zadana je u `AJHalloween.heroDesc` (halloween.js), a
+- **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Ovo i dalje nije mjesto za odgovore, no granica
+  je tanka. Pravo je vrijeme za prava pitanja." (**riječ „veo" se NE koristi** nigdje u Halloween temi —
+  vlasnik je ne želi; svugdje je „granica između svjetova") — zadana je u `AJHalloween.heroDesc` (halloween.js), a
   `applyTexts()` je uzme umjesto `TEXTS.heroDesc`. **TEXTS se namjerno NE mijenja** — inače bi admin
   „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **Almendra kurziv** (OFL, lokalno
   `assets/fonts/web/H4ciBX*.woff2`; Griffy je isproban i odbijen; `@font-face` u halloween.css — skida se samo dok je `hw-on`),

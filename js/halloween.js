@@ -42,7 +42,7 @@
   if (!active) return;
 
   // rečenica ispod loga na početnoj (app.js applyTexts) - samo ovaj tjedan, TEXTS ostaje netaknut
-  window.AJHalloween.heroDesc = 'Ovo i dalje nije mjesto za odgovore, no veo je tanak. Pravo je vrijeme za prava pitanja.';
+  window.AJHalloween.heroDesc = 'Ovo i dalje nije mjesto za odgovore, no granica je tanka. Pravo je vrijeme za prava pitanja.';
 
   // obećanje s rokom: nijedan korak pripreme uvoda ne smije zaglaviti cijeli uvod
   // (npr. img.decode() zna zapeti u kartici u pozadini)
@@ -242,7 +242,7 @@
       '<div class="hwi-bats"></div>' +
       '<div class="hwi-skyglow"></div>' +
       '<svg class="hwi-bolts"></svg>' +
-      '<p class="hwi-text">Veo između svjetova je tanak…</p>' +
+      '<p class="hwi-text">Granica između svjetova je tanka…</p>' +
       '<div class="hwi-flash"></div>';
     document.body.prepend(ov);
 

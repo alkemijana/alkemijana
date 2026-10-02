@@ -406,14 +406,14 @@ window.TAROT_DECKS = TAROT_DECKS;
    Ubacuje se odmah iza "Slobodnog slaganja" pa je taj tjedan zadani raspored. */
 const TAROT_SAMHAIN_SPREAD = {
   id: 'samhain',
-  name: 'Samhain - veo između svjetova',
+  name: 'Samhain - granica između svjetova',
   short: 'Samo ovaj tjedan: što puštam · što me vodi · što dolazi.',
   seasonal: 'halloween',
   cols: 3, rows: 2,
   positions: [
     { gx: 0, gy: 0.7, label: 'Što puštam', meaning: 'Ono što s godinom koja se gasi ostavljaš iza sebe.' },
     { gx: 1, gy: 0, label: 'Što me vodi', meaning: 'Mudrost predaka i unutarnji glas koji te vodi kroz tamni dio godine.' },
-    { gx: 2, gy: 0.7, label: 'Što dolazi', meaning: 'Sjeme koje sada sadiš - što se budi iza vela.' }
+    { gx: 2, gy: 0.7, label: 'Što dolazi', meaning: 'Sjeme koje sada sadiš - što se budi s druge strane granice.' }
   ]
 };
 if (window.AJHalloween && window.AJHalloween.active) TAROT_SPREADS.splice(1, 0, TAROT_SAMHAIN_SPREAD);

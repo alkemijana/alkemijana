@@ -1279,8 +1279,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Ovo i dalje nije mjesto za odgovore, no veo
   je tanak. Pravo je vrijeme za prava pitanja." — zadana je u `AJHalloween.heroDesc` (halloween.js), a
   `applyTexts()` je uzme umjesto `TEXTS.heroDesc`. **TEXTS se namjerno NE mijenja** — inače bi admin
-  „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **Griffy** (OFL, lokalno
-  `assets/fonts/web/FwZa7-*.woff2`, `@font-face` u halloween.css — skida se samo dok je `hw-on`),
+  „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **Almendra kurziv** (OFL, lokalno
+  `assets/fonts/web/H4ciBX*.woff2`; Griffy je isproban i odbijen; `@font-face` u halloween.css — skida se samo dok je `hw-on`),
   uz `text-wrap: balance` da na mobitelu ne ostane jedna riječ sama u redu.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).

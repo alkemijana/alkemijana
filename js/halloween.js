@@ -820,27 +820,22 @@
     setInterval(() => { if (window.Astronomy) idle(() => paintMoon(moon, currentMoon())); }, 30 * 60 * 1000);
   }
 
-  /* Lice Jack-o'-lanterna iza hero loga - upali se SAMO za završni bljesak
-     ispisa „Potpisa" (logo.js šalje 'aj:hero-flash'), pa se ugasi uz treptaj
-     svijeće. Samo obris (oči + nazubljena usta), animira se samo opacity. */
+  /* Lice Jack-o'-lanterna iza hero loga - naglo se upali u završnom bljesku
+     ispisa „Potpisa" (logo.js šalje 'aj:hero-flash') i polako izblijedi.
+     Obris je PRECRTAN s poslane slike (192x120 px, svijetli pikseli očitani po
+     redovima): koordinate su u pikselima te slike, lice je simetrično oko x = 96
+     pa je desna polovica zrcaljena. Gornji zubi vise, donji strše. */
   function jackSvg() {
-    const W = 200, x0 = 22, x1 = 178, n = 5;            // n zuba gore i dolje
-    const arcY = (x, base, depth) => base + depth * (1 - Math.pow((x - 100) / ((x1 - x0) / 2), 2));
-    const zig = (from, to, base, depth, tooth) => {
-      const pts = [];
-      for (let i = 0; i <= n * 2; i++) {
-        const x = from + (to - from) * i / (n * 2);
-        const edge = i === 0 || i === n * 2;
-        pts.push(x.toFixed(1) + ' ' + (arcY(x, base, depth) + (edge || i % 2 === 0 ? 0 : tooth)).toFixed(1));
-      }
-      return pts;
-    };
-    const top = zig(x0, x1, 96, 18, 14);                // zubi gore vise prema dolje
-    const bot = zig(x1, x0, 96, 50, -14);               // zubi dolje strše prema gore
-    const mouth = 'M' + top.join(' L') + ' L' + bot.join(' L') + ' Z';
-    const eye = 'M34 10 L86 34 Q78 50 60 48 Q36 44 34 10 Z';   // ljutito: vanjski kut gore, unutarnji šiljat
-    return `<svg viewBox="0 0 ${W} 160" xmlns="http://www.w3.org/2000/svg">` +
-      `<path d="${eye}"/><path d="${eye}" transform="matrix(-1 0 0 1 ${W} 0)"/>` +
+    const eye = 'M58 35 Q78 52 91 56 Q86 64 72 65.5 Q66 66 63 62 Q51 50 58 35 Z';
+    const up = [[59, 79], [62, 71], [73, 84], [77, 78], [86, 90], [91, 80], [96, 90]];
+    const lo = [[68, 93], [74, 103], [78, 96], [84, 108], [91, 101], [96, 110]];
+    const mir = pts => pts.slice(0, -1).reverse().map(([x, y]) => [192 - x, y]);
+    const L = pts => pts.map(p => 'L' + p.join(' ')).join(' ');
+    const mouth = 'M44 64 Q53 70 ' + up[0].join(' ') + ' ' + L([...up.slice(1), ...mir(up)]) +
+      ' Q139 70 148 64 Q143 90 130 101 ' + L([...mir(lo).reverse(), ...lo.slice().reverse()]) +
+      ' L62 101 Q49 90 44 64 Z';
+    return '<svg viewBox="38 28 116 88" xmlns="http://www.w3.org/2000/svg">' +
+      `<path d="${eye}"/><path d="${eye}" transform="matrix(-1 0 0 1 192 0)"/>` +
       `<path d="${mouth}"/></svg>`;
   }
   function initJack() {

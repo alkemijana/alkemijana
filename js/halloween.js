@@ -44,13 +44,13 @@
   /* Paleta natalnog kotača NA EKRANU (natal-render.js currentScreenPalette i
      natal-live.js je preuzmu umjesto ljubičaste). PDF palete se ne diraju. */
   window.AJHalloween.wheelPalette = {
-    ring: 'rgba(196,182,160,0.42)', ringSoft: 'rgba(163,38,43,0.3)',
-    bandA: 'rgba(163,38,43,0.08)', bandB: 'rgba(163,38,43,0.02)',
-    sign: '#b8383e', tick: 'rgba(190,178,158,0.32)',
+    ring: 'rgba(196,182,160,0.42)', ringSoft: 'rgba(122,26,30,0.32)',
+    bandA: 'rgba(122,26,30,0.08)', bandB: 'rgba(122,26,30,0.02)',
+    sign: '#8a2a2e', tick: 'rgba(190,178,158,0.32)',
     planet: '#e2d8c4', degText: 'rgba(190,178,158,0.8)', degStrong: '#f2ead8', houseNum: 'rgba(160,148,128,0.72)',
-    cusp: 'rgba(163,38,43,0.42)', axis: '#b8383e', axisText: '#c4baa6',
-    conj: '#a89e8c', harm: '#7f9a80', tense: '#c4484d',
-    fire: '#c45a5a', earth: '#8c9a7a', air: '#bcae94', water: '#7d8ca2'
+    cusp: 'rgba(122,26,30,0.45)', axis: '#8a2a2e', axisText: '#c4baa6',
+    conj: '#a89e8c', harm: '#7f9a80', tense: '#9a3236',
+    fire: '#9a4244', earth: '#8c9a7a', air: '#bcae94', water: '#7d8ca2'
   };
 
   const root = document.documentElement;

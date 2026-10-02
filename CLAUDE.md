@@ -1183,10 +1183,11 @@ Detalji na koje treba paziti:
 Uključuje se **sam od 25. 10. do 1. 11.** (uključivo, `Europe/Zagreb`) i sam se gasi. Pregled bilo kad:
 `?halloween` (uključi) / `?halloween=0` (isključi) — samo za taj učitani prikaz, ništa se ne sprema.
 Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === true`:
-- **Paleta „KRV I KOST" na cijeloj stranici** (izabrao vlasnik): crna pozadina, tekst boje stare kosti,
-  naslovi/gumbi/logo tamnocrveni. Varijable su ručno u `:root.hw-on` (halloween.css); sve IZRAVNO upisane
+- **Paleta „KRV I KOST" na cijeloj stranici** (izabrao vlasnik): **crno-siva** pozadina, kartice i obrubi —
+  BEZ crvenog sjaja (bio je pa je izbačen), tekst boje stare kosti, naslovi/gumbi/logo **tamna krv**
+  (#7a1a1e - svjetlija #a3262b je bila previše jarka za tekst). Varijable su ručno u `:root.hw-on` (halloween.css); sve IZRAVNO upisane
   ljubičaste boje iz ostalih stilova preslikava **`css/halloween-palette.css` — GENERIRAN** alatom
-  `node tools/halloween-palette.js` (HSL: lavanda → krv, skoro bijela → kost, tamna → crno-crvena).
+  `node tools/halloween-palette.js` (HSL: lavanda → tamna krv, skoro bijela → kost, tamna → crno-siva).
   **Kad se u CSS-u doda/promijeni ljubičasta boja, ponovno pokreni generator.** Kotač natalne karte na
   ekranu (natal-render.js `currentScreenPalette`, natal-live.js) uzme `AJHalloween.wheelPalette`;
   PDF palete (`poster`/`ink`) se ne diraju. **Poleđine tarot karata** imaju tamnocrvenu sablasnu verziju

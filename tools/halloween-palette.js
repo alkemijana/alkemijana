@@ -10,7 +10,7 @@
    Pravilo preslikavanja (HSL): boje s nijansom 215°-330° i zasićenjem > 10 %:
      - skoro bijele (L > 80 %)   → kost   (topla, blijedo-bež)
      - lavanda i srednje (L > 24 %) → krv (tamnocrvena, naglasak)
-     - tamne   (L ≤ 24 %)       → crno-crvena
+     - tamne   (L ≤ 24 %)       → crno-siva (pozadine ne smiju biti crvene)
      - sivkasto-ljubičaste (zasićenje < 28 %) → siva kost
    Neutralne boje (crna, bijela, sive) se ne diraju.
 
@@ -51,8 +51,8 @@ function remap(r, g, b) {
   if (s <= 0.10 || h < 215 || h > 330) return null;
   if (l > 0.8) return hslToRgb(40, 0.24, Math.min(0.84, l * 0.94));         // skoro bijela lavanda (tekst) → kost
   if (s < 0.28) return hslToRgb(38, 0.14, Math.min(0.8, l * 0.92));         // siva lavanda → siva kost
-  if (l > 0.24) return hslToRgb(357, 0.62, Math.min(0.42, Math.max(0.24, l * 0.6)));  // lavanda (naglasak) → krv
-  return hslToRgb(357, 0.45, l * 0.85);                                     // tamna ljubičasta → crno-crvena
+  if (l > 0.24) return hslToRgb(357, 0.6, Math.min(0.29, Math.max(0.2, l * 0.42)));   // lavanda (naglasak) → tamna krv
+  return hslToRgb(0, 0.04, l * 0.8);                                        // tamna ljubičasta → crno-siva (pozadine)
 }
 const hex2 = n => n.toString(16).padStart(2, '0');
 const COLOR_RE = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b|rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/g;

@@ -15,41 +15,41 @@
    samo za sitne oznake. Krv (--lavender) je za naslove i naglaske, ne za dugi tekst.
    ============================================================ */
 :root.hw-on {
-  /* paleta „KRV I KOST" (izabrao vlasnik): crna pozadina, tekst boje stare
-     kosti, naslovi/gumbi/logo tamnocrveni. Ostale (izravno upisane) ljubičaste
+  /* paleta „KRV I KOST" (izabrao vlasnik): crno-siva pozadina (bez crvenog
+     sjaja - vlasnik), tekst boje stare kosti, naslovi/gumbi/logo TAMNA krv. Ostale (izravno upisane) ljubičaste
      boje preslikava css/halloween-palette.css (tools/halloween-palette.js). */
-  --bg-deep: #050303;
-  --bg-mid: #0a0606;
-  --bg-light: #140c0c;
-  --navy: #070404;
-  --lavender: #a3262b;          /* krv - naslovi, naglasci, logo */
-  --lavender-soft: #7a1418;     /* zgrušana krv - gumbi */
+  --bg-deep: #040404;
+  --bg-mid: #09090a;
+  --bg-light: #121213;
+  --navy: #060607;
+  --lavender: #7a1a1e;          /* tamna krv - naslovi, naglasci, logo */
+  --lavender-soft: #561114;     /* zgrušana krv - gumbi */
   --silver-bright: #d6ccb8;
   --silver: #a39a88;
   --silver-light: #c0b6a2;
   --sage: #8f8573;              /* pepeo */
-  --forest: #2a1a14;
+  --forest: #1c1a18;
   --text: #b3a996;              /* stara kost */
   --text-muted: #6b6356;        /* pepeo */
-  --border: rgba(110, 22, 26, 0.38);
+  --border: rgba(78, 70, 66, 0.32);       /* crno-siva, ne crvena */
 
-  --body-grad-1: rgba(90, 8, 14, 0.3);      /* krvavi sjaj gore lijevo */
+  --body-grad-1: rgba(48, 48, 52, 0.22);    /* hladna siva izmaglica gore lijevo (bez crvenog) */
   --body-grad-2: rgba(0, 0, 0, 0.8);
-  --body-grad-3: rgba(70, 40, 30, 0.07);
-  --card-bg: rgba(9, 5, 5, 0.86);
-  --card-bg-hover: rgba(16, 8, 8, 0.9);
-  --nav-bg: rgba(4, 2, 2, 0.9);
-  --form-bg: rgba(8, 4, 4, 0.86);
+  --body-grad-3: rgba(60, 60, 62, 0.06);
+  --card-bg: rgba(10, 10, 11, 0.86);
+  --card-bg-hover: rgba(17, 17, 18, 0.9);
+  --nav-bg: rgba(4, 4, 5, 0.9);
+  --form-bg: rgba(9, 9, 10, 0.86);
   --noise-opacity: 0.07;
-  --transition-cover: #050303;
+  --transition-cover: #040404;
   --card-text: #c4baa6;
-  --panel-grad-1: rgba(12, 6, 6, 0.72);
-  --panel-grad-2: rgba(2, 1, 1, 0.86);
-  --search-grad-1: rgba(12, 6, 6, 0.86);
-  --search-grad-2: rgba(2, 1, 1, 0.86);
-  --search-grad-1-focus: rgba(18, 9, 9, 0.92);
-  --search-grad-2-focus: rgba(4, 2, 2, 0.92);
-  --aa-sjaj: #c0484c;
+  --panel-grad-1: rgba(13, 13, 14, 0.72);
+  --panel-grad-2: rgba(2, 2, 2, 0.86);
+  --search-grad-1: rgba(13, 13, 14, 0.86);
+  --search-grad-2: rgba(2, 2, 2, 0.86);
+  --search-grad-1-focus: rgba(19, 19, 20, 0.92);
+  --search-grad-2-focus: rgba(4, 4, 5, 0.92);
+  --aa-sjaj: #8f2a2e;
   --aa-iskra: #f0e6d6;
 }
 
@@ -77,9 +77,9 @@
   opacity: 0.4;
   background:
     radial-gradient(ellipse 18% 55% at 12% 70%, rgba(150, 140, 125, 0.10), transparent 70%),
-    radial-gradient(ellipse 22% 60% at 34% 80%, rgba(110, 30, 32, 0.09), transparent 70%),
+    radial-gradient(ellipse 22% 60% at 34% 80%, rgba(110, 108, 112, 0.08), transparent 70%),
     radial-gradient(ellipse 20% 50% at 58% 72%, rgba(150, 140, 125, 0.08), transparent 70%),
-    radial-gradient(ellipse 24% 60% at 82% 82%, rgba(110, 30, 32, 0.10), transparent 70%);
+    radial-gradient(ellipse 24% 60% at 82% 82%, rgba(110, 108, 112, 0.09), transparent 70%);
   animation: hwFog 70s linear infinite alternate;
   will-change: transform;
 }
@@ -116,7 +116,7 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 0 14px rgba(215, 200, 175, 0.4)) drop-shadow(0 0 60px rgba(130, 20, 26, 0.4));
+  filter: drop-shadow(0 0 14px rgba(215, 200, 175, 0.4)) drop-shadow(0 0 60px rgba(90, 90, 96, 0.35));
 }
 .hw-moon-earthshine { opacity: 0.12; }
 @media (max-width: 768px) {

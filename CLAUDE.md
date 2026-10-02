@@ -1216,7 +1216,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~16 s do otvaranja stranice:
   ekran učitavanja krene **normalno** (ljubičasto, „Znak A" se crta; overlay je proziran) → **munja ga prekine**
   i overlay ga pokrije nebom → nebo potamni → **sporo izlazi Mjesec** (isti realistični SVG kao u
-  pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato VELIKIH šišmiša → završna munja: **u bljesku
+  pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato šišmiša izlijeće ODOZDO preko Mjeseca
+  (kao iz špilje: bliži veći/brži/zamućeni, dalji manji; nemiran let, nagib, udaljavanje - ne „eksplozija" iz sredine) → završna munja: **u bljesku
   se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" → overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema

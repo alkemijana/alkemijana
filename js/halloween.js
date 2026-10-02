@@ -267,24 +267,47 @@
       flash(peak, 700);
       shake(520, 16);
     }
+    /* JATO - kao šišmiši koji izlijeću iz špilje: dolaze ODOZDO i prelijeću
+       preko Mjeseca prema gore, svaki sa svojom „dubinom":
+         bliži  = veći, brži, sporije mašu, blago zamućeni od brzine, iznad ostalih
+         dalji  = manji, sporiji, brže mašu
+       Let je nemiran (trzaji lijevo-desno, šišmiš lovi), nagib prati smjer,
+       a dok se penje lagano se smanjuje (odlazi u daljinu). Prijašnje jato je
+       „eksplodiralo" iz sredine i raslo - to nije izgledalo prirodno. */
     function swarm() {
       const host = $('.hwi-bats');
-      const vw = scrW(), vh = scrH(), R = Math.hypot(vw, vh) * 0.62;
-      for (let i = 0; i < 18; i++) {
+      const vw = scrW(), vh = scrH(), m = Math.min(vw, vh);
+      for (let i = 0; i < 22; i++) {
+        const depth = Math.random();                            // 0 = daleko, 1 = blizu
+        const size = m * (0.08 + depth * 0.34) + 24;
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';
-        el.innerHTML = batSvg(0.1 + Math.random() * 0.04);
-        const size = Math.min(vw, vh) * (0.14 + Math.random() * 0.22) + 30;   // VELIKI
+        el.innerHTML = batSvg(0.085 + depth * 0.06);
         el.style.width = size + 'px';
+        el.style.zIndex = String(Math.round(depth * 10));
+        if (depth > 0.82) el.style.filter = 'blur(' + f1(1 + (depth - 0.82) * 8) + 'px)';   // statično - samo dojam brzine
         host.appendChild(el);
-        const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.7;   // uglavnom prema gore i u stranu
-        const tx = Math.cos(a) * R, ty = Math.sin(a) * R;
-        const cx = vw / 2 - size / 2, cy = vh * 0.48;
-        el.animate([
-          { transform: `translate(${f1(cx)}px, ${f1(cy)}px) scale(0.15)`, opacity: 0 },
-          { transform: `translate(${f1(cx + tx * 0.25)}px, ${f1(cy + ty * 0.25 + (Math.random() - 0.5) * 60)}px) scale(0.6)`, opacity: 1, offset: 0.3 },
-          { transform: `translate(${f1(cx + tx)}px, ${f1(cy + ty)}px) scale(1.5)`, opacity: 1 }
-        ], { duration: 1500 + Math.random() * 1100, delay: Math.random() * 1000, easing: 'cubic-bezier(0.4, 0, 0.9, 0.6)', fill: 'both' });
+
+        const K = 7, frames = [];
+        const x0 = vw * (0.1 + Math.random() * 0.8) - size / 2;
+        const y0 = vh + size * 0.4, y1 = -size * 1.4;
+        const drift = (Math.random() - 0.5) * vw * 0.9;
+        let jit = 0, px = x0, py = y0;
+        for (let k = 0; k <= K; k++) {
+          const t = k / K;
+          if (k > 0 && k < K) jit += (Math.random() - 0.5) * size * 1.3;   // trzaj u stranu
+          const x = x0 + drift * t + jit;
+          const y = y0 + (y1 - y0) * t + (k > 0 && k < K ? (Math.random() - 0.5) * size * 0.4 : 0);
+          const dx = k ? x - px : 0, dy = k ? y - py : -1;
+          const tilt = Math.max(-35, Math.min(35, Math.atan2(dx, Math.abs(dy)) * 57.3 * 0.8));
+          frames.push({ transform: 'translate(' + f1(x) + 'px, ' + f1(y) + 'px) rotate(' + f1(tilt) + 'deg) scale(' + (1 - 0.3 * t).toFixed(3) + ')', offset: t });
+          px = x; py = y;
+        }
+        el.animate(frames, {
+          duration: 1300 + (1 - depth) * 1900 + Math.random() * 500,
+          delay: Math.random() * 1700,
+          easing: 'linear', fill: 'both'
+        });
       }
     }
 
@@ -320,7 +343,7 @@
     // faza tek sad: astronomy-engine (loadScript iz natal-data.js) na početku još ne postoji
     at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
     at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
-    at(7000, swarm);
+    at(6600, swarm);
     at(8800, finale);
   }
 

@@ -850,12 +850,20 @@
     face.setAttribute('aria-hidden', 'true');
     face.innerHTML = jackSvg();
     h1.insertBefore(face, art);
+    // bljesak cijele stranice u istom trenutku kad se upali lice (ista vremenska crta, v. hwPageFlash)
+    const flash = document.createElement('div');
+    flash.className = 'hw-pageflash';
+    flash.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(flash);
     art.addEventListener('aj:hero-flash', function () {
       face.classList.remove('hw-jack-on');
+      flash.classList.remove('hw-pageflash-on');
       void face.offsetWidth;                            // ponovno pokretanje animacije
       face.classList.add('hw-jack-on');
+      flash.classList.add('hw-pageflash-on');
     });
     face.addEventListener('animationend', () => face.classList.remove('hw-jack-on'));
+    flash.addEventListener('animationend', () => flash.classList.remove('hw-pageflash-on'));
   }
 
   document.addEventListener('DOMContentLoaded', function () {

@@ -404,7 +404,24 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   59%  { opacity: 0.75; animation-timing-function: cubic-bezier(0.35, 0, 0.6, 1); }
   100% { opacity: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .hw-jack { display: none; } }
+/* Bljesak CIJELE stranice u trenutku kad se upali lice (js/halloween.js initJack):
+   ista duljina i isti trenutak vrha (59 %) kao hwJack, ali se gasi brže - kao
+   munja. Hladna blijeda bijela kao bljesak u uvodu (.hwi-flash), ne žuta. */
+.hw-pageflash {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  background: #e9e6f0;
+  opacity: 0;
+  pointer-events: none;
+}
+.hw-pageflash.hw-pageflash-on { animation: hwPageFlash 0.56s both; }
+@keyframes hwPageFlash {
+  0%   { opacity: 0; animation-timing-function: steps(1, end); }
+  59%  { opacity: 0.55; animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .hw-jack, .hw-pageflash { display: none; } }
 
 /* Rečenica ispod loga na početnoj u Halloween fontu: IM Fell DW Pica kurziv
    (Igino Marini, SIL Open Font License) - staroknjiški kurziv iz 17. st.

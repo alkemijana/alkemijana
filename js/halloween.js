@@ -58,6 +58,9 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   const f1 = n => n.toFixed(1);
+  // innerWidth zna biti 0 (skrivena kartica / okno u pozadini) - tada mjere dokumenta ili ekrana
+  const scrW = () => innerWidth || document.documentElement.clientWidth || screen.width || 800;
+  const scrH = () => innerHeight || document.documentElement.clientHeight || screen.height || 600;
 
   /* Sablasna tema je uvijek tamna: svijetla se taj tjedan ne pali (ni iz
      localStorage-a u app.js). aj_theme se NE dira, pa se nakon tjedna
@@ -105,9 +108,10 @@
      Potpuno crn, bez obruba i žilica (css/halloween.css).
      ============================================================ */
   const POSES = {
-    up:   { sh: [-2, -3], wr: [-13, -17], tip: [-27, -27], f2: [-33, -15], f3: [-30, -5], f4: [-21, 1], hip: [-3, 5] },
-    mid:  { sh: [-2, -2], wr: [-17, -6],  tip: [-43, -9],  f2: [-40, 2],   f3: [-32, 9],  f4: [-20, 10], hip: [-3, 6] },
-    down: { sh: [-2, -2], wr: [-15, 5],   tip: [-30, 19],  f2: [-24, 23],  f3: [-17, 22], f4: [-10, 16], hip: [-3, 7] }
+    // krila se NE dižu visoko iznad tijela (to je izgledalo kao leptir) - zamah je pretežno prema dolje
+    up:   { sh: [-2, -3], wr: [-12, -13], tip: [-30, -19], f2: [-33, -8],  f3: [-28, 0],  f4: [-19, 4],  hip: [-3, 5] },
+    mid:  { sh: [-2, -2], wr: [-17, -5],  tip: [-44, -4],  f2: [-39, 6],   f3: [-30, 11], f4: [-19, 11], hip: [-3, 6] },
+    down: { sh: [-2, -1], wr: [-15, 6],   tip: [-28, 22],  f2: [-21, 24],  f3: [-14, 21], f4: [-8, 15],  hip: [-3, 7] }
   };
   // kontrolna točka opne između dva vrha: sredina povučena prema ramenu (luk prema unutra)
   function scal(a, b, sh, pull) {
@@ -118,10 +122,10 @@
   function wingPath(w) {
     const lead = f1((w.sh[0] + w.wr[0]) / 2) + ' ' + f1((w.sh[1] + w.wr[1]) / 2 - 3.5);
     return 'M' + P(w.sh) + ' Q' + lead + ' ' + P(w.wr) + ' L' + P(w.tip) +
-      ' Q' + scal(w.tip, w.f2, w.sh, 0.2) + ' ' + P(w.f2) +
-      ' Q' + scal(w.f2, w.f3, w.sh, 0.22) + ' ' + P(w.f3) +
-      ' Q' + scal(w.f3, w.f4, w.sh, 0.24) + ' ' + P(w.f4) +
-      ' Q' + scal(w.f4, w.hip, w.sh, 0.3) + ' ' + P(w.hip) + ' Z';
+      ' Q' + scal(w.tip, w.f2, w.sh, 0.3) + ' ' + P(w.f2) +
+      ' Q' + scal(w.f2, w.f3, w.sh, 0.32) + ' ' + P(w.f3) +
+      ' Q' + scal(w.f3, w.f4, w.sh, 0.34) + ' ' + P(w.f4) +
+      ' Q' + scal(w.f4, w.hip, w.sh, 0.38) + ' ' + P(w.hip) + ' Z';
   }
   const ORDER = ['up', 'mid', 'down', 'mid', 'up'];
   const KT = '0;0.2;0.42;0.72;1';
@@ -173,10 +177,16 @@
     ov.innerHTML =
       '<div class="hwi-sky"><div class="hwi-stars" style="box-shadow:' + stars.join(',') + '"></div></div>' +
       '<div class="hwi-black"></div>' +
-      '<div class="hwi-moon hw-moon-geo">' + moonSvg('i') + '</div>' +
+      // dva sloja: običan i krvavi (statičan filter) - krvavljenje je samo pretapanje
+      // prozirnosti, bez filtera u pokretu (na mobitelu je to zapinjalo)
+      '<div class="hwi-moon hw-moon-geo">' +
+        '<div class="hwi-ml hwi-ml-n">' + moonSvg('i') + '</div>' +
+        '<div class="hwi-ml hwi-ml-r">' + moonSvg('r') + '</div>' +
+      '</div>' +
       '<div class="hwi-vig"></div>' +
       '<div class="hwi-bats"></div>' +
-      '<svg class="hwi-bolts" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>' +
+      '<div class="hwi-skyglow"></div>' +
+      '<svg class="hwi-bolts"><defs><filter id="hwiBlur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs></svg>' +
       '<p class="hwi-text">Veo između svjetova je tanak…</p>' +
       '<div class="hwi-flash"></div>';
     document.body.prepend(ov);
@@ -197,41 +207,71 @@
       k[10] = { transform: 'none' };
       $('.hwi-sky').animate(k, { duration: ms });
     }
-    // munja: izlomljena linija od vrha + 1-2 grane
-    function bolt(x0) {
+    /* MUNJA - ne crta se kao linija nego kao kanal: izlomljena metodom
+       pomicanja sredine (sitni i krupni lomovi), grane koje se granaju dalje,
+       debljina pada prema granama, a svaki kanal je u tri sloja (široki
+       zamućeni sjaj, svjetlina, tanka bijela jezgra). Uz munju se osvijetli
+       nebo oko nje, a sve zajedno treperi (bljesak ekrana je odvojen).
+       Koordinate su u pikselima ekrana (viewBox = ekran) da se ne izobliče. */
+    function jag(ax, ay, bx, by, rough, depth) {
+      if (depth === 0) return [[ax, ay], [bx, by]];
+      const len = Math.hypot(bx - ax, by - ay);
+      const mx = (ax + bx) / 2 + (Math.random() - 0.5) * len * rough;
+      const my = (ay + by) / 2 + (Math.random() - 0.5) * len * rough * 0.35;
+      const l = jag(ax, ay, mx, my, rough, depth - 1);
+      return l.concat(jag(mx, my, bx, by, rough, depth - 1).slice(1));
+    }
+    function bolt(xFrac) {
       const svg = $('.hwi-bolts');
-      let x = x0, y = -20;
-      const yEnd = 550 + Math.random() * 400;
-      const pts = [[x, y]];
-      while (y < yEnd) { y += 30 + Math.random() * 55; x += (Math.random() - 0.5) * 90; pts.push([x, y]); }
+      const W = scrW(), H = scrH(), U = Math.max(0.6, Math.min(W, H) / 800);
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const toD = p => 'M' + p.map(q => f1(q[0]) + ' ' + f1(q[1])).join(' L');
-      let d = toD(pts);
-      for (let b = 0; b < 2; b++) {
-        const st = pts[2 + Math.floor(Math.random() * (pts.length - 4))];
-        let bx = st[0], by = st[1];
-        const br = [[bx, by]], dir = Math.random() < 0.5 ? -1 : 1;
-        for (let i = 0; i < 4 + Math.random() * 3; i++) { by += 25 + Math.random() * 40; bx += dir * (15 + Math.random() * 45); br.push([bx, by]); }
-        d += ' ' + toD(br);
+      const chans = [];
+      const x0 = W * xFrac, y1 = H * (0.62 + Math.random() * 0.3);
+      const main = jag(x0, -20, x0 + (Math.random() - 0.5) * W * 0.25, y1, 0.42, 7);
+      chans.push({ p: main, w: 3.4 * U });
+      for (let b = 0; b < 4 + Math.random() * 3; b++) {
+        const i = 8 + Math.floor(Math.random() * (main.length * 0.7));
+        const st = main[Math.min(i, main.length - 2)];
+        const dir = Math.random() < 0.5 ? -1 : 1, L = H * (0.12 + Math.random() * 0.25);
+        const br = jag(st[0], st[1], st[0] + dir * L * (0.4 + Math.random() * 0.6), st[1] + L, 0.5, 5);
+        chans.push({ p: br, w: 1.6 * U });
+        if (Math.random() < 0.6) {                              // grana grane
+          const s2 = br[Math.floor(br.length * (0.3 + Math.random() * 0.4))], L2 = L * 0.5;
+          chans.push({ p: jag(s2[0], s2[1], s2[0] + dir * L2 * 0.7, s2[1] + L2, 0.55, 4), w: 0.9 * U });
+        }
       }
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', d);
-      svg.appendChild(p);
-      p.animate([{ opacity: 0 }, { opacity: 1, offset: 0.05 }, { opacity: 0.25, offset: 0.25 }, { opacity: 1, offset: 0.4 }, { opacity: 0 }],
-        { duration: 650, easing: 'ease-out', fill: 'forwards' }).onfinish = () => p.remove();
+      let html = '';
+      for (const c of chans) {
+        const d = toD(c.p);
+        html += '<path class="hwi-b-glow" d="' + d + '" stroke-width="' + f1(c.w * 7) + '"/>' +
+          '<path class="hwi-b-halo" d="' + d + '" stroke-width="' + f1(c.w * 2.4) + '"/>' +
+          '<path class="hwi-b-core" d="' + d + '" stroke-width="' + c.w.toFixed(2) + '"/>';
+      }
+      g.innerHTML = html;
+      svg.appendChild(g);
+      const flick = [{ opacity: 0 }, { opacity: 1, offset: 0.04 }, { opacity: 0.15, offset: 0.14 }, { opacity: 0.95, offset: 0.22 },
+                     { opacity: 0.3, offset: 0.4 }, { opacity: 0.7, offset: 0.5 }, { opacity: 0 }];
+      g.animate(flick, { duration: 900, easing: 'ease-out', fill: 'forwards' }).onfinish = () => g.remove();
+      // osvjetljenje neba oko munje
+      const glow = $('.hwi-skyglow');
+      glow.style.left = f1(x0) + 'px';
+      glow.animate(flick, { duration: 900, easing: 'ease-out' });
     }
     function strike(peak) {
-      bolt(150 + Math.random() * 700);
+      bolt(0.2 + Math.random() * 0.6);
       flash(peak, 700);
       shake(520, 16);
     }
     function swarm() {
       const host = $('.hwi-bats');
-      const vw = innerWidth, vh = innerHeight, R = Math.hypot(vw, vh) * 0.62;
-      for (let i = 0; i < 24; i++) {
+      const vw = scrW(), vh = scrH(), R = Math.hypot(vw, vh) * 0.62;
+      for (let i = 0; i < 18; i++) {
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';
-        el.innerHTML = batSvg(0.12 + Math.random() * 0.08);
-        const size = 26 + Math.random() * 60;
+        el.innerHTML = batSvg(0.1 + Math.random() * 0.04);
+        const size = Math.min(vw, vh) * (0.14 + Math.random() * 0.22) + 30;   // VELIKI
         el.style.width = size + 'px';
         host.appendChild(el);
         const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.7;   // uglavnom prema gore i u stranu
@@ -250,11 +290,11 @@
       finished = true;
       timers.forEach(clearTimeout);
       try { localStorage.setItem(INTRO_KEY, YEAR); } catch (e) {}
-      bolt(250 + Math.random() * 200); bolt(550 + Math.random() * 200);
+      bolt(0.25 + Math.random() * 0.15); bolt(0.6 + Math.random() * 0.15);
       flash(1, 1100, true);
       shake(700, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
-      setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
+      setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
       const tText = 1300, tOut = 4100;
       setTimeout(() => $('.hwi-text').classList.add('hwi-text-in'), tText);
       setTimeout(() => $('.hwi-text').classList.remove('hwi-text-in'), tOut - 900);
@@ -275,7 +315,7 @@
       setTimeout(() => $('.hwi-sky').classList.add('hwi-gray'), 250);
     });
     // faza tek sad: astronomy-engine (loadScript iz natal-data.js) na početku još ne postoji
-    at(3000, () => { drawMoonWhenReady($('.hwi-moon')); $('.hwi-moon').classList.add('hwi-moon-in'); });
+    at(3000, () => { drawMoonWhenReady($('.hwi-ml-n')); drawMoonWhenReady($('.hwi-ml-r')); $('.hwi-moon').classList.add('hwi-moon-in'); });
     at(6400, () => { $('.hwi-moon').classList.add('hwi-moon-blood'); $('.hwi-vig').classList.add('hwi-vig-beat'); });
     at(7000, swarm);
     at(8800, finale);
@@ -300,39 +340,31 @@
     const el = document.createElement('div');
     el.className = 'hw-bat';
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = batSvg(0.17 + Math.random() * 0.1);
-    const size = 30 + Math.random() * 34;
+    el.innerHTML = batSvg(0.1 + Math.random() * 0.05);    // brzo mahanje - sporo je izgledalo kao leptir
+    const size = 34 + Math.random() * 30;
     el.style.width = size + 'px';
     document.body.appendChild(el);
 
     const vw = window.innerWidth, vh = window.innerHeight;
     const ltr = Math.random() < 0.5;
     const x0 = ltr ? -size * 1.5 : vw + size * 1.5, x1 = ltr ? vw + size * 1.5 : -size * 1.5;
-    let y = vh * (0.1 + Math.random() * 0.55);
-    const drift = (Math.random() - 0.6) * vh * 0.3;
-    const N = 30;
-    // izglađen slučajni hod za y
-    let vy = 0;
-    const pts = [];
-    for (let i = 0; i <= N; i++) {
-      vy = vy * 0.6 + (Math.random() - 0.5) * vh * 0.05;
-      if (Math.random() < 0.06) vy += vh * 0.06 * (Math.random() < 0.5 ? 1 : -1);   // nagli zaron / uspon
-      y += vy + drift / N;
-      pts.push(y);
-    }
-    // nejednaka brzina: x po t uz blago ubrzavanje/usporavanje
-    const ph = Math.random() * Math.PI * 2;
-    const frames = [];
+    /* Let: dionice ravnog leta s NAGLIM skretanjem između njih (šišmiš lovi),
+       bez valovitog lebdenja i bez „disanja" veličine - to je izgledalo kao leptir. */
+    let y = vh * (0.12 + Math.random() * 0.5);
+    const N = 7, frames = [];
+    let slope = (Math.random() - 0.5) * 0.5;
     for (let i = 0; i <= N; i++) {
       const t = i / N;
-      const te = t + Math.sin(t * Math.PI * 3 + ph) * 0.025;
-      const x = x0 + (x1 - x0) * te;
-      const dy = i < N ? pts[i + 1] - pts[i] : pts[i] - pts[i - 1];
-      const tilt = Math.max(-28, Math.min(28, Math.atan2(dy, Math.abs(x1 - x0) / N) * 57.3 * 0.7)) * (ltr ? 1 : -1);
-      const sc = 0.88 + 0.16 * Math.sin(t * Math.PI * 2.2 + ph);
-      frames.push({ transform: `translate(${f1(x)}px, ${f1(pts[i])}px) rotate(${f1(tilt)}deg) scale(${sc.toFixed(3)})` });
+      const x = x0 + (x1 - x0) * t;
+      if (i > 0) {
+        if (Math.random() < 0.55) slope = (Math.random() - 0.5) * 0.9;     // naglo skretanje
+        y += slope * Math.abs(x1 - x0) / N;
+        y = Math.max(vh * 0.05, Math.min(vh * 0.85, y));
+      }
+      const tilt = Math.max(-22, Math.min(22, Math.atan(slope) * 57.3 * 0.6)) * (ltr ? 1 : -1);
+      frames.push({ transform: 'translate(' + f1(x) + 'px, ' + f1(y) + 'px) rotate(' + f1(tilt) + 'deg)', offset: t });
     }
-    const dur = 5200 + Math.random() * 3800;
+    const dur = 3600 + Math.random() * 2400;   // šišmiš je brz
     const anim = el.animate(frames, { duration: dur, delay, easing: 'linear', fill: 'both' });
     anim.onfinish = () => el.remove();
   }

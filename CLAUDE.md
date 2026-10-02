@@ -1204,7 +1204,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   faza izračunata. Provjereno: jutro (Sunce istok) → rub lijevo-dolje, večer (mlađak, Sunce zapad) → desno.
   Oblaci su probani i izbačeni (izgledali su kao pruge).
 - **Šišmiši:** realistična silueta (podlaktica + 4 prsta, nazubljen rub opne), **potpuno crni, bez obruba**
-  (obrub je izgledao čudno). Mahanje je **SMIL morph** između tri poze krila (zamah dolje brži od
+  (obrub je izgledao čudno). Krila se ne dižu visoko (izgledalo je kao leptir), brzo mašu (~0,1 s), a let je
+  ravan s naglim skretanjima, bez valovitog lebdenja. Mahanje je **SMIL morph** između tri poze krila (zamah dolje brži od
   podizanja, tijelo poskoči), let nemiran (WAAPI, samo transform). **Rijetko:** svakih 45–90 s, uglavnom
   jedan (bilo ih je prečesto). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali);
   mali šišmiš obleti šešir u traci jednom u 75 s (`.hw-navbat`). Prva verzija je izgledala „kartonski".
@@ -1213,16 +1214,23 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   (tarot-data.js na dnu `<body>` se izvrši PRIJE defer skripti).
 - **Uvod pri PRVOM posjetu u tjednu** (`mountIntro`, `#hw-intro`, stilovi `.hwi-*`), ~16 s do otvaranja stranice:
   ekran učitavanja krene **normalno** (ljubičasto, „Znak A" se crta; overlay je proziran) → **munja ga prekine**
-  i overlay ga pokrije nebom → boje se isperu u sivo → **sporo izlazi Mjesec** (isti realistični SVG kao u
-  pozadini, stvarna faza) → zakrvavi (filter) uz „otkucaje srca" → jato šišmiša → završna munja: **u bljesku
-  se doda `hw-on`** → na crnom „Veo između svjetova je tanak…" → overlay nestane, a ekran učitavanja crta logo
+  i overlay ga pokrije nebom → nebo potamni → **sporo izlazi Mjesec** (isti realistični SVG kao u
+  pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato VELIKIH šišmiša → završna munja: **u bljesku
+  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" → overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
   otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+- **Munje** su kanal, ne linija: `jag()` (pomicanje sredine, sitni+krupni lomovi), grane koje se granaju, debljina
+  pada prema granama, tri sloja (`.hwi-b-glow` zamućen / `-halo` / `-core`), osvjetljenje neba (`.hwi-skyglow`),
+  treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).
+- **Mobitel / performanse:** u pokretu se animiraju SAMO `opacity` i `transform`. Krvavljenje = pretapanje
+  drugog sloja sa STATIČNIM filterom (`.hwi-ml-r`), ne tranzicija filtera; potamnjenje neba = tamni sloj
+  (`.hwi-sky::after`), ne `grayscale()`; Mjesec ima `will-change`. Filter u pokretu preko teksture Mjeseca
+  (feTurbulence) je na mobitelu zapinjao.
 - **Mjesec ostaje cijelo vrijeme:** kad se u uvodu pojavi, ostaje kroz bljesak i tekst; završni bljesak doda
-  isti (krvavi) Mjesec na **ekran učitavanja** (`addLoaderMoon`, `.ajl-hwmoon`), a na stranici je onaj u pozadini.
+  isti (tamnosivi) Mjesec na **ekran učitavanja** (`addLoaderMoon`, `.ajl-hwmoon`), a na stranici je onaj u pozadini.
   Sva tri dijele `.hw-moon-geo` (isto mjesto i veličina), pa se prijelazi ne vide. Ekran učitavanja ima taj
-  Mjesec **pri SVAKOM učitavanju u tjednu**, a logo je na njemu u boji kosti (`--aa-boja`), da se vidi.
+  Mjesec **pri SVAKOM učitavanju u tjednu** (opacity 0.15 kao pozadina; logo ostaje u boji teme).
   `moonSvg(sfx)` daje svakom Mjesecu vlastite id-eve (sva tri su u DOM-u istovremeno).
   Pamti se u **localStorage `aj_hw_intro` = godina** (navedeno u Pravilima privatnosti, t. 6 — ne uklanjati),
   pa se svako sljedeće učitavanje tog tjedna odmah otvara u Halloween temi, a iduće godine uvod opet ide.

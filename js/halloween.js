@@ -334,9 +334,12 @@
       shake(700, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
       setTimeout(() => { goSpooky(); addLoaderMoon(true); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
-      const tText = 1300, tOut = 4100;
+      // rečenica ~3 s na ekranu; dok traje, Mjesec se zatamni da se jedva vidi, pa se
+      // prije nestanka overlaya vrati na razinu pozadine (0.15) - prijelaz se ne vidi
+      const tText = 1300, tOut = 5300;
+      setTimeout(() => $('.hwi-moon').classList.add('hwi-moon-dimmable', 'hwi-moon-dim'), 500);
       setTimeout(() => $('.hwi-text').classList.add('hwi-text-in'), tText);
-      setTimeout(() => $('.hwi-text').classList.remove('hwi-text-in'), tOut - 900);
+      setTimeout(() => { $('.hwi-text').classList.remove('hwi-text-in'); $('.hwi-moon').classList.remove('hwi-moon-dim'); }, tOut - 1100);
       setTimeout(() => {
         ov.classList.add('hwi-out');
         if (window.AJHalloween._introDone) window.AJHalloween._introDone();   // loader kreće

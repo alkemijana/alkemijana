@@ -1218,7 +1218,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   i overlay ga pokrije nebom → nebo potamni → **sporo izlazi Mjesec** (isti realistični SVG kao u
   pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 MALIH, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja)
   izleti iz donjeg lijevog kuta RAVNO PREKO MJESECA, traje ~1,5 s (detaljni/veliki/nemirni su izgledali kao leptirići) → završna munja: **u bljesku
-  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" → overlay nestane, a ekran učitavanja crta logo
+  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Veo između svjetova je tanak…" (~3 s; Mjesec se za to vrijeme zatamni na 0.04 -
+  jedva se vidi - pa se prije kraja vrati na 0.15 kao pozadina, `.hwi-moon-dim`) → overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
   otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.

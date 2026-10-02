@@ -281,6 +281,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hwi-moon.hwi-moon-ghost { opacity: 0.15 !important; transition: none !important; }
 .hwi-moon-ghost .hwi-ml-r { opacity: 0 !important; transition: none !important; }
 .hwi-moon-ghost .hwi-ml-n { opacity: 1 !important; transition: none !important; }
+/* dok je na ekranu rečenica, Mjesec se zatamni da se jedva vidi */
+.hwi-moon.hwi-moon-ghost.hwi-moon-dimmable { transition: opacity 1.2s ease !important; }
+.hwi-moon.hwi-moon-ghost.hwi-moon-dim { opacity: 0.04 !important; }
 .hwi-moon-ghost .hwi-ml-n svg { filter: drop-shadow(0 0 14px rgba(215, 200, 175, 0.4)) drop-shadow(0 0 60px rgba(90, 90, 96, 0.35)); }
 /* otkucaji srca - tamnocrveni rub ekrana (sporo, nije bljesak) */
 .hwi-vig {

@@ -809,21 +809,27 @@
   }
 
   /* ==== PAUKOVE MREŽE + PAUK (vlasnik) ====
-     Dvije mreže (gore desno, dolje lijevo) koje RASTU kroz Halloween tjedan: dan 0 = 25. 10. …
-     dan 7 = 1. 11. Mali, jedva vidljivi pauk isplete današnji dio dok je posjetitelj na stranici
-     (~150 s): prvo gornju mrežu, pa uz zid ode s ekrana i dođe do donje.
-     GRAĐA KAO PRAVA MREŽA U KUTU (vlasnik: „svaka zraka ima sidrenu točku, a sidrene točke su
-     rubovi ekrana"): središte je malo odmaknuto od kuta, a SVAKA zraka je napeta od središta do
-     RUBA EKRANA (gornjeg ili bočnog) i ondje usidrena. Lovna spirala su lukovi oko središta;
-     luk koji prijeđe rub ekrana nastavlja van (do zida). Nema niti preko cijelog ekrana.
-     RAST: zrake se postave prvi dan (pauk ih plete od ruba do središta i natrag, kao pravi),
-     a svaki dan se dopletu novi krugovi spirale prema van. Fiksna geometrija iz fiksnog sjemena,
-     dan određuje samo dokle se crta - ono od jučer ostaje IDENTIČNO.
-     PAUK HODA SAMO PO NITIMA KOJE VEĆ POSTOJE (vlasnik: „ne smije letjeti između zraka"):
-     sa zraka na zraku prelazi kroz središte ili po krugu koji upravo plete, s kruga na krug po
-     zraci, a s ekrana dolazi i odlazi uz zid do sidra zrake.
-     - BEZ ŠTEKANJA: JS + rAF, u kadru se mijenja SAMO jedna nit (stroke-dashoffset) i transform
-       pauka. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi gdje je stalo.
+     Dvije mreže (gore desno, dolje lijevo) koje RASTU kroz Halloween tjedan (dan 0 = 25. 10. …
+     dan 7 = 1. 11.). Mali, jedva vidljivi pauk isplete današnji dio dok je posjetitelj na
+     stranici: prvo gornju mrežu, pa uz zid (izvan ekrana) dođe do donje.
+     GRAĐA I REDOSLIJED KAO PRAVI PAUK U KUTU (vlasnik):
+       1. prvi dan prvo RAVNA POPREČNA NIT preko kuta, od gornjeg do bočnog ruba ekrana;
+          njezina SREDINA je središte mreže;
+       2. iz središta zrake do rubova ekrana (svaka usidrena na rubu): pauk je isplete, vrati se
+          po njoj u središte i NAPNE je - središte se pomakne prema sidru, a cijela mreža se
+          elastično prilagodi (poprečna nit postane napeti „V", lukovi se malo povuku). Prva zraka
+          ide prema kutu i vuče najjače; i kasnijih dana svaka nova zraka malo povuče;
+       3. lukovi oko središta, od vanjskog prema unutra, smjer se izmjenjuje (lovna spirala);
+          s luka na luk prelazi po poprečnoj niti.
+     ZRAKE SE DODAJU I KASNIJIH DANA (prvi dan poprečna + 3, pa po 1-3 dnevno), a svaki dan se
+     dopletu novi lukovi prema van; luk spaja samo zrake koje su postojale TOG dana.
+     ELASTIČNOST: svaka točka luka je zadana kao UDIO duljine svoje zrake (0 = središte, 1 = sidro),
+     ne kao fiksna koordinata - pa kad se središte pomakne, mreža se prirodno razvuče. Položaj
+     središta za svaki dan je određen (svi povlaci do tog dana), pa je mreža svaki dan ista za sve.
+     PAUK HODA SAMO PO NITIMA KOJE VEĆ POSTOJE i UVIJEK ISTOM BRZINOM (`BRZINA` px/s).
+     - BEZ ŠTEKANJA: JS + rAF; u kadru se mijenja jedna nit (stroke-dashoffset) i transform pauka.
+       Samo dok traje napinjanje (~1,5 s) preslože se sve niti te mreže. U skrivenoj kartici rAF
+       stoji pa pletenje stane i nastavi gdje je stalo.
      - Sve je position:fixed, pa se plete i dok posjetitelj mijenja stranice.
      - Napredak se NE pamti (nema pohrane): nakon osvježavanja današnji dio kreće ispočetka.
      - Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu (inače se mreža mijenja iz dana u dan).
@@ -847,87 +853,136 @@
     let sj = o.sjeme;
     const rnd = () => { sj |= 0; sj = sj + 0x6D2B79F5 | 0; let t = Math.imul(sj ^ sj >>> 15, 1 | sj); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
     const f = n => n.toFixed(1), M = o.mjera;
-    const H = [400 - (96 + rnd() * 30) * M, (88 + rnd() * 30) * M];      // središte, malo odmaknuto od kuta
-    const RD = [42, 70, 102, 136, 172, 212, 256, 305].map(r => r * M);   // dokle spirala seže koji dan
-    // sidra zraka: po rubu ekrana od gornjeg ruba (lijevo) preko kuta do desnog ruba (dolje), nepravilno
-    const Lr = 395 * M, nz = 10 + Math.floor(rnd() * 3), zrake = [];
-    for (let i = 0; i < nz; i++) {
-      const s = (i + 0.5 + (rnd() - .5) * 0.75) / nz * 2 * Lr;          // položaj na rubu (0 … 2·Lr)
-      const E = s < Lr ? [400 - Lr + s, 0] : [400, s - Lr];             // gornji rub, pa desni
-      const dx = E[0] - H[0], dy = E[1] - H[1], L = Math.hypot(dx, dy);
-      zrake.push({ E, u: [dx / L, dy / L], L, kut: Math.atan2(dy, dx) });
+    const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    // poprečna nit od gornjeg do bočnog ruba; njezina sredina je početno središte
+    const T = [400 - (330 + rnd() * 50) * M, 0], R = [400, (320 + rnd() * 50) * M];
+    const H0 = lerp(T, R, 0.5);
+    // sidra zraka po rubu od T preko kuta do R; krajnje dvije su polovice poprečne niti
+    const Lg = 400 - T[0], Lt = Lg + R[1], NI = 8 + Math.floor(rnd() * 3);
+    const E = [T];
+    for (let i = 0; i < NI; i++) {
+      const s = (i + 0.5 + (rnd() - .5) * 0.7) / NI * Lt;
+      E.push(s < Lg ? [T[0] + s, 0] : [400, s - Lg]);
     }
-    zrake.sort((a, b) => a.kut - b.kut);                  // redom od gornjeg-lijevog do desnog-donjeg
-    const NZ = zrake.length;
-    const tocka = (i, r) => [H[0] + zrake[i].u[0] * r, H[1] + zrake[i].u[1] * r];
-    // krugovi spirale: nejednak razmak, svaka zraka svoj pomak, nikad preblizu prethodnom
-    const krugovi = [];
-    for (let r = 7 + rnd() * 4, k = 0; r < 340 * M; k++) {
+    E.push(R);
+    const NZ = E.length;
+    let iK = 1;                                           // zraka najbliža kutu - prva i vuče najjače
+    E.forEach((e, i) => { if (i > 0 && i < NZ - 1 && dist(e, [400, 0]) < dist(E[iK], [400, 0])) iK = i; });
+    // koji dan nastaje koja zraka: poprečna (0 i NZ-1) + 3 prvi dan, ostale dan 1-4
+    const dan = E.map(() => 0);
+    const prvi = new Set([0, NZ - 1, iK, Math.round(NZ * 0.2), Math.round(NZ * 0.8)]);
+    const ostale = E.map((e, i) => i).filter(i => !prvi.has(i)).map(i => ({ i, r: rnd() })).sort((a, b) => a.r - b.r);
+    const poDanu = Math.ceil(ostale.length / 4);
+    ostale.forEach((x, n) => { dan[x.i] = 1 + Math.floor(n / poDanu); });
+    // redoslijed nastajanja zraka (bez poprečne) i povlak svake: prva prema kutu jako, ostale malo
+    const redZ = [iK, ...E.map((e, i) => i).filter(i => i > 0 && i < NZ - 1 && i !== iK)]
+      .sort((a, b) => dan[a] - dan[b] || (a === iK ? -1 : b === iK ? 1 : a - b));
+    const vuce = i => i === iK ? 0.24 : 0.035;
+    const Hnakon = [];                                    // središte nakon napinjanja zrake (po redu)
+    let h = H0;
+    redZ.forEach(i => { h = lerp(h, E[i], vuce(i)); Hnakon.push(h); });
+    const Hdana = d => { let x = H0; redZ.forEach((i, n) => { if (dan[i] <= d) x = Hnakon[n]; }); return x; };
+    // lukovi: radijusi oko središta prvog dana pretvoreni u UDIO duljine zrake (elastično)
+    const Href = Hdana(0), Lref = E.map(e => dist(Href, e));
+    const Rmax = 0.94 * Math.min(Lref[0], Lref[NZ - 1]), krugovi = [];
+    for (let r = 8 + rnd() * 4, k = 0; r < Rmax; k++) {
       const pr = krugovi[k - 1];
-      krugovi.push(zrake.map((z, i) => {
-        const v = r * (1 + (rnd() - .5) * 0.16) + (rnd() - .5) * 2;
+      krugovi.push(E.map((e, i) => {
+        const v = r * (1 + (rnd() - .5) * 0.14) + (rnd() - .5) * 2;
         return pr ? Math.max(v, pr[i] + 4) : v;
       }));
-      r += 6 + k * 0.55 + rnd() * 6;
+      r += 7 + k * 0.5 + rnd() * 6;
     }
-    const par = krugovi.map(() => zrake.slice(1).map(() => ({ s: 0.8 + rnd() * 0.14, m: 0.36 + rnd() * 0.28 })));
-    const K = RD.map(R => { let k = 0; while (k + 1 < krugovi.length && Math.max(...krugovi[k + 1]) <= R) k++; return k; });
+    const udio = krugovi.map(kr => kr.map((r, i) => r / Lref[i]));
+    const par = krugovi.map(() => E.map(() => ({ s: 0.82 + rnd() * 0.13, m: 0.36 + rnd() * 0.28 })));
+    const RD = [0.2, 0.32, 0.44, 0.56, 0.67, 0.78, 0.88, 0.97].map(x => x * Rmax);
+    const K = RD.map(Rd => { let k = 0; while (k + 1 < krugovi.length && Math.max(krugovi[k + 1][0], krugovi[k + 1][NZ - 1]) <= Rd) k++; return k; });
     const kDo = d => d < 0 ? -1 : K[d];
-    const luk = (k, i, j) => {                             // nit kruga k od zrake i do susjedne zrake j
-      const a = tocka(i, krugovi[k][i]), b = tocka(j, krugovi[k][j]), p = par[k][Math.min(i, j)];
-      const t = i < j ? p.m : 1 - p.m;
-      const mx = a[0] + (b[0] - a[0]) * t, my = a[1] + (b[1] - a[1]) * t;
-      const q = [H[0] + (mx - H[0]) * p.s, H[1] + (my - H[1]) * p.s];   // objesi se prema središtu
-      return { A: a, B: b, d: `M${f(a[0])} ${f(a[1])}Q${f(q[0])} ${f(q[1])},${f(b[0])} ${f(b[1])}` };
+    const danLuka = k => K.findIndex(x => k <= x);
+    const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
+    const parovi = k => { const s = skup(danLuka(k)), out = []; for (let n = 0; n + 1 < s.length; n++) out.push([s[n], s[n + 1]]); return out; };
+
+    // ---- oblik ovisi samo o položaju središta Hc ----
+    const pt = (i, t, Hc) => lerp(Hc, E[i], t);           // točka na zraci i, udio t
+    const dRavna = (A, B) => `M${f(A[0])} ${f(A[1])}L${f(B[0])} ${f(B[1])}`;
+    const dLuk = (k, i, j, Hc) => {
+      const a = pt(i, udio[k][i], Hc), b = pt(j, udio[k][j], Hc), p = par[k][Math.min(i, j)];
+      const m = lerp(a, b, i < j ? p.m : 1 - p.m), q = lerp(Hc, m, p.s);   // objesi se prema središtu
+      return `M${f(a[0])} ${f(a[1])}Q${f(q[0])} ${f(q[1])},${f(b[0])} ${f(b[1])}`;
     };
-    const ravna = (A, B, z) => ({ A, B, z, d: `M${f(A[0])} ${f(A[1])}L${f(B[0])} ${f(B[1])}` });
-    const staro = [];
-    if (DAN > 0) zrake.forEach(z => staro.push(ravna(H, z.E, 1)));
-    for (let k = 0; k <= kDo(DAN - 1); k++) for (let i = 0; i < NZ - 1; i++) staro.push(luk(k, i, i + 1));
+    const niti = [];                                      // { gen: Hc => d, novo, z }
+    const most = { gen: Hc => `M${f(T[0])} ${f(T[1])}L${f(Hc[0])} ${f(Hc[1])}L${f(R[0])} ${f(R[1])}`, z: 1 };
+    niti.push(most);
+    const zrNit = [];
+    E.forEach((e, i) => { if (i > 0 && i < NZ - 1 && dan[i] <= DAN) niti.push(zrNit[i] = { gen: Hc => dRavna(Hc, e), z: 1, novo: dan[i] === DAN }); });
+    const lukNit = {};
+    for (let k = 0; k <= kDo(DAN); k++) parovi(k).forEach(([i, j]) => niti.push(lukNit[k + ':' + i] = { gen: Hc => dLuk(k, i, j, Hc), novo: k > kDo(DAN - 1), k, i, j }));
+    most.novo = DAN === 0;
+    if (most.novo) most.gen0 = () => dRavna(T, R);        // dok je još ravna (prije prvog napinjanja)
 
-    /* Put pauka: 'plete' (crta nit) i 'hoda' (po niti koja već postoji). */
+    /* Put pauka danas. Točke su ZADANE SIMBOLIČKI (zraka + udio, ili fiksna točka), jer se
+       središte usput pomiče - položaj se računa tek u trenutku hoda. */
     const put = [];
-    const plete = x => put.push({ tip: 'plete', ...x });
-    const hoda = (A, B) => { if (Math.hypot(B[0] - A[0], B[1] - A[1]) > 0.3) put.push({ tip: 'hoda', A, B }); };
-    const van = i => [zrake[i].E[0] + zrake[i].u[0] * 40, zrake[i].E[1] + zrake[i].u[1] * 40];   // iza sidra, s ekrana
-    let gdje;
+    let Hc = DAN === 0 ? H0 : Hdana(DAN - 1);
+    const Hpoc = Hc;
+    const rj = (ref, H) => ref.xy ? ref.xy : pt(ref.i, ref.t, H);
+    const hoda = (A, B) => { const l = dist(rj(A, Hc), rj(B, Hc)); if (l > 0.3) put.push({ tip: 'hoda', A, B, len: l }); };
+    const plete = (nit, len, obrnuto) => put.push({ tip: 'plete', nit, len, obrnuto });
+    const van = e => ({ xy: e[1] === 0 ? [e[0], -40] : [440, e[1]] });   // iza sidra, s ekrana (uz zid)
+    const S = { i: 0, t: 0 };                              // središte (bilo koja zraka, udio 0)
+    hoda(van(T), { xy: T });
+    let gdje = { xy: T };
     if (DAN === 0) {
-      // zrake: prvu od ruba do središta, ostale od središta do ruba i natrag po istoj niti
-      gdje = van(0); hoda(gdje, zrake[0].E);
-      plete(ravna(zrake[0].E, H, 1));
-      for (let i = 1; i < NZ; i++) {
-        plete(ravna(H, zrake[i].E, 1));
-        if (i < NZ - 1) hoda(zrake[i].E, H);
-      }
-      gdje = zrake[NZ - 1].E;
-    } else {
-      gdje = van(NZ - 1); hoda(gdje, zrake[NZ - 1].E); gdje = zrake[NZ - 1].E;
+      plete(most, dist(T, R));                            // prvo ravna poprečna nit
+      gdje = { i: NZ - 1, t: 1 };
     }
-    // današnji krugovi: od vanjskog prema unutra, smjer se izmjenjuje; s kruga na krug po zraci
-    let ide = NZ - 1;                                    // na kojoj je zraci pauk
-    for (let k = kDo(DAN), n = 0; k > kDo(DAN - 1); k--, n++) {
-      const start = tocka(ide, krugovi[k][ide]);
-      hoda(gdje, start);
-      const smjer = ide === 0 ? 1 : -1;
-      for (let i = ide; i + smjer >= 0 && i + smjer < NZ; i += smjer) plete(luk(k, i, i + smjer));
-      ide = smjer > 0 ? NZ - 1 : 0;
-      gdje = tocka(ide, krugovi[k][ide]);
+    redZ.forEach((i, n) => {
+      if (dan[i] !== DAN) return;
+      hoda(gdje, S);                                      // po poprečnoj niti / zraci do središta
+      plete(zrNit[i], dist(Hc, E[i]));
+      hoda({ i, t: 1 }, S);                               // natrag po istoj niti
+      const Hn = Hnakon[n];
+      put.push({ tip: 'napni', H1: Hc, H2: Hn, len: 0 }); // napne je: središte ode prema sidru
+      Hc = Hn; gdje = S;
+    });
+    // lukovi: od vanjskog prema unutra; počinje na strani T, s luka na luk po poprečnoj niti
+    let ide = 0;
+    for (let k = kDo(DAN); k > kDo(DAN - 1); k--) {
+      hoda(gdje, { i: ide, t: udio[k][ide] });
+      let dio = parovi(k);
+      if (ide !== 0) dio = dio.reverse();
+      dio.forEach(([i, j]) => {
+        const nit = lukNit[k + ':' + i];
+        plete(nit, dist(pt(i, udio[k][i], Hc), pt(j, udio[k][j], Hc)) * 1.05, ide !== 0);   // obrnuto: od j prema i
+      });
+      ide = ide === 0 ? NZ - 1 : 0;
+      gdje = { i: ide, t: udio[k][ide] };
     }
-    hoda(gdje, zrake[ide].E);                             // po zraci do zida
-    hoda(zrake[ide].E, van(ide));                         // i s ekrana
+    const izlaz = ide === 0 ? T : R;                       // po poprečnoj niti do zida, pa s ekrana
+    hoda(gdje, { xy: izlaz }); hoda({ xy: izlaz }, van(izlaz));
 
+    // ---- SVG ----
     const web = document.createElement('div');
     web.className = 'hw-web' + (o.cls ? ' ' + o.cls : '');
     web.setAttribute('aria-hidden', 'true');
-    const novo = put.filter(x => x.tip === 'plete');
-    web.innerHTML = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">' +
-      staro.map(x => `<path class="${x.z ? 'hw-web-z' : ''}" d="${x.d}"/>`).join('') +
-      novo.map(x => `<path class="hw-web-n${x.z ? ' hw-web-z' : ''}" pathLength="1" d="${x.d}"/>`).join('') + '</svg>';
+    web.innerHTML = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>';
     document.body.appendChild(web);
-    const svg = web.firstChild, els = svg.querySelectorAll('.hw-web-n');
-    novo.forEach((x, n) => { x.el = els[n]; x.len = x.el.getTotalLength(); });
-    put.forEach(x => { if (x.tip === 'hoda') x.len = Math.hypot(x.B[0] - x.A[0], x.B[1] - x.A[1]); });
-    return { web, svg, put };
+    const svg = web.firstChild;
+    niti.forEach(n => {
+      n.el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      if (n.z) n.el.classList.add('hw-web-z');
+      if (n.novo) { n.el.classList.add('hw-web-n'); n.el.setAttribute('pathLength', '1'); }
+      svg.appendChild(n.el);
+    });
+    let ravnaJos = most.novo;                             // poprečna je ravna do prvog napinjanja
+    const oblikuj = H => niti.forEach(n => n.el.setAttribute('d', n === most && ravnaJos ? n.gen0() : n.gen(H)));
+    oblikuj(Hpoc);
+    return {
+      web, svg, put, Hpoc, oblikuj, rj,
+      napeta: () => { ravnaJos = false; },
+      kraj: () => { ravnaJos = false; oblikuj(Hdana(DAN)); },
+    };
   }
   function pletiMreze() {
     const DAN = webDay();
@@ -937,14 +992,18 @@
     ];
     const koraci = [];
     mreze.forEach((m, mi) => {
+      m.Hc = m.Hpoc;
       m.put.forEach(k => koraci.push({ ...k, m }));
-      if (mi === 0) koraci.push({ m, tip: 'stoji', len: 0 });   // ide uz zid do druge mreže (izvan ekrana)
+      if (mi === 0) koraci.push({ m, tip: 'stoji', len: 0 });   // uz zid do druge mreže (izvan ekrana)
     });
-    if (reduced()) { koraci.forEach(k => { if (k.el) k.el.style.strokeDashoffset = 0; }); return; }
-    // trajanje: hodanje ~2,5x brže od pletenja, put do druge mreže 5 s; ukupno ~150 s
-    const cijena = k => k.tip === 'plete' ? k.len : k.tip === 'hoda' ? k.len / 2.5 : 0;
-    const ukupno = koraci.reduce((a, k) => a + cijena(k), 0) || 1;
-    koraci.forEach(k => { k.s = k.tip === 'stoji' ? 5 : cijena(k) / ukupno * 145; });
+    if (reduced()) {
+      mreze.forEach(m => { m.kraj(); m.svg.querySelectorAll('.hw-web-n').forEach(e => { e.style.strokeDashoffset = 0; }); });
+      return;
+    }
+    // UVIJEK ISTA BRZINA (vlasnik): trajanje = duljina na ekranu / BRZINA, i za pletenje i za hod
+    const BRZINA = 16;                                    // px u sekundi
+    const mj = new Map(mreze.map(m => { const C = m.svg.getScreenCTM(); return [m, C ? Math.hypot(C.a, C.b) : 1]; }));
+    koraci.forEach(k => { k.s = k.tip === 'stoji' ? 4 : k.tip === 'napni' ? 1.5 : k.len * mj.get(k.m) / BRZINA; });
 
     const pauk = document.createElement('div');
     pauk.className = 'hw-pauk';
@@ -963,24 +1022,34 @@
       const C = m.svg.getScreenCTM();
       return C ? [C.a * p[0] + C.c * p[1] + C.e, C.b * p[0] + C.d * p[1] + C.f] : null;
     };
+    const glatko = v => 1 - Math.pow(1 - v, 3);
     let i = 0, tk = 0, last = 0, kut = null, pr = null;
+    const zavrsi = k => {                                 // korak gotov - konačno stanje
+      if (k.tip === 'plete') k.nit.el.style.strokeDashoffset = 0;
+      if (k.tip === 'napni') { k.m.Hc = k.H2; k.m.napeta(); k.m.oblikuj(k.H2); }
+    };
     function kadar(now) {
       const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;   // skrivena kartica: rAF stoji, nema skoka
       last = now;
       tk += dt;
-      while (i < koraci.length && tk >= koraci[i].s) {    // korak gotov
-        tk -= koraci[i].s;
-        if (koraci[i].el) koraci[i].el.style.strokeDashoffset = 0;
-        i++;
-      }
+      while (i < koraci.length && tk >= koraci[i].s) { tk -= koraci[i].s; zavrsi(koraci[i]); i++; }
       if (i >= koraci.length) { pauk.remove(); return; }
       const k = koraci[i], v = k.s ? tk / k.s : 1;
       let e = null;
       if (k.tip === 'plete') {
-        k.el.style.strokeDashoffset = (1 - v).toFixed(4);
-        const q = k.el.getPointAtLength(k.len * v);
+        const el = k.nit.el, L = el.getTotalLength(), w = k.obrnuto ? 1 - v : v;
+        el.style.strokeDashoffset = ((k.obrnuto ? -1 : 1) * (1 - v)).toFixed(4);   // obrnuto: crtica raste od kraja
+        const q = el.getPointAtLength(L * w);
         e = naEkran(k.m, [q.x, q.y]);
-      } else if (k.tip === 'hoda') e = naEkran(k.m, [k.A[0] + (k.B[0] - k.A[0]) * v, k.A[1] + (k.B[1] - k.A[1]) * v]);
+      } else if (k.tip === 'hoda') {
+        const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc);
+        e = naEkran(k.m, [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v]);
+      } else if (k.tip === 'napni') {                     // pauk vuče: središte (i on s njim) ide prema sidru
+        if (!k.m.napetaV) { k.m.napeta(); k.m.napetaV = 1; }
+        const w = glatko(v), c = [k.H1[0] + (k.H2[0] - k.H1[0]) * w, k.H1[1] + (k.H2[1] - k.H1[1]) * w];
+        k.m.oblikuj(c);
+        e = naEkran(k.m, c);
+      }
       pauk.style.visibility = e ? '' : 'hidden';
       if (e) {
         if (pr) {

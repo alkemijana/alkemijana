@@ -1354,22 +1354,26 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
 - **Paukove mreže + pauk** (`buildWeb`/`pletiMreze`/`webDay` u halloween.js, `.hw-web`/`.hw-pauk`; vlasnik).
   Dvije mreže (gore desno i dolje lijevo, RAZLIČITO sjeme, donja `mjera: 0.86`; donja se gradi isto
-  kao gornja pa je CSS zakrene za 180°, `.hw-web-dl`).
-  - **Građa kao prava mreža u kutu** (vlasnik: „svaka zraka ima sidrenu točku, a sidrene točke su
-    rubovi ekrana"): središte je malo ODMAKNUTO od kuta, a svaka zraka je napeta od središta do RUBA
-    EKRANA (gornjeg ili bočnog). Lovna spirala su lukovi oko središta; luk koji prijeđe rub nastavlja
-    van ekrana (do zida). **Nema niti preko cijelog ekrana** (bila je, vlasniku se nije svidjela).
-  - **Rast kroz tjedan** (dan 0 = 25. 10. … dan 7 = 1. 11.): zrake se postave PRVI dan, svaki sljedeći
-    se dopletu novi krugovi spirale prema van (`RD[]` → `K[d]`). Fiksna geometrija iz fiksnog sjemena,
-    pa ono od jučer ostaje IDENTIČNO. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
+  kao gornja pa je CSS zakrene za 180°, `.hw-web-dl`). Puni opis je u komentaru iznad `webDay`.
+  - **Građa i redoslijed kao pravi pauk u kutu:** prvi dan prvo RAVNA POPREČNA NIT od gornjeg do bočnog
+    ruba; njezina sredina je središte. Iz središta zrake do rubova ekrana (svaka usidrena na rubu);
+    pauk zraku isplete, vrati se po njoj i NAPNE je - središte se pomakne prema sidru, a cijela mreža
+    se elastično prilagodi (poprečna postane napeti „V"). Zatim lukovi od vanjskog prema unutra
+    (izmjenični smjer), s luka na luk po poprečnoj niti. Mreža je trokut između poprečne niti i kuta.
+  - **Rast kroz tjedan:** prvi dan poprečna + 3 zrake, dani 1–4 po 1–3 nove zrake (i svaka malo napne
+    mrežu), svaki dan novi lukovi prema van. Luk spaja samo zrake koje su postojale TOG dana.
+  - **Elastičnost:** točke luka su zadane kao UDIO duljine zrake (0 = središte, 1 = sidro), ne kao
+    koordinate; oblik je funkcija položaja središta (`oblikuj(H)`), a središte za svaki dan je određeno
+    (`Hdana`). Zato se i stari dio smije pomaknuti dok pauk vuče (vlasnik je to tražio), a ipak je
+    mreža svaki dan ista za sve. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
   - **Pauk** (~15 px, jedva vidljiv; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
-    dva natrag; prva verzija s kratkim nogama u stranu „izgledala je kao rak") isplete današnji dio
-    dok je posjetitelj na stranici (~150 s): gornju mrežu, pa uz zid (izvan ekrana) do donje.
-    **Hoda SAMO po nitima koje već postoje** (vlasnik: „ne smije letjeti između zraka"): zrake plete
-    od središta do ruba i NATRAG PO ISTOJ NITI, s kruga na krug prelazi po zraci, dolazi i odlazi uz
-    zid do sidra. Provjereno testom: nijedan korak ne počinje izvan kraja prethodnog.
-  - **Bez štekanja:** JS + rAF, u kadru se mijenja SAMO jedna nit (`stroke-dashoffset`, `pathLength=1`)
-    i `transform` pauka. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi gdje je stalo
+    dva natrag; s kratkim nogama u stranu „izgledao je kao rak") **hoda SAMO po nitima koje već
+    postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 16 px/s, i pletenje i hod) - trajanje nije bitno
+    (prvi dan ~4 min). Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
+    Između mreža ide uz zid izvan ekrana. Nema niti preko cijelog ekrana (vlasniku se nije svidjela).
+  - **Bez štekanja:** JS + rAF; u kadru se mijenja jedna nit (`stroke-dashoffset`, `pathLength=1`; luk
+    pleten „unatrag" ima negativan offset) i `transform` pauka; samo dok traje napinjanje (1,5 s)
+    preslože se sve niti te mreže. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi
     (pri testu u pozadinskom oknu preglednika zato „ništa ne radi"). Sve je `position:fixed`.
     **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti).
   - **Bez `vector-effect: non-scaling-stroke`** - s njim se crtanje preko `pathLength` zaustavi na pola.

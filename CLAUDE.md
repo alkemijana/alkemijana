@@ -1201,7 +1201,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   ekranu (natal-render.js `currentScreenPalette`, natal-live.js) uzme `AJHalloween.wheelPalette`;
   PDF palete (`poster`/`ink`) se ne diraju. **Poleđine tarot karata** imaju tamnocrvenu sablasnu verziju
   `tarot/assets/decks/<špil>/back-halloween.svg` — **GENERIRANE** iz `back.svg` (`node tools/halloween-backs.js`:
-  prebojano po svjetlini + vinjeta + dva crna šišmiša); halloween.css ih pod `.hw-on` stavi umjesto back.svg.
+  prebojano po svjetlini + vinjeta); halloween.css ih pod `.hw-on` stavi umjesto back.svg.
+  **Šišmiša na poleđinama NEMA** — bila su dva gore desno, izbačeni 5. 10. 2026. na zahtjev.
   Vinjeta (`body::before`), magla pri dnu (`.hw-fog`).
   **Svijetla tema je isključena** — `MutationObserver` skida `data-theme="light"`, prekidač teme (`.nd-theme`)
   je skriven; `aj_theme` se NE dira, pa se nakon tjedna vrati posjetiteljev izbor.

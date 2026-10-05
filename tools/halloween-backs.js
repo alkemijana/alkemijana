@@ -6,7 +6,8 @@
      1. prebojа SVAKU boju po svjetlini (nijansa se zanemaruje, pa i
         zeleni Marseille i plavi Oracle postanu crveni):
           svijetle (L > 72 %) → kost, srednje → tamna krv, tamne → crno-crvena
-     2. doda tamnu vinjetu po rubovima i dva crna šišmiša gore desno.
+     2. doda tamnu vinjetu po rubovima.
+   (Do 5. 10. 2026. su se dodavala i dva crna šišmiša gore desno - izbačeni na zahtjev.)
    Motiv svakog špila ostaje prepoznatljiv - mijenja se samo raspoloženje.
    css/halloween.css ih pod html.hw-on stavi umjesto back.svg.
 
@@ -53,14 +54,8 @@ function recolor(svg) {
   });
 }
 
-// crni šišmiš (raširena krila) - isti obris kao šišmiši na stranici (js/halloween.js, poza 'mid')
-const WING = 'M-2 -2 Q-9.5 -7.5 -17 -6 L-43 -9 Q-32.8 -1.7 -40 2 Q-28.2 3.9 -32 9 Q-21.2 6.9 -20 10 Q-8.6 6.7 -3 6 Z';
-const batAt = (x, y, sc, rot) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${sc})" fill="#000">` +
-  `<path d="${WING}"/><path d="${WING}" transform="scale(-1 1)"/>` +
-  `<ellipse cx="0" cy="2.5" rx="3.3" ry="6.8"/><circle cx="0" cy="-5" r="3"/>` +
-  `<path d="M-2.7 -6.3 L-2.4 -11.2 L-0.5 -7.4 Z M2.7 -6.3 L2.4 -11.2 L0.5 -7.4 Z"/></g>`;
-// dva šišmiša gore desno - između ornamenata, da se ne stope s motivom
-const BAT = batAt(186, 104, 0.5, -12) + batAt(212, 128, 0.3, 8);
+/* Šišmiša na poleđinama VIŠE NEMA (izbačeni 5. 10. 2026. na zahtjev vlasnika):
+   poleđina je ostala samo prebojani motiv špila + vinjeta. */
 const VIGNETTE =
   '<defs><radialGradient id="hwVig" cx="50%" cy="48%" r="70%">' +
   '<stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.72"/>' +
@@ -70,7 +65,7 @@ for (const d of DECKS) {
   const src = path.join(DIR, d, 'back.svg');
   if (!fs.existsSync(src)) continue;
   let svg = recolor(fs.readFileSync(src, 'utf8'));
-  svg = svg.replace(/<\/svg>\s*$/, `  <!-- Halloween: vinjeta + šišmiši (tools/halloween-backs.js) -->\n  ${VIGNETTE}\n  ${BAT}\n</svg>\n`);
+  svg = svg.replace(/<\/svg>\s*$/, `  <!-- Halloween: vinjeta (tools/halloween-backs.js) -->\n  ${VIGNETTE}\n</svg>\n`);
   svg = '<!-- GENERIRANO iz back.svg - ne uređivati ručno (node tools/halloween-backs.js) -->\n' + svg;
   fs.writeFileSync(path.join(DIR, d, 'back-halloween.svg'), svg);
   console.log(d + '/back-halloween.svg');

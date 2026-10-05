@@ -184,7 +184,7 @@
 
 /* ============================================================
    POLEĐINE TAROT KARATA - tamnocrvene, sablasne (isti motiv svakog špila,
-   prebojan + vinjeta + šišmiš). GENERIRANE: node tools/halloween-backs.js
+   prebojan + vinjeta; šišmiši su izbačeni). GENERIRANE: node tools/halloween-backs.js
    (iz back.svg). Selektori su isti kao u tarot/tarot.css, samo pod .hw-on.
    ============================================================ */
 .hw-on .vtar-back-rws .vtar-deck-card, .hw-on .vtar-back-rws .vtar-card-back, .hw-on .vtar-back-rws.vtar-discard-card, .hw-on .vtar-back-rws.vtar-deck-switch-thumb,

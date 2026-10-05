@@ -1352,7 +1352,15 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   uz `text-wrap: balance` da na mobitelu ne ostane jedna riječ sama u redu.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
-- **BEZ paukova** (izričit zahtjev) i bez narančasto-crne/zlatne — boje iz palete stranice.
+- **Paukova mreža u gornjem desnom kutu RASTE kroz tjedan** (`initWeb`/`webDay`, `.hw-web`; vlasnik):
+  dan 0 = 25. 10. (mala) … dan 7 = 1. 11. (puna). **Ne skalira se** — cijela mreža je jedna fiksna
+  geometrija iz fiksnog sjemena, a dan određuje samo dokle se crta (`RD[]`, polumjer u viewBoxu 400),
+  pa jučerašnje niti ostaju IDENTIČNE, a dodaju se novi vanjski krugovi i produženja zraka; današnji
+  dio (`.hw-web-n`) se pri otvaranju ispreda od središta prema van. **Slučajni brojevi se uzimaju
+  za SVAKU nit, i nevidljivu** — inače se slijed pomakne i vanjske niti bi se mijenjale iz dana u dan
+  (bio stvarni kvar, provjereno usporedbom 3. i 4. dana: 0 promijenjenih). Pregled: `?halloween&mreza=0..7`.
+  Ispod sadržaja (z-index 1), boja kosti, `opacity .32`. Pauka na mreži NEMA.
+- **BEZ paukova** (izričit zahtjev; mreža bez pauka je dopuštena, v. gore) i bez narančasto-crne/zlatne — boje iz palete stranice.
 
 ### Zvjezdice na pozadini
 SVG s ručno postavljenim circle elementima na koordinatama stvarnih horoskopskih zviježđa (RA/Dec).

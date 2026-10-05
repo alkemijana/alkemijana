@@ -808,9 +808,86 @@
     flash.addEventListener('animationend', () => flash.classList.remove('hw-pageflash-on'));
   }
 
+  /* Paukova mreža u gornjem desnom kutu - RASTE kroz tjedan (dan 0 = 25. 10. … dan 7 = 1. 11.).
+     NE skalira se: cijela mreža je jedna fiksna geometrija (iz fiksnog sjemena, ista svima i
+     svaki dan), a dan određuje samo DOKLE se crta (polumjer R po danu). Niti od jučer zato
+     ostanu točno gdje su bile, a dodaju se novi vanjski krugovi i produženja zraka.
+     Današnji novi dio se pri otvaranju stranice polako ispreda (crta od središta prema van).
+     Pauka NEMA (vlasnik: bez paukova). Pregled: `?mreza=0..7` (uz ?halloween). */
+  function webDay() {
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.has('mreza')) return Math.max(0, Math.min(7, parseInt(q.get('mreza'), 10) || 0));
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zagreb', month: 'numeric', day: 'numeric' })
+        .formatToParts(new Date());
+      const m = +parts.find(p => p.type === 'month').value;
+      const d = +parts.find(p => p.type === 'day').value;
+      if (m === 10 && d >= 25) return d - 25;
+      if (m === 11 && d === 1) return 7;
+    } catch (e) {}
+    return 7;                                             // pregled izvan tjedna: cijela mreža
+  }
+  function initWeb() {
+    const DAN = webDay();
+    const RD = [72, 112, 152, 194, 236, 280, 328, 385];   // dokle mreža seže koji dan (viewBox 400)
+    let sj = 0x5eed1031;                                   // fiksno sjeme: ista mreža svaki dan
+    const rnd = () => { sj |= 0; sj = sj + 0x6D2B79F5 | 0; let t = Math.imul(sj ^ sj >>> 15, 1 | sj); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    const CX = 400, CY = 0, f = n => n.toFixed(1);
+    // zrake: od uz gornji rub (kut 0) do uz desni rub (kut 90), nepravilno razmaknute
+    const NZ = 11, zrake = [];
+    for (let i = 0; i < NZ; i++) {
+      const a = (2 + i * (86 / (NZ - 1)) + (i && i < NZ - 1 ? (rnd() - .5) * 5 : 0)) * Math.PI / 180;
+      zrake.push({ dx: -Math.cos(a), dy: Math.sin(a), dulj: 400 * (0.9 + rnd() * 0.12) });
+    }
+    const tocka = (z, r) => [CX + z.dx * r, CY + z.dy * r];
+    // krugovi: razmak lagano raste prema van, svaka zraka ima malo svoj pomak (ručni rad)
+    const krugovi = [];
+    for (let r = 16, k = 0; r < 400; k++) {
+      krugovi.push(zrake.map(() => r + (rnd() - .5) * 4));
+      r += 11 + k * 0.55 + rnd() * 3;
+    }
+    const doseg = d => d < 0 ? 0 : RD[d];
+    const vidi = (z, r, d) => r <= Math.min(doseg(d), z.dulj);
+    const staro = [], novo = [];                          // novo = ono što je danas dodano (ispreda se)
+    zrake.forEach(z => {
+      const r0 = Math.min(doseg(DAN - 1), z.dulj), r1 = Math.min(doseg(DAN), z.dulj);
+      const [x0, y0] = tocka(z, r0), [x1, y1] = tocka(z, r1);
+      if (r0 > 0) staro.push({ d: `M${CX} ${CY}L${f(x0)} ${f(y0)}`, r: 0, z: 1 });
+      if (r1 > r0) novo.push({ d: `M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`, r: r0, z: 1 });
+    });
+    krugovi.forEach((kr, k) => {
+      for (let i = 0; i < NZ - 1; i++) {
+        // slučajni brojevi se uzimaju UVIJEK, i za nevidljive niti - inače bi se slijed
+        // pomaknuo i vanjske niti bi svaki dan izgledale drugačije
+        const pokidana = rnd() < 0.05, s = 0.94 - rnd() * 0.03;
+        if (pokidana) continue;                           // poneka nit nedostaje
+        const a = zrake[i], b = zrake[i + 1], ra = kr[i], rb = kr[i + 1];
+        const danas = vidi(a, ra, DAN) && vidi(b, rb, DAN);
+        if (!danas) continue;
+        const [x0, y0] = tocka(a, ra), [x1, y1] = tocka(b, rb);
+        // nit se blago objesi prema kutu (kontrolna točka bliže središtu)
+        const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+        const p = { d: `M${f(x0)} ${f(y0)}Q${f(CX + (mx - CX) * s)} ${f(CY + (my - CY) * s)},${f(x1)} ${f(y1)}`, r: Math.max(ra, rb) };
+        (vidi(a, ra, DAN - 1) && vidi(b, rb, DAN - 1) ? staro : novo).push(p);
+      }
+    });
+    const put = (x, cls, i) => `<path class="${cls}${x.z ? ' hw-web-z' : ''}" d="${x.d}"${cls === 'hw-web-n' ? ` pathLength="1" style="--hw-wd:${(x.r / RD[7] * 2.4 + (i % 5) * 0.05).toFixed(2)}s"` : ''}/>`;
+    const web = document.createElement('div');
+    web.className = 'hw-web';
+    web.setAttribute('aria-hidden', 'true');
+    web.innerHTML = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">' +
+      staro.map((x, i) => put(x, 'hw-web-s', i)).join('') + novo.map((x, i) => put(x, 'hw-web-n', i)).join('') + '</svg>';
+    document.body.appendChild(web);
+    // ispredanje kreće tek kad se stranica otkrije (ekran učitavanja je inače preko nje)
+    const kreni = () => web.classList.add('hw-web-go');
+    if (!root.classList.contains('aj-loading')) setTimeout(kreni, 400);
+    else document.addEventListener('aj:revealed', () => setTimeout(kreni, 600), { once: true });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initScenery();
     initJack();
+    initWeb();
     if (!wantIntro) addLoaderMoon(false);   // s uvodom ga doda završni bljesak
     if (reduced()) return;
     initNavBat();

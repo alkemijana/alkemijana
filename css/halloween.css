@@ -430,3 +430,34 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 }
 /* duga prva rečenica se na mobitelu prelomi - balance da ne ostane „tanak." sam u redu */
 .hw-on #home .hero-desc > span { text-wrap: balance; }
+
+/* Paukova mreža u gornjem desnom kutu (js/halloween.js initWeb) - raste kroz tjedan,
+   jučerašnje niti ostaju iste, današnje (.hw-web-n) se ispredu od središta prema van.
+   Ispod sadržaja (z-index 1 kao magla), boja stare kosti, tanke niti stalne debljine. */
+.hw-web {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: clamp(190px, 34vw, 440px);
+  aspect-ratio: 1;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.32;
+}
+.hw-web svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-web path {
+  fill: none;
+  stroke: #d8cdb8;
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.hw-web path.hw-web-z { stroke-width: 0.95; }
+.hw-web .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.hw-web.hw-web-go .hw-web-n {
+  animation: hwWebSpin 1.6s cubic-bezier(0.4, 0, 0.3, 1) var(--hw-wd, 0s) forwards;
+}
+@keyframes hwWebSpin { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .hw-web .hw-web-n { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+}

@@ -1369,6 +1369,14 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     zraka tog dana; luk spaja samo zrake koje su postojale TOG dana, a s luka na luk se prelazi po
     krajnjoj zraci. Sidra su zadana jednim brojem `s` po rubu (s<0 gornji, s>0 bočni); sidra smiju
     izaći iz viewBoxa 400 (SVG ima overflow visible), pa je zadnji dan mreža preko pola širine ekrana.
+  - **Bez oštrog „V" u središtu** (vlasnik): unutarnji lukovi (do 0,32 kraće krajnje zrake tog dana) se
+    ZATVARAJU oko cijelog središta - preko otvorene strane (prema sredini ekrana) ide luk (`dZat`, polilinija
+    kojoj polumjer prelazi s jedne zrake na drugu i blago se objesi; savršen krug je izgledao kao meta).
+    Zatvoreni lukovi se pletu uvijek u istom smjeru (prava spirala), ostali tamo-amo.
+  - **Stari lukovi se PRIČVRSTE na nove zrake** (vlasnik: „ne spaja lukove od jučer gdje je nova zraka"):
+    na povratku po novoj zraci u središte pauk kod svakog starog luka koji ona presijeca zastane (0,35 s,
+    korak 'spoji') i luk se podijeli na dva dijela koji se sastaju na zraci. `spaja(k, d)` = zrake koje
+    luk k spaja dan d (zatvoreni: sve; ostali: one između krajnjih zraka njegova dana).
   - **Elastičnost:** točke luka su zadane kao UDIO duljine zrake (0 = središte, 1 = sidro), ne kao
     koordinate; oblik je funkcija položaja središta (`oblikuj(H)`), a središte za svaki dan je određeno
     (`Hdana`). Zato se i stari dio smije pomaknuti dok pauk vuče (vlasnik je to tražio), a ipak je

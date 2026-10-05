@@ -201,7 +201,7 @@
     document.documentElement.className += ' aj-loading';
   </script>
   <!-- Halloween tjedan 25. 10. - 1. 11. (samostalan, sinkrono - mora prije prvog iscrtavanja i prije tarot-data.js) -->
-  <script src="js/halloween.js"></script>
+  <script src="js/halloween.js?v=20261005"></script>
 
   <!-- Fontovi (lokalno hostani - bez slanja IP-a Googleu).
        Preload za fontove "iznad pregiba" - ekran učitavanja čeka fontove
@@ -210,21 +210,21 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2"><!-- Playfair Display 700 -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2"><!-- Atkinson 400 latin -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G07JIoSwQ.woff2"><!-- Atkinson 400 latin-ext -->
-  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/fonts.css?v=20261005">
 
   <!-- Stilovi (loader.css prvi - definira skrivanje sadržaja i ekran učitavanja) -->
-  <link rel="stylesheet" href="css/loader.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/nav-drawer.css"><!-- nakon style.css - nadjačava .nav-links -->
-  <link rel="stylesheet" href="css/home-slides.css">
-  <link rel="stylesheet" href="tarot/tarot.css">
-  <link rel="stylesheet" href="css/halloween-palette.css"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
-  <link rel="stylesheet" href="css/halloween.css"><!-- vrijedi samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/loader.css?v=20261005">
+  <link rel="stylesheet" href="css/style.css?v=20261005">
+  <link rel="stylesheet" href="css/nav-drawer.css?v=20261005"><!-- nakon style.css - nadjačava .nav-links -->
+  <link rel="stylesheet" href="css/home-slides.css?v=20261005">
+  <link rel="stylesheet" href="tarot/tarot.css?v=20261005">
+  <link rel="stylesheet" href="css/halloween-palette.css?v=20261005"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/halloween.css?v=20261005"><!-- vrijedi samo pod html.hw-on -->
 
   <!-- Animacije loga (ekran učitavanja, hero, traka) — mora prije loader.js -->
-  <script src="js/alkemijana-anim.js" defer></script>
+  <script src="js/alkemijana-anim.js?v=20261005" defer></script>
   <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
-  <script src="js/loader.js" defer></script>
+  <script src="js/loader.js?v=20261005" defer></script>
 </head>
 <body>
 
@@ -1973,36 +1973,36 @@
   });
 </script>
 
-<script src="js/data.js"></script>
-<script src="js/app.js"></script>
-<script src="js/home-slides.js"></script><!-- slide deck početne (nakon app.js) -->
-<script src="js/logo.js"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
-<script src="js/admin.js"></script>
-<script src="js/natal-chiron.js"></script>
-<script src="js/natal-data.js"></script>
-<script src="js/natal-calc.js"></script>
-<script src="js/natal-render.js"></script>
-<script src="js/natal-pdf.js"></script>
-<script src="js/natal-date.js"></script>
-<script src="js/natal.js"></script>
-<script src="js/natal-synastry.js"></script>
-<script src="js/natal-transit.js"></script>
-<script src="js/natal-acg.js"></script>
-<script src="js/natal-acg-render.js"></script>
-<script src="js/natal-ai.js"></script>
-<script src="js/natal-birthcard.js"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
-<script src="js/natal-live.js"></script>
+<script src="js/data.js?v=20261005"></script>
+<script src="js/app.js?v=20261005"></script>
+<script src="js/home-slides.js?v=20261005"></script><!-- slide deck početne (nakon app.js) -->
+<script src="js/logo.js?v=20261005"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
+<script src="js/admin.js?v=20261005"></script>
+<script src="js/natal-chiron.js?v=20261005"></script>
+<script src="js/natal-data.js?v=20261005"></script>
+<script src="js/natal-calc.js?v=20261005"></script>
+<script src="js/natal-render.js?v=20261005"></script>
+<script src="js/natal-pdf.js?v=20261005"></script>
+<script src="js/natal-date.js?v=20261005"></script>
+<script src="js/natal.js?v=20261005"></script>
+<script src="js/natal-synastry.js?v=20261005"></script>
+<script src="js/natal-transit.js?v=20261005"></script>
+<script src="js/natal-acg.js?v=20261005"></script>
+<script src="js/natal-acg-render.js?v=20261005"></script>
+<script src="js/natal-ai.js?v=20261005"></script>
+<script src="js/natal-birthcard.js?v=20261005"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
+<script src="js/natal-live.js?v=20261005"></script>
 
 <!-- Virtualni tarot (samostalan modul, tarot/; TAROT_CARD_TEXTS živi u js/data.js
      radi admin uređivanja - v. CLAUDE.md) -->
-<script src="tarot/tarot-data.js"></script>
-<script src="tarot/tarot-engine.js"></script>
-<script src="tarot/tarot-render.js"></script>
-<script src="tarot/tarot.js"></script>
+<script src="tarot/tarot-data.js?v=20261005"></script>
+<script src="tarot/tarot-engine.js?v=20261005"></script>
+<script src="tarot/tarot-render.js?v=20261005"></script>
+<script src="tarot/tarot.js?v=20261005"></script>
 
 <!-- Privola za kolačiće (GDPR) - samostalan modul, učitava se zadnji jer
      koristi showPage() iz app.js za poveznicu na pravila privatnosti -->
-<script src="js/consent.js"></script>
+<script src="js/consent.js?v=20261005"></script>
 
 </body>
 </html>

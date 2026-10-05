@@ -380,6 +380,7 @@
     };
 
     let end, idle = null, loopFrom = 0;   // trenutak na koji se petlja vraća
+    let bljesak = null;                   // kraj završnog bljeska (kod „krv" kapi idu POSLIJE njega)
     const SEGS = {};                      // navigacija: odvojeni dijelovi animacije
     const segment = (name, build) => { const i = T.length, d = build(); SEGS[name] = { T: T.splice(i), dur: d }; };
     if (vrsta === 'potpis' || vrsta === 'nastavak' || vrsta === 'krv') {
@@ -388,7 +389,7 @@
       if (vrsta === 'nastavak') { for (const x of [...S.a, S.ab]) track(-1, .001, x, 'draw', E.lin, false); t = .2 / speed; }
       else t = writeA(.2 / speed, 68);
       t = writeTxt(t + .12 / speed);
-      glintAt(t - .1 / speed, apex, 1.1); end = bloom(t - .15 / speed);
+      glintAt(t - .1 / speed, apex, 1.1); end = bljesak = bloom(t - .15 / speed);
       idle = idleShine(apex);
       if (vrsta === 'krv') {
         /* Kapi kreću TEK kad je logo gotov, inače bi curile iz poteza koji se još piše.
@@ -622,7 +623,8 @@
     }
     if (vrsta === 'navigacija') { render(0, false, SEGS.write.T); render(0, false, SEGS.toA.T); }
     else render(0, false);
-    const api = { play, seek, destroy, duration, svg, vrsta, hoverIn, hoverOut, get stanje() { return cur ? cur.name : pos; } };
+    // bljesak: kad završava bljesak (s) - js/logo.js po njemu pali Halloween lice; inače = kraj
+    const api = { play, seek, destroy, duration, bljesak: bljesak == null ? duration : bljesak, svg, vrsta, hoverIn, hoverOut, get stanje() { return cur ? cur.name : pos; } };
 
     if (opts.autoplay !== false && vrsta !== 'navigacija') {
       if ('IntersectionObserver' in root) {

@@ -1323,7 +1323,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   poslane slike (koordinate u pikselima slike 192x120, zrcaljeno oko x = 96), iza „Potpisa" na početnoj.
   Naglo se upali na vrhu završnog bljeska ispisa i izblijedi (~0,23 s). Trenutak javlja `js/logo.js`
   događajem `aj:hero-flash` (bljesak = `bloom` u alkemijana-anim.js, 1,3 s / tempo 1,7 na kraju animacije).
-  **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi).
+  **Sivi obris sa sivim sjajem** - narančasta je probana i odbijena (ne pristaje temi). **Uz krvavi hero
+  (31. 10. i 1. 11.) lice je CRVENO** (`.hw-jack-krv`). Trenutak bljeska daje `anim.bljesak` (kraj „bloom"),
+  NE `anim.duration` - kod „krv" kapi idu poslije bljeska pa bi lice inače kasnilo za cijelo kapanje.
   Uz `prefers-reduced-motion` ga nema.
 - **Bljesak cijele stranice** (`.hw-pageflash`, fiksni sloj z-index 2500) pali se ZAJEDNO s licem
   (isti `aj:hero-flash`, ista duljina 0,56 s, vrh na 59 %), blijeda hladna bijela do 0,55, gasi se brže od lica.

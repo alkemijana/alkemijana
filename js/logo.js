@@ -60,14 +60,16 @@
       // kraj ispisa + završni bljesak (i Halloween lice) + kratki predah
       setTimeout(heroDone, anim.duration * 1000 + 500);
       /* Završni bljesak („bloom" u alkemijana-anim.js) traje 1,3 s / tempo (1,7)
-         i završava s animacijom - tad se javi 'aj:hero-flash' (Halloween: lice
-         Jack-o'-lanterna iza loga). Bez kretanja nema ni bljeska. */
+         i završava u anim.bljesak - tad se javi 'aj:hero-flash' (Halloween: lice
+         Jack-o'-lanterna iza loga). Kod potpisa je to kraj animacije, ali kod „krv"
+         kapi idu POSLIJE bljeska, pa se ne smije računati od anim.duration.
+         Bez kretanja nema ni bljeska. */
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { heroDone(); return; }
       var FLASH = 1.3 / 1.7;
       flashT = setTimeout(function () {
         flashT = 0;
         el.dispatchEvent(new CustomEvent('aj:hero-flash', { bubbles: true, detail: { dur: FLASH } }));
-      }, Math.max(0, anim.duration - FLASH) * 1000);
+      }, Math.max(0, (anim.bljesak || anim.duration) - FLASH) * 1000);
     }
     document.addEventListener('aj:revealed', function () {
       revealed = true;

@@ -375,6 +375,12 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   stroke-linejoin: round;
   filter: drop-shadow(0 0 5px rgba(110, 106, 118, 0.6)) drop-shadow(0 0 16px rgba(100, 96, 106, 0.65)) drop-shadow(0 0 32px rgba(85, 82, 92, 0.5));
 }
+/* Uz krvavi hero (31. 10. i 1. 11., `?halloween=krv`) lice je crveno - boja krvi s loga
+   (#7a1a1e), obris malo svjetliji da se u bljesku vidi, sjaj tamnocrven. */
+.hw-jack.hw-jack-krv svg {
+  stroke: #a3262b;
+  filter: drop-shadow(0 0 5px rgba(163, 38, 43, 0.7)) drop-shadow(0 0 16px rgba(122, 26, 30, 0.7)) drop-shadow(0 0 32px rgba(100, 18, 22, 0.55));
+}
 .hw-jack.hw-jack-on { animation: hwJack 0.56s both; }
 @keyframes hwJack {
   0%   { opacity: 0; animation-timing-function: steps(1, end); }

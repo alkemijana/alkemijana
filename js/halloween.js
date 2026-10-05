@@ -784,7 +784,8 @@
     const h1 = art && art.parentNode;
     if (!h1) return;
     const face = document.createElement('span');
-    face.className = 'hw-jack';
+    // uz krvavi hero (31. 10. i 1. 11.) lice je CRVENO, u boji krvi koja kaplje s loga
+    face.className = window.AJHalloween && window.AJHalloween.krvniHero ? 'hw-jack hw-jack-krv' : 'hw-jack';
     face.setAttribute('aria-hidden', 'true');
     face.innerHTML = jackSvg();
     h1.insertBefore(face, art);

@@ -1395,18 +1395,16 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     preslože se sve niti te mreže. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi
     (pri testu u pozadinskom oknu preglednika zato „ništa ne radi"). Sve je `position:fixed`.
     **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti).
-  - **Po uzoru na pravu mrežu u kutu prozora** (vlasnik je tražio da provjerim kako izgledaju prave):
-    pauk *Zygiella x-notata* („missing-sector orbweb", najčešći u kutovima prozora i vrata) ima PRAZAN
-    ISJEČAK kroz koji ide JEDNA SIGNALNA NIT od središta do skrovišta u kutu. Zato:
-    - prva zraka (`signal`, `iK`) ide TOČNO u kut; oko nje (`SEK` po rubu) nema drugih zraka ni spirale
-      (`dijelovi` preskače parove uz `iK`; zrake u prazninu se ne smiju stavljati u isječak);
-    - lovna spirala ide tamo-amo s OKRETIMA: pauk isplete jednu polovicu (okreti na krajnjoj zraci i na
-      rubu isječka), kroz središte prijeđe na drugu;
-    - SLOBODNA ZONA oko središta (spirala počinje na 24+ jedinica);
-    - GRAVITACIJA: kod okomitih mreža je dio ispod središta veći - `grav` produlji lukove prema dolje
-      (u donjoj, zakrenutoj mreži je „dolje" -y).
-    Izvori: Zschokke (Sveučilište u Baselu) o asimetriji orb mreža; British Arachnological Society i
-    NHM o Zygiella x-notata.
+  - **Nesavršenost kao prava mreža** (vlasnik: „nekad se dogode rupe, uleti mušica, pauk popravlja"):
+    svaki dan (od drugog) se na STARIJEM dijelu pokida 2–3 niti luka (`stete`); dio pauk isti dan popravi
+    (`dPop` - drugačiji progib i pregib u sredini), ostale ostanu RUPE (`dRupa` - dva komadića vise s
+    zraka). Neke dane (naizmjence gornja/donja mreža) uleti MUŠICA (`.hw-muha`): pokida nit, koprca se,
+    pauk dođe po zraci, zamota je (ostane svijetli zamotuljak) i popravi nit. Šteta se bira samo na nitima
+    između zraka između kojih NIKAD ne dođe nova zraka (inače bi je 'spoji' rascijepio) i nikad na
+    najunutarnjem luku; mušica samo na nitima koje nisu zbijene uz zid. Sve je određeno danom.
+    (Probana je i „signalna nit s praznim isječkom" po Zygiella x-notata - vlasnik je NIJE htio.)
+  - **Slobodna zona oko središta** (spirala od 24+ jedinica) i **gravitacija** (`grav`: lukovi ispod
+    središta sežu dalje; u donjoj, zakrenutoj mreži je „dolje" -y).
   - **Karakter mreža** (vlasnik: „previše slične"): `buildWeb` prima `uzA`/`uzB` (koliko se proteže uz
     jedan/drugi rub), `razmak` (razmak lukova), `objesi` (koliko se lukovi objese), `vuce` (prvi povlak).
     Donja je kraća uz donji, duža uz lijevi rub, rjeđa i jače objesenih lukova.

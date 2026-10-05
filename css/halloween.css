@@ -488,3 +488,26 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hw-pauk.hw-pauk-hoda .hw-pauk-n2 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate-reverse; }
 @keyframes hwPaukNoge { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 @media (prefers-reduced-motion: reduce) { .hw-pauk { display: none; } }
+
+/* Mušica koja uleti u paukovu mrežu (js/halloween.js pletiMreze): tamno tijelo, prozirna krila koja
+   mašu dok leti; kad je pauk zamota, ostane mali svijetli zamotuljak. Pomiče se samo transformom. */
+.hw-muha {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  z-index: 5;
+  pointer-events: none;
+  will-change: transform;
+}
+.hw-muha svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-muha .hw-muha-t { fill: #2a241f; stroke: #8a7f70; stroke-width: 0.4; }
+.hw-muha .hw-muha-k1, .hw-muha .hw-muha-k2 { fill: rgba(216, 205, 184, 0.35); transform-origin: 0 0; }
+.hw-muha.hw-muha-leti .hw-muha-k1 { animation: hwMuhaK 0.06s linear infinite alternate; }
+.hw-muha.hw-muha-leti .hw-muha-k2 { animation: hwMuhaK 0.06s linear infinite alternate-reverse; }
+@keyframes hwMuhaK { from { transform: scaleY(1); } to { transform: scaleY(0.25); } }
+.hw-muha.hw-muha-zamotana .hw-muha-k1, .hw-muha.hw-muha-zamotana .hw-muha-k2 { display: none; }
+.hw-muha.hw-muha-zamotana .hw-muha-t { fill: #cfc3ad; stroke: none; opacity: 0.55; }
+@media (prefers-reduced-motion: reduce) { .hw-muha { display: none; } }

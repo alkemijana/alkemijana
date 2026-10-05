@@ -1228,11 +1228,17 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   odozdo - to je bilo predugo; isti realistični SVG kao u
   pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 MALIH, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja)
   izleti iz donjeg lijevog kuta RAVNO PREKO MJESECA, traje ~1,5 s (detaljni/veliki/nemirni su izgledali kao leptirići) → završna munja: **u bljesku
-  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → na crnom „Granica između svjetova je tanka…" (bilo je „Veo…" - vlasnik ne želi riječ „veo") (~3 s; Mjesec se za to vrijeme zatamni na 0.04 -
-  jedva se vidi - pa se prije kraja vrati na 0.15 kao pozadina, `.hwi-moon-dim`) → overlay nestane, a ekran učitavanja crta logo
+  se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → kratak crni predah s Mjesecom (2 s, `tOut`) →
+  overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
   otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+  **Rečenice na kraju NEMA** — bila je „Granica između svjetova je tanka…" (prije toga „Veo…"), izbačena
+  na zahtjev vlasnika jer nijedna varijanta nije sjela: uvod završava slikom, ne tekstom. S njom su otišli
+  `.hwi-text` (CSS) i zatamnjenje Mjeseca (`.hwi-moon-dim`, služilo samo čitljivosti teksta), a završni
+  crni dio skraćen je s 5,3 s na 2 s. **Ako se ikad vraća**, ton mora biti Janin (nježan, okrenut prema
+  sebi — „Ovo nije mjesto gdje ćeš dobiti odgovore…"), a NE jeziv/prijeteći, mora biti **unisex** (bez
+  prošlog vremena i pridjeva koji odaju rod) i mora vrijediti za **cijeli tjedan** (nikakvo „noćas").
 - **Munje** su kanal, ne linija: `jag()` (pomicanje sredine, sitni+krupni lomovi), grane koje se granaju, debljina
   pada prema granama, munja traje samo ~0,45 s (0,9 s je bilo predugo), tri sloja (`.hwi-b-glow` zamućen / `-halo` / `-core`), osvjetljenje neba (`.hwi-skyglow`),
   treperenje. viewBox = ekran u pikselima (`scrW/scrH` - innerWidth zna biti 0 u skrivenoj kartici).

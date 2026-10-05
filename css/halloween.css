@@ -279,9 +279,6 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hwi-moon.hwi-moon-ghost { opacity: 0.15 !important; transition: none !important; }
 .hwi-moon-ghost .hwi-ml-r { opacity: 0 !important; transition: none !important; }
 .hwi-moon-ghost .hwi-ml-n { opacity: 1 !important; transition: none !important; }
-/* dok je na ekranu rečenica, Mjesec se zatamni da se jedva vidi */
-.hwi-moon.hwi-moon-ghost.hwi-moon-dimmable { transition: opacity 1.2s ease !important; }
-.hwi-moon.hwi-moon-ghost.hwi-moon-dim { opacity: 0.04 !important; }
 /* otkucaji srca - tamnocrveni rub ekrana (sporo, nije bljesak) */
 .hwi-vig {
   position: absolute;
@@ -331,25 +328,6 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   background: #040404;
   opacity: 0;
 }
-.hwi-text {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(90vw, 760px);
-  transform: translate(-50%, -50%);
-  margin: 0;
-  text-align: center;
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: clamp(1.4rem, 4.2vw, 2.6rem);
-  letter-spacing: 0.02em;
-  color: #b3a996;
-  text-shadow: 0 0 24px rgba(122, 26, 30, 0.8);
-  opacity: 0;
-  filter: blur(6px);
-  transition: opacity 0.9s ease, filter 1.2s ease;
-}
-.hwi-text.hwi-text-in { opacity: 1; filter: none; }
 .hwi-flash {
   position: absolute;
   inset: 0;

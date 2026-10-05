@@ -242,7 +242,6 @@
       '<div class="hwi-bats"></div>' +
       '<div class="hwi-skyglow"></div>' +
       '<svg class="hwi-bolts"></svg>' +
-      '<p class="hwi-text">Granica između svjetova je tanka…</p>' +
       '<div class="hwi-flash"></div>';
     document.body.prepend(ov);
 
@@ -393,12 +392,10 @@
       shake(450, 26);
       // na vrhuncu bljeska: tema se zamijeni, iza bljeska je crno
       setTimeout(() => { goSpooky(); addLoaderMoon(true); paintBgMoon(); $('.hwi-moon').classList.add('hwi-moon-ghost'); $('.hwi-black').style.opacity = '1'; $('.hwi-bats').remove(); }, 160);
-      // rečenica ~3 s na ekranu; dok traje, Mjesec se zatamni da se jedva vidi, pa se
-      // prije nestanka overlaya vrati na razinu pozadine (0.15) - prijelaz se ne vidi
-      const tText = 1300, tOut = 5300;
-      setTimeout(() => $('.hwi-moon').classList.add('hwi-moon-dimmable', 'hwi-moon-dim'), 500);
-      setTimeout(() => $('.hwi-text').classList.add('hwi-text-in'), tText);
-      setTimeout(() => { $('.hwi-text').classList.remove('hwi-text-in'); $('.hwi-moon').classList.remove('hwi-moon-dim'); }, tOut - 1100);
+      // REČENICE NEMA (izbačena na zahtjev vlasnika) - iza bljeska ostaje kratak crni
+      // predah s Mjesecom na razini pozadine (0.15), pa se otkriva stranica. Mjesec se
+      // ne zatamnjuje: zatamnjenje je služilo samo čitljivosti rečenice.
+      const tOut = 2000;
       setTimeout(() => {
         ov.classList.add('hwi-out');
         if (window.AJHalloween._introDone) window.AJHalloween._introDone();   // loader kreće

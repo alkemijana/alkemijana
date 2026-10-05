@@ -1363,6 +1363,11 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   u krugovima), nikad dalje - zraka koja viri van zadnjeg luka fizički ne može stajati (vlasnik); krug
   koji je ikad bio rub nikad nije „pokidan". **Bez `vector-effect: non-scaling-stroke`** - s njim se
   crtanje preko `pathLength` zaustavi na pola pa današnje zrake ne dođu do luka.
+  **Uz gornji i desni rub nema ravne zrake** (vlasnik): rubne zrake su NEVIDLJIVE i leže izvan ekrana
+  (-16° i 106°), pa lukovi uz rubove izlaze van ekrana kao da je nit pričvršćena za zid.
+  **Pletenje kao pauk** (vlasnik: lukovi se nisu smjeli pojaviti prije zraka): prvo jedna po jedna
+  zraka, zatim lukovi JEDNOM nitima, od vanjskog prema unutra, sa smjerom koji se izmjenjuje
+  (lovna spirala); svaki komad počne kad prethodni završi (`--hw-wd` početak, `--hw-wdur` trajanje).
   Ispod sadržaja (z-index 1), boja kosti, `opacity .32`. Pauka na mreži NEMA.
 - **BEZ paukova** (izričit zahtjev; mreža bez pauka je dopuštena, v. gore) i bez narančasto-crne/zlatne — boje iz palete stranice.
 

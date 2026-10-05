@@ -456,7 +456,7 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hw-web path.hw-web-z { stroke-width: 1.05; }
 .hw-web .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
 .hw-web.hw-web-go .hw-web-n {
-  animation: hwWebSpin 1.6s cubic-bezier(0.4, 0, 0.3, 1) var(--hw-wd, 0s) forwards;
+  animation: hwWebSpin var(--hw-wdur, 1s) linear var(--hw-wd, 0s) forwards;   /* jednolik hod niti */
 }
 @keyframes hwWebSpin { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {

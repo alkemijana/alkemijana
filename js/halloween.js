@@ -834,10 +834,15 @@
     const rnd = () => { sj |= 0; sj = sj + 0x6D2B79F5 | 0; let t = Math.imul(sj ^ sj >>> 15, 1 | sj); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
     const CX = 400, CY = 0, f = n => n.toFixed(1);
     // zrake: od uz gornji rub (kut 0) do uz desni rub (kut 90), nepravilno razmaknute
-    const NZ = 11, zrake = [];
+    /* Uz gornji i desni rub mreža NE završava ravnom zrakom (vlasnik): prva i zadnja zraka
+       su NEVIDLJIVE i leže izvan ekrana (iznad gornjeg / desno od desnog ruba - nit je
+       pričvršćena za „zid"), pa lukovi uz rubove izlaze van ekrana. Vidljive zrake su između. */
+    const NZ = 12, zrake = [];
     for (let i = 0; i < NZ; i++) {
-      const a = (2 + i * (86 / (NZ - 1)) + (i && i < NZ - 1 ? (rnd() - .5) * 5 : 0)) * Math.PI / 180;
-      zrake.push({ dx: -Math.cos(a), dy: Math.sin(a) });
+      const rubna = i === 0 || i === NZ - 1;
+      const kut = i === 0 ? -16 : i === NZ - 1 ? 106 : 7 + (i - 1) * (76 / (NZ - 3)) + (rnd() - .5) * 5;
+      const a = kut * Math.PI / 180;
+      zrake.push({ dx: -Math.cos(a), dy: Math.sin(a), skrivena: rubna });
     }
     const tocka = (z, r) => [CX + z.dx * r, CY + z.dy * r];
     // krugovi: razmak lagano raste prema van, svaka zraka ima malo svoj pomak (ručni rad)
@@ -853,12 +858,13 @@
     const K = RD.map(R => { let k = 0; while (k + 1 < krugovi.length && Math.max(...krugovi[k + 1]) <= R) k++; return k; });
     const rub = new Set(K);                               // krug koji je ikad bio vanjski rub - nikad pokidan
     const kDo = d => d < 0 ? -1 : K[d];
-    const staro = [], novo = [];                          // novo = ono što je danas dodano (ispreda se)
+    const staro = [], novoZ = [], novoK = [];            // današnje zrake i današnji lukovi (ispredaju se)
     zrake.forEach((z, i) => {
+      if (z.skrivena) return;                             // zraka izvan ekrana se ne crta
       const k0 = kDo(DAN - 1), k1 = kDo(DAN);
       const [x0, y0] = k0 < 0 ? [CX, CY] : tocka(z, krugovi[k0][i]), [x1, y1] = tocka(z, krugovi[k1][i]);
       if (k0 >= 0) staro.push({ d: `M${CX} ${CY}L${f(x0)} ${f(y0)}`, r: 0, z: 1 });
-      if (k1 > k0) novo.push({ d: `M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`, r: k0 < 0 ? 0 : krugovi[k0][i], z: 1 });
+      if (k1 > k0) novoZ.push({ d: `M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`, z: 1 });
     });
     krugovi.forEach((kr, k) => {
       for (let i = 0; i < NZ - 1; i++) {
@@ -870,16 +876,36 @@
         const [x0, y0] = tocka(a, ra), [x1, y1] = tocka(b, rb);
         // nit se blago objesi prema kutu (kontrolna točka bliže središtu)
         const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-        const p = { d: `M${f(x0)} ${f(y0)}Q${f(CX + (mx - CX) * s)} ${f(CY + (my - CY) * s)},${f(x1)} ${f(y1)}`, r: Math.max(ra, rb) };
-        (k <= kDo(DAN - 1) ? staro : novo).push(p);
+        const q = `${f(CX + (mx - CX) * s)} ${f(CY + (my - CY) * s)}`, A = `${f(x0)} ${f(y0)}`, B = `${f(x1)} ${f(y1)}`;
+        if (k <= kDo(DAN - 1)) staro.push({ d: `M${A}Q${q},${B}` });
+        else novoK.push({ k, i, A, B, q });
       }
     });
-    const put = (x, cls, i) => `<path class="${cls}${x.z ? ' hw-web-z' : ''}" d="${x.d}"${cls === 'hw-web-n' ? ` pathLength="1" style="--hw-wd:${(x.r / RD[7] * 2.4 + (i % 5) * 0.05).toFixed(2)}s"` : ''}/>`;
+    /* Današnji dio se ispreda KAO ŠTO BI PAUK: prvo jedna po jedna zraka (od dosadašnjeg ruba
+       prema van), tek onda lukovi - JEDNOM neprekinutom niti, luk po luk od vanjskog prema
+       unutra, sa smjerom koji se izmjenjuje (kao lovna spirala). Svaki komad krene točno kad
+       prethodni završi, pa se vidi jedna nit koja putuje. Prije su se lukovi i zrake crtali
+       istodobno pa su lukovi znali visjeti u zraku prije nego što ih je zraka dosegla. */
+    const novo = [];
+    let t = 0;
+    novoZ.forEach((x, i) => { novo.push({ ...x, t0: t + i * 0.16, dur: 0.55 }); });
+    t += novoZ.length * 0.16 + 0.55 + 0.25;
+    const kr = [...new Set(novoK.map(x => x.k))].sort((a, b) => b - a);   // vanjski prvi
+    kr.forEach((k, n) => {
+      let red = novoK.filter(x => x.k === k).sort((a, b) => a.i - b.i);
+      if (n % 2) red = red.reverse();                       // spirala: smjer se izmjenjuje
+      red.forEach(x => {
+        const d = n % 2 ? `M${x.B}Q${x.q},${x.A}` : `M${x.A}Q${x.q},${x.B}`;
+        novo.push({ d, t0: t, dur: 0.13 });
+        t += 0.13;
+      });
+    });
+    const put = (x, cls) => `<path class="${cls}${x.z ? ' hw-web-z' : ''}" d="${x.d}"${cls === 'hw-web-n' ? ` pathLength="1" style="--hw-wd:${x.t0.toFixed(2)}s;--hw-wdur:${x.dur}s"` : ''}/>`;
     const web = document.createElement('div');
     web.className = 'hw-web';
     web.setAttribute('aria-hidden', 'true');
     web.innerHTML = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">' +
-      staro.map((x, i) => put(x, 'hw-web-s', i)).join('') + novo.map((x, i) => put(x, 'hw-web-n', i)).join('') + '</svg>';
+      staro.map(x => put(x, 'hw-web-s')).join('') + novo.map(x => put(x, 'hw-web-n')).join('') + '</svg>';
     document.body.appendChild(web);
     // ispredanje kreće tek kad se stranica otkrije (ekran učitavanja je inače preko nje)
     const kreni = () => web.classList.add('hw-web-go');

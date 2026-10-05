@@ -1357,8 +1357,10 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   kao gornja pa je CSS zakrene za 180°, `.hw-web-dl`). Puni opis je u komentaru iznad `webDay`.
   - **Građa i redoslijed kao pravi pauk u kutu:** prvi dan prvo RAVNA POPREČNA NIT od gornjeg do bočnog
     ruba; njezina sredina je središte. Iz središta zrake do rubova ekrana (svaka usidrena na rubu);
-    pauk zraku isplete, vrati se po njoj i NAPNE je - središte se pomakne prema sidru, a cijela mreža
-    se elastično prilagodi (poprečna postane napeti „V"). Zatim lukovi od vanjskog prema unutra
+    pauk zraku isplete do sidra i **NAPNE JE S RUBA** (vlasnik: „treba povući mrežu s ruba ekrana prema
+    sebi"): ostane uz sidro i u tri potezanja povuče nit prema sebi - središte dođe prema njemu, a
+    cijela mreža se elastično prilagodi (poprečna postane napeti „V"); tek onda se po napetoj zraci
+    vrati u središte. (Prije je napinjao iz središta pa je izgledalo kao da se pauk gura prema rubu.) Zatim lukovi od vanjskog prema unutra
     (izmjenični smjer), s luka na luk po poprečnoj niti. Mreža je trokut između poprečne niti i kuta.
   - **Rast kroz tjedan:** prvi dan poprečna + 3 zrake, dani 1–4 po 1–3 nove zrake (i svaka malo napne
     mrežu), svaki dan novi lukovi prema van. Luk spaja samo zrake koje su postojale TOG dana.

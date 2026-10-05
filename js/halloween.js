@@ -941,10 +941,13 @@
       if (dan[i] !== DAN) return;
       hoda(gdje, S);                                      // po poprečnoj niti / zraci do središta
       plete(zrNit[i], dist(Hc, E[i]));
-      hoda({ i, t: 1 }, S);                               // natrag po istoj niti
+      /* NAPINJE S RUBA (vlasnik): pauk ostane uz sidro na rubu ekrana i povuče nit PREMA SEBI -
+         središte mreže dođe prema njemu. Tek onda se po napetoj zraci vrati u središte. */
       const Hn = Hnakon[n];
-      put.push({ tip: 'napni', H1: Hc, H2: Hn, len: 0 }); // napne je: središte ode prema sidru
-      Hc = Hn; gdje = S;
+      put.push({ tip: 'napni', H1: Hc, H2: Hn, kod: E[i], u: [(E[i][0] - Hc[0]) / dist(Hc, E[i]), (E[i][1] - Hc[1]) / dist(Hc, E[i])], len: 0 });
+      Hc = Hn;
+      hoda({ i, t: 1 }, S);                               // natrag po napetoj niti u središte
+      gdje = S;
     });
     // lukovi: od vanjskog prema unutra; počinje na strani T, s luka na luk po poprečnoj niti
     let ide = 0;
@@ -1035,7 +1038,7 @@
       while (i < koraci.length && tk >= koraci[i].s) { tk -= koraci[i].s; zavrsi(koraci[i]); i++; }
       if (i >= koraci.length) { pauk.remove(); return; }
       const k = koraci[i], v = k.s ? tk / k.s : 1;
-      let e = null;
+      let e = null, okreni = null;
       if (k.tip === 'plete') {
         const el = k.nit.el, L = el.getTotalLength(), w = k.obrnuto ? 1 - v : v;
         el.style.strokeDashoffset = ((k.obrnuto ? -1 : 1) * (1 - v)).toFixed(4);   // obrnuto: crtica raste od kraja
@@ -1044,15 +1047,21 @@
       } else if (k.tip === 'hoda') {
         const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc);
         e = naEkran(k.m, [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v]);
-      } else if (k.tip === 'napni') {                     // pauk vuče: središte (i on s njim) ide prema sidru
+      } else if (k.tip === 'napni') {                     // pauk uz sidro vuče nit prema sebi: središte dolazi k njemu
         if (!k.m.napetaV) { k.m.napeta(); k.m.napetaV = 1; }
-        const w = glatko(v), c = [k.H1[0] + (k.H2[0] - k.H1[0]) * w, k.H1[1] + (k.H2[1] - k.H1[1]) * w];
+        // tri potezanja: svako malo povuče središte, a pauk se pri potezu malo nagne unatrag (prema rubu)
+        const P = 3, x = v * P, n = Math.min(P - 1, Math.floor(x)), fr = x - n;
+        const w = (n + glatko(fr)) / P, c = [k.H1[0] + (k.H2[0] - k.H1[0]) * w, k.H1[1] + (k.H2[1] - k.H1[1]) * w];
         k.m.oblikuj(c);
-        e = naEkran(k.m, c);
+        const trz = Math.sin(Math.PI * fr) * 1.6;
+        e = naEkran(k.m, [k.kod[0] + k.u[0] * trz, k.kod[1] + k.u[1] * trz]);
+        const sr = naEkran(k.m, c);                       // gleda prema središtu (koje vuče)
+        if (e && sr) okreni = Math.atan2(sr[1] - e[1], sr[0] - e[0]) * 180 / Math.PI;
       }
       pauk.style.visibility = e ? '' : 'hidden';
       if (e) {
-        if (pr) {
+        if (okreni != null) kut = kut == null ? okreni : kut + ((okreni - kut + 540) % 360 - 180) * 0.15;
+        else if (pr) {
           const dx = e[0] - pr[0], dy = e[1] - pr[1];
           if (dx * dx + dy * dy > 0.01) {
             const cilj = Math.atan2(dy, dx) * 180 / Math.PI;

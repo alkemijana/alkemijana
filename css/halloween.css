@@ -446,8 +446,10 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 }
 /* druga mreža dolje lijevo: ista geometrija zakrenuta za 180° (kut gore desno -> dolje lijevo) */
 .hw-web.hw-web-dl { top: auto; right: auto; bottom: 0; left: 0; transform: rotate(180deg); }
-.hw-web svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.hw-web path {
+/* labave niti u praznim kutovima (gore lijevo, dolje desno) - SVG preko cijelog ekrana, u pikselima */
+.hw-kutovi { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.32; }
+.hw-web svg, .hw-kutovi svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-web path, .hw-kutovi path {
   fill: none;
   stroke: #d8cdb8;
   stroke-width: 0.8;
@@ -456,9 +458,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
      na pola (crtica se računa u pikselima ekrana), pa zrake ne dođu do vanjskog luka */
 }
 .hw-web path.hw-web-z { stroke-width: 1.05; }
-.hw-web .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.hw-web .hw-web-n, .hw-kutovi .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .hw-web .hw-web-n { stroke-dasharray: none; stroke-dashoffset: 0; }
+  .hw-web .hw-web-n, .hw-kutovi .hw-web-n { stroke-dasharray: none; stroke-dashoffset: 0; }
 }
 /* Pauk koji plete: mali, jedva vidljiv. JS ga pomiče SAMO preko transform (translate + rotate),
    pa ga slaže kompozitor. Sredina pauka je u (0,0) elementa (margin = -pola veličine). */
@@ -469,7 +471,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   width: 15px;
   height: 15px;
   margin: -7.5px 0 0 -7.5px;
-  z-index: 1;
+  /* IZNAD sadržaja (.content je z-index 2), ispod trake i izbornika (200+): s z-index 1, kao mreže,
+     pauk se gubio ispod neprozirnih dijelova stranice dok se nit oko njega i dalje crtala */
+  z-index: 5;
   pointer-events: none;
   opacity: 0.9;
   will-change: transform;

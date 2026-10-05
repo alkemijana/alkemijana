@@ -1395,6 +1395,21 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     preslože se sve niti te mreže. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi
     (pri testu u pozadinskom oknu preglednika zato „ništa ne radi"). Sve je `position:fixed`.
     **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti).
+  - **Karakter mreža** (vlasnik: „previše slične"): `buildWeb` prima `uzA`/`uzB` (koliko se proteže uz
+    jedan/drugi rub), `razmak` (razmak lukova), `objesi` (koliko se lukovi objese), `vuce` (prvi povlak).
+    Donja je kraća uz donji, duža uz lijevi rub, rjeđa i jače objesenih lukova.
+  - **Gustoća:** razmak lukova `(11 + k·0,8 + rnd·8)·razmak`; zraka u prazninu dolazi u 50 % dana (bilo pregusto).
+  - **Luk nikad ne prelazi rub ekrana** (`zbij` u `udio`): na kratkim zrakama prema kutu lukovi se zbiju
+    uz zid. Prije su išli iza ruba i pauk je ~pola vremena plelo IZVAN ekrana („pauk nestane").
+  - **Položaj pauka se NE računa preko `getScreenCTM`** - Firefox/Safari u njemu ne uračunaju CSS zakret
+    donje mreže (rotate 180°), pa je pauk dok plete donju mrežu bio izvan ekrana. `naEkran` = pravokutnik
+    elementa + vlastiti zakret (`okrenuta`). Provjereno: pauk je na vrhu niti ±0,07 px u obje mreže.
+  - **Pauk je IZNAD sadržaja** (`z-index: 5`; `.content` je 2), mreže ispod (1) - inače se gubio ispod
+    neprozirnih dijelova stranice.
+  - **Niti u praznim kutovima** (vlasnik: „tu i tamo koju nit i u ostala dva kuta"): svaki dan 1–2 labave
+    niti preko jednog praznog kuta (naizmjence gore lijevo / dolje desno), od ruba do ruba, objesene
+    prema dolje; stare ostaju. Pauk ih isplete na putu od gornje do donje mreže (uz zid do sidra, nit,
+    uz zid dalje). `.hw-kutovi` = SVG preko ekrana u px, mjere u jedinicama mreže, presloži se na resize.
   - **Bez `vector-effect: non-scaling-stroke`** - s njim se crtanje preko `pathLength` zaustavi na pola.
   - Pregled: `?halloween&mreza=0..7`. `prefers-reduced-motion`: mreže odmah gotove, bez pauka.
   Ispod sadržaja (z-index 1), boja kosti, `opacity .32`.

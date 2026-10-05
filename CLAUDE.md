@@ -1362,16 +1362,22 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     cijela mreža se elastično prilagodi (poprečna postane napeti „V"); tek onda se po napetoj zraci
     vrati u središte. (Prije je napinjao iz središta pa je izgledalo kao da se pauk gura prema rubu.) Zatim lukovi od vanjskog prema unutra
     (izmjenični smjer), s luka na luk po poprečnoj niti. Mreža je trokut između poprečne niti i kuta.
-  - **Rast kroz tjedan:** prvi dan poprečna + 3 zrake, dani 1–4 po 1–3 nove zrake (i svaka malo napne
-    mrežu), svaki dan novi lukovi prema van. Luk spaja samo zrake koje su postojale TOG dana.
+  - **Rast kroz tjedan - mreža kao „organski proizvod koji se svaki dan mijenja i proširuje"** (vlasnik):
+    prvi dan namjerno manja poprečna + 3 zrake; SVAKI sljedeći dan dvije nove KRAJNJE zrake usidrene sve
+    dalje uz gornji i bočni rub (do `aMax`/`bMax`, mreža se širi) + često jedna u najveću prazninu.
+    Svaka nova zraka se napne i povuče sve. Lukovi svaki dan dalje (`PLAN`), ali uvijek unutar krajnjih
+    zraka tog dana; luk spaja samo zrake koje su postojale TOG dana, a s luka na luk se prelazi po
+    krajnjoj zraci. Sidra su zadana jednim brojem `s` po rubu (s<0 gornji, s>0 bočni); sidra smiju
+    izaći iz viewBoxa 400 (SVG ima overflow visible), pa je zadnji dan mreža preko pola širine ekrana.
   - **Elastičnost:** točke luka su zadane kao UDIO duljine zrake (0 = središte, 1 = sidro), ne kao
     koordinate; oblik je funkcija položaja središta (`oblikuj(H)`), a središte za svaki dan je određeno
     (`Hdana`). Zato se i stari dio smije pomaknuti dok pauk vuče (vlasnik je to tražio), a ipak je
     mreža svaki dan ista za sve. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
-  - **Pauk** (~15 px, jedva vidljiv; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
+  - **Pauk** (~15 px, TAMAN - tamno tijelo s tankim svjetlijim obrubom; svijetao je „izgledao kao mušica"; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
     dva natrag; s kratkim nogama u stranu „izgledao je kao rak") **hoda SAMO po nitima koje već
     postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 32 px/s, i pletenje i hod; 16 je bilo presporo) - trajanje nije bitno
-    (prvi dan ~2 min). Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
+    (prvi dan ~1,5 min, zadnji ~5 min). Trajanje koraka se računa iz STVARNE duljine niti (`getTotalLength`)
+    - luk se objesi pa je dulji od tetive, inače bi pauk po lukovima jurio. Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
     Između mreža ide uz zid izvan ekrana. Nema niti preko cijelog ekrana (vlasniku se nije svidjela).
   - **Bez štekanja:** JS + rAF; u kadru se mijenja jedna nit (`stroke-dashoffset`, `pathLength=1`; luk
     pleten „unatrag" ima negativan offset) i `transform` pauka; samo dok traje napinjanje (1,5 s)

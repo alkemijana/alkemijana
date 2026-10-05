@@ -471,11 +471,14 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   margin: -7.5px 0 0 -7.5px;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.9;
   will-change: transform;
 }
-.hw-pauk svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #cfc3ad; }
-.hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { fill: none; stroke: #cfc3ad; stroke-width: 0.7; stroke-linecap: round; stroke-linejoin: round; }
+/* TAMAN pauk (svijetao je „izgledao kao mušica" - vlasnik): tamno smeđe-sivo tijelo s tankim
+   svjetlijim obrubom da se na tamnoj podlozi ipak nazire; noge tamne. */
+.hw-pauk svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #2a241f; }
+.hw-pauk ellipse { stroke: #8a7f70; stroke-width: 0.45; }
+.hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { fill: none; stroke: #5d544a; stroke-width: 0.8; stroke-linecap: round; stroke-linejoin: round; }
 /* dok hoda, dvije skupine nogu se izmjenično blago pomiču */
 .hw-pauk.hw-pauk-hoda .hw-pauk-n1 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate; }
 .hw-pauk.hw-pauk-hoda .hw-pauk-n2 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate-reverse; }

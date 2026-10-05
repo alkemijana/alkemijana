@@ -855,52 +855,72 @@
     const f = n => n.toFixed(1), M = o.mjera;
     const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
     const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
-    // poprečna nit od gornjeg do bočnog ruba; njezina sredina je početno središte
-    const T = [400 - (330 + rnd() * 50) * M, 0], R = [400, (320 + rnd() * 50) * M];
-    const H0 = lerp(T, R, 0.5);
-    // sidra zraka po rubu od T preko kuta do R; krajnje dvije su polovice poprečne niti
-    const Lg = 400 - T[0], Lt = Lg + R[1], NI = 8 + Math.floor(rnd() * 3);
-    const E = [T];
-    for (let i = 0; i < NI; i++) {
-      const s = (i + 0.5 + (rnd() - .5) * 0.7) / NI * Lt;
-      E.push(s < Lg ? [T[0] + s, 0] : [400, s - Lg]);
+    /* SIDRA na rubu ekrana zadana su jednim brojem s: s < 0 = gornji rub (|s| lijevo od kuta),
+       s > 0 = bočni rub (s ispod kuta). Kut je s = 0. Redoslijed zraka = redoslijed po s. */
+    const pS = s => s < 0 ? [400 + s, 0] : [400, s];
+    // poprečna nit prvog dana (namjerno manja - mreža kroz tjedan naraste); sredina = početno središte
+    const a0 = (175 + rnd() * 30) * M, b0 = (165 + rnd() * 30) * M;
+    const aMax = (540 + rnd() * 40) * M, bMax = (500 + rnd() * 40) * M;   // dokle se mreža raširi zadnji dan
+    const sid = [{ s: -a0, dan: 0, uloga: 'T' }, { s: b0, dan: 0, uloga: 'R' }];
+    [0.22, 0.5, 0.78].forEach(fr => {                     // prvi dan još tri zrake unutar poprečne
+      let s = -a0 + (a0 + b0) * (fr + (rnd() - .5) * 0.12);
+      if (Math.abs(s) < 10) s = s < 0 ? -10 : 10;
+      sid.push({ s, dan: 0 });
+    });
+    /* SVAKI SLJEDEĆI DAN (vlasnik: mreža je „organski proizvod koji se svaki dan mijenja i
+       proširuje"): dvije nove KRAJNJE zrake usidrene sve dalje uz gornji i bočni rub (mreža se
+       širi), i često još jedna u najveću prazninu između postojećih. Svaka se napne i povuče sve. */
+    for (let d = 1; d <= 7; d++) {
+      const g = Math.pow(d / 7, 0.85);
+      sid.push({ s: -(a0 + (aMax - a0) * g) + (rnd() - .5) * 14 * M, dan: d });
+      sid.push({ s: b0 + (bMax - b0) * g + (rnd() - .5) * 14 * M, dan: d });
+      const ima = rnd() < 0.8, pomak = (rnd() - .5) * 0.3;
+      if (ima) {
+        const ss = sid.filter(x => x.dan <= d).map(x => x.s).sort((p, q) => p - q);
+        let gi = 0;
+        for (let n = 1; n + 1 < ss.length; n++) if (ss[n + 1] - ss[n] > ss[gi + 1] - ss[gi]) gi = n;
+        let s = (ss[gi] + ss[gi + 1]) / 2 + pomak * (ss[gi + 1] - ss[gi]);
+        if (Math.abs(s) < 10) s = s < 0 ? -10 : 10;
+        sid.push({ s, dan: d });
+      }
     }
-    E.push(R);
-    const NZ = E.length;
-    let iK = 1;                                           // zraka najbliža kutu - prva i vuče najjače
-    E.forEach((e, i) => { if (i > 0 && i < NZ - 1 && dist(e, [400, 0]) < dist(E[iK], [400, 0])) iK = i; });
-    // koji dan nastaje koja zraka: poprečna (0 i NZ-1) + 3 prvi dan, ostale dan 1-4
-    const dan = E.map(() => 0);
-    const prvi = new Set([0, NZ - 1, iK, Math.round(NZ * 0.2), Math.round(NZ * 0.8)]);
-    const ostale = E.map((e, i) => i).filter(i => !prvi.has(i)).map(i => ({ i, r: rnd() })).sort((a, b) => a.r - b.r);
-    const poDanu = Math.ceil(ostale.length / 4);
-    ostale.forEach((x, n) => { dan[x.i] = 1 + Math.floor(n / poDanu); });
-    // redoslijed nastajanja zraka (bez poprečne) i povlak svake: prva prema kutu jako, ostale malo
-    const redZ = [iK, ...E.map((e, i) => i).filter(i => i > 0 && i < NZ - 1 && i !== iK)]
-      .sort((a, b) => dan[a] - dan[b] || (a === iK ? -1 : b === iK ? 1 : a - b));
-    const vuce = i => i === iK ? 0.24 : 0.035;
+    sid.forEach((x, n) => { x.red = n; });                // redoslijed nastajanja
+    sid.sort((p, q) => p.s - q.s);
+    const E = sid.map(x => pS(x.s)), dan = sid.map(x => x.dan), NZ = E.length;
+    const iT = sid.findIndex(x => x.uloga === 'T'), iR = sid.findIndex(x => x.uloga === 'R');
+    const T = E[iT], R = E[iR], H0 = lerp(T, R, 0.5);
+    const unutra = i => i !== iT && i !== iR;
+    let iK = -1;                                          // prvog dana zraka najbliža kutu - prva i vuče najjače
+    sid.forEach((x, i) => { if (x.dan === 0 && unutra(i) && (iK < 0 || Math.abs(x.s) < Math.abs(sid[iK].s))) iK = i; });
+    const redZ = E.map((e, i) => i).filter(unutra)
+      .sort((a, b) => dan[a] - dan[b] || (a === iK ? -1 : b === iK ? 1 : sid[a].red - sid[b].red));
+    const vuce = i => i === iK ? 0.24 : 0.06;
     const Hnakon = [];                                    // središte nakon napinjanja zrake (po redu)
     let h = H0;
     redZ.forEach(i => { h = lerp(h, E[i], vuce(i)); Hnakon.push(h); });
     const Hdana = d => { let x = H0; redZ.forEach((i, n) => { if (dan[i] <= d) x = Hnakon[n]; }); return x; };
-    // lukovi: radijusi oko središta prvog dana pretvoreni u UDIO duljine zrake (elastično)
-    const Href = Hdana(0), Lref = E.map(e => dist(Href, e));
-    const Rmax = 0.94 * Math.min(Lref[0], Lref[NZ - 1]), krugovi = [];
-    for (let r = 8 + rnd() * 4, k = 0; r < Rmax; k++) {
+    const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
+    const kraj = d => { const s = skup(d); return [s[0], s[s.length - 1]]; };   // krajnje zrake tog dana
+    // lukovi: radijusi oko središta; koji dan koji luk - ograničeno da luk stane unutar krajnjih zraka
+    const PLAN = [55, 100, 150, 205, 260, 320, 380, 440];
+    const RD = PLAN.map((r, d) => { const [lo, hi] = kraj(d), Hd = Hdana(d); return Math.min(r * M, 0.92 * Math.min(dist(Hd, E[lo]), dist(Hd, E[hi]))); });
+    const krugovi = [], rb = [];
+    for (let r = 8 + rnd() * 4, k = 0; r < Math.max(...RD) + 30; k++) {
       const pr = krugovi[k - 1];
+      rb.push(r);
       krugovi.push(E.map((e, i) => {
         const v = r * (1 + (rnd() - .5) * 0.14) + (rnd() - .5) * 2;
         return pr ? Math.max(v, pr[i] + 4) : v;
       }));
       r += 7 + k * 0.5 + rnd() * 6;
     }
-    const udio = krugovi.map(kr => kr.map((r, i) => r / Lref[i]));
     const par = krugovi.map(() => E.map(() => ({ s: 0.82 + rnd() * 0.13, m: 0.36 + rnd() * 0.28 })));
-    const RD = [0.2, 0.32, 0.44, 0.56, 0.67, 0.78, 0.88, 0.97].map(x => x * Rmax);
-    const K = RD.map(Rd => { let k = 0; while (k + 1 < krugovi.length && Math.max(krugovi[k + 1][0], krugovi[k + 1][NZ - 1]) <= Rd) k++; return k; });
+    const K = [];
+    RD.forEach((Rd, d) => { let k = 0; while (k + 1 < krugovi.length && rb[k + 1] * 1.08 <= Rd) k++; K.push(Math.max(k, d ? K[d - 1] : 0)); });
     const kDo = d => d < 0 ? -1 : K[d];
     const danLuka = k => K.findIndex(x => k <= x);
-    const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
+    // točka luka = UDIO duljine zrake, mjeren u središtu tog dana (elastično: kasnije se razvuče s mrežom)
+    const udio = krugovi.map((kr, k) => { const Hd = Hdana(Math.max(0, danLuka(k))); return kr.map((r, i) => r / dist(Hd, E[i])); });
     const parovi = k => { const s = skup(danLuka(k)), out = []; for (let n = 0; n + 1 < s.length; n++) out.push([s[n], s[n + 1]]); return out; };
 
     // ---- oblik ovisi samo o položaju središta Hc ----
@@ -915,7 +935,7 @@
     const most = { gen: Hc => `M${f(T[0])} ${f(T[1])}L${f(Hc[0])} ${f(Hc[1])}L${f(R[0])} ${f(R[1])}`, z: 1 };
     niti.push(most);
     const zrNit = [];
-    E.forEach((e, i) => { if (i > 0 && i < NZ - 1 && dan[i] <= DAN) niti.push(zrNit[i] = { gen: Hc => dRavna(Hc, e), z: 1, novo: dan[i] === DAN }); });
+    E.forEach((e, i) => { if (unutra(i) && dan[i] <= DAN) niti.push(zrNit[i] = { gen: Hc => dRavna(Hc, e), z: 1, novo: dan[i] === DAN }); });
     const lukNit = {};
     for (let k = 0; k <= kDo(DAN); k++) parovi(k).forEach(([i, j]) => niti.push(lukNit[k + ':' + i] = { gen: Hc => dLuk(k, i, j, Hc), novo: k > kDo(DAN - 1), k, i, j }));
     most.novo = DAN === 0;
@@ -930,16 +950,20 @@
     const hoda = (A, B) => { const l = dist(rj(A, Hc), rj(B, Hc)); if (l > 0.3) put.push({ tip: 'hoda', A, B, len: l }); };
     const plete = (nit, len, obrnuto) => put.push({ tip: 'plete', nit, len, obrnuto });
     const van = e => ({ xy: e[1] === 0 ? [e[0], -40] : [440, e[1]] });   // iza sidra, s ekrana (uz zid)
-    const S = { i: 0, t: 0 };                              // središte (bilo koja zraka, udio 0)
-    hoda(van(T), { xy: T });
-    let gdje = { xy: T };
+    const S = { i: iT, t: 0 };                            // središte (bilo koja zraka, udio 0)
+    let gdje;
     if (DAN === 0) {
+      hoda(van(T), { xy: T });
       plete(most, dist(T, R));                            // prvo ravna poprečna nit
-      gdje = { i: NZ - 1, t: 1 };
+      gdje = { i: iR, t: 1 };
+    } else {
+      const ulaz = kraj(DAN - 1)[0];                      // dolazi uz zid do krajnje zrake od jučer
+      hoda(van(E[ulaz]), { xy: E[ulaz] });
+      gdje = { i: ulaz, t: 1 };
     }
     redZ.forEach((i, n) => {
       if (dan[i] !== DAN) return;
-      hoda(gdje, S);                                      // po poprečnoj niti / zraci do središta
+      hoda(gdje, S);                                      // po zraci do središta
       plete(zrNit[i], dist(Hc, E[i]));
       /* NAPINJE S RUBA (vlasnik): pauk ostane uz sidro na rubu ekrana i povuče nit PREMA SEBI -
          središte mreže dođe prema njemu. Tek onda se po napetoj zraci vrati u središte. */
@@ -949,21 +973,22 @@
       hoda({ i, t: 1 }, S);                               // natrag po napetoj niti u središte
       gdje = S;
     });
-    // lukovi: od vanjskog prema unutra; počinje na strani T, s luka na luk po poprečnoj niti
-    let ide = 0;
+    // lukovi: od vanjskog prema unutra, između krajnjih zraka dana; s luka na luk po krajnjoj zraci
+    const [lo, hi] = kraj(DAN);
+    let ide = lo;
     for (let k = kDo(DAN); k > kDo(DAN - 1); k--) {
       hoda(gdje, { i: ide, t: udio[k][ide] });
       let dio = parovi(k);
-      if (ide !== 0) dio = dio.reverse();
+      if (ide !== lo) dio = dio.reverse();
       dio.forEach(([i, j]) => {
         const nit = lukNit[k + ':' + i];
-        plete(nit, dist(pt(i, udio[k][i], Hc), pt(j, udio[k][j], Hc)) * 1.05, ide !== 0);   // obrnuto: od j prema i
+        plete(nit, dist(pt(i, udio[k][i], Hc), pt(j, udio[k][j], Hc)) * 1.05, ide !== lo);   // obrnuto: od j prema i
       });
-      ide = ide === 0 ? NZ - 1 : 0;
+      ide = ide === lo ? hi : lo;
       gdje = { i: ide, t: udio[k][ide] };
     }
-    const izlaz = ide === 0 ? T : R;                       // po poprečnoj niti do zida, pa s ekrana
-    hoda(gdje, { xy: izlaz }); hoda({ xy: izlaz }, van(izlaz));
+    hoda(gdje, { i: ide, t: 1 });                         // po krajnjoj zraci do zida, pa s ekrana
+    hoda({ xy: E[ide] }, van(E[ide]));
 
     // ---- SVG ----
     const web = document.createElement('div');
@@ -1006,6 +1031,8 @@
     // UVIJEK ISTA BRZINA (vlasnik): trajanje = duljina na ekranu / BRZINA, i za pletenje i za hod
     const BRZINA = 32;                                    // px u sekundi (16 je bilo presporo - vlasnik)
     const mj = new Map(mreze.map(m => { const C = m.svg.getScreenCTM(); return [m, C ? Math.hypot(C.a, C.b) : 1]; }));
+    // stvarna duljina niti (luk se objesi pa je dulji od tetive - inače bi pauk po lukovima jurio)
+    koraci.forEach(k => { if (k.tip === 'plete') k.len = k.nit.el.getTotalLength(); });
     koraci.forEach(k => { k.s = k.tip === 'stoji' ? 4 : k.tip === 'napni' ? 1.5 : k.len * mj.get(k.m) / BRZINA; });
 
     const pauk = document.createElement('div');

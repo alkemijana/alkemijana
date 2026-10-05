@@ -987,8 +987,8 @@
       ide = ide === lo ? hi : lo;
       gdje = { i: ide, t: udio[k][ide] };
     }
-    hoda(gdje, { i: ide, t: 1 });                         // po krajnjoj zraci do zida, pa s ekrana
-    hoda({ xy: E[ide] }, van(E[ide]));
+    if (o.zadnja) hoda(gdje, S);                          // posao za danas gotov: po zraci u središte i ondje ostane (vlasnik)
+    else { hoda(gdje, { i: ide, t: 1 }); hoda({ xy: E[ide] }, van(E[ide])); }   // po krajnjoj zraci do zida, pa s ekrana
 
     // ---- SVG ----
     const web = document.createElement('div');
@@ -1016,7 +1016,7 @@
     const DAN = webDay();
     const mreze = [
       buildWeb({ sjeme: 0x5eed1031, mjera: 1 }, DAN),                          // gore desno
-      buildWeb({ sjeme: 0x0b5c11a7, mjera: 0.86, cls: 'hw-web-dl' }, DAN),    // dolje lijevo
+      buildWeb({ sjeme: 0x0b5c11a7, mjera: 0.86, cls: 'hw-web-dl', zadnja: true }, DAN),   // dolje lijevo (tu i ostane)
     ];
     const koraci = [];
     mreze.forEach((m, mi) => {
@@ -1063,7 +1063,15 @@
       last = now;
       tk += dt;
       while (i < koraci.length && tk >= koraci[i].s) { tk -= koraci[i].s; zavrsi(koraci[i]); i++; }
-      if (i >= koraci.length) { pauk.remove(); return; }
+      if (i >= koraci.length) {                           // gotovo: pauk SJEDI u središtu donje mreže
+        const z = koraci[koraci.length - 1], m = z.m;
+        const sjedi = () => { const e = naEkran(m, m.rj(z.B, m.Hc)); if (e) pauk.style.transform = `translate(${e[0].toFixed(1)}px, ${e[1].toFixed(1)}px) rotate(${(kut || 0).toFixed(1)}deg)`; };
+        pauk.classList.remove('hw-pauk-hoda');            // noge mirne
+        pauk.style.visibility = '';
+        sjedi();
+        addEventListener('resize', sjedi);                // ostaje na mreži i kad se prozor promijeni
+        return;
+      }
       const k = koraci[i], v = k.s ? tk / k.s : 1;
       let e = null, okreni = null;
       if (k.tip === 'plete') {

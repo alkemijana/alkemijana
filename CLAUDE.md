@@ -1378,7 +1378,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 32 px/s, i pletenje i hod; 16 je bilo presporo) - trajanje nije bitno
     (prvi dan ~1,5 min, zadnji ~5 min). Trajanje koraka se računa iz STVARNE duljine niti (`getTotalLength`)
     - luk se objesi pa je dulji od tetive, inače bi pauk po lukovima jurio. Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
-    Između mreža ide uz zid izvan ekrana. Nema niti preko cijelog ekrana (vlasniku se nije svidjela).
+    Između mreža ide uz zid izvan ekrana. **Kad završi današnji posao, po zraci ode u SREDIŠTE donje
+    mreže i ondje mirno sjedi** (noge stoje, prati mrežu i na `resize`) - vlasnik; prije je odlazio s ekrana. Nema niti preko cijelog ekrana (vlasniku se nije svidjela).
   - **Bez štekanja:** JS + rAF; u kadru se mijenja jedna nit (`stroke-dashoffset`, `pathLength=1`; luk
     pleten „unatrag" ima negativan offset) i `transform` pauka; samo dok traje napinjanje (1,5 s)
     preslože se sve niti te mreže. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi

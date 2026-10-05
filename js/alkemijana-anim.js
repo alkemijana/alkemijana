@@ -183,32 +183,36 @@
       return best;
     };
     const novaKap = (pt, r, duljina) => {
+      /* Trag je ISPUNJEN lik koji se SUŽAVA prema dolje (širok uz logo, tanji kod kapi),
+         ne obična crta - crta jednake debljine s kuglicom na kraju izgleda kao pribadača. */
       const trag = document.createElementNS(NS, 'path');
-      trag.setAttribute('d', `M${pt.x.toFixed(2)} ${pt.y.toFixed(2)}v${duljina.toFixed(2)}`);
-      trag.setAttribute('fill', 'none');
-      trag.setAttribute('stroke-linecap', 'round');
-      trag.setAttribute('style', `stroke:var(--aa-boja,var(--lavender,#a890d0));stroke-width:${(r * 0.75).toFixed(2)}`);
+      trag.setAttribute('style', FILL);
       const glava = document.createElementNS(NS, 'ellipse');
       glava.setAttribute('style', FILL);
       kapiG.append(trag, glava);
       return { trag, glava, pt, r, duljina, len: duljina };
     };
     const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
-      // 0-0,22 nabubri na mjestu | 0,22-0,86 klizi dolje i vuče trag | 0,86-1 nestane
-      const nabuja = Math.min(1, v / 0.22);
-      const pad = v < 0.22 ? 0 : Math.min(1, (v - 0.22) / 0.64);
-      const nestaje = v < 0.86 ? 1 : 1 - (v - 0.86) / 0.14;
-      const y = k.pt.y + k.duljina * E.inOut(pad);
+      /* 0-0,34  kap se skuplja i VISI (raste i sliježe se, još ne putuje)
+         0,34-1  klizne, ubrza pa se zaustavi - krv je gusta i stane na pola puta
+         NA KRAJU NIŠTA NE NESTAJE: kap i trag ostaju na logu (zahtjev vlasnika). */
+      const raste = Math.min(1, v / 0.34);
+      const pad = v <= 0.34 ? 0 : (v - 0.34) / 0.66;
+      const s = pad * pad * (3 - 2 * pad);                 // sporo krene, ubrza, pa se zaustavi
+      const y = k.pt.y + k.duljina * s;
       // MORA krenuti od nule: prije svog trenutka kap se iscrtava s v = 0, pa bi
       // inače stajala na logu kao točka od početka animacije (bio stvarni kvar)
-      const rx = k.r * nabuja;
+      const rx = k.r * raste;
+      // dok visi sliježe se u suzu, u punom padu se izduži, na kraju se opet zaokruži
+      const izduzenje = 1.18 + 0.32 * raste * (1 - pad) + 0.45 * Math.sin(Math.PI * pad);
       k.glava.setAttribute('cx', k.pt.x.toFixed(2));
       k.glava.setAttribute('cy', y.toFixed(2));
       k.glava.setAttribute('rx', rx.toFixed(2));
-      k.glava.setAttribute('ry', (rx * (1 + 0.5 * pad)).toFixed(2));   // kap se u padu izduži
-      k.glava.setAttribute('opacity', nestaje.toFixed(3));
-      k.trag.setAttribute('stroke-dasharray', `${(k.duljina * E.inOut(pad)).toFixed(2)} ${(k.duljina + 1).toFixed(2)}`);
-      k.trag.setAttribute('opacity', (nestaje * 0.85).toFixed(3));
+      k.glava.setAttribute('ry', (rx * izduzenje).toFixed(2));
+      const x = k.pt.x, gore = k.r * 0.86 * raste, dolje = k.r * 0.46 * raste;
+      k.trag.setAttribute('d', s <= 0 ? '' :
+        `M${(x - gore).toFixed(2)} ${k.pt.y.toFixed(2)}L${(x + gore).toFixed(2)} ${k.pt.y.toFixed(2)}` +
+        `L${(x + dolje).toFixed(2)} ${y.toFixed(2)}L${(x - dolje).toFixed(2)} ${y.toFixed(2)}Z`);
     }, E.lin, k);
     const shines = qa('.aa-shine').map(e => ({ e, f: +e.dataset.f, o: +e.dataset.o }));
     const floatG = q('.aa-float');
@@ -309,14 +313,17 @@
         /* Kapi kreću TEK kad je logo gotov, inače bi curile iz poteza koji se još piše.
            Pet kapi: obje noge slova A, obod i dva slova - razmaknuto po širini, s razmakom
            u vremenu da ne padaju u taktu. */
-        const izvori = [S.a[0], S.a[1], S.ab, S.t[2] && S.t[2][0], S.t[6] && S.t[6][0]].filter(Boolean);
+        /* Obod + slova razmaknuta po širini. Noge slova A se NE koriste: njihova
+           najniža točka je tik uz obod, pa bi trag prelazio preko njega i izgledao
+           kao da je logo probušen. */
+        const izvori = [S.ab, ...[1, 3, 5, 7].map(i => S.t[i] && S.t[i][0])].filter(Boolean);
         const H = vb[3];
         let tk = end + .12 / speed;
         izvori.forEach((s, i) => {
-          const k = novaKap(niskaTocka(s), H * (0.016 + (i % 2) * 0.004), H * (0.1 + (i % 3) * 0.05));
-          const kraj = kapni(k, tk, (1.5 + (i % 3) * 0.35) / speed);
+          const k = novaKap(niskaTocka(s), H * (0.046 + (i % 2) * 0.010), H * (0.13 + (i % 3) * 0.06));
+          const kraj = kapni(k, tk, (4.2 + (i % 3) * 0.9) / speed);     // sporo, gusto
           if (kraj > end) end = kraj;
-          tk += (0.28 + (i % 2) * 0.16) / speed;
+          tk += (0.75 + (i % 2) * 0.35) / speed;
         });
       }
     } else if (vrsta === 'znak') {

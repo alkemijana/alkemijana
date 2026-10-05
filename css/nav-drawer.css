@@ -280,8 +280,13 @@ html.nd-locked body {
 html.nd-locked body { padding-right: var(--nd-sbw, 0px); }
 html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
 
+/* Mobitel: šešir i ☰ su od bočnog ruba jednako daleko kao od gornjeg
+   (mjereno po vidljivom crtežu: šešir ~29 px, ☰ ~38 px). Logo ima
+   vlastiti padding 1.05rem (za meki ovoj), zato je lijevo tako malo.
+   Mora biti #main-nav - goli `nav` iz style.css ovdje gubi na specifičnosti. */
 @media (max-width: 768px) {
-  html.nd-locked #main-nav { padding-right: calc(1.5rem + var(--nd-sbw, 0px)); }
+  #main-nav { padding-left: 0.7rem; padding-right: 1.7rem; }
+  html.nd-locked #main-nav { padding-right: calc(1.7rem + var(--nd-sbw, 0px)); }
 }
 
 /* ---- Desktop: izbornik izlazi S DESNE STRANE ----

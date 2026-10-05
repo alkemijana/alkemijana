@@ -119,9 +119,14 @@
      ============================================================ */
   const POSES = {
     // sh = rame, wr = zglob, th = kandža, tip = vrh krila, f2/f3 = vrhovi prstiju, hip = kuk
-    up:   { sh: [-3, -3], wr: [-14, -15], th: [-11, -18.5], tip: [-35, -24], f2: [-35, -9], f3: [-25, -1], hip: [-4, 6] },
-    mid:  { sh: [-3, -3], wr: [-17, -9],  th: [-15.5, -13], tip: [-46, -3],  f2: [-37, 9],  f3: [-24, 12], hip: [-4, 7] },
-    down: { sh: [-3, -2], wr: [-16, 3],   th: [-18.5, -0.5], tip: [-30, 20],  f2: [-21, 22], f3: [-13, 17], hip: [-4, 8] }
+    /* VELIKA amplituda + krilo se na podizanju SKUPI (raspon 17 → 47 → 22):
+       to je ono po čemu se šišmiš razlikuje od leptira. Leptir maše simetrično
+       i raširenih krila u oba smjera; šišmiš gore sklopi krila u uzak V iznad
+       tijela, u sredini ih rastegne do kraja, a dolje zamahne duboko ispod sebe.
+       Prije su krila išla samo -24…+20 uz malu razliku u rasponu - odatle „leptir". */
+    up:   { sh: [-3, -3], wr: [-9, -16],  th: [-7, -20],    tip: [-14, -29], f2: [-17, -19], f3: [-13, -9], hip: [-4, 6] },
+    mid:  { sh: [-3, -3], wr: [-18, -8],  th: [-16, -12],   tip: [-47, -6],  f2: [-38, 7],   f3: [-24, 11], hip: [-4, 7] },
+    down: { sh: [-3, -2], wr: [-13, 6],   th: [-15, 2],     tip: [-22, 27],  f2: [-16, 26],  f3: [-10, 19], hip: [-4, 8] }
   };
   // luk kožice između dva vrha: sredina tetive povučena prema ZGLOBU (tamo se prsti sastaju)
   function arc(a, b, wr, pull) {
@@ -198,7 +203,7 @@
     return '<svg viewBox="-48 -30 96 60" aria-hidden="true" focusable="false">' +
       '<g>' +
         '<animateTransform attributeName="transform" type="translate" dur="' + dur + '" begin="' + begin + '" ' +
-          'repeatCount="indefinite" calcMode="spline" keyTimes="0;0.42;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" values="0 2;0 -2;0 2"/>' +
+          'repeatCount="indefinite" calcMode="spline" keyTimes="0;0.42;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" values="0 3;0 -3;0 3"/>' +
         wing +
         '<g transform="scale(-1 1)">' + wing + '</g>' +
         '<ellipse class="hw-body" cx="0" cy="3" rx="4" ry="8"/>' +
@@ -457,38 +462,33 @@
   }
 
   /* ---- 3. Šišmiši na nebu ----
-     Let je namjerno nemiran: brzina se mijenja, putanja trza gore-dolje
-     (izglađen slučajni pomak + pokoji zaron), nagib prati smjer, a
-     veličina blago „diše" kao da se šišmiš primiče i udaljava. */
+     Prelet je RAVNA CRTA stalnom brzinom; nasumičan je samo smjer i mjesto.
+     (Prije je let bio nemiran - trzanje gore-dolje, nagla skretanja, „disanje"
+     veličine - i to je, zajedno s plitkim zamahom krila, izgledalo kao leptir.) */
   function spawnBat(delay) {
     const el = document.createElement('div');
     el.className = 'hw-bat';
     el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = batSvg(0.1 + Math.random() * 0.05);    // brzo mahanje - sporo je izgledalo kao leptir
-    const size = 34 + Math.random() * 30;
+    el.innerHTML = batSvg(0.13 + Math.random() * 0.05);   // veći šišmiš maše malo sporije
+    const size = 68 + Math.random() * 60;                 // duplo veći nego prije (vlasnik)
     el.style.width = size + 'px';
     document.body.appendChild(el);
 
+    /* Let je POTPUNO RAVAN - bez skretanja, bez valovitog lebdenja, bez „disanja"
+       veličine (sve je to izgledalo kao leptir). Nasumičan je samo SMJER: svaki
+       prelet ide pod drugim kutom, kroz nasumičnu točku bliže sredini ekrana pa
+       se uvijek vidi, a glava gleda u smjer leta. */
     const vw = window.innerWidth, vh = window.innerHeight;
-    const ltr = Math.random() < 0.5;
-    const x0 = ltr ? -size * 1.5 : vw + size * 1.5, x1 = ltr ? vw + size * 1.5 : -size * 1.5;
-    /* Let: dionice ravnog leta s NAGLIM skretanjem između njih (šišmiš lovi),
-       bez valovitog lebdenja i bez „disanja" veličine - to je izgledalo kao leptir. */
-    let y = vh * (0.12 + Math.random() * 0.5);
-    const N = 7, frames = [];
-    let slope = (Math.random() - 0.5) * 0.5;
-    for (let i = 0; i <= N; i++) {
-      const t = i / N;
-      const x = x0 + (x1 - x0) * t;
-      if (i > 0) {
-        if (Math.random() < 0.55) slope = (Math.random() - 0.5) * 0.9;     // naglo skretanje
-        y += slope * Math.abs(x1 - x0) / N;
-        y = Math.max(vh * 0.05, Math.min(vh * 0.85, y));
-      }
-      const tilt = Math.max(-22, Math.min(22, Math.atan(slope) * 57.3 * 0.6)) * (ltr ? 1 : -1);
-      frames.push({ transform: 'translate(' + f1(x) + 'px, ' + f1(y) + 'px) rotate(' + f1(tilt) + 'deg)', offset: t });
-    }
-    const dur = 3600 + Math.random() * 2400;   // šišmiš je brz
+    const ang = Math.random() * Math.PI * 2;
+    const dx = Math.cos(ang), dy = Math.sin(ang);
+    const cx = vw * (0.2 + Math.random() * 0.6), cy = vh * (0.15 + Math.random() * 0.55);
+    const L = Math.hypot(vw, vh) / 2 + size * 2;                 // dovoljno da krene i završi izvan ekrana
+    const rot = f1(ang * 57.2958 + 90);                          // lik je nacrtan licem prema gore
+    const frames = [
+      { transform: 'translate(' + f1(cx - dx * L) + 'px, ' + f1(cy - dy * L) + 'px) rotate(' + rot + 'deg)' },
+      { transform: 'translate(' + f1(cx + dx * L) + 'px, ' + f1(cy + dy * L) + 'px) rotate(' + rot + 'deg)' }
+    ];
+    const dur = 2 * L / (0.32 + Math.random() * 0.16);   // stalna brzina (px/ms), neovisno o veličini ekrana
     const anim = el.animate(frames, { duration: dur, delay, easing: 'linear', fill: 'both' });
     anim.onfinish = () => el.remove();
   }

@@ -1001,7 +1001,7 @@
       return;
     }
     // UVIJEK ISTA BRZINA (vlasnik): trajanje = duljina na ekranu / BRZINA, i za pletenje i za hod
-    const BRZINA = 16;                                    // px u sekundi
+    const BRZINA = 32;                                    // px u sekundi (16 je bilo presporo - vlasnik)
     const mj = new Map(mreze.map(m => { const C = m.svg.getScreenCTM(); return [m, C ? Math.hypot(C.a, C.b) : 1]; }));
     koraci.forEach(k => { k.s = k.tip === 'stoji' ? 4 : k.tip === 'napni' ? 1.5 : k.len * mj.get(k.m) / BRZINA; });
 

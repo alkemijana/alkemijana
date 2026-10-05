@@ -1368,8 +1368,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     mreža svaki dan ista za sve. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
   - **Pauk** (~15 px, jedva vidljiv; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
     dva natrag; s kratkim nogama u stranu „izgledao je kao rak") **hoda SAMO po nitima koje već
-    postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 16 px/s, i pletenje i hod) - trajanje nije bitno
-    (prvi dan ~4 min). Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
+    postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 32 px/s, i pletenje i hod; 16 je bilo presporo) - trajanje nije bitno
+    (prvi dan ~2 min). Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.
     Između mreža ide uz zid izvan ekrana. Nema niti preko cijelog ekrana (vlasniku se nije svidjela).
   - **Bez štekanja:** JS + rAF; u kadru se mijenja jedna nit (`stroke-dashoffset`, `pathLength=1`; luk
     pleten „unatrag" ima negativan offset) i `transform` pauka; samo dok traje napinjanje (1,5 s)

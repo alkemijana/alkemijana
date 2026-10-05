@@ -897,17 +897,18 @@
     const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
     const kraj = d => { const s = skup(d); return [s[0], s[s.length - 1]]; };   // krajnje zrake tog dana
     /* KUT U SREDIŠTU NE SMIJE BITI OŠTAR (vlasnik): središte mora ostati blizu crte između krajnjih
-       sidara - onda krajnje zrake zatvaraju širok kut (~140-160°), a ne oštar „V".
-       - prva zraka (prema kutu) vuče SLABO (prije 0,24 - napravila je oštar V);
-       - nove KRAJNJE zrake vuku središte prema van, prema točki malo unutar crte između krajnjih
-         sidara tog dana (sidra su daleko, pa njihov zbirni povlak izvuče središte od kuta);
+       sidara - onda krajnje zrake zatvaraju širok kut, a ne oštar „V". Ali POSTUPNO, kroz tjedan:
+       - prvi dan prva zraka (prema kutu) vuče JAKO (0,24) - mreža je tada napeti „V" (vlasnik:
+         „neka ga prvi dan povuče kako je i bio");
+       - nove KRAJNJE zrake kasnijih dana ga POSTUPNO izvlače prema van (svaka 0,16 puta prema točki
+         malo unutar crte između krajnjih sidara tog dana), pa se kut iz dana u dan otvara;
        - ostale zrake (u prazninama) vuku malo, prema svom sidru. */
     const Hnakon = [];                                    // središte nakon napinjanja zrake (po redu)
     let h = H0;
     redZ.forEach(i => {
       const d = dan[i], [lo, hi] = kraj(d);
-      if (d > 0 && (i === lo || i === hi)) h = lerp(h, lerp(lerp(E[lo], E[hi], 0.5), [400, 0], 0.1), 0.5);
-      else h = lerp(h, E[i], i === iK ? 0.07 : 0.03);
+      if (d > 0 && (i === lo || i === hi)) h = lerp(h, lerp(lerp(E[lo], E[hi], 0.5), [400, 0], 0.1), 0.16);
+      else h = lerp(h, E[i], i === iK ? 0.24 : 0.03);
       Hnakon.push(h);
     });
     const Hdana = d => { let x = H0; redZ.forEach((i, n) => { if (dan[i] <= d) x = Hnakon[n]; }); return x; };

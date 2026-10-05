@@ -1370,8 +1370,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     krajnjoj zraci. Sidra su zadana jednim brojem `s` po rubu (s<0 gornji, s>0 bočni); sidra smiju
     izaći iz viewBoxa 400 (SVG ima overflow visible), pa je zadnji dan mreža preko pola širine ekrana.
   - **Kut u središtu nije oštar „V"** (vlasnik): središte ostaje blizu crte između krajnjih sidara -
-    prva zraka (prema kutu) vuče slabo (0,07; s 0,24 je bio oštar V), a nove KRAJNJE zrake izvuku
-    središte prema van (pola puta prema točki malo unutar crte lo–hi). Lukovi se NE zatvaraju preko
+    prvi dan prva zraka (prema kutu) vuče JAKO (0,24 - napeti „V", vlasnik ga želi), a nove KRAJNJE
+    zrake kasnijih dana POSTUPNO izvlače središte prema van (svaka 0,16 puta prema točki malo unutar
+    crte lo–hi), pa se kut iz dana u dan otvara. Lukovi se NE zatvaraju preko
     otvorene strane (to je bio nesporazum - crvena crta na slici bila je samo oznaka kuta).
   - **Lukovi prate nove zrake** (vlasnik: „ne popunjava lukove kod novih zraka"): luk spaja SVE zrake
     svog dana (`spaja(k, d) = skup(d)`). Nova KRAJNJA zraka: stari lukovi se do nje PRODUŽE - pauk ide

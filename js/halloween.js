@@ -119,38 +119,14 @@
      svaki put rekao da izgleda kao leptir. Ne vraćati ga.
      ============================================================ */
 
-  /* Jednostavan šišmiš za JATO u uvodu: krilo = vrh + jedan urez, bez prstiju,
-     kandži i poskakivanja tijela - sitan i brz, pa detalji samo smetaju. */
-  const SW_UP   = 'M-1.5 -1 Q-9 -10 -21 -13 Q-17 -6 -18 -2 Q-12 -4 -9 1 Q-5 0 -1.5 3 Z';
-  const SW_DOWN = 'M-1.5 -1 Q-9 2 -19 12 Q-13 9 -11 11 Q-9 6 -6 7 Q-4 3 -1.5 3 Z';
-  /* Za jato: dvije GOTOVE slike (krila gore / dolje) s već ugrađenim zamućenjem;
-     mahanje = izmjena tih dviju slika (samo opacity). 60 elemenata s CSS blurom i
-     SMIL animacijom bilo je preteško za iPhone. */
-  let swarmImgs = null;
-  function swarmBatImgs() {
-    if (swarmImgs) return swarmImgs;
-    const mk = d => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-32 -24 64 48" width="64" height="48">' +
-      '<defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>' +
-      '<g filter="url(#b)" fill="#000"><path d="' + d + '"/><path d="' + d + '" transform="scale(-1 1)"/>' +
-      '<ellipse cx="0" cy="1" rx="2.4" ry="4.2"/><path d="M-2 -2 L-1.6 -5.6 L-0.4 -3 Z M2 -2 L1.6 -5.6 L0.4 -3 Z"/></g></svg>');
-    return (swarmImgs = [mk(SW_UP), mk(SW_DOWN)]);
-  }
-  // u pripremi uvoda: SVG (s filterom) → gotov PNG, pa se pri letu samo skalira bitmapa
-  async function rasterSwarmImgs() {
-    const src = swarmBatImgs();
-    try {
-      const out = await Promise.all(src.map(async u => {
-        const im = new Image(); im.src = u; await within(im.decode(), 1500);
-        if (!im.complete || !im.naturalWidth) throw new Error('nije učitano');   // inače bi PNG bio prazan
-        // 384x288: otkad su šišmiši duplo veći, na velikom ekranu premaše 192 px pa bi se bitmapa rastezala
-        const c = document.createElement('canvas'); c.width = 384; c.height = 288;
-        c.getContext('2d').drawImage(im, 0, 0, 384, 288);
-        return c.toDataURL('image/png');
-      }));
-      await Promise.all(out.map(u => { const i = new Image(); i.src = u; return within(i.decode(), 1500); }));
-      swarmImgs = out;
-    } catch (e) { /* ostaju SVG slike - rade, samo sporije */ }
+  /* Jato u uvodu koristi ISTU traku silueta kao šišmiši na stranici (klasa hw-bat).
+     Prije je imalo vlastiti, jednostavniji crtež u dvije gotove slike - obrisano kad
+     je crtanje kodom zamijenjeno trasiranom trakom. Slika se učita u pripremi uvoda
+     (preloadBatSheet) da se prvih 60 šišmiša ne iscrtava usred animacije. */
+  function preloadBatSheet() {
+    const im = new Image();
+    im.src = 'assets/halloween/bat-sheet.png';
+    return within(im.decode(), 2500).catch(() => {});
   }
 
   /* ============================================================
@@ -300,11 +276,10 @@
         const depth = Math.random();                              // 0 = daleko, 1 = blizu
         const size = m * (0.05 + depth * 0.11) + 20;              // duplo veći nego prije (vlasnik)
         const el = document.createElement('div');
-        el.className = 'hw-bat hwi-bat';
-        const im = swarmBatImgs(), fl = (0.07 + Math.random() * 0.04).toFixed(3) + 's', ph = (-Math.random() * 0.1).toFixed(3) + 's';
-        el.innerHTML = '<img class="hwi-bf hwi-bf-a" alt="" src="' + im[0] + '" style="animation-duration:' + fl + ';animation-delay:' + ph + '">' +
-                       '<img class="hwi-bf hwi-bf-b" alt="" src="' + im[1] + '" style="animation-duration:' + fl + ';animation-delay:' + ph + '">';
-        el.style.width = f1(size * 64 / 48) + 'px';                 // slika ima rub za zamućenje
+        el.className = 'hw-bat hwi-bat';                            // traku silueta nosi .hw-bat
+        el.style.width = f1(size) + 'px';
+        el.style.animationDuration = (0.3 + Math.random() * 0.12).toFixed(2) + 's';   // jato maše brže
+        el.style.animationDelay = (-Math.random()).toFixed(2) + 's';
         el.style.zIndex = String(Math.round(depth * 10));
         host.appendChild(el);
         // iz kuta (malo raspršeno) RAVNO PREKO MJESECA: cilj je nasumična točka na
@@ -314,10 +289,12 @@
         const tx = moonX + Math.cos(a) * rr - size / 2, ty = moonY + Math.sin(a) * rr - size / 2;
         const len = Math.hypot(tx - x0, ty - y0) || 1;
         const x1 = x0 + (tx - x0) / len * D, y1 = y0 + (ty - y0) / len * D;
-        el.style.transform = 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)';   // čeka izvan ekrana
+        /* Silueta na traci gleda ULIJEVO, a jato leti iz donjeg lijevog kuta UDESNO -
+           zato negativan scaleX, inače lete unatrag (vlasnik). */
+        el.style.transform = 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(-1.15, 1.15)';   // čeka izvan ekrana
         plan.push({ el, frames: [
-          { transform: 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(1.15)' },
-          { transform: 'translate(' + f1(x1) + 'px, ' + f1(y1) + 'px) scale(0.7)' }
+          { transform: 'translate(' + f1(x0) + 'px, ' + f1(y0) + 'px) scale(-1.15, 1.15)' },
+          { transform: 'translate(' + f1(x1) + 'px, ' + f1(y1) + 'px) scale(-0.7, 0.7)' }
         ], opts: {
           // dio sa šišmišima je kratak (~1,5 s) - prvotnih 2,2 s je bilo predugo, 1,1 s malo prekratko (vlasnik)
           duration: 1000 + (1 - depth) * 850 + Math.random() * 200,
@@ -353,7 +330,7 @@
        - stranica dovrši init (aj:ready iz app.js) - inače teški JS (živi kotač…)
          radi usred animacije i na iPhoneu zapinje
        - astronomy-engine + oba Mjeseca (obični i krvavi) unaprijed iscrtana
-       - šišmiši jata pretvoreni u gotove slike (rasterSwarmImgs), font rečenice
+       - traka silueta za jato (preloadBatSheet), font rečenice
        Za to vrijeme vidi se normalni ekran učitavanja. Strop 8 s pa ide svejedno. */
     const t0 = performance.now();
     async function prepare() {
@@ -361,7 +338,7 @@
       const lib = window.Astronomy ? null :
         (typeof loadScript === 'function' ? loadScript('js/lib/astronomy.browser.min.js').catch(() => {}) : null);
       const fonts = document.fonts && document.fonts.load ? document.fonts.load('italic 400 1em "Playfair Display"').catch(() => {}) : null;
-      await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(rasterSwarmImgs(), 4000), within(loadMoonMap(), 5000)]);
+      await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(preloadBatSheet(), 4000), within(loadMoonMap(), 5000)]);
       const g = currentMoon();
       await paintMoon($('.hwi-ml-n'), g, false);
       await paintMoon($('.hwi-ml-r'), g, true);
@@ -416,18 +393,20 @@
     document.body.appendChild(el);
 
     /* Let je POTPUNO RAVAN - bez skretanja, bez valovitog lebdenja, bez „disanja"
-       veličine (sve je to izgledalo kao leptir). Nasumičan je samo SMJER: svaki
-       prelet ide pod drugim kutom, kroz nasumičnu točku bliže sredini ekrana pa
-       se uvijek vidi, a glava gleda u smjer leta. */
+       veličine (sve je to izgledalo kao leptir). Nasumičan je samo SMJER.
+       ŠIŠMIŠ SE NE ZAKREĆE PO PUTANJI - ostaje uspravan, kao na referentnoj
+       animaciji. Zakretanje u smjer leta (rotate) je probano i vlasnik je rekao
+       da „čudno lete, nekako su nagnuti": kosi šišmiš izgleda kao da pada, a ne
+       kao da leti. Jedino što se mijenja je zrcaljenje kad let ide ulijevo. */
     const vw = window.innerWidth, vh = window.innerHeight;
-    const ang = Math.random() * Math.PI * 2;
+    // uglavnom vodoravno (±32°), inače bi uspravan šišmiš letio ravno gore ili dolje
+    const ltr = Math.random() < 0.5;
+    const ang = (Math.random() - 0.5) * 1.12 + (ltr ? 0 : Math.PI);
     const dx = Math.cos(ang), dy = Math.sin(ang);
     const cx = vw * (0.2 + Math.random() * 0.6), cy = vh * (0.15 + Math.random() * 0.55);
     const L = Math.hypot(vw, vh) / 2 + size * 2;                 // dovoljno da krene i završi izvan ekrana
-    /* Silueta je nacrtana licem prema gore, pa je zakret = smjer leta + 90°.
-       Kad let ide ulijevo, zakret je veći od 90° i šišmiš se doima izvrnutim -
-       zato se tada još preslika po svojoj okomici (smjer ostaje isti). */
-    const rot = 'rotate(' + f1(ang * 57.2958 + 90) + 'deg)' + (dx < 0 ? ' scale(-1,1)' : '');
+    // silueta na traci gleda ULIJEVO, pa se zrcali kad let ide UDESNO
+    const rot = dx > 0 ? ' scale(-1,1)' : '';
     const frames = [
       { transform: 'translate(' + f1(cx - dx * L) + 'px, ' + f1(cy - dy * L) + 'px) ' + rot },
       { transform: 'translate(' + f1(cx + dx * L) + 'px, ' + f1(cy + dy * L) + 'px) ' + rot }

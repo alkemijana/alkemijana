@@ -297,11 +297,6 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hwi-bats { position: absolute; inset: 0; }
 .hwi-bat { position: absolute; z-index: auto; }
 /* jato: dvije gotove slike, mahanje = izmjena (samo opacity) */
-.hwi-bf { position: absolute; left: 0; top: 0; width: 100%; height: auto; display: block; }
-.hwi-bf-a { animation: hwiFlapA 0.09s linear infinite; }
-.hwi-bf-b { animation: hwiFlapB 0.09s linear infinite; }
-@keyframes hwiFlapA { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes hwiFlapB { 0%, 49.9% { opacity: 0; } 50%, 100% { opacity: 1; } }
 .hwi-bolts {
   position: absolute;
   inset: 0;

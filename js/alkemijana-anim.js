@@ -173,70 +173,122 @@
        Točke se NE upisuju ručno nego se traže po samom potezu (`niskaTocka`), pa se drže
        loga i kad se logo promijeni. Sve je u koordinatama sloja .aa-fx (kao iskre i bljesak),
        zato točka ide kroz matricu poteza - isti obrazac kao `glintAt` i `burst`. */
-    const niskaTocka = s => {
+    const niskaTocka = (s, od = 0, doK = 1) => {
       let best = null;
-      for (let i = 0; i <= 28; i++) {
-        const q0 = s.e.getPointAtLength(s.len * i / 28);
+      for (let i = 0; i <= 40; i++) {
+        const q0 = s.e.getPointAtLength(s.len * (od + (doK - od) * i / 40));
         const pt = s.M.transformPoint(new DOMPoint(q0.x, q0.y));
         if (!best || pt.y > best.y) best = pt;
       }
       return best;
     };
-    /* Oblik kapi je prerađen po slikama koje je poslao vlasnik („curi krv"):
-       stup je ŠIROK, gotovo kao trbuh, s malim strukom ispod logotipa i OKRUGLIM
-       TRBUHOM na dnu. Tanak trag sa sitnom kuglicom (prva verzija) izgledao je kao
-       pribadača - ne vraćati. Sve je jedan ispunjen lik, pa nema šava prema logu. */
-    /* Sve mjere kapi izvedene su iz DEBLJINE POTEZA iz kojeg curi (čita se sa samog
-       pera: stroke-width × mjerilo matrice), ne iz visine loga. Inače kap ispadne
-       deblja od slova i izgleda nalijepljeno. */
-    const mjerilo = M => Math.sqrt(Math.abs(M.a * M.d - M.b * M.c)) || 1;
-    const novaKap = (s, duljina, kapljica) => {
-      const lik = document.createElementNS(NS, 'path');
-      lik.setAttribute('style', FILL);
-      const odvojena = document.createElementNS(NS, 'ellipse');   // kod nekih se niže odvoji kapljica
-      odvojena.setAttribute('style', FILL);
-      kapiG.append(lik, odvojena);
-      const pol = (+s.e.getAttribute('stroke-width') || 2) / 2 * mjerilo(s.M);
-      return { lik, odvojena, pt: niskaTocka(s), pol, duljina, kapljica };
+    /* SPOJ KAPI I SLOVA SE NE CRTA RUČNO NEGO STAPA („gooey"): kap i komadić slova oko
+       izvora idu kroz zamućenje + oštar prag alfe, pa se na spoju sam stvori konkavan
+       meniskus kao u prave tekućine - i kad se kap tek skuplja, i kad se kapljica otkida.
+       Prije su tu bili ručni Bézierovi prijelazi izvedeni iz SREDIŠNJE LINIJE pera, pa spoj
+       nikad nije točno sjeo: vidjeli su se rogovi i stepenice. Ne vraćati na ručni spoj.
+       - Kroz filter ide CIJELO slovo, a tek se IZLAZ filtera izreže na pruh oko kapi (clipPath
+         izvan filtera). Inače bi prag zapunio sve unutarnje kutove ostatka loga. Rez PRIJE
+         filtera (prva verzija) ne valja: odrezani komadić se zamućenjem stanji pa meniskusa
+         gotovo nema.
+       - Prag je TOČNO na pola alfe (24α − 12), pa ravni rubovi ostanu na mjestu i rez
+         (clipPath) se ne vidi; niži prag napuhne rubove pa se na rezu vide stepenice; filter samo
+         DODAJE meniskus u udubinama, a ono što oduzme (vrhove) pokriva oštri original.
+       - Isti lik kapi se crta i oštro (`<use>`), jer prag stanji tanak trag.
+       DEBLJINA SLOVA I NJEGOV DONJI RUB MJERE SE NA SAMOM OBRISU (isPointInFill), ne iz
+       pera: pero je skoro duplo šire od pravog poteza (obod 1,4, j 0,9, rep slova e tek
+       0,5 mm), pa je kap ispadala šira od slova i kutovi su joj virili. */
+    const f2 = n => n.toFixed(2);
+    const mat = e => {
+      const t = e.transform && e.transform.baseVal.consolidate();
+      return t ? DOMMatrix.fromMatrix(t.matrix) : new DOMMatrix();
     };
+    const izmjeri = (kopija, pt) => {
+      const rot = kopija.firstElementChild;
+      const ps = [...rot.querySelectorAll('path')].map(e => ({ e, m: mat(rot).multiply(mat(e)).inverse() }));
+      const u = (x, y) => ps.some(({ e, m }) => {
+        const q0 = m.transformPoint(new DOMPoint(x, y));
+        try { return e.isPointInFill(new DOMPoint(q0.x, q0.y)); } catch (_) { return false; }
+      });
+      let y = null;
+      for (let d = 0; d <= 1.2 && y == null; d += .02) {
+        if (u(pt.x, pt.y - d)) y = pt.y - d; else if (u(pt.x, pt.y + d)) y = pt.y + d;
+      }
+      if (y == null) return null;
+      const st = .01;
+      let bot = y, top = y;
+      while (bot - y < 3 && u(pt.x, bot + st)) bot += st;
+      while (y - top < 3 && u(pt.x, top - st)) top -= st;
+      const yh = Math.max(top, bot - .25);
+      let l = pt.x, r = pt.x;
+      while (pt.x - l < 3 && u(l - st, yh)) l -= st;
+      while (r - pt.x < 3 && u(r + st, yh)) r += st;
+      return { bot, dub: bot - top, P: Math.min(bot - top, r - l) / 2 };
+    };
+    let kapBr = 0;
+    const novaKap = (s, duljina, o = {}) => {
+      const pt = niskaTocka(s, o.od, o.do);
+      const id = p + 'kap' + (kapBr++);
+      kapiG.insertAdjacentHTML('beforeend',
+        `<defs><clipPath id="${id}z"><rect/></clipPath>` +
+        `<filter id="${id}f" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">` +
+        `<feGaussianBlur/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 24 -12" result="a"/>` +
+        // boja se nanosi ISPOČETKA (flood): zamućena boja na rubu je potamnjela pa je oko meniskusa bio tamni obrub
+        `<feFlood style="flood-color:var(--aa-boja,var(--lavender,#a890d0))"/><feComposite in2="a" operator="in"/></filter></defs>` +
+        `<g visibility="hidden"><g clip-path="url(#${id}z)"><g filter="url(#${id}f)">${staticInner('potpis')}` +
+        `<g id="${id}"><path style="${FILL}"/><ellipse style="${FILL}"/><ellipse style="${FILL}"/></g></g></g><use href="#${id}"/></g>`);
+      const g = kapiG.lastElementChild, [trag, glava, kapljica] = g.querySelectorAll(`#${id} > *`);
+      const kopija = g.querySelector('[filter]');
+      // ako mjerenje ne uspije (ne bi smjelo), procjena iz pera kao prije
+      const m = izmjeri(kopija, pt) || { bot: pt.y + .5, dub: 1, P: .5 };
+      const P = Math.max(.36, Math.min(.72, m.P));          // pola debljine slova na mjestu izvora
+      const sk = Math.min(P * 1.5, m.dub * .8);              // koliko duboko u slovu počinje trag
+      const def = kapiG.querySelector(`#${id}z rect`), fl = kapiG.querySelector(`#${id}f`);
+      def.setAttribute('x', f2(pt.x - P * 3)); def.setAttribute('y', f2(m.bot - sk - P));
+      def.setAttribute('width', f2(P * 6)); def.setAttribute('height', f2(sk + duljina + P * (o.kapljica ? 10 : 5)));
+      fl.setAttribute('x', f2(pt.x - P * 8)); fl.setAttribute('y', f2(m.bot - P * 7));
+      fl.setAttribute('width', f2(P * 16)); fl.setAttribute('height', f2(duljina + P * 20));   // rub filtera daleko od reza (> 2σ)
+      fl.firstElementChild.setAttribute('stdDeviation', (P * 1.1).toFixed(3));
+      return { g, trag, glava, kapljica, x: pt.x, bot: m.bot, sk, P, duljina, otkine: !!o.kapljica, faza: o.faza || 0, vis: false };
+    };
+    const ss = x => x * x * (3 - 2 * x);
     const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
-      /* 0-0,34  kap nabubri i VISI na logu (još ne putuje)
-         0,34-1  klizne niz logo: sporo krene, ubrza, pa se zaustavi (krv je gusta)
-         NA KRAJU NIŠTA NE NESTAJE - kap ostaje na logu (zahtjev vlasnika). */
-      const raste = Math.min(1, v / 0.34);
-      const pad = v <= 0.34 ? 0 : (v - 0.34) / 0.66;
-      const s = pad * pad * (3 - 2 * pad);
-      /* SVE širine moraju stati UNUTAR poteza: a + f <= P. Prije su se zbrajale
-         (a = 0,80P, f = 1,25P), pa je vrh kapi bio dvostruko širi od slova i na
-         spoju se vidjelo rame - vlasnik je to označio na slici. Ne povećavati. */
-      const x = k.pt.x, P = k.pol * 0.78;    // pero je namjerno šire od stvarnog poteza
-      const a = P * 0.50 * raste;            // stup: upola uži od poteza
-      const b = P * 1.18 * raste;            // trbuh SMIJE biti širi od poteza - kap koja visi jest deblja od crte iz koje visi; ograničen je samo SPOJ
-      const f = P * 0.34 * raste;            // prijelaz; a + f ostaje unutar poteza
-      /* Vrh je SKRIVEN IZA SLOVA (na središnjici poteza), a prema dolje se spaja
-         KONKAVNIM prijelazom - lik se uz samo slovo razlije u stranu pa se suzi.
-         Bez toga je vrh ravno odrezan i kap izgleda nalijepljena na slovo. */
-      /* Vrh i CIJELI prijelaz moraju biti DUBOKO unutar poteza, inače im kutovi
-         vire ispod ruba slova kao sitne police (vidi se tek kad se zumira). */
-      const yVrh = k.pt.y - P * 0.8;
-      const ySpoj = k.pt.y + P * 0.25;
-      const y1 = ySpoj + P * 0.35 + k.duljina * s;
-      const h = y1 - ySpoj;
-      k.lik.setAttribute('d', b <= 0 ? '' :
-        `M${(x - a - f).toFixed(2)} ${yVrh.toFixed(2)}` +
-        `Q${(x - a).toFixed(2)} ${yVrh.toFixed(2)},${(x - a).toFixed(2)} ${ySpoj.toFixed(2)}` +
-        `C${(x - a).toFixed(2)} ${(ySpoj + h * 0.55).toFixed(2)},${(x - b).toFixed(2)} ${(y1 - b * 1.25).toFixed(2)},${(x - b).toFixed(2)} ${y1.toFixed(2)}` +
-        `Q${(x - b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${x.toFixed(2)} ${(y1 + b * 1.45).toFixed(2)}` +
-        `Q${(x + b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${(x + b).toFixed(2)} ${y1.toFixed(2)}` +
-        `C${(x + b).toFixed(2)} ${(y1 - b * 1.25).toFixed(2)},${(x + a).toFixed(2)} ${(ySpoj + h * 0.55).toFixed(2)},${(x + a).toFixed(2)} ${ySpoj.toFixed(2)}` +
-        `Q${(x + a).toFixed(2)} ${yVrh.toFixed(2)},${(x + a + f).toFixed(2)} ${yVrh.toFixed(2)}Z`);
-      // kod nekih se pri kraju otkine kapljica i padne nešto niže - ostaje i ona
-      const o = k.kapljica && pad > 0.52 ? (pad - 0.52) / 0.48 : 0;
-      const or = b * 0.5 * Math.min(1, o * 3);
-      k.odvojena.setAttribute('cx', x.toFixed(2));
-      k.odvojena.setAttribute('cy', (y1 + b * 1.45 + P * 3.2 * (o * o * (3 - 2 * o))).toFixed(2));
-      k.odvojena.setAttribute('rx', or.toFixed(2));
-      k.odvojena.setAttribute('ry', (or * 1.25).toFixed(2));
+      /* 0-0,4   kap se skuplja i nabubri na rubu slova (visi, još ne putuje)
+         0,4-1   klizne niz zid: sporo se odlijepi, ubrza, pa se zaustavi jer ostavlja trag
+                 (glava se pritom malo stanji - krv odlazi u trag)
+         NA KRAJU NIŠTA NE NESTAJE - kap i trag ostaju (zahtjev vlasnika). */
+      const vis = v > 0;
+      if (vis !== k.vis) { k.vis = vis; k.g.setAttribute('visibility', vis ? 'visible' : 'hidden'); }
+      if (!vis) return;
+      const P = k.P, x0 = k.x, H = 0.4;
+      const r1 = Math.min(1, v / H), raste = 1 - (1 - r1) * (1 - r1);
+      const pad = v <= H ? 0 : (v - H) / (1 - H);
+      const s = 0.6 * ss(pad) + 0.4 * (1 - Math.pow(1 - pad, 2.2));   // odlijepi se polako, zaustavi meko
+      // trag nije ravna crta: blago vijuga, ali vijuga je vezana uz VISINU, pa se već
+      // ostavljeni trag ne miče dok glava putuje
+      const dx = y => P * 0.1 * Math.sin((y - k.bot) / P * 0.9 + k.faza) * Math.min(1, (y - k.bot) / P);
+      const rb = P * (1.4 - 0.15 * s) * raste;               // glava je deblja od slova - kap koja visi jest deblja
+      const yG = k.bot + rb * 0.85 + k.duljina * s;
+      const yTop = k.bot - k.sk;                              // vrh traga je skriven u slovu (šiljat, da mu kutovi ne vire)
+      const n = 18, L = [], R = [];
+      for (let i = 0; i <= n; i++) {
+        const y = yTop + (yG - yTop) * i / n;
+        const uz = Math.min(1, (y - yTop) / k.sk);           // u slovu se trag suzi u šiljak
+        // jednolik trag, a zadnjih par debljina se širi u trbuh (krv se skuplja dolje)
+        const w = P * (0.72 + 0.5 * Math.exp((y - yG) / (P * 2.6))) * raste * (0.25 + 0.75 * uz);
+        const xc = x0 + (y > k.bot ? dx(y) : 0);
+        L.push(`${f2(xc - w)} ${f2(y)}`); R.unshift(`${f2(xc + w)} ${f2(y)}`);
+      }
+      k.trag.setAttribute('d', `M${L.join('L')}L${R.join('L')}Z`);
+      const gx = x0 + dx(yG);
+      k.glava.setAttribute('cx', f2(gx)); k.glava.setAttribute('cy', f2(yG));
+      k.glava.setAttribute('rx', f2(rb)); k.glava.setAttribute('ry', f2(rb * 1.12));
+      // kod nekih se pri kraju otkine kapljica: dok je blizu, filter između njih razvuče
+      // vrat, pa pukne - i ona klizne niže i ostane
+      const o = k.otkine && pad > 0.55 ? (pad - 0.55) / 0.45 : 0;
+      const rd = rb * 0.5 * Math.min(1, o * 4);
+      k.kapljica.setAttribute('cx', f2(gx)); k.kapljica.setAttribute('cy', f2(yG + rb * 0.8 + P * 3 * ss(o)));
+      k.kapljica.setAttribute('rx', f2(rd)); k.kapljica.setAttribute('ry', f2(rd * 1.15));
     }, E.lin, k);
     const shines = qa('.aa-shine').map(e => ({ e, f: +e.dataset.f, o: +e.dataset.o }));
     const floatG = q('.aa-float');
@@ -335,19 +387,27 @@
       idle = idleShine(apex);
       if (vrsta === 'krv') {
         /* Kapi kreću TEK kad je logo gotov, inače bi curile iz poteza koji se još piše.
-           Pet kapi: obje noge slova A, obod i dva slova - razmaknuto po širini, s razmakom
-           u vremenu da ne padaju u taktu. */
-        /* Obod + slova razmaknuta po širini. Noge slova A se NE koriste: njihova
-           najniža točka je tik uz obod, pa bi trag prelazio preko njega i izgledao
-           kao da je logo probušen. */
-        const izvori = [S.ab, ...[1, 3, 5, 7].map(i => S.t[i] && S.t[i][0])].filter(Boolean);
-        const H = vb[3];
+           Izvori (vlasnik): obod, slovo e, dno j, zamah i prvo malo a. Noge slova A i k
+           se ne koriste jer su iznad oboda (trag bi prelazio preko njega). Kapljica koja
+           se otkine je SAMO na obodu (vlasnik). Točka na potezu se i dalje traži sama
+           (`niskaTocka`): za slovo se uzme njegov najniži potez. */
+        const tp = S.t.flat(), H = vb[3];
+        const dno = i => S.t[i] && S.t[i].reduce((a, b) => niskaTocka(b).y > niskaTocka(a).y ? b : a);
+        const izvori = [
+          { s: S.ab, l: .16, kapljica: 1 },
+          { s: tp[9], od: 0, do: .5, l: .10 },
+          { s: dno(2), l: .07 },                    // e
+          { s: tp[9], od: .72, do: .9, l: .13 },
+          // prvo malo a: s TRBUHA (prvi potez), ne s noge - noga sjedi na zamahu pa bi se kap
+          // stopila s njim. Kratka, samo visi: ispod je zamah pa dulja kap ne bi imala kamo.
+          { s: S.t[6] && S.t[6][0], l: .008 },
+        ].filter(x => x.s);
         let tk = end + .12 / speed;
-        izvori.forEach((s, i) => {
-          const k = novaKap(s, H * (0.07 + (i % 4) * 0.045), i % 2 === 1);
-          const kraj = kapni(k, tk, (4.2 + (i % 3) * 0.9) / speed);     // sporo, gusto
+        izvori.forEach((x, i) => {
+          const k = novaKap(x.s, H * x.l, { od: x.od, do: x.do, kapljica: x.kapljica, faza: i * 2.1 });
+          const kraj = kapni(k, tk, (5.4 + (i % 3) * 1.1) / speed);     // sporo, gusto
           if (kraj > end) end = kraj;
-          tk += (0.75 + (i % 2) * 0.35) / speed;
+          tk += (0.55 + (i % 2) * 0.45) / speed;
         });
       }
     } else if (vrsta === 'znak') {

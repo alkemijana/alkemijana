@@ -1314,8 +1314,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   Bez localStoragea i uz `prefers-reduced-motion` uvoda nema. Ponovni pregled: `?halloween=intro`.
 - **Krvavi hero logo — SAMO 31. 10. i 1. 11.** (`AJHalloween.krvniHero`, `isBloodNight()` u halloween.js;
   pregled bilo kad: `?halloween=krv`). `js/logo.js` tada hero stvara s vrstom **`krv`** umjesto `potpis`:
-  isti ispis, ali kad je logo gotov, s pet mjesta (obje noge slova A, obod i dva slova) skupi se kap,
-  nabubri i slijeva se niz nevidljivi trag, pa nestane. Boja se NE postavlja — pod `html.hw-on` je
+  isti ispis, ali kad je logo gotov, s pet mjesta (obod, e, dno j, zamah, trbuh prvog a) skupi se kap,
+  nabubri i slijeva se (spoj sa slovom se stapa filterom; kap i trag ostaju, kapljica samo na obodu). Boja se NE postavlja — pod `html.hw-on` je
   `--lavender` ionako prebojan u tamnu krv, a `--aa-boja` ga prati. Animacija je u **`logo/animacije/`**
   (izvan repoa): `anim-src.js` → `node logo/animacije/izradi.js` piše `js/alkemijana-anim.js`.
   Detalji i zamke su u `logo/README.md`.

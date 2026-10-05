@@ -1339,7 +1339,8 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
 - **Bljesak cijele stranice** (`.hw-pageflash`, fiksni sloj z-index 2500) pali se ZAJEDNO s licem
   (isti `aj:hero-flash`, ista duljina 0,56 s, vrh na 59 %), blijeda hladna bijela do 0,55, gasi se brže od lica.
 - **Rečenica ispod loga** (`#t-heroDesc`) taj tjedan glasi „Granica između svjetova postaje sve
-  tanja. Pravo je vrijeme za prava pitanja." (**riječ „veo" se NE koristi** nigdje u Halloween temi —
+  tanja. Pravo je vrijeme za prava pitanja.", a **31. 10. i 1. 11.** (uz krvavi hero) „Granica između svjetova sada je
+  najtanja. Pravo je vrijeme za prava pitanja." (**riječ „veo" se NE koristi** nigdje u Halloween temi —
   vlasnik je ne želi; svugdje je „granica između svjetova") — zadana je u `AJHalloween.heroDesc` (halloween.js), a
   `applyTexts()` je uzme umjesto `TEXTS.heroDesc`. **TEXTS se namjerno NE mijenja** — inače bi admin
   „Spremi" u tom tjednu upisao Halloween tekst u data.js zauvijek. Font je **IM Fell DW Pica kurziv** (OFL, lokalno

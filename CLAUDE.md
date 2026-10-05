@@ -1216,22 +1216,28 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   zglobu), mala kandža, uši; **potpuno crni, bez obruba**. (4 vrha s puno sitnih ureza izgledala su kao „leptirić s perjem".)
   (obrub je izgledao čudno). Mahanje je **SMIL morph** između tri poze krila (`POSES`; zamah dolje brži od
   podizanja, tijelo poskoči), let je WAAPI, samo transform.
-  **Od 5. 10. 2026. (vlasnik: „izgledaju kao leptiri") pet promjena — ne vraćati unatrag:**
-  1. **DVA KRILA NISU U ISTOJ FAZI** — desno kasni **0,17 ciklusa** za lijevim (`batSvg` daje svakom
-     krilu svoj `begin`), pa je jedno gore dok je drugo još dolje. **Ovo je glavna stvar**: usklađeno
-     mahanje dvaju zrcalno jednakih krila JEST oblik noćnog leptira i nikakav popravak zamaha to ne
-     riješi. Provjereno na referentnoj animaciji koju je vlasnik poslao. Ne vraćati oba krila na isti `begin`.
-  2. **VELIKA amplituda + krilo se na podizanju SKUPI** (raspon 17 → 47 → 22, vrhovi od −29 do +27):
-     gore uzak sklopljen V iznad tijela, u sredini potpuno raširena krila, dolje duboki zamah ispod tijela.
-  3. **Kožica je RAVNA I NAPETA** — sami ravni potezi (`L`) sa sitnim urezom prema zglobu između
-     prstiju (`notch`). Prije su to bili zaobljeni lukovi (`Q`), a mekan obli rub je oblik leptirova krila.
-  4. **Let je POTPUNO RAVAN** — nasumičan je samo smjer (bilo koji kut, kroz nasumičnu točku bliže
-     sredini ekrana), glava gleda u smjer leta, brzina je stalna (px/ms, neovisno o veličini ekrana).
+  **OD 5. 10. 2026. ŠIŠMIŠI VIŠE NISU CRTANI KODOM.** Silueta se uzima iz
+  `assets/halloween/bat-sheet.png` — traka od **5 sličica po 140×149**, trasiranih iz animacije
+  koju je poslao vlasnik ([animatedimages.org](https://www.animatedimages.org/data/media/196/animated-bat-image-0060.gif),
+  uvjeti: „100% free, no charges attached" + „we welcome direct linking and copying"). Maska je uzeta
+  po prozirnosti pa je silueta **potpuno crna, kao sjena**. Mahanje je CSS animacija `hw-batflap`
+  koja pomiče traku u **5 koraka** (`steps(5)` preko raspona 0–125 %, jer sličice stoje na
+  0/25/50/75/100 %) — bez SVG-a, SMIL-a i filtera, što je najjeftinije za iPhone.
+  `spawnBat` postavlja samo trajanje (0,45–0,65 s) i negativni `animation-delay` da svaki šišmiš
+  bude u svojoj fazi. **Crtanje krila kodom (`POSES`/`wingPath`/`batSvg`) je obrisano** — tri
+  pokušaja (veća amplituda; krila u različitim fazama; prikaz iz tri četvrtine) i vlasnik je svaki
+  put rekao da izgleda kao leptir. Ne vraćati ga.
+  **Kako regenerirati traku** (ako zatreba druga animacija): preuzmi GIF Nodeom u `tools/`, otvori
+  bilo koju lokalnu stranicu s `tools/serve.ps1`, u konzoli dekodiraj sličice `ImageDecoder`-om,
+  složi masku po alfi u jedan canvas i pošalji ga `POST /upload` (piše u `tools/_upload.bin`), pa
+  ga Nodeom prebaci u `assets/`. **Base64 NE prepisivati kroz odgovor modela** — 8 KB base64 se pri
+  prepisivanju pokvari i PNG se dekodira samo djelomično (silueta ispadne isjeckana).
+  **Ranije promjene iz istog dana (vrijede i dalje):**
+  1. **Let je POTPUNO RAVAN** — nasumičan je samo smjer (bilo koji kut, kroz nasumičnu točku bliže
+     sredini ekrana), glava gleda u smjer leta (zakret = smjer + 90°, uz `scale(-1,1)` kad let ide
+     ulijevo da silueta ne bude izvrnuta), brzina je stalna (px/ms, neovisno o veličini ekrana).
      Prije su bila nagla skretanja i trzanje gore-dolje — i to je izgledalo kao leptir.
-  5. **Duplo veći** (`size` 68–128 px, prije 34–64) i zato malo sporije mahanje (0,13–0,18 s, prije 0,10–0,15 s).
-  **Usput odbačeno:** prikaz iz tri četvrtine (bliže krilo veliko sprijeda, dalje manje iza tijela).
-  Teorijski najvjernije referenci, ali se glava odvojila od tijela, a krila su ispala kao krpe —
-  silueta se ne da složiti ručnim namještanjem koordinata. Vraćeno na uspravno tijelo s leđa.
+  2. **Duplo veći** — `size` 68–128 px, prije 34–64.
   **Rijetko:** svakih 45–90 s, uglavnom
   jedan (bilo ih je prečesto). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali);
   mali šišmiš obleti šešir u traci jednom u 75 s (`.hw-navbat`). Prva verzija je izgledala „kartonski".

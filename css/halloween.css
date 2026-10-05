@@ -131,20 +131,23 @@
 
 /* ============================================================
    ŠIŠMIŠI - potpuno crna silueta, bez obruba. Najbolje se vide preko
-   Mjeseca i krvavog sjaja. Mahanje je SMIL morph u SVG-u.
+   Mjeseca i krvavog sjaja.
+   Mahanje NIJE crtano kodom nego su to GOTOVE SLIKE: assets/halloween/bat-sheet.png
+   je traka od 5 silueta (140x149 svaka), trasiranih iz animacije koju je poslao
+   vlasnik. Traka se pomiče u 5 koraka - bez SVG-a, SMIL-a i filtera.
    ============================================================ */
-.hw-bat svg,
-.hw-navbat svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
+.hw-bat,
+.hw-navbat {
+  background-image: url('../assets/halloween/bat-sheet.png');
+  background-repeat: no-repeat;
+  background-size: 500% 100%;      /* traka je široka 5 sličica */
+  aspect-ratio: 140 / 149;         /* omjer jedne sličice */
 }
-/* potpuno crni - bez obruba i sjaja (vlasnik: obrub je izgledao čudno) */
-.hw-wing,
-.hw-body {
-  fill: #000;
-  stroke: none;
+/* Sličice stoje na 0%, 25%, 50%, 75% i 100%. steps(5) preko raspona 0-125%
+   pogađa točno te položaje (125/5 = 25). Ne mijenjati 125% bez promjene koraka. */
+@keyframes hw-batflap {
+  from { background-position-x: 0%; }
+  to   { background-position-x: 125%; }
 }
 
 .hw-bat {
@@ -154,6 +157,7 @@
   z-index: 3;            /* kao glare zvjezdice - iznad pozadine, ispod sadržaja */
   pointer-events: none;
   will-change: transform;
+  animation: hw-batflap 0.5s steps(5) infinite;   /* trajanje i fazu postavlja spawnBat */
 }
 
 /* Šišmiš oko šešira u traci - ciklus 75 s: većinu vremena ga nema,
@@ -167,7 +171,7 @@
   pointer-events: none;
   z-index: 2;
   opacity: 0;
-  animation: hwNavBat 75s linear 20s infinite;
+  animation: hwNavBat 75s linear 20s infinite, hw-batflap 0.5s steps(5) infinite;
 }
 @keyframes hwNavBat {
   0%, 96%  { opacity: 0; transform: translate(46px, 6px) scale(0.6); }

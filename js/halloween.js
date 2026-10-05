@@ -894,13 +894,23 @@
     sid.forEach((x, i) => { if (x.dan === 0 && unutra(i) && (iK < 0 || Math.abs(x.s) < Math.abs(sid[iK].s))) iK = i; });
     const redZ = E.map((e, i) => i).filter(unutra)
       .sort((a, b) => dan[a] - dan[b] || (a === iK ? -1 : b === iK ? 1 : sid[a].red - sid[b].red));
-    const vuce = i => i === iK ? 0.24 : 0.06;
-    const Hnakon = [];                                    // središte nakon napinjanja zrake (po redu)
-    let h = H0;
-    redZ.forEach(i => { h = lerp(h, E[i], vuce(i)); Hnakon.push(h); });
-    const Hdana = d => { let x = H0; redZ.forEach((i, n) => { if (dan[i] <= d) x = Hnakon[n]; }); return x; };
     const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
     const kraj = d => { const s = skup(d); return [s[0], s[s.length - 1]]; };   // krajnje zrake tog dana
+    /* KUT U SREDIŠTU NE SMIJE BITI OŠTAR (vlasnik): središte mora ostati blizu crte između krajnjih
+       sidara - onda krajnje zrake zatvaraju širok kut (~140-160°), a ne oštar „V".
+       - prva zraka (prema kutu) vuče SLABO (prije 0,24 - napravila je oštar V);
+       - nove KRAJNJE zrake vuku središte prema van, prema točki malo unutar crte između krajnjih
+         sidara tog dana (sidra su daleko, pa njihov zbirni povlak izvuče središte od kuta);
+       - ostale zrake (u prazninama) vuku malo, prema svom sidru. */
+    const Hnakon = [];                                    // središte nakon napinjanja zrake (po redu)
+    let h = H0;
+    redZ.forEach(i => {
+      const d = dan[i], [lo, hi] = kraj(d);
+      if (d > 0 && (i === lo || i === hi)) h = lerp(h, lerp(lerp(E[lo], E[hi], 0.5), [400, 0], 0.1), 0.5);
+      else h = lerp(h, E[i], i === iK ? 0.07 : 0.03);
+      Hnakon.push(h);
+    });
+    const Hdana = d => { let x = H0; redZ.forEach((i, n) => { if (dan[i] <= d) x = Hnakon[n]; }); return x; };
     // lukovi: radijusi oko središta; koji dan koji luk - ograničeno da luk stane unutar krajnjih zraka
     const PLAN = [55, 100, 150, 205, 260, 320, 380, 440];
     const RD = PLAN.map((r, d) => { const [lo, hi] = kraj(d), Hd = Hdana(d); return Math.min(r * M, 0.92 * Math.min(dist(Hd, E[lo]), dist(Hd, E[hi]))); });
@@ -921,22 +931,14 @@
     const danLuka = k => K.findIndex(x => k <= x);
     // točka luka = UDIO duljine zrake, mjeren u središtu tog dana (elastično: kasnije se razvuče s mrežom)
     const udio = krugovi.map((kr, k) => { const Hd = Hdana(Math.max(0, danLuka(k))); return kr.map((r, i) => r / dist(Hd, E[i])); });
-    /* KOJE ZRAKE LUK SPAJA. Unutarnji lukovi (polumjer < pola kraće krajnje zrake tog dana) se
-       (do trećine kraće krajnje zrake) ZATVARAJU oko cijelog središta - preko otvorene strane (prema sredini ekrana) idu lukom, pa
-       kut između krajnjih zraka nije oštar „V" (vlasnik). Ostali idu samo između krajnjih zraka.
-       Luk se kasnije PRIČVRSTI i na svaku novu zraku koja ga presiječe (v. 'spoji'). */
-    const Rzat = d => { const [lo, hi] = kraj(d), Hd = Hdana(d); return 0.32 * Math.min(dist(Hd, E[lo]), dist(Hd, E[hi])); };
-    const zatvoren = k => rb[k] < Rzat(Math.max(0, danLuka(k)));
-    const spaja = (k, d) => {
-      const s = skup(d);
-      if (zatvoren(k)) return s;
-      const [lo, hi] = kraj(Math.max(0, danLuka(k)));
-      return s.filter(i => i >= lo && i <= hi);
-    };
-    const dijelovi = (k, lista) => {                      // [a, b, zatvaranje]
+    /* KOJE ZRAKE LUK SPAJA: SVE zrake toga dana (od krajnje do krajnje; preko otvorene strane NE).
+       Kad pauk doda novu zraku, stari lukovi se na nju PRIČVRSTE (zraka u praznini, v. 'spoji') ili
+       se do nje PRODUŽE (nova krajnja zraka prema sredini ekrana) - vlasnik: „ne popunjava lukove
+       kod novih zraka". */
+    const spaja = (k, d) => skup(d);
+    const dijelovi = lista => {                           // susjedne zrake [a, b]
       const out = [];
-      for (let n = 0; n + 1 < lista.length; n++) out.push([lista[n], lista[n + 1], 0]);
-      if (zatvoren(k) && lista.length > 1) out.push([lista[lista.length - 1], lista[0], 1]);
+      for (let n = 0; n + 1 < lista.length; n++) out.push([lista[n], lista[n + 1]]);
       return out;
     };
 
@@ -948,33 +950,17 @@
       const m = lerp(a, b, i < j ? p.m : 1 - p.m), q = lerp(Hc, m, p.s);   // objesi se prema središtu
       return `M${f(a[0])} ${f(a[1])}Q${f(q[0])} ${f(q[1])},${f(b[0])} ${f(b[1])}`;
     };
-    const dZat = (k, i, j, Hc) => {                       // luk preko otvorene strane (dalje od kuta)
-      const a = pt(i, udio[k][i], Hc), b = pt(j, udio[k][j], Hc);
-      const aa = Math.atan2(a[1] - Hc[1], a[0] - Hc[0]), ab = Math.atan2(b[1] - Hc[1], b[0] - Hc[0]);
-      let dl = ab - aa; while (dl <= 0) dl += 2 * Math.PI;
-      const ot = [Hc[0] - 400, Hc[1]];                    // od kuta prema središtu = otvorena strana
-      const m1 = aa + dl / 2, m2 = aa - (2 * Math.PI - dl) / 2;
-      const poz = Math.cos(m1) * ot[0] + Math.sin(m1) * ot[1] >= Math.cos(m2) * ot[0] + Math.sin(m2) * ot[1];
-      const raspon = (poz ? dl : 2 * Math.PI - dl) * (poz ? 1 : -1), ra = dist(Hc, a), rbb = dist(Hc, b);
-      // ne savršen krug: polumjer prelazi s jedne zrake na drugu i nit se blago objesi prema središtu
-      let d = `M${f(a[0])} ${f(a[1])}`;
-      for (let n = 1; n <= 24; n++) {
-        const t = n / 24, ug = aa + raspon * t, rr = (ra + (rbb - ra) * t) * (1 - 0.07 * Math.sin(Math.PI * t));
-        d += `L${f(Hc[0] + Math.cos(ug) * rr)} ${f(Hc[1] + Math.sin(ug) * rr)}`;
-      }
-      return d;
-    };
     const most = { gen: Hc => `M${f(T[0])} ${f(T[1])}L${f(Hc[0])} ${f(Hc[1])}L${f(R[0])} ${f(R[1])}`, z: 1, novo: DAN === 0 };
     if (most.novo) most.gen0 = () => dRavna(T, R);        // dok je još ravna (prije prvog napinjanja)
     const zrNit = [];
     E.forEach((e, i) => { if (unutra(i) && dan[i] <= DAN) zrNit[i] = { gen: Hc => dRavna(Hc, e), z: 1, novo: dan[i] === DAN }; });
-    const nitLuka = (k, a, b, zat, novo) => ({ gen: Hc => zat ? dZat(k, a, b, Hc) : dLuk(k, a, b, Hc), novo });
+    const nitLuka = (k, a, b, novo) => ({ gen: Hc => dLuk(k, a, b, Hc), novo });
     // lukovi: jučerašnji spajaju zrake do jučer (danas ih pauk pričvrsti na nove), današnji sve današnje
     const prsten = {};
     for (let k = 0; k <= kDo(DAN); k++) {
       const star = k <= kDo(DAN - 1), lista = spaja(k, star ? DAN - 1 : DAN);
       prsten[k] = { lista, niti: {} };
-      dijelovi(k, lista).forEach(([a, b, zat]) => { prsten[k].niti[a + ':' + b] = nitLuka(k, a, b, zat, !star); });
+      dijelovi(lista).forEach(([a, b]) => { prsten[k].niti[a + ':' + b] = nitLuka(k, a, b, !star); });
     }
 
     /* Put pauka danas. Točke su ZADANE SIMBOLIČKI (zraka + udio, ili fiksna točka), jer se
@@ -1002,8 +988,8 @@
       Object.values(p.niti).forEach(n => n.el && n.el.remove());
       p.lista = [...p.lista, m].sort((x, y) => x - y);
       p.niti = {};
-      dijelovi(k, p.lista).forEach(([a, b, zat]) => {
-        const n = p.niti[a + ':' + b] = nitLuka(k, a, b, zat, false);
+      dijelovi(p.lista).forEach(([a, b]) => {
+        const n = p.niti[a + ':' + b] = nitLuka(k, a, b, false);
         n.el = noviEl(n); n.el.setAttribute('d', n.gen(H));
       });
     };
@@ -1016,38 +1002,44 @@
       const Hn = Hnakon[n];
       put.push({ tip: 'napni', H1: Hc, H2: Hn, kod: E[i], u: [(E[i][0] - Hc[0]) / dist(Hc, E[i]), (E[i][1] - Hc[1]) / dist(Hc, E[i])], len: 0 });
       Hc = Hn;
-      /* Na povratku u središte PRIČVRSTI stare lukove koje nova zraka presijeca (vlasnik: „ne spaja
-         lukove od jučer na mjestima gdje je nova zraka"): kod svakog zastane i spoji ga. */
       let od = { i, t: 1 };
-      Object.keys(prsten).map(Number).filter(k => k <= kDo(DAN - 1) && spaja(k, DAN).includes(i))
-        .sort((a, b) => udio[b][i] - udio[a][i])
-        .forEach(k => {
+      const stari = Object.keys(prsten).map(Number).filter(k => k <= kDo(DAN - 1)).sort((a, b) => b - a);   // vanjski prvi
+      const krajnja = i < prsten[stari[0]]?.lista[0] || i > prsten[stari[0]]?.lista.slice(-1)[0];
+      if (stari.length && krajnja) {
+        /* NOVA KRAJNJA ZRAKA: stari lukovi se do nje PRODUŽE. Pauk ide cik-cak, luk po luk od vanjskog
+           prema unutra: po novoj zraci do luka, isplete komad do dosadašnje krajnje zrake, po njoj
+           do sljedećeg luka, isplete natrag do nove zrake… (hoda samo po nitima koje postoje). */
+        let na = i;
+        stari.forEach(k => {
+          const p = prsten[k], n2 = i < p.lista[0] ? p.lista[0] : p.lista[p.lista.length - 1];
+          const a = Math.min(i, n2), b = Math.max(i, n2), nit = p.niti[a + ':' + b] = nitLuka(k, a, b, true);
+          p.lista = [...p.lista, i].sort((x, y) => x - y);
+          hoda(od, { i: na, t: udio[k][na] });
+          plete(nit, na !== a);                           // obrnuto: od b prema a
+          na = na === i ? n2 : i;
+          od = { i: na, t: udio[k][na] };
+        });
+      } else {
+        /* ZRAKA U PRAZNINI: na povratku u središte PRIČVRSTI stare lukove koje presijeca - kod
+           svakog zastane i spoji ga (luk se podijeli na dva dijela koji se sastaju na zraci). */
+        stari.filter(k => udio[k][i] < 1).sort((a, b) => udio[b][i] - udio[a][i]).forEach(k => {
           const tu = { i, t: udio[k][i] };
           hoda(od, tu);
           put.push({ tip: 'spoji', at: tu, fn: spojiFn(k, i), len: 0 });
           od = tu;
         });
-      hoda(od, S);                                        // natrag po napetoj niti u središte
+      }
+      hoda(od, S);                                        // natrag po niti u središte
       gdje = S;
     });
-    // današnji lukovi: od vanjskog prema unutra; s luka na luk po krajnjoj zraci. Zatvoreni lukovi
-    // idu cijelim krugom (uvijek isti smjer - prava spirala), ostali tamo-amo.
+    // današnji lukovi: od vanjskog prema unutra, smjer se izmjenjuje; s luka na luk po krajnjoj zraci
     const [lo, hi] = kraj(DAN);
     let ide = lo;
     for (let k = kDo(DAN); k > kDo(DAN - 1); k--) {
       hoda(gdje, { i: ide, t: udio[k][ide] });
-      const dio = dijelovi(k, prsten[k].lista), kut = dio.filter(x => !x[2]), zat = dio.find(x => x[2]);
-      const nit = ([a, b]) => prsten[k].niti[a + ':' + b];
-      if (!zat) {
-        (ide === lo ? kut : kut.slice().reverse()).forEach(x => plete(nit(x), ide !== lo));
-        ide = ide === lo ? hi : lo;
-      } else if (ide === lo) {
-        kut.forEach(x => plete(nit(x), false));
-        plete(nit(zat), false);                           // preko otvorene strane natrag do lo
-      } else {
-        plete(nit(zat), false);                           // hi -> lo preko otvorene strane
-        kut.forEach(x => plete(nit(x), false));           // pa lo -> hi
-      }
+      const dio = dijelovi(prsten[k].lista), nit = ([a, b]) => prsten[k].niti[a + ':' + b];
+      (ide === lo ? dio : dio.slice().reverse()).forEach(x => plete(nit(x), ide !== lo));   // obrnuto: od b prema a
+      ide = ide === lo ? hi : lo;
       gdje = { i: ide, t: udio[k][ide] };
     }
     if (o.zadnja) hoda(gdje, S);                          // posao za danas gotov: po zraci u središte i ondje ostane (vlasnik)

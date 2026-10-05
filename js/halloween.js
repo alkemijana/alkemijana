@@ -56,6 +56,33 @@
 
   const active = isHalloweenWeek();
   window.AJHalloween = { active, krvniHero: active && isBloodNight() };
+
+  /* PRISILNO OSVJEŽAVANJE KAD SE TEMA PROMIJENI (vlasnik). Halloween se pali/gasi sam po datumu, ali
+     kartica otvorena preko ponoći (SPA se ne učitava ponovno) bi ostala na staroj temi. Zato se
+     svakih 30 s provjeri stanje - izvan tjedna 'off', u tjednu 'hw:<datum>' (svaki dan se mijenja
+     mreža, krvavi logo, rečenica) - i kad se promijeni, stranica se SAMA ponovno učita. Ali nikad
+     usred korištenja: samo ako je kartica u pozadini ili posjetitelj minutu ništa ne radi, nikad dok
+     je Jana prijavljena u admin i nikad dok je fokus u polju za unos. Uz `?halloween` (pregled) ne
+     radi ništa. Ništa se ne sprema. */
+  (function () {
+    try { if (new URLSearchParams(location.search).has('halloween')) return; } catch (e) { return; }
+    const datum = () => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zagreb' }).format(new Date()); } catch (e) { return ''; } };
+    const stanje = () => isHalloweenWeek() ? 'hw:' + datum() : 'off';
+    const pocetno = stanje();
+    let radnja = Date.now();
+    ['pointerdown', 'keydown', 'wheel', 'touchstart', 'input'].forEach(ev =>
+      addEventListener(ev, () => { radnja = Date.now(); }, { passive: true, capture: true }));
+    const provjeri = () => {
+      if (stanje() === pocetno) return;
+      try { if (sessionStorage.getItem('aj_pass')) return; } catch (e) {}   // admin: ne gubi izmjene
+      const a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;     // netko upravo piše
+      if (document.hidden || Date.now() - radnja > 60000) location.reload();
+    };
+    setInterval(provjeri, 30000);
+    document.addEventListener('visibilitychange', provjeri);
+  })();
+
   if (!active) return;
 
   // rečenica ispod loga na početnoj (app.js applyTexts) - samo ovaj tjedan, TEXTS ostaje netaknut

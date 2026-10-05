@@ -1100,6 +1100,18 @@ ne kešira, pa **ako se to ponovi: povećaj `?v=` na svim mjestima** (ili Cloudf
 Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` — `404` uz
 `cf-cache-status: HIT` znači zapamćen 404. Nova `<script>`/`<link>` oznaka mora dobiti isti `?v=`.
 
+**Keš JS/CSS-a (6. 10. 2026.):** Cloudflare je JS/CSS slao s `max-age=14400` (zona: *Browser Cache TTL*
+4 h) - posjetitelji su nakon deploya do 4 h mogli vidjeti stare skripte (`index.html` je `max-age=0`).
+U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
+must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
+dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006`,
+i u `index.html` i font u `halloween.css`).
+**Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
+se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
+ako je kartica u pozadini ili nema radnje 60 s, nikad uz prijavljen admin (`aj_pass`) ni dok je fokus u polju.
+Uz `?halloween` ne radi ništa. Provjereno simuliranim datumom: stranica se sama ponovno učitala.
+
 ### Verzije stranice (redizajn)
 
 | Oznaka | Što je | Gdje se vidi |

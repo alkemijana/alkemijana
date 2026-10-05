@@ -6,3 +6,22 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://i.ibb.co https://emojicdn.elk.sh https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com; connect-src 'self' https://api.imgbb.com https://i.ibb.co https://api.web3forms.com https://*.google-analytics.com https://*.analytics.google.com https://geocoding-api.open-meteo.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+
+# Skripte i stilovi: preglednik neka SVAKI PUT provjeri ima li novije verzije (ETag -> 304, jeftino).
+# Bez toga je Cloudflare slao max-age=14400 (4 h) pa su posjetitelji nakon deploya do 4 h vidjeli staro.
+# NAPOMENA: Cloudflare postavka "Browser Cache TTL" može ovo nadjačati - u dashboardu (Caching ->
+# Configuration -> Browser Cache TTL) treba biti "Respect Existing Headers".
+/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+/css/*
+  Cache-Control: public, max-age=0, must-revalidate
+/tarot/tarot-data.js
+  Cache-Control: public, max-age=0, must-revalidate
+/tarot/tarot-engine.js
+  Cache-Control: public, max-age=0, must-revalidate
+/tarot/tarot-render.js
+  Cache-Control: public, max-age=0, must-revalidate
+/tarot/tarot.js
+  Cache-Control: public, max-age=0, must-revalidate
+/tarot/tarot.css
+  Cache-Control: public, max-age=0, must-revalidate

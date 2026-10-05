@@ -182,37 +182,44 @@
       }
       return best;
     };
-    const novaKap = (pt, r, duljina) => {
-      /* Trag je ISPUNJEN lik koji se SUŽAVA prema dolje (širok uz logo, tanji kod kapi),
-         ne obična crta - crta jednake debljine s kuglicom na kraju izgleda kao pribadača. */
-      const trag = document.createElementNS(NS, 'path');
-      trag.setAttribute('style', FILL);
-      const glava = document.createElementNS(NS, 'ellipse');
-      glava.setAttribute('style', FILL);
-      kapiG.append(trag, glava);
-      return { trag, glava, pt, r, duljina, len: duljina };
+    /* Oblik kapi je prerađen po slikama koje je poslao vlasnik („curi krv"):
+       stup je ŠIROK, gotovo kao trbuh, s malim strukom ispod logotipa i OKRUGLIM
+       TRBUHOM na dnu. Tanak trag sa sitnom kuglicom (prva verzija) izgledao je kao
+       pribadača - ne vraćati. Sve je jedan ispunjen lik, pa nema šava prema logu. */
+    const novaKap = (pt, r, duljina, kapljica) => {
+      const lik = document.createElementNS(NS, 'path');
+      lik.setAttribute('style', FILL);
+      const odvojena = document.createElementNS(NS, 'ellipse');   // kod nekih se niže odvoji kapljica
+      odvojena.setAttribute('style', FILL);
+      kapiG.append(lik, odvojena);
+      return { lik, odvojena, pt, r, duljina, kapljica };
     };
     const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
-      /* 0-0,34  kap se skuplja i VISI (raste i sliježe se, još ne putuje)
-         0,34-1  klizne, ubrza pa se zaustavi - krv je gusta i stane na pola puta
-         NA KRAJU NIŠTA NE NESTAJE: kap i trag ostaju na logu (zahtjev vlasnika). */
+      /* 0-0,34  kap nabubri i VISI na logu (još ne putuje)
+         0,34-1  klizne niz logo: sporo krene, ubrza, pa se zaustavi (krv je gusta)
+         NA KRAJU NIŠTA NE NESTAJE - kap ostaje na logu (zahtjev vlasnika). */
       const raste = Math.min(1, v / 0.34);
       const pad = v <= 0.34 ? 0 : (v - 0.34) / 0.66;
-      const s = pad * pad * (3 - 2 * pad);                 // sporo krene, ubrza, pa se zaustavi
-      const y = k.pt.y + k.duljina * s;
-      // MORA krenuti od nule: prije svog trenutka kap se iscrtava s v = 0, pa bi
-      // inače stajala na logu kao točka od početka animacije (bio stvarni kvar)
-      const rx = k.r * raste;
-      // dok visi sliježe se u suzu, u punom padu se izduži, na kraju se opet zaokruži
-      const izduzenje = 1.18 + 0.32 * raste * (1 - pad) + 0.45 * Math.sin(Math.PI * pad);
-      k.glava.setAttribute('cx', k.pt.x.toFixed(2));
-      k.glava.setAttribute('cy', y.toFixed(2));
-      k.glava.setAttribute('rx', rx.toFixed(2));
-      k.glava.setAttribute('ry', (rx * izduzenje).toFixed(2));
-      const x = k.pt.x, gore = k.r * 0.86 * raste, dolje = k.r * 0.46 * raste;
-      k.trag.setAttribute('d', s <= 0 ? '' :
-        `M${(x - gore).toFixed(2)} ${k.pt.y.toFixed(2)}L${(x + gore).toFixed(2)} ${k.pt.y.toFixed(2)}` +
-        `L${(x + dolje).toFixed(2)} ${y.toFixed(2)}L${(x - dolje).toFixed(2)} ${y.toFixed(2)}Z`);
+      const s = pad * pad * (3 - 2 * pad);
+      const x = k.pt.x;
+      const b = k.r * raste;                 // polumjer trbuha na dnu
+      const a = b * 0.74;                    // stup: tek malo uži od trbuha
+      const y0 = k.pt.y - k.r * 0.55;        // kreće UNUTAR poteza, da nema šava
+      const y1 = y0 + k.r * 0.85 + k.duljina * s;
+      const h = y1 - y0;
+      k.lik.setAttribute('d', b <= 0 ? '' :
+        `M${(x - a).toFixed(2)} ${y0.toFixed(2)}` +
+        `C${(x - a).toFixed(2)} ${(y0 + h * 0.5).toFixed(2)},${(x - b).toFixed(2)} ${(y1 - b * 1.3).toFixed(2)},${(x - b).toFixed(2)} ${y1.toFixed(2)}` +
+        `Q${(x - b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${x.toFixed(2)} ${(y1 + b * 1.45).toFixed(2)}` +
+        `Q${(x + b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${(x + b).toFixed(2)} ${y1.toFixed(2)}` +
+        `C${(x + b).toFixed(2)} ${(y1 - b * 1.3).toFixed(2)},${(x + a).toFixed(2)} ${(y0 + h * 0.5).toFixed(2)},${(x + a).toFixed(2)} ${y0.toFixed(2)}Z`);
+      // kod nekih se pri kraju otkine kapljica i padne nešto niže - ostaje i ona
+      const o = k.kapljica && pad > 0.52 ? (pad - 0.52) / 0.48 : 0;
+      const or = b * 0.46 * Math.min(1, o * 3);
+      k.odvojena.setAttribute('cx', x.toFixed(2));
+      k.odvojena.setAttribute('cy', (y1 + b * 1.45 + k.r * 2.6 * (o * o * (3 - 2 * o))).toFixed(2));
+      k.odvojena.setAttribute('rx', or.toFixed(2));
+      k.odvojena.setAttribute('ry', (or * 1.25).toFixed(2));
     }, E.lin, k);
     const shines = qa('.aa-shine').map(e => ({ e, f: +e.dataset.f, o: +e.dataset.o }));
     const floatG = q('.aa-float');
@@ -320,7 +327,7 @@
         const H = vb[3];
         let tk = end + .12 / speed;
         izvori.forEach((s, i) => {
-          const k = novaKap(niskaTocka(s), H * (0.046 + (i % 2) * 0.010), H * (0.13 + (i % 3) * 0.06));
+          const k = novaKap(niskaTocka(s), H * (0.038 + (i % 3) * 0.012), H * (0.10 + (i % 4) * 0.055), i % 2 === 1);
           const kraj = kapni(k, tk, (4.2 + (i % 3) * 0.9) / speed);     // sporo, gusto
           if (kraj > end) end = kraj;
           tk += (0.75 + (i % 2) * 0.35) / speed;

@@ -837,7 +837,7 @@
     const NZ = 11, zrake = [];
     for (let i = 0; i < NZ; i++) {
       const a = (2 + i * (86 / (NZ - 1)) + (i && i < NZ - 1 ? (rnd() - .5) * 5 : 0)) * Math.PI / 180;
-      zrake.push({ dx: -Math.cos(a), dy: Math.sin(a), dulj: 400 * (0.9 + rnd() * 0.12) });
+      zrake.push({ dx: -Math.cos(a), dy: Math.sin(a) });
     }
     const tocka = (z, r) => [CX + z.dx * r, CY + z.dy * r];
     // krugovi: razmak lagano raste prema van, svaka zraka ima malo svoj pomak (ručni rad)
@@ -846,29 +846,32 @@
       krugovi.push(zrake.map(() => r + (rnd() - .5) * 4));
       r += 11 + k * 0.55 + rnd() * 3;
     }
-    const doseg = d => d < 0 ? 0 : RD[d];
-    const vidi = (z, r, d) => r <= Math.min(doseg(d), z.dulj);
+    /* Mreža SVAKI DAN ZAVRŠAVA LUKOM: zrake idu točno do najvanjskijeg kruga tog dana, nikad
+       dalje (zraka koja viri van zadnjeg luka fizički ne može stajati - vlasnik). Sutra se
+       zraka iz te točke produži do novog vanjskog kruga. Zato se dan broji u KRUGOVIMA:
+       K[d] = zadnji krug koji 'd'-tog dana stane unutar RD[d]. */
+    const K = RD.map(R => { let k = 0; while (k + 1 < krugovi.length && Math.max(...krugovi[k + 1]) <= R) k++; return k; });
+    const rub = new Set(K);                               // krug koji je ikad bio vanjski rub - nikad pokidan
+    const kDo = d => d < 0 ? -1 : K[d];
     const staro = [], novo = [];                          // novo = ono što je danas dodano (ispreda se)
-    zrake.forEach(z => {
-      const r0 = Math.min(doseg(DAN - 1), z.dulj), r1 = Math.min(doseg(DAN), z.dulj);
-      const [x0, y0] = tocka(z, r0), [x1, y1] = tocka(z, r1);
-      if (r0 > 0) staro.push({ d: `M${CX} ${CY}L${f(x0)} ${f(y0)}`, r: 0, z: 1 });
-      if (r1 > r0) novo.push({ d: `M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`, r: r0, z: 1 });
+    zrake.forEach((z, i) => {
+      const k0 = kDo(DAN - 1), k1 = kDo(DAN);
+      const [x0, y0] = k0 < 0 ? [CX, CY] : tocka(z, krugovi[k0][i]), [x1, y1] = tocka(z, krugovi[k1][i]);
+      if (k0 >= 0) staro.push({ d: `M${CX} ${CY}L${f(x0)} ${f(y0)}`, r: 0, z: 1 });
+      if (k1 > k0) novo.push({ d: `M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`, r: k0 < 0 ? 0 : krugovi[k0][i], z: 1 });
     });
     krugovi.forEach((kr, k) => {
       for (let i = 0; i < NZ - 1; i++) {
         // slučajni brojevi se uzimaju UVIJEK, i za nevidljive niti - inače bi se slijed
         // pomaknuo i vanjske niti bi svaki dan izgledale drugačije
-        const pokidana = rnd() < 0.05, s = 0.94 - rnd() * 0.03;
-        if (pokidana) continue;                           // poneka nit nedostaje
+        const pokidana = rnd() < 0.05 && !rub.has(k), s = 0.94 - rnd() * 0.03;
+        if (pokidana || k > kDo(DAN)) continue;           // poneka unutarnja nit nedostaje
         const a = zrake[i], b = zrake[i + 1], ra = kr[i], rb = kr[i + 1];
-        const danas = vidi(a, ra, DAN) && vidi(b, rb, DAN);
-        if (!danas) continue;
         const [x0, y0] = tocka(a, ra), [x1, y1] = tocka(b, rb);
         // nit se blago objesi prema kutu (kontrolna točka bliže središtu)
         const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
         const p = { d: `M${f(x0)} ${f(y0)}Q${f(CX + (mx - CX) * s)} ${f(CY + (my - CY) * s)},${f(x1)} ${f(y1)}`, r: Math.max(ra, rb) };
-        (vidi(a, ra, DAN - 1) && vidi(b, rb, DAN - 1) ? staro : novo).push(p);
+        (k <= kDo(DAN - 1) ? staro : novo).push(p);
       }
     });
     const put = (x, cls, i) => `<path class="${cls}${x.z ? ' hw-web-z' : ''}" d="${x.d}"${cls === 'hw-web-n' ? ` pathLength="1" style="--hw-wd:${(x.r / RD[7] * 2.4 + (i % 5) * 0.05).toFixed(2)}s"` : ''}/>`;

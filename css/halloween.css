@@ -448,11 +448,12 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hw-web path {
   fill: none;
   stroke: #d8cdb8;
-  stroke-width: 0.7;
+  stroke-width: 0.8;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
+  /* BEZ vector-effect: non-scaling-stroke - s njim crtanje preko pathLength/dasharray stane
+     na pola (crtica se računa u pikselima ekrana), pa zrake ne dođu do vanjskog luka */
 }
-.hw-web path.hw-web-z { stroke-width: 0.95; }
+.hw-web path.hw-web-z { stroke-width: 1.05; }
 .hw-web .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
 .hw-web.hw-web-go .hw-web-n {
   animation: hwWebSpin 1.6s cubic-bezier(0.4, 0, 0.3, 1) var(--hw-wd, 0s) forwards;

@@ -1359,6 +1359,10 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   dio (`.hw-web-n`) se pri otvaranju ispreda od središta prema van. **Slučajni brojevi se uzimaju
   za SVAKU nit, i nevidljivu** — inače se slijed pomakne i vanjske niti bi se mijenjale iz dana u dan
   (bio stvarni kvar, provjereno usporedbom 3. i 4. dana: 0 promijenjenih). Pregled: `?halloween&mreza=0..7`.
+  **Mreža svaki dan završava LUKOM**: zrake idu točno do vanjskog kruga tog dana (`K[d]`, dan se broji
+  u krugovima), nikad dalje - zraka koja viri van zadnjeg luka fizički ne može stajati (vlasnik); krug
+  koji je ikad bio rub nikad nije „pokidan". **Bez `vector-effect: non-scaling-stroke`** - s njim se
+  crtanje preko `pathLength` zaustavi na pola pa današnje zrake ne dođu do luka.
   Ispod sadržaja (z-index 1), boja kosti, `opacity .32`. Pauka na mreži NEMA.
 - **BEZ paukova** (izričit zahtjev; mreža bez pauka je dopuštena, v. gore) i bez narančasto-crne/zlatne — boje iz palete stranice.
 

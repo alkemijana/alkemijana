@@ -206,15 +206,20 @@
       const raste = Math.min(1, v / 0.34);
       const pad = v <= 0.34 ? 0 : (v - 0.34) / 0.66;
       const s = pad * pad * (3 - 2 * pad);
-      const x = k.pt.x, P = k.pol;
-      const a = P * 0.80 * raste;            // stup je UŽI od poteza
-      const b = P * 1.35 * raste;            // trbuh na dnu
-      const f = P * 1.25 * raste;            // koliko se prijelaz razlije po potezu
+      /* SVE širine moraju stati UNUTAR poteza: a + f <= P. Prije su se zbrajale
+         (a = 0,80P, f = 1,25P), pa je vrh kapi bio dvostruko širi od slova i na
+         spoju se vidjelo rame - vlasnik je to označio na slici. Ne povećavati. */
+      const x = k.pt.x, P = k.pol * 0.78;    // pero je namjerno šire od stvarnog poteza
+      const a = P * 0.50 * raste;            // stup: upola uži od poteza
+      const b = P * 1.18 * raste;            // trbuh SMIJE biti širi od poteza - kap koja visi jest deblja od crte iz koje visi; ograničen je samo SPOJ
+      const f = P * 0.34 * raste;            // prijelaz; a + f ostaje unutar poteza
       /* Vrh je SKRIVEN IZA SLOVA (na središnjici poteza), a prema dolje se spaja
          KONKAVNIM prijelazom - lik se uz samo slovo razlije u stranu pa se suzi.
          Bez toga je vrh ravno odrezan i kap izgleda nalijepljena na slovo. */
-      const yVrh = k.pt.y;
-      const ySpoj = yVrh + P * 0.55 + f * 0.75;
+      /* Vrh i CIJELI prijelaz moraju biti DUBOKO unutar poteza, inače im kutovi
+         vire ispod ruba slova kao sitne police (vidi se tek kad se zumira). */
+      const yVrh = k.pt.y - P * 0.8;
+      const ySpoj = k.pt.y + P * 0.25;
       const y1 = ySpoj + P * 0.35 + k.duljina * s;
       const h = y1 - ySpoj;
       k.lik.setAttribute('d', b <= 0 ? '' :

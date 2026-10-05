@@ -1091,6 +1091,15 @@ git push                             # Cloudflare Pages automatski deploya
 
 **VAŽNO:** uvijek `git pull --rebase` prije push-a jer admin može u međuvremenu spremati promjene preko serverless funkcije.
 
+**Cloudflare zna zapamtiti 404 (5. 10. 2026.):** nakon jednog deploya edge je za `js/logo.js`,
+`js/natal.js`, `js/natal-render.js`, `js/natal-acg-render.js` i `css/halloween-palette.css`
+vraćao zapamćen **404 s `max-age=14400`** (4 h) — hero logo, natalna karta i Halloween paleta
+nisu radili, iako su datoteke na serveru bile (isti URL s `?x=` → 200). Zato sve lokalne
+skripte/stilovi u `index.html` imaju **`?v=<datum>`** (i font u halloween.css). `index.html` se
+ne kešira, pa **ako se to ponovi: povećaj `?v=` na svim mjestima** (ili Cloudflare → Caching →
+Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` — `404` uz
+`cf-cache-status: HIT` znači zapamćen 404. Nova `<script>`/`<link>` oznaka mora dobiti isti `?v=`.
+
 ### Verzije stranice (redizajn)
 
 | Oznaka | Što je | Gdje se vidi |

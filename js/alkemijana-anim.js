@@ -182,22 +182,17 @@
       }
       return best;
     };
-    /* SPOJ KAPI I SLOVA SE NE CRTA RUČNO NEGO STAPA („gooey"): kap i komadić slova oko
-       izvora idu kroz zamućenje + oštar prag alfe, pa se na spoju sam stvori konkavan
-       meniskus kao u prave tekućine - i kad se kap tek skuplja, i kad se kapljica otkida.
-       Prije su tu bili ručni Bézierovi prijelazi izvedeni iz SREDIŠNJE LINIJE pera, pa spoj
-       nikad nije točno sjeo: vidjeli su se rogovi i stepenice. Ne vraćati na ručni spoj.
-       - Kroz filter ide CIJELO slovo, a tek se IZLAZ filtera izreže na pruh oko kapi (maska
-         izvan filtera). Inače bi prag zapunio sve unutarnje kutove ostatka loga. Rez PRIJE
-         filtera (prva verzija) ne valja: odrezani komadić se zamućenjem stanji pa meniskusa
-         gotovo nema.
-       - Prag je TOČNO na pola alfe (48α − 24, strmo da rub luka bude oštar), pa ravni rubovi ostanu na mjestu i rez
-         (maska) se ne vidi; niži prag napuhne rubove pa se na rezu vide stepenice; filter samo
-         DODAJE meniskus u udubinama, a ono što oduzme (vrhove) pokriva oštri original.
-       - Isti lik kapi se crta i oštro (`<use>`), jer prag stanji tanak trag.
-       DEBLJINA SLOVA I NJEGOV DONJI RUB MJERE SE NA SAMOM OBRISU (isPointInFill), ne iz
-       pera: pero je skoro duplo šire od pravog poteza (obod 1,4, j 0,9, rep slova e tek
-       0,5 mm), pa je kap ispadala šira od slova i kutovi su joj virili. */
+    /* SPOJ KAPI I SLOVA = PRAVI LUK (četvrtina kruga s obje strane traga), nacrtan izravno
+       po izmjerenom rubu slova - v. „LUKOVI SPOJA" u novaKap/kapni. Povijest (ne ponavljati):
+       - ručni Bézierovi prijelazi iz SREDIŠNJE LINIJE pera: nikad nisu sjeli, rogovi i stepenice;
+       - stapanje filterom („gooey": zamućenje + prag alfe) preko kopije slova: na pravoj
+         veličini spoj izgleda kao KOSI REZ, ne luk, rub je mutan, a oko spoja se vidio
+         blago drukčije obojen pravokutnik (vlasnik: „uglasto").
+       Filter je ostao SAMO za glavu i kapljicu (vrat koji se razvuče i pukne pri otkidanju);
+       boja mu se nanosi ispočetka (feFlood), inače na rubu potamni.
+       DEBLJINA SLOVA I NJEGOV DONJI RUB MJERE SE NA SAMOM OBRISU (isPointInFill, na
+       privremenoj kopiji slova koja se nakon mjerenja ukloni), ne iz pera: pero je skoro
+       duplo šire od pravog poteza (obod 1,4, j 0,9, rep slova e tek 0,5 mm). */
     const f2 = n => n.toFixed(2);
     const mat = e => {
       const t = e.transform && e.transform.baseVal.consolidate();
@@ -223,38 +218,63 @@
       let l = pt.x, r = pt.x;
       while (pt.x - l < 3 && u(l - st, yh)) l -= st;
       while (r - pt.x < 3 && u(r + st, yh)) r += st;
-      return { bot, dub: bot - top, P: Math.min(bot - top, r - l) / 2 };
+      return { bot, dub: bot - top, P: Math.min(bot - top, r - l) / 2, u };
     };
     let kapBr = 0;
     const novaKap = (s, duljina, o = {}) => {
       const pt = niskaTocka(s, o.od, o.do);
       const id = p + 'kap' + (kapBr++);
       kapiG.insertAdjacentHTML('beforeend',
-        // pruh je MASKA s mekim rubom (zamućen pravokutnik), ne oštar clipPath: luk koji
-        // dotakne rub pruga tako izblijedi umjesto da bude odrezan
-        `<defs><filter id="${id}zb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur/></filter>` +
-        `<mask id="${id}z" maskUnits="userSpaceOnUse" x="-200" y="-200" width="500" height="500"><rect fill="#fff" filter="url(#${id}zb)"/></mask>` +
-        `<filter id="${id}f" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">` +
+        `<defs><filter id="${id}f" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">` +
         `<feGaussianBlur/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 48 -24" result="a"/>` +
-        // boja se nanosi ISPOČETKA (flood): zamućena boja na rubu je potamnjela pa je oko meniskusa bio tamni obrub
+        // boja se nanosi ISPOČETKA (flood): zamućena boja na rubu potamni pa bi bio tamni obrub
         `<feFlood style="flood-color:var(--aa-boja,var(--lavender,#a890d0))"/><feComposite in2="a" operator="in"/></filter></defs>` +
-        `<g visibility="hidden"><g mask="url(#${id}z)"><g filter="url(#${id}f)">${staticInner('potpis')}` +
-        `<g id="${id}"><path style="${FILL}"/><ellipse style="${FILL}"/><ellipse style="${FILL}"/></g></g></g><use href="#${id}"/></g>`);
-      const g = kapiG.lastElementChild, [trag, glava, kapljica] = g.querySelectorAll(`#${id} > *`);
-      const kopija = g.querySelector('[filter]');
+        `<g visibility="hidden"><g class="aa-mjera" visibility="hidden">${staticInner('potpis')}</g>` +
+        `<g filter="url(#${id}f)"><use href="#${id}g"/><use href="#${id}k"/></g>` +
+        `<path style="${FILL}"/><ellipse id="${id}g" style="${FILL}"/><ellipse id="${id}k" style="${FILL}"/><path style="${FILL}"/></g>`);
+      const g = kapiG.lastElementChild, [trag, glava, kapljica, spoj] = g.querySelectorAll(':scope > path, :scope > ellipse');
+      const kopija = g.querySelector('.aa-mjera');
       // ako mjerenje ne uspije (ne bi smjelo), procjena iz pera kao prije
       const m = izmjeri(kopija, pt) || { bot: pt.y + .5, dub: 1, P: .5 };
       const P = Math.max(.36, Math.min(.72, m.P));          // pola debljine slova na mjestu izvora
       const sk = Math.min(P * 1.5, m.dub * .8);              // koliko duboko u slovu počinje trag
-      const def = kapiG.querySelector(`#${id}z rect`), fl = kapiG.querySelector(`#${id}f`);
-      // pruh mora biti širi od luka spoja (~3σ sa svake strane), inače se luku vidi odrezan rub
-      def.setAttribute('x', f2(pt.x - P * 5)); def.setAttribute('y', f2(m.bot - sk - P));
-      def.setAttribute('width', f2(P * 10)); def.setAttribute('height', f2(sk + duljina + P * (o.kapljica ? 10 : 5)));
-      fl.setAttribute('x', f2(pt.x - P * 11)); fl.setAttribute('y', f2(m.bot - P * 8));
-      fl.setAttribute('width', f2(P * 22)); fl.setAttribute('height', f2(duljina + P * 22));   // rub filtera daleko od reza (> 2σ)
-      fl.firstElementChild.setAttribute('stdDeviation', (P * 1.6).toFixed(3));   // veći σ = veći luk spoja (vlasnik: 1,1 je bilo premalo)
-      kapiG.querySelector(`#${id}zb feGaussianBlur`).setAttribute('stdDeviation', (P * .9).toFixed(3));
-      return { g, trag, glava, kapljica, x: pt.x, bot: m.bot, sk, P, duljina, otkine: !!o.kapljica, faza: o.faza || 0, vis: false };
+      const fl = kapiG.querySelector(`#${id}f`);
+      fl.setAttribute('x', f2(pt.x - P * 6)); fl.setAttribute('y', f2(m.bot - P * 2));
+      fl.setAttribute('width', f2(P * 12)); fl.setAttribute('height', f2(duljina + P * 14));
+      fl.firstElementChild.setAttribute('stdDeviation', (P * .45).toFixed(3));
+      /* ---- LUKOVI SPOJA (vlasnik: „lijepi radijusi, ne uglasto") ----
+         Filter sam daje spoj koji na pravoj veličini izgleda kao KOSI REZ, ne kao luk. Zato se
+         luk crta izravno: izmjeri se rub slova oko kapi (profil), pa se s obje strane traga
+         doda četvrtina luka (kvadratni Bézier s kontrolnom točkom u kutu = tangenta i na trag
+         i na rub slova). Rub se mjeri JEDNOM, ovdje; u animaciji se samo slaže put.
+         sgn -1: slovo je IZNAD (kap izlazi iz donjeg ruba), +1: slovo je ISPOD (kap naiđe na
+         gornji rub - kad kap prelazi preko drugog poteza, npr. a preko zamaha od j). */
+      const ST = .05;
+      const profil = (yRef, sgn) => {
+        const x1 = pt.x - P * 3.2, n = Math.round(P * 6.4 / ST), ys = [];
+        const a = yRef - sgn * .3;                          // početak je izvan slova
+        for (let i = 0; i <= n; i++) {
+          const x = x1 + i * ST;
+          let hit = null;
+          for (let d = 0; d < 1; d += .1) if (m.u && m.u(x, a + sgn * d)) { hit = d; break; }
+          if (hit == null || hit === 0) { ys.push(null); continue; }
+          let lo = hit - .1, hi = hit;
+          for (let j = 0; j < 6; j++) { const mid = (lo + hi) / 2; if (m.u(x, a + sgn * mid)) hi = mid; else lo = mid; }
+          ys.push(a + sgn * (lo + hi) / 2);
+        }
+        return { x1, ys };
+      };
+      const spojevi = [{ sgn: -1, y: m.bot, pr: profil(m.bot, -1), izvor: true }];
+      if (m.u) {                                            // potezi preko kojih kap prelazi
+        let unutra = false;
+        for (let y = m.bot + .06; y < m.bot + duljina + P * 3; y += .03) {
+          const in_ = m.u(pt.x, y);
+          if (in_ !== unutra) spojevi.push({ sgn: in_ ? 1 : -1, y, pr: profil(y, in_ ? 1 : -1) });
+          unutra = in_;
+        }
+      }
+      kopija.remove();                                      // trebala je samo za mjerenje
+      return { g, trag, glava, kapljica, spoj, spojevi, x: pt.x, bot: m.bot, sk, P, duljina, otkine: !!o.kapljica, faza: o.faza || 0, vis: false };
     };
     const ss = x => x * x * (3 - 2 * x);
     const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
@@ -275,12 +295,13 @@
       const rb = P * (1.4 - 0.15 * s) * raste;               // glava je deblja od slova - kap koja visi jest deblja
       const yG = k.bot + rb * 0.85 + k.duljina * s;
       const yTop = k.bot - k.sk;                              // vrh traga je skriven u slovu (šiljat, da mu kutovi ne vire)
+      // jednolik trag, a zadnjih par debljina se širi u trbuh (krv se skuplja dolje);
+      // u slovu se trag suzi u šiljak
+      const wAt = y => P * (0.72 + 0.5 * Math.exp((y - yG) / (P * 2.6))) * raste * (0.25 + 0.75 * Math.min(1, (y - yTop) / k.sk));
       const n = 18, L = [], R = [];
       for (let i = 0; i <= n; i++) {
         const y = yTop + (yG - yTop) * i / n;
-        const uz = Math.min(1, (y - yTop) / k.sk);           // u slovu se trag suzi u šiljak
-        // jednolik trag, a zadnjih par debljina se širi u trbuh (krv se skuplja dolje)
-        const w = P * (0.72 + 0.5 * Math.exp((y - yG) / (P * 2.6))) * raste * (0.25 + 0.75 * uz);
+        const w = wAt(y);
         const xc = x0 + (y > k.bot ? dx(y) : 0);
         L.push(`${f2(xc - w)} ${f2(y)}`); R.unshift(`${f2(xc + w)} ${f2(y)}`);
       }
@@ -294,6 +315,42 @@
       const rd = rb * 0.5 * Math.min(1, o * 4);
       k.kapljica.setAttribute('cx', f2(gx)); k.kapljica.setAttribute('cy', f2(yG + rb * 0.8 + P * 3 * ss(o)));
       k.kapljica.setAttribute('rx', f2(rd)); k.kapljica.setAttribute('ry', f2(rd * 1.15));
+      // lukovi spoja: na izvoru rastu s kapi, na potezu preko kojeg kap prelazi tek kad ga glava dosegne
+      const ST = .05, EPS = .05, dijelovi = [];
+      for (const j of k.spojevi) {
+        const sc = j.izvor ? raste : clamp01((yG + (j.sgn > 0 ? rb * 1.1 : 0) - j.y) / (P * 1.5));
+        if (sc <= .01) continue;
+        const yAt = x => {
+          const t = (x - j.pr.x1) / ST, i = Math.floor(t), a = j.pr.ys[i], b = j.pr.ys[i + 1];
+          return a == null || b == null ? null : a + (b - a) * (t - i);
+        };
+        const xc = x0 + (j.y > k.bot ? dx(j.y) : 0), w = wAt(j.y), Rm = P * 1.9 * sc;
+        const strana = st => {
+          const xs = xc + st * w, yC = yAt(xs);
+          if (yC == null) return null;
+          // luk smije ići samo dok rub slova postoji i ne skače (kraj poteza, drugo slovo)
+          let doseg = 0, pr = yC;
+          for (let d = ST; d <= Rm + 1e-6; d += ST) {
+            const yy = yAt(xs + st * d);
+            if (yy == null || Math.abs(yy - pr) > .12) break;
+            doseg = d; pr = yy;
+          }
+          const r = Math.min(Rm, doseg);
+          // kraj luka na tragu: rub traga na TOJ visini (trag nije okomit), inače ostane stepenica
+          const yA = yC - j.sgn * r, xA = x0 + (yA > k.bot ? dx(yA) : 0) + st * wAt(yA);
+          return { xs: xA, yC, r, A: [xA, yA], B: [xs + st * r, yAt(xs + st * r)] };
+        };
+        const l = strana(-1), d = strana(1);
+        if (!l || !d) continue;
+        let p = `M${f2(l.A[0])} ${f2(l.A[1])}Q${f2(l.xs)} ${f2(l.yC)},${f2(l.B[0])} ${f2(l.B[1])}`;
+        for (let x = l.B[0] + ST; x < d.B[0]; x += ST) {   // natrag uz rub, malo UNUTAR slova
+          const y = yAt(x);
+          if (y != null) p += `L${f2(x)} ${f2(y + j.sgn * EPS)}`;
+        }
+        p += `L${f2(d.B[0])} ${f2(d.B[1])}Q${f2(d.xs)} ${f2(d.yC)},${f2(d.A[0])} ${f2(d.A[1])}Z`;
+        dijelovi.push(p);
+      }
+      k.spoj.setAttribute('d', dijelovi.join(''));
     }, E.lin, k);
     const shines = qa('.aa-shine').map(e => ({ e, f: +e.dataset.f, o: +e.dataset.o }));
     const floatG = q('.aa-float');

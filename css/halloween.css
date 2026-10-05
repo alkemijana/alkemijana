@@ -444,6 +444,8 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   pointer-events: none;
   opacity: 0.32;
 }
+/* druga mreža dolje lijevo: ista geometrija zakrenuta za 180° (kut gore desno -> dolje lijevo) */
+.hw-web.hw-web-dl { top: auto; right: auto; bottom: 0; left: 0; transform: rotate(180deg); }
 .hw-web svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .hw-web path {
   fill: none;

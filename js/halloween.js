@@ -827,10 +827,13 @@
     } catch (e) {}
     return 7;                                             // pregled izvan tjedna: cijela mreža
   }
-  function initWeb() {
+  /* Dvije mreže (vlasnik): gore desno i dolje lijevo. Ista pravila, ali DRUGO sjeme (nisu
+     identične) i donja je malo manja. Donja se gradi isto kao gornja (kut gore desno u
+     viewBoxu), a CSS je zakrene za 180° (.hw-web-dl) - gornji rub tako postane donji, desni lijevi. */
+  function initWeb(o) {
     const DAN = webDay();
-    const RD = [72, 112, 152, 194, 236, 280, 328, 385];   // dokle mreža seže koji dan (viewBox 400)
-    let sj = 0x5eed1031;                                   // fiksno sjeme: ista mreža svaki dan
+    const RD = [72, 112, 152, 194, 236, 280, 328, 385].map(r => r * o.mjera);   // dokle mreža seže koji dan (viewBox 400)
+    let sj = o.sjeme;                                      // fiksno sjeme: ista mreža svaki dan
     const rnd = () => { sj |= 0; sj = sj + 0x6D2B79F5 | 0; let t = Math.imul(sj ^ sj >>> 15, 1 | sj); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
     const CX = 400, CY = 0, f = n => n.toFixed(1);
     // zrake: od uz gornji rub (kut 0) do uz desni rub (kut 90), nepravilno razmaknute
@@ -887,7 +890,7 @@
        prethodni završi, pa se vidi jedna nit koja putuje. Prije su se lukovi i zrake crtali
        istodobno pa su lukovi znali visjeti u zraku prije nego što ih je zraka dosegla. */
     const novo = [];
-    let t = 0;
+    let t = o.kasni || 0;                                 // druga mreža se počne plesti malo kasnije
     novoZ.forEach((x, i) => { novo.push({ ...x, t0: t + i * 0.16, dur: 0.55 }); });
     t += novoZ.length * 0.16 + 0.55 + 0.25;
     const kr = [...new Set(novoK.map(x => x.k))].sort((a, b) => b - a);   // vanjski prvi
@@ -902,7 +905,7 @@
     });
     const put = (x, cls) => `<path class="${cls}${x.z ? ' hw-web-z' : ''}" d="${x.d}"${cls === 'hw-web-n' ? ` pathLength="1" style="--hw-wd:${x.t0.toFixed(2)}s;--hw-wdur:${x.dur}s"` : ''}/>`;
     const web = document.createElement('div');
-    web.className = 'hw-web';
+    web.className = 'hw-web' + (o.cls ? ' ' + o.cls : '');
     web.setAttribute('aria-hidden', 'true');
     web.innerHTML = '<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">' +
       staro.map(x => put(x, 'hw-web-s')).join('') + novo.map(x => put(x, 'hw-web-n')).join('') + '</svg>';
@@ -916,7 +919,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     initScenery();
     initJack();
-    initWeb();
+    initWeb({ sjeme: 0x5eed1031, mjera: 1 });                         // gore desno
+    initWeb({ sjeme: 0x0b5c11a7, mjera: 0.86, cls: 'hw-web-dl', kasni: 1.2 });   // dolje lijevo
     if (!wantIntro) addLoaderMoon(false);   // s uvodom ga doda završni bljesak
     if (reduced()) return;
     initNavBat();

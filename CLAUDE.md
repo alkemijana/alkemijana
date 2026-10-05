@@ -1352,7 +1352,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   uz `text-wrap: balance` da na mobitelu ne ostane jedna riječ sama u redu.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
-- **Paukova mreža u gornjem desnom kutu RASTE kroz tjedan** (`initWeb`/`webDay`, `.hw-web`; vlasnik):
+- **Paukove mreže gore desno i dolje lijevo RASTU kroz tjedan** (`initWeb`/`webDay`, `.hw-web`; vlasnik).
+  Dvije su, s RAZLIČITIM sjemenom (nisu identične); donja je `mjera: 0.86` i počinje se plesti 1,2 s
+  kasnije, a gradi se isto kao gornja pa je CSS zakrene za 180° (`.hw-web-dl`). Za svaku vrijedi:
   dan 0 = 25. 10. (mala) … dan 7 = 1. 11. (puna). **Ne skalira se** — cijela mreža je jedna fiksna
   geometrija iz fiksnog sjemena, a dan određuje samo dokle se crta (`RD[]`, polumjer u viewBoxu 400),
   pa jučerašnje niti ostaju IDENTIČNE, a dodaju se novi vanjski krugovi i produženja zraka; današnji

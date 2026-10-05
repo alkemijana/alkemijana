@@ -1216,15 +1216,22 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   zglobu), mala kandža, uši; **potpuno crni, bez obruba**. (4 vrha s puno sitnih ureza izgledala su kao „leptirić s perjem".)
   (obrub je izgledao čudno). Mahanje je **SMIL morph** između tri poze krila (`POSES`; zamah dolje brži od
   podizanja, tijelo poskoči), let je WAAPI, samo transform.
-  **Od 5. 10. 2026. (vlasnik: „izgledaju kao leptiri") tri promjene — ne vraćati unatrag:**
-  1. **VELIKA amplituda + krilo se na podizanju SKUPI** (raspon 17 → 47 → 22, vrhovi od −29 do +27):
-     gore uzak sklopljen V iznad tijela, u sredini potpuno raširena krila, dolje duboki zamah ispod
-     tijela. **To je jedino po čemu se čita šišmiš, a ne leptir** — leptir maše simetrično i raširenih
-     krila u oba smjera. Prije su krila išla samo −24…+20 uz malu razliku u rasponu.
-  2. **Let je POTPUNO RAVAN** — nasumičan je samo smjer (bilo koji kut, kroz nasumičnu točku bliže
+  **Od 5. 10. 2026. (vlasnik: „izgledaju kao leptiri") pet promjena — ne vraćati unatrag:**
+  1. **DVA KRILA NISU U ISTOJ FAZI** — desno kasni **0,17 ciklusa** za lijevim (`batSvg` daje svakom
+     krilu svoj `begin`), pa je jedno gore dok je drugo još dolje. **Ovo je glavna stvar**: usklađeno
+     mahanje dvaju zrcalno jednakih krila JEST oblik noćnog leptira i nikakav popravak zamaha to ne
+     riješi. Provjereno na referentnoj animaciji koju je vlasnik poslao. Ne vraćati oba krila na isti `begin`.
+  2. **VELIKA amplituda + krilo se na podizanju SKUPI** (raspon 17 → 47 → 22, vrhovi od −29 do +27):
+     gore uzak sklopljen V iznad tijela, u sredini potpuno raširena krila, dolje duboki zamah ispod tijela.
+  3. **Kožica je RAVNA I NAPETA** — sami ravni potezi (`L`) sa sitnim urezom prema zglobu između
+     prstiju (`notch`). Prije su to bili zaobljeni lukovi (`Q`), a mekan obli rub je oblik leptirova krila.
+  4. **Let je POTPUNO RAVAN** — nasumičan je samo smjer (bilo koji kut, kroz nasumičnu točku bliže
      sredini ekrana), glava gleda u smjer leta, brzina je stalna (px/ms, neovisno o veličini ekrana).
      Prije su bila nagla skretanja i trzanje gore-dolje — i to je izgledalo kao leptir.
-  3. **Duplo veći** (`size` 68–128 px, prije 34–64) i zato malo sporije mahanje (0,13–0,18 s, prije 0,10–0,15 s).
+  5. **Duplo veći** (`size` 68–128 px, prije 34–64) i zato malo sporije mahanje (0,13–0,18 s, prije 0,10–0,15 s).
+  **Usput odbačeno:** prikaz iz tri četvrtine (bliže krilo veliko sprijeda, dalje manje iza tijela).
+  Teorijski najvjernije referenci, ali se glava odvojila od tijela, a krila su ispala kao krpe —
+  silueta se ne da složiti ručnim namještanjem koordinata. Vraćeno na uspravno tijelo s leđa.
   **Rijetko:** svakih 45–90 s, uglavnom
   jedan (bilo ih je prečesto). Lete **umjesto** ✦ bljeska (`spawnGlare` u app.js se taj tjedan ne pali);
   mali šišmiš obleti šešir u traci jednom u 75 s (`.hw-navbat`). Prva verzija je izgledala „kartonski".

@@ -119,30 +119,28 @@
      ============================================================ */
   const POSES = {
     // sh = rame, wr = zglob, th = kandža, tip = vrh krila, f2/f3 = vrhovi prstiju, hip = kuk
-    /* VELIKA amplituda + krilo se na podizanju SKUPI (raspon 17 → 47 → 22):
-       to je ono po čemu se šišmiš razlikuje od leptira. Leptir maše simetrično
-       i raširenih krila u oba smjera; šišmiš gore sklopi krila u uzak V iznad
-       tijela, u sredini ih rastegne do kraja, a dolje zamahne duboko ispod sebe.
-       Prije su krila išla samo -24…+20 uz malu razliku u rasponu - odatle „leptir". */
-    up:   { sh: [-3, -3], wr: [-9, -16],  th: [-7, -20],    tip: [-14, -29], f2: [-17, -19], f3: [-13, -9], hip: [-4, 6] },
-    mid:  { sh: [-3, -3], wr: [-18, -8],  th: [-16, -12],   tip: [-47, -6],  f2: [-38, 7],   f3: [-24, 11], hip: [-4, 7] },
-    down: { sh: [-3, -2], wr: [-13, 6],   th: [-15, 2],     tip: [-22, 27],  f2: [-16, 26],  f3: [-10, 19], hip: [-4, 8] }
+    /* VELIKA amplituda i krilo se na podizanju SKUPI (raspon 17 → 47 → 22):
+       gore uzak sklopljen V iznad tijela, u sredini potpuno rastegnuto,
+       dolje duboki zamah ispod tijela. */
+    up:   { sh: [-3, -3], wr: [-9, -16],  th: [-7, -20],  tip: [-14, -29], f2: [-17, -19], f3: [-13, -9], hip: [-4, 6] },
+    mid:  { sh: [-3, -3], wr: [-18, -8],  th: [-16, -12], tip: [-47, -6],  f2: [-38, 7],   f3: [-24, 11], hip: [-4, 7] },
+    down: { sh: [-3, -2], wr: [-13, 6],   th: [-15, 2],   tip: [-22, 27],  f2: [-16, 26],  f3: [-10, 19], hip: [-4, 8] }
   };
-  // luk kožice između dva vrha: sredina tetive povučena prema ZGLOBU (tamo se prsti sastaju)
-  function arc(a, b, wr, pull) {
+  /* Kožica je RAVNA I NAPETA - sami ravni potezi, sa sitnim urezom prema zglobu
+     između prstiju. Prije su to bili zaobljeni lukovi (Q), a mekani obli rub je
+     oblik leptirovog krila; prava kožica je napeta između prstiju kao jedro. */
+  function notch(a, b, wr, pull) {
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-    return f1(mx + (wr[0] - mx) * pull) + ' ' + f1(my + (wr[1] - my) * pull);
+    return [mx + (wr[0] - mx) * pull, my + (wr[1] - my) * pull];
   }
   const P = p => f1(p[0]) + ' ' + f1(p[1]);
   function wingPath(w) {
-    const lead = f1((w.sh[0] + w.wr[0]) / 2) + ' ' + f1((w.sh[1] + w.wr[1]) / 2 - 3);     // prednji rub do zgloba
-    const lead2 = f1((w.wr[0] + w.tip[0]) / 2) + ' ' + f1((w.wr[1] + w.tip[1]) / 2 - 2.5); // od zgloba do vrha
-    return 'M' + P(w.sh) + ' Q' + lead + ' ' + P(w.wr) +
-      ' L' + P(w.th) + ' L' + P([w.wr[0] - 1.2, w.wr[1] + 0.6]) +                        // kandža
-      ' Q' + lead2 + ' ' + P(w.tip) +
-      ' Q' + arc(w.tip, w.f2, w.wr, 0.42) + ' ' + P(w.f2) +
-      ' Q' + arc(w.f2, w.f3, w.wr, 0.45) + ' ' + P(w.f3) +
-      ' Q' + arc(w.f3, w.hip, w.wr, 0.35) + ' ' + P(w.hip) + ' Z';
+    return 'M' + P(w.sh) + ' L' + P(w.wr) +
+      ' L' + P(w.th) + ' L' + P([w.wr[0] - 1, w.wr[1] + 1]) +                 // kandža na zglobu
+      ' L' + P(w.tip) +
+      ' L' + P(notch(w.tip, w.f2, w.wr, 0.14)) + ' L' + P(w.f2) +
+      ' L' + P(notch(w.f2, w.f3, w.wr, 0.16)) + ' L' + P(w.f3) +
+      ' L' + P(notch(w.f3, w.hip, w.wr, 0.12)) + ' L' + P(w.hip) + ' Z';
   }
   const ORDER = ['up', 'mid', 'down', 'mid', 'up'];
   const KT = '0;0.2;0.42;0.72;1';
@@ -193,19 +191,22 @@
     '</svg>';
   }
 
+  /* KLJUČNO: dva krila NISU u istoj fazi - desno kasni ~0,17 ciklusa za lijevim,
+     pa je jedno gore dok je drugo još dolje (tako je i na referentnoj animaciji).
+     Usklađeno mahanje zrcalno jednakih krila je oblik NOĆNOG LEPTIRA i nikakva
+     promjena zamaha to ne popravlja - ne vraćati oba krila na isti `begin`. */
   function batSvg(beat) {
     const dur = beat.toFixed(3) + 's';
-    const begin = (-Math.random() * beat).toFixed(3) + 's';
-    const anim = v => '<animate attributeName="d" dur="' + dur + '" begin="' + begin + '" repeatCount="indefinite" ' +
-      'calcMode="spline" keyTimes="' + KT + '" keySplines="' + KS + '" values="' + v + '"/>';
-    const wing =
-      '<path class="hw-wing" d="' + wingPath(POSES.up) + '">' + anim(WING_V) + '</path>';
-    return '<svg viewBox="-48 -30 96 60" aria-hidden="true" focusable="false">' +
+    const b0 = -Math.random() * beat;
+    const anim = b => '<animate attributeName="d" dur="' + dur + '" begin="' + b.toFixed(3) + 's" repeatCount="indefinite" ' +
+      'calcMode="spline" keyTimes="' + KT + '" keySplines="' + KS + '" values="' + WING_V + '"/>';
+    const wing = b => '<path class="hw-wing" d="' + wingPath(POSES.up) + '">' + anim(b) + '</path>';
+    return '<svg viewBox="-48 -32 96 64" aria-hidden="true" focusable="false">' +
       '<g>' +
-        '<animateTransform attributeName="transform" type="translate" dur="' + dur + '" begin="' + begin + '" ' +
+        '<animateTransform attributeName="transform" type="translate" dur="' + dur + '" begin="' + b0.toFixed(3) + 's" ' +
           'repeatCount="indefinite" calcMode="spline" keyTimes="0;0.42;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" values="0 3;0 -3;0 3"/>' +
-        wing +
-        '<g transform="scale(-1 1)">' + wing + '</g>' +
+        wing(b0) +
+        '<g transform="scale(-1 1)">' + wing(b0 - beat * 0.17) + '</g>' +   // drugo krilo KASNI
         '<ellipse class="hw-body" cx="0" cy="3" rx="4" ry="8"/>' +
         '<circle class="hw-body" cx="0" cy="-5.5" r="3.6"/>' +
         '<path class="hw-body" d="M-3.2 -7 L-2.8 -12.8 L-0.6 -8.6 Z M3.2 -7 L2.8 -12.8 L0.6 -8.6 Z"/>' +
@@ -483,10 +484,10 @@
     const dx = Math.cos(ang), dy = Math.sin(ang);
     const cx = vw * (0.2 + Math.random() * 0.6), cy = vh * (0.15 + Math.random() * 0.55);
     const L = Math.hypot(vw, vh) / 2 + size * 2;                 // dovoljno da krene i završi izvan ekrana
-    const rot = f1(ang * 57.2958 + 90);                          // lik je nacrtan licem prema gore
+    const rot = 'rotate(' + f1(ang * 57.2958 + 90) + 'deg)';     // lik je nacrtan licem prema gore
     const frames = [
-      { transform: 'translate(' + f1(cx - dx * L) + 'px, ' + f1(cy - dy * L) + 'px) rotate(' + rot + 'deg)' },
-      { transform: 'translate(' + f1(cx + dx * L) + 'px, ' + f1(cy + dy * L) + 'px) rotate(' + rot + 'deg)' }
+      { transform: 'translate(' + f1(cx - dx * L) + 'px, ' + f1(cy - dy * L) + 'px) ' + rot },
+      { transform: 'translate(' + f1(cx + dx * L) + 'px, ' + f1(cy + dy * L) + 'px) ' + rot }
     ];
     const dur = 2 * L / (0.32 + Math.random() * 0.16);   // stalna brzina (px/ms), neovisno o veličini ekrana
     const anim = el.animate(frames, { duration: dur, delay, easing: 'linear', fill: 'both' });

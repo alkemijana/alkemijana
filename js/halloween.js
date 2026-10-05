@@ -986,9 +986,14 @@
     // ---- oblik ovisi samo o položaju središta Hc ----
     const pt = (i, t, Hc) => lerp(Hc, E[i], t);           // točka na zraci i, udio t
     const dRavna = (A, B) => `M${f(A[0])} ${f(A[1])}L${f(B[0])} ${f(B[1])}`;
+    /* LUK VISI PO GRAVITACIJI (vlasnik): kontrolna točka je ispod tetive na EKRANU (u donjoj,
+       zakrenutoj mreži je to -y), ne prema središtu mreže kao prije. Lukovi iznad središta se zato
+       objese prema njemu, a oni ispod prema van; skoro okomita nit se gotovo ne objesi.
+       Koliko visi: (1 - p.s) · duljina tetive, nesimetrično (p.m). */
+    const objesi = (a, b, p, t, jace) => { const m = lerp(a, b, t), L = dist(a, b); return [m[0], m[1] + dolje * L * (1 - p.s) * (jace || 1)]; };
     const dLuk = (k, i, j, Hc) => {
       const a = pt(i, udio[k][i], Hc), b = pt(j, udio[k][j], Hc), p = par[k][Math.min(i, j)];
-      const m = lerp(a, b, i < j ? p.m : 1 - p.m), q = lerp(Hc, m, p.s);   // objesi se prema središtu
+      const q = objesi(a, b, p, i < j ? p.m : 1 - p.m);
       return `M${f(a[0])} ${f(a[1])}Q${f(q[0])} ${f(q[1])},${f(b[0])} ${f(b[1])}`;
     };
     const dRupa = (k, i, j, Hc) => {                     // pokidana nit: dva komadića vise s dviju zraka
@@ -999,13 +1004,13 @@
     };
     const dPop = (k, i, j, Hc) => {                       // popravljena nit: drugačiji progib i pregib u sredini
       const a = pt(i, udio[k][i], Hc), b = pt(j, udio[k][j], Hc), p = par[k][Math.min(i, j)];
-      const c = lerp(Hc, lerp(a, b, i < j ? 0.42 : 0.58), p.s - 0.05);
-      const q1 = lerp(Hc, lerp(a, c, 0.5), 0.99), q2 = lerp(Hc, lerp(c, b, 0.5), 0.985);
+      const c = objesi(a, b, p, i < j ? 0.42 : 0.58, 1.6);  // popravak visi jače i ima pregib
+      const q1 = objesi(a, c, p, 0.5, 0.6), q2 = objesi(c, b, p, 0.5, 0.6);
       return `M${f(a[0])} ${f(a[1])}Q${f(q1[0])} ${f(q1[1])},${f(c[0])} ${f(c[1])}Q${f(q2[0])} ${f(q2[1])},${f(b[0])} ${f(b[1])}`;
     };
     const sredinaNiti = (k, i, j, Hc) => {                 // točka na sredini zdrave niti (tu zapne mušica)
       const a = pt(i, udio[k][i], Hc), b = pt(j, udio[k][j], Hc), p = par[k][Math.min(i, j)];
-      const q = lerp(Hc, lerp(a, b, p.m), p.s);
+      const q = objesi(a, b, p, p.m);
       return [0.25 * a[0] + 0.5 * q[0] + 0.25 * b[0], 0.25 * a[1] + 0.5 * q[1] + 0.25 * b[1]];
     };
     const most = { gen: Hc => `M${f(T[0])} ${f(T[1])}L${f(Hc[0])} ${f(Hc[1])}L${f(R[0])} ${f(R[1])}`, z: 1, novo: DAN === 0 };
@@ -1263,6 +1268,17 @@
       return m.okrenuta ? [r.right - x, r.bottom - y] : [r.left + x, r.top + y];
     };
     const glatko = v => 1 - Math.pow(1 - v, 3);
+    /* Točka na niti na udjelu w duljine. Mjeri se na POMOĆNOJ niti istog oblika BEZ pathLength: neki
+       preglednici pathLength primjenjuju i na getPointAtLength, pa je pauk ondje išao ravno od zrake
+       do zrake umjesto po luku (vlasnik). Pomoćna nit je nevidljiva, po jedna u svakom SVG-u. */
+    const tockaNa = (el, w) => {
+      const sv = el.ownerSVGElement;
+      let mj2 = sv.__mjerac;
+      if (!mj2) { mj2 = sv.__mjerac = document.createElementNS('http://www.w3.org/2000/svg', 'path'); mj2.setAttribute('visibility', 'hidden'); mj2.style.strokeDasharray = 'none'; sv.appendChild(mj2); }
+      mj2.setAttribute('d', el.getAttribute('d'));
+      const q = mj2.getPointAtLength(mj2.getTotalLength() * Math.max(0, Math.min(1, w)));
+      return [q.x, q.y];
+    };
     let i = 0, tk = 0, last = 0, kut = null, pr = null;
     /* MUŠICA: mali tamni kukac s prozirnim krilima; uleti u mrežu, zapne i koprca se, pauk je zamota
        (ostane mali svijetli zamotuljak). Položaj se računa iz mreže, pa prati i promjenu veličine. */
@@ -1305,10 +1321,9 @@
       let e = null, okreni = null;
       if (muhaSt === 'zapela') { const T2 = muhaCilj(); if (T2) muhaPostavi([T2[0] + Math.sin(now / 37) * 1.2, T2[1] + Math.cos(now / 53) * 1.2], Math.sin(now / 90) * 40); }
       if (k.tip === 'plete') {
-        const el = k.nit.el, L = el.getTotalLength(), w = k.obrnuto ? 1 - v : v;
+        const el = k.nit.el;
         el.style.strokeDashoffset = ((k.obrnuto ? -1 : 1) * (1 - v)).toFixed(4);   // obrnuto: crtica raste od kraja
-        const q = el.getPointAtLength(L * w);
-        e = naEkran(k.m, [q.x, q.y]);
+        e = naEkran(k.m, tockaNa(el, k.obrnuto ? 1 - v : v));   // pauk ide PO luku
       } else if (k.tip === 'hoda') {
         const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc);
         e = naEkran(k.m, [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v]);
@@ -1331,18 +1346,16 @@
           k.el = k.m.postavi(k.key, 'pop', k.m.Hc); k.el.setAttribute('pathLength', '1'); k.el.classList.add('hw-web-n');
           k.s = k.el.getTotalLength() * mj.get(k.m) / BRZINA;   // stvarna duljina nove niti (s pregibom je dulja)
         }
-        const L = k.el.getTotalLength(), vv = Math.min(1, tk / k.s);
+        const vv = Math.min(1, tk / k.s);
         k.el.style.strokeDashoffset = (1 - vv).toFixed(4);
-        const q = k.el.getPointAtLength(L * vv);
-        e = naEkran(k.m, [q.x, q.y]);
+        e = naEkran(k.m, tockaNa(k.el, vv));
       } else if (k.tip === 'px') {                        // uz zid, u pikselima ekrana
         const A = k.A(), B = k.B();
         e = [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v];
       } else if (k.tip === 'kutNit') {                    // nit u praznom kutu (SVG je već u pikselima)
-        const el = k.x.el, L = el.getTotalLength();
+        const el = k.x.el;
         el.style.strokeDashoffset = (1 - v).toFixed(4);
-        const q = el.getPointAtLength(L * v);
-        e = [q.x, q.y];
+        e = tockaNa(el, v);
       } else if (k.tip === 'spoji') e = naEkran(k.m, k.m.rj(k.at, k.m.Hc));   // stoji i pričvršćuje
       else if (k.tip === 'napni') {                     // pauk uz sidro vuče nit prema sebi: središte dolazi k njemu
         if (!k.m.napetaV) { k.m.napeta(); k.m.napetaV = 1; }

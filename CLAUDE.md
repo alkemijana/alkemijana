@@ -1403,6 +1403,13 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     između zraka između kojih NIKAD ne dođe nova zraka (inače bi je 'spoji' rascijepio) i nikad na
     najunutarnjem luku; mušica samo na nitima koje nisu zbijene uz zid. Sve je određeno danom.
     (Probana je i „signalna nit s praznim isječkom" po Zygiella x-notata - vlasnik je NIJE htio.)
+  - **Lukovi VISE PO GRAVITACIJI** (vlasnik): kontrolna točka luka je ISPOD tetive na ekranu (`objesi`;
+    u donjoj, zakrenutoj mreži je to -y), ne prema središtu mreže (prije - lukovi su djelovali ravni).
+    Lukovi iznad središta se objese prema njemu, oni ispod prema van, skoro okomita nit gotovo nikako.
+  - **Pauk ide PO luku, ne ravno** (vlasnik): točka se mjeri na nevidljivoj POMOĆNOJ niti istog oblika
+    BEZ `pathLength` (`tockaNa`) - neki preglednici `pathLength` primjenjuju i na `getPointAtLength`.
+  - **Kutija mreže ovisi i o visini prozora** (`max(150px, min(34vw, 440px, 60vh))`): mreža se uz bočni rub
+    proteže ~1,5 širine kutije, pa su u niskom širokom prozoru sidra padala ispod dna ekrana.
   - **Slobodna zona oko središta** (spirala od 24+ jedinica) i **gravitacija** (`grav`: lukovi ispod
     središta sežu dalje; u donjoj, zakrenutoj mreži je „dolje" -y).
   - **Karakter mreža** (vlasnik: „previše slične"): `buildWeb` prima `uzA`/`uzB` (koliko se proteže uz

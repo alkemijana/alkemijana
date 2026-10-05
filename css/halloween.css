@@ -438,7 +438,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   position: fixed;
   top: 0;
   right: 0;
-  width: clamp(190px, 34vw, 440px);
+  /* i prema VISINI prozora: mreža se uz bočni rub proteže ~1,5 širine kutije, pa u niskom širokom
+     prozoru sidra ne smiju pasti ispod dna ekrana (pauk bi plelo izvan ekrana) */
+  width: max(150px, min(34vw, 440px, 60vh));
   aspect-ratio: 1;
   z-index: 1;
   pointer-events: none;

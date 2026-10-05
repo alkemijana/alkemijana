@@ -446,10 +446,8 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 }
 /* druga mreža dolje lijevo: ista geometrija zakrenuta za 180° (kut gore desno -> dolje lijevo) */
 .hw-web.hw-web-dl { top: auto; right: auto; bottom: 0; left: 0; transform: rotate(180deg); }
-/* niti preko ekrana između dviju mreža (po jedna na dan) - SVG preko cijelog ekrana, u pikselima */
-.hw-most { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.32; }
-.hw-web svg, .hw-most svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.hw-web path, .hw-most path {
+.hw-web svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.hw-web path {
   fill: none;
   stroke: #d8cdb8;
   stroke-width: 0.8;
@@ -458,10 +456,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
      na pola (crtica se računa u pikselima ekrana), pa zrake ne dođu do vanjskog luka */
 }
 .hw-web path.hw-web-z { stroke-width: 1.05; }
-.hw-web .hw-web-n, .hw-most .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
-.hw-most path { stroke-width: 0.7; }
+.hw-web .hw-web-n { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .hw-web .hw-web-n, .hw-most .hw-web-n { stroke-dasharray: none; stroke-dashoffset: 0; }
+  .hw-web .hw-web-n { stroke-dasharray: none; stroke-dashoffset: 0; }
 }
 /* Pauk koji plete: mali, jedva vidljiv. JS ga pomiče SAMO preko transform (translate + rotate),
    pa ga slaže kompozitor. Sredina pauka je u (0,0) elementa (margin = -pola veličine). */
@@ -469,18 +466,18 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   position: fixed;
   left: 0;
   top: 0;
-  width: 11px;
-  height: 11px;
-  margin: -5.5px 0 0 -5.5px;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
   z-index: 1;
   pointer-events: none;
   opacity: 0.5;
   will-change: transform;
 }
 .hw-pauk svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #cfc3ad; }
-.hw-pauk .hw-pauk-n path { fill: none; stroke: #cfc3ad; stroke-width: 0.9; stroke-linecap: round; stroke-linejoin: round; }
+.hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { fill: none; stroke: #cfc3ad; stroke-width: 0.7; stroke-linecap: round; stroke-linejoin: round; }
 /* dok hoda, dvije skupine nogu se izmjenično blago pomiču */
 .hw-pauk.hw-pauk-hoda .hw-pauk-n1 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate; }
 .hw-pauk.hw-pauk-hoda .hw-pauk-n2 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate-reverse; }
-@keyframes hwPaukNoge { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+@keyframes hwPaukNoge { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 @media (prefers-reduced-motion: reduce) { .hw-pauk { display: none; } }

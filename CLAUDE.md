@@ -1352,29 +1352,26 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   uz `text-wrap: balance` da na mobitelu ne ostane jedna riječ sama u redu.
 - Ekran učitavanja je inače **isti kao uvijek** (let šešira na metli je napravljen pa izbačen na zahtjev).
 - `prefers-reduced-motion`: bez šišmiša i pokreta magle (tema, Mjesec i raspored ostaju).
-- **Paukove mreže + pauk** (`buildWeb`/`pletiMreze`/`webDay` u halloween.js, `.hw-web`/`.hw-most`/`.hw-pauk`; vlasnik).
+- **Paukove mreže + pauk** (`buildWeb`/`pletiMreze`/`webDay` u halloween.js, `.hw-web`/`.hw-pauk`; vlasnik).
   Dvije mreže (gore desno i dolje lijevo, RAZLIČITO sjeme, donja `mjera: 0.86`; donja se gradi isto
-  kao gornja pa je CSS zakrene za 180°, `.hw-web-dl`) koje **RASTU kroz tjedan**: dan 0 = 25. 10.
-  (mala) … dan 7 = 1. 11. (puna). **Ne skaliraju se** — fiksna geometrija iz fiksnog sjemena, dan
-  određuje samo dokle se crta (`RD[]` → `K[d]`, dan se broji u krugovima), pa jučerašnje niti ostaju
-  IDENTIČNE. **Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu** (inače se vanjske niti
-  mijenjaju iz dana u dan - bio stvarni kvar).
-  - **Mali, jedva vidljivi pauk isplete današnji dio dok je posjetitelj na stranici (~150 s)**:
-    dođe s ekrana iza gornjeg kuta, isplete gornju mrežu (prvo zrake jednu po jednu, pa lukove jednom
-    niti od vanjskog prema unutra, smjer se izmjenjuje - lovna spirala), prijeđe preko ekrana pleteći
-    današnju **nit preko ekrana**, isplete donju mrežu i ode s ekrana. Okreće se glatko u smjeru kretanja.
-  - **Nit preko ekrana** (vlasnik: „neka nit slobodno prelazi", smiju se križati): po jedna na dan,
-    od sidra na vanjskom krugu tog dana gornje mreže do sidra donje (`sidro(d)`), s progibom; stare
-    ostaju. Zaseban SVG preko cijelog ekrana u pikselima (`.hw-most`), krajevi iz `getScreenCTM`,
-    ponovno se složi na `resize`.
+  kao gornja pa je CSS zakrene za 180°, `.hw-web-dl`).
+  - **Građa kao prava mreža u kutu** (vlasnik: „svaka zraka ima sidrenu točku, a sidrene točke su
+    rubovi ekrana"): središte je malo ODMAKNUTO od kuta, a svaka zraka je napeta od središta do RUBA
+    EKRANA (gornjeg ili bočnog). Lovna spirala su lukovi oko središta; luk koji prijeđe rub nastavlja
+    van ekrana (do zida). **Nema niti preko cijelog ekrana** (bila je, vlasniku se nije svidjela).
+  - **Rast kroz tjedan** (dan 0 = 25. 10. … dan 7 = 1. 11.): zrake se postave PRVI dan, svaki sljedeći
+    se dopletu novi krugovi spirale prema van (`RD[]` → `K[d]`). Fiksna geometrija iz fiksnog sjemena,
+    pa ono od jučer ostaje IDENTIČNO. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
+  - **Pauk** (~15 px, jedva vidljiv; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
+    dva natrag; prva verzija s kratkim nogama u stranu „izgledala je kao rak") isplete današnji dio
+    dok je posjetitelj na stranici (~150 s): gornju mrežu, pa uz zid (izvan ekrana) do donje.
+    **Hoda SAMO po nitima koje već postoje** (vlasnik: „ne smije letjeti između zraka"): zrake plete
+    od središta do ruba i NATRAG PO ISTOJ NITI, s kruga na krug prelazi po zraci, dolazi i odlazi uz
+    zid do sidra. Provjereno testom: nijedan korak ne počinje izvan kraja prethodnog.
   - **Bez štekanja:** JS + rAF, u kadru se mijenja SAMO jedna nit (`stroke-dashoffset`, `pathLength=1`)
-    i `transform` pauka. Vrijeme teče samo dok rAF radi, pa u skrivenoj kartici pletenje stoji i
-    nastavlja se bez skoka. Sve je `position:fixed` pa se plete i dok se mijenjaju stranice.
-    **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti): nakon osvježavanja
-    današnji dio kreće ispočetka. (Pri testu: okno preglednika u pozadini = rAF ne radi, pletenje stoji.)
-  - **Mreža svaki dan završava LUKOM**: zrake idu točno do vanjskog kruga tog dana, nikad dalje; krug
-    koji je ikad bio rub nikad nije „pokidan". **Uz rubove ekrana nema ravne zrake**: rubne zrake su
-    nevidljive i leže izvan ekrana, pa lukovi uz rubove izlaze van ekrana.
+    i `transform` pauka. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi gdje je stalo
+    (pri testu u pozadinskom oknu preglednika zato „ništa ne radi"). Sve je `position:fixed`.
+    **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti).
   - **Bez `vector-effect: non-scaling-stroke`** - s njim se crtanje preko `pathLength` zaustavi na pola.
   - Pregled: `?halloween&mreza=0..7`. `prefers-reduced-motion`: mreže odmah gotove, bez pauka.
   Ispod sadržaja (z-index 1), boja kosti, `opacity .32`.

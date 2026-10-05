@@ -187,12 +187,12 @@
        meniskus kao u prave tekućine - i kad se kap tek skuplja, i kad se kapljica otkida.
        Prije su tu bili ručni Bézierovi prijelazi izvedeni iz SREDIŠNJE LINIJE pera, pa spoj
        nikad nije točno sjeo: vidjeli su se rogovi i stepenice. Ne vraćati na ručni spoj.
-       - Kroz filter ide CIJELO slovo, a tek se IZLAZ filtera izreže na pruh oko kapi (clipPath
+       - Kroz filter ide CIJELO slovo, a tek se IZLAZ filtera izreže na pruh oko kapi (maska
          izvan filtera). Inače bi prag zapunio sve unutarnje kutove ostatka loga. Rez PRIJE
          filtera (prva verzija) ne valja: odrezani komadić se zamućenjem stanji pa meniskusa
          gotovo nema.
-       - Prag je TOČNO na pola alfe (24α − 12), pa ravni rubovi ostanu na mjestu i rez
-         (clipPath) se ne vidi; niži prag napuhne rubove pa se na rezu vide stepenice; filter samo
+       - Prag je TOČNO na pola alfe (48α − 24, strmo da rub luka bude oštar), pa ravni rubovi ostanu na mjestu i rez
+         (maska) se ne vidi; niži prag napuhne rubove pa se na rezu vide stepenice; filter samo
          DODAJE meniskus u udubinama, a ono što oduzme (vrhove) pokriva oštri original.
        - Isti lik kapi se crta i oštro (`<use>`), jer prag stanji tanak trag.
        DEBLJINA SLOVA I NJEGOV DONJI RUB MJERE SE NA SAMOM OBRISU (isPointInFill), ne iz
@@ -230,12 +230,15 @@
       const pt = niskaTocka(s, o.od, o.do);
       const id = p + 'kap' + (kapBr++);
       kapiG.insertAdjacentHTML('beforeend',
-        `<defs><clipPath id="${id}z"><rect/></clipPath>` +
+        // pruh je MASKA s mekim rubom (zamućen pravokutnik), ne oštar clipPath: luk koji
+        // dotakne rub pruga tako izblijedi umjesto da bude odrezan
+        `<defs><filter id="${id}zb" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur/></filter>` +
+        `<mask id="${id}z" maskUnits="userSpaceOnUse" x="-200" y="-200" width="500" height="500"><rect fill="#fff" filter="url(#${id}zb)"/></mask>` +
         `<filter id="${id}f" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">` +
-        `<feGaussianBlur/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 24 -12" result="a"/>` +
+        `<feGaussianBlur/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 48 -24" result="a"/>` +
         // boja se nanosi ISPOČETKA (flood): zamućena boja na rubu je potamnjela pa je oko meniskusa bio tamni obrub
         `<feFlood style="flood-color:var(--aa-boja,var(--lavender,#a890d0))"/><feComposite in2="a" operator="in"/></filter></defs>` +
-        `<g visibility="hidden"><g clip-path="url(#${id}z)"><g filter="url(#${id}f)">${staticInner('potpis')}` +
+        `<g visibility="hidden"><g mask="url(#${id}z)"><g filter="url(#${id}f)">${staticInner('potpis')}` +
         `<g id="${id}"><path style="${FILL}"/><ellipse style="${FILL}"/><ellipse style="${FILL}"/></g></g></g><use href="#${id}"/></g>`);
       const g = kapiG.lastElementChild, [trag, glava, kapljica] = g.querySelectorAll(`#${id} > *`);
       const kopija = g.querySelector('[filter]');
@@ -244,11 +247,13 @@
       const P = Math.max(.36, Math.min(.72, m.P));          // pola debljine slova na mjestu izvora
       const sk = Math.min(P * 1.5, m.dub * .8);              // koliko duboko u slovu počinje trag
       const def = kapiG.querySelector(`#${id}z rect`), fl = kapiG.querySelector(`#${id}f`);
-      def.setAttribute('x', f2(pt.x - P * 3)); def.setAttribute('y', f2(m.bot - sk - P));
-      def.setAttribute('width', f2(P * 6)); def.setAttribute('height', f2(sk + duljina + P * (o.kapljica ? 10 : 5)));
-      fl.setAttribute('x', f2(pt.x - P * 8)); fl.setAttribute('y', f2(m.bot - P * 7));
-      fl.setAttribute('width', f2(P * 16)); fl.setAttribute('height', f2(duljina + P * 20));   // rub filtera daleko od reza (> 2σ)
-      fl.firstElementChild.setAttribute('stdDeviation', (P * 1.1).toFixed(3));
+      // pruh mora biti širi od luka spoja (~3σ sa svake strane), inače se luku vidi odrezan rub
+      def.setAttribute('x', f2(pt.x - P * 5)); def.setAttribute('y', f2(m.bot - sk - P));
+      def.setAttribute('width', f2(P * 10)); def.setAttribute('height', f2(sk + duljina + P * (o.kapljica ? 10 : 5)));
+      fl.setAttribute('x', f2(pt.x - P * 11)); fl.setAttribute('y', f2(m.bot - P * 8));
+      fl.setAttribute('width', f2(P * 22)); fl.setAttribute('height', f2(duljina + P * 22));   // rub filtera daleko od reza (> 2σ)
+      fl.firstElementChild.setAttribute('stdDeviation', (P * 1.6).toFixed(3));   // veći σ = veći luk spoja (vlasnik: 1,1 je bilo premalo)
+      kapiG.querySelector(`#${id}zb feGaussianBlur`).setAttribute('stdDeviation', (P * .9).toFixed(3));
       return { g, trag, glava, kapljica, x: pt.x, bot: m.bot, sk, P, duljina, otkine: !!o.kapljica, faza: o.faza || 0, vis: false };
     };
     const ss = x => x * x * (3 - 2 * x);
@@ -399,8 +404,9 @@
           { s: dno(2), l: .07 },                    // e
           { s: tp[9], od: .72, do: .9, l: .13 },
           // prvo malo a: s TRBUHA (prvi potez), ne s noge - noga sjedi na zamahu pa bi se kap
-          // stopila s njim. Kratka, samo visi: ispod je zamah pa dulja kap ne bi imala kamo.
-          { s: S.t[6] && S.t[6][0], l: .008 },
+          // odmah stopila s njim. Kap SMIJE prijeći preko zamaha od j (vlasnik) - filter je na
+          // križanju stopi s njim kao da je krv pretekla preko crte.
+          { s: S.t[6] && S.t[6][0], l: .17 },
         ].filter(x => x.s);
         let tk = end + .12 / speed;
         izvori.forEach((x, i) => {

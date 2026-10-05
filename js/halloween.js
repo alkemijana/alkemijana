@@ -278,7 +278,7 @@
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';                            // traku silueta nosi .hw-bat
         el.style.width = f1(size) + 'px';
-        el.style.animationDuration = (0.3 + Math.random() * 0.12).toFixed(2) + 's';   // jato maše brže
+        el.style.animationDuration = (0.23 + Math.random() * 0.09).toFixed(2) + 's';  // jato maše brže (bilo 0,30-0,42 s)
         el.style.animationDelay = (-Math.random()).toFixed(2) + 's';
         el.style.zIndex = String(Math.round(depth * 10));
         host.appendChild(el);
@@ -388,7 +388,7 @@
     el.setAttribute('aria-hidden', 'true');
     const size = 68 + Math.random() * 60;                 // duplo veći nego prije (vlasnik)
     el.style.width = size + 'px';
-    el.style.animationDuration = (0.45 + Math.random() * 0.2).toFixed(2) + 's';   // mahanje
+    el.style.animationDuration = (0.34 + Math.random() * 0.15).toFixed(2) + 's';  // mahanje (bilo 0,45-0,65 s)
     el.style.animationDelay = (-Math.random()).toFixed(2) + 's';                  // svaki u svojoj fazi
     document.body.appendChild(el);
 

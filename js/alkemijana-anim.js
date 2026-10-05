@@ -186,13 +186,18 @@
        stup je ŠIROK, gotovo kao trbuh, s malim strukom ispod logotipa i OKRUGLIM
        TRBUHOM na dnu. Tanak trag sa sitnom kuglicom (prva verzija) izgledao je kao
        pribadača - ne vraćati. Sve je jedan ispunjen lik, pa nema šava prema logu. */
-    const novaKap = (pt, r, duljina, kapljica) => {
+    /* Sve mjere kapi izvedene su iz DEBLJINE POTEZA iz kojeg curi (čita se sa samog
+       pera: stroke-width × mjerilo matrice), ne iz visine loga. Inače kap ispadne
+       deblja od slova i izgleda nalijepljeno. */
+    const mjerilo = M => Math.sqrt(Math.abs(M.a * M.d - M.b * M.c)) || 1;
+    const novaKap = (s, duljina, kapljica) => {
       const lik = document.createElementNS(NS, 'path');
       lik.setAttribute('style', FILL);
       const odvojena = document.createElementNS(NS, 'ellipse');   // kod nekih se niže odvoji kapljica
       odvojena.setAttribute('style', FILL);
       kapiG.append(lik, odvojena);
-      return { lik, odvojena, pt, r, duljina, kapljica };
+      const pol = (+s.e.getAttribute('stroke-width') || 2) / 2 * mjerilo(s.M);
+      return { lik, odvojena, pt: niskaTocka(s), pol, duljina, kapljica };
     };
     const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
       /* 0-0,34  kap nabubri i VISI na logu (još ne putuje)
@@ -201,23 +206,30 @@
       const raste = Math.min(1, v / 0.34);
       const pad = v <= 0.34 ? 0 : (v - 0.34) / 0.66;
       const s = pad * pad * (3 - 2 * pad);
-      const x = k.pt.x;
-      const b = k.r * raste;                 // polumjer trbuha na dnu
-      const a = b * 0.74;                    // stup: tek malo uži od trbuha
-      const y0 = k.pt.y - k.r * 0.55;        // kreće UNUTAR poteza, da nema šava
-      const y1 = y0 + k.r * 0.85 + k.duljina * s;
-      const h = y1 - y0;
+      const x = k.pt.x, P = k.pol;
+      const a = P * 0.80 * raste;            // stup je UŽI od poteza
+      const b = P * 1.35 * raste;            // trbuh na dnu
+      const f = P * 1.25 * raste;            // koliko se prijelaz razlije po potezu
+      /* Vrh je SKRIVEN IZA SLOVA (na središnjici poteza), a prema dolje se spaja
+         KONKAVNIM prijelazom - lik se uz samo slovo razlije u stranu pa se suzi.
+         Bez toga je vrh ravno odrezan i kap izgleda nalijepljena na slovo. */
+      const yVrh = k.pt.y;
+      const ySpoj = yVrh + P * 0.55 + f * 0.75;
+      const y1 = ySpoj + P * 0.35 + k.duljina * s;
+      const h = y1 - ySpoj;
       k.lik.setAttribute('d', b <= 0 ? '' :
-        `M${(x - a).toFixed(2)} ${y0.toFixed(2)}` +
-        `C${(x - a).toFixed(2)} ${(y0 + h * 0.5).toFixed(2)},${(x - b).toFixed(2)} ${(y1 - b * 1.3).toFixed(2)},${(x - b).toFixed(2)} ${y1.toFixed(2)}` +
+        `M${(x - a - f).toFixed(2)} ${yVrh.toFixed(2)}` +
+        `Q${(x - a).toFixed(2)} ${yVrh.toFixed(2)},${(x - a).toFixed(2)} ${ySpoj.toFixed(2)}` +
+        `C${(x - a).toFixed(2)} ${(ySpoj + h * 0.55).toFixed(2)},${(x - b).toFixed(2)} ${(y1 - b * 1.25).toFixed(2)},${(x - b).toFixed(2)} ${y1.toFixed(2)}` +
         `Q${(x - b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${x.toFixed(2)} ${(y1 + b * 1.45).toFixed(2)}` +
         `Q${(x + b).toFixed(2)} ${(y1 + b * 1.5).toFixed(2)},${(x + b).toFixed(2)} ${y1.toFixed(2)}` +
-        `C${(x + b).toFixed(2)} ${(y1 - b * 1.3).toFixed(2)},${(x + a).toFixed(2)} ${(y0 + h * 0.5).toFixed(2)},${(x + a).toFixed(2)} ${y0.toFixed(2)}Z`);
+        `C${(x + b).toFixed(2)} ${(y1 - b * 1.25).toFixed(2)},${(x + a).toFixed(2)} ${(ySpoj + h * 0.55).toFixed(2)},${(x + a).toFixed(2)} ${ySpoj.toFixed(2)}` +
+        `Q${(x + a).toFixed(2)} ${yVrh.toFixed(2)},${(x + a + f).toFixed(2)} ${yVrh.toFixed(2)}Z`);
       // kod nekih se pri kraju otkine kapljica i padne nešto niže - ostaje i ona
       const o = k.kapljica && pad > 0.52 ? (pad - 0.52) / 0.48 : 0;
-      const or = b * 0.46 * Math.min(1, o * 3);
+      const or = b * 0.5 * Math.min(1, o * 3);
       k.odvojena.setAttribute('cx', x.toFixed(2));
-      k.odvojena.setAttribute('cy', (y1 + b * 1.45 + k.r * 2.6 * (o * o * (3 - 2 * o))).toFixed(2));
+      k.odvojena.setAttribute('cy', (y1 + b * 1.45 + P * 3.2 * (o * o * (3 - 2 * o))).toFixed(2));
       k.odvojena.setAttribute('rx', or.toFixed(2));
       k.odvojena.setAttribute('ry', (or * 1.25).toFixed(2));
     }, E.lin, k);
@@ -327,7 +339,7 @@
         const H = vb[3];
         let tk = end + .12 / speed;
         izvori.forEach((s, i) => {
-          const k = novaKap(niskaTocka(s), H * (0.038 + (i % 3) * 0.012), H * (0.10 + (i % 4) * 0.055), i % 2 === 1);
+          const k = novaKap(s, H * (0.07 + (i % 4) * 0.045), i % 2 === 1);
           const kraj = kapni(k, tk, (4.2 + (i % 3) * 0.9) / speed);     // sporo, gusto
           if (kraj > end) end = kraj;
           tk += (0.75 + (i % 2) * 0.35) / speed;

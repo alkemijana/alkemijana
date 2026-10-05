@@ -866,9 +866,15 @@
     const a0 = (175 + rnd() * 30) * M * uzA, b0 = (165 + rnd() * 30) * M * uzB;
     const aMax = (540 + rnd() * 40) * M * uzA, bMax = (500 + rnd() * 40) * M * uzB;   // dokle se mreža raširi zadnji dan
     const sid = [{ s: -a0, dan: 0, uloga: 'T' }, { s: b0, dan: 0, uloga: 'R' }];
-    [0.22, 0.5, 0.78].forEach(fr => {                     // prvi dan još tri zrake unutar poprečne
-      let s = -a0 + (a0 + b0) * (fr + (rnd() - .5) * 0.12);
-      if (Math.abs(s) < 10) s = s < 0 ? -10 : 10;
+    /* KAO PRAVA MREŽA U KUTU PROZORA (Zygiella x-notata, „missing-sector orbweb"): prva zraka je
+       SIGNALNA NIT - ide točno u kut (skrovište), a oko nje je PRAZAN ISJEČAK bez drugih zraka i bez
+       spirale, pa u središte iz kuta vodi samo ta jedna nit (vlasnik: „samo jedna nit ide u sredinu").
+       SEK = pola širine praznog isječka (mjereno po rubu od kuta). */
+    const SEK = 0.42 * Math.min(a0, b0);
+    sid.push({ s: 0, dan: 0, signal: true });
+    [0.18, 0.82].forEach(fr => {                          // prvi dan još dvije zrake, izvan praznog isječka
+      let s = -a0 + (a0 + b0) * (fr + (rnd() - .5) * 0.1);
+      if (Math.abs(s) < SEK) s = s < 0 ? -SEK : SEK;
       sid.push({ s, dan: 0 });
     });
     /* SVAKI SLJEDEĆI DAN (vlasnik: mreža je „organski proizvod koji se svaki dan mijenja i
@@ -880,12 +886,15 @@
       sid.push({ s: b0 + (bMax - b0) * g + (rnd() - .5) * 14 * M, dan: d });
       const ima = rnd() < 0.5, pomak = (rnd() - .5) * 0.3;
       if (ima) {
+        // najveća praznina - ali ne ona uz signalnu nit (prazan isječak ostaje prazan)
         const ss = sid.filter(x => x.dan <= d).map(x => x.s).sort((p, q) => p - q);
-        let gi = 0;
-        for (let n = 1; n + 1 < ss.length; n++) if (ss[n + 1] - ss[n] > ss[gi + 1] - ss[gi]) gi = n;
-        let s = (ss[gi] + ss[gi + 1]) / 2 + pomak * (ss[gi + 1] - ss[gi]);
-        if (Math.abs(s) < 10) s = s < 0 ? -10 : 10;
-        sid.push({ s, dan: d });
+        let gi = -1;
+        for (let n = 0; n + 1 < ss.length; n++) if (ss[n] !== 0 && ss[n + 1] !== 0 && (gi < 0 || ss[n + 1] - ss[n] > ss[gi + 1] - ss[gi])) gi = n;
+        if (gi >= 0) {
+          let s = (ss[gi] + ss[gi + 1]) / 2 + pomak * (ss[gi + 1] - ss[gi]);
+          if (Math.abs(s) < SEK) s = s < 0 ? -SEK : SEK;
+          sid.push({ s, dan: d });
+        }
       }
     }
     sid.forEach((x, n) => { x.red = n; });                // redoslijed nastajanja
@@ -894,8 +903,7 @@
     const iT = sid.findIndex(x => x.uloga === 'T'), iR = sid.findIndex(x => x.uloga === 'R');
     const T = E[iT], R = E[iR], H0 = lerp(T, R, 0.5);
     const unutra = i => i !== iT && i !== iR;
-    let iK = -1;                                          // prvog dana zraka najbliža kutu - prva i vuče najjače
-    sid.forEach((x, i) => { if (x.dan === 0 && unutra(i) && (iK < 0 || Math.abs(x.s) < Math.abs(sid[iK].s))) iK = i; });
+    const iK = sid.findIndex(x => x.signal);             // signalna nit (u kut) - prva zraka, vuče najjače
     const redZ = E.map((e, i) => i).filter(unutra)
       .sort((a, b) => dan[a] - dan[b] || (a === iK ? -1 : b === iK ? 1 : sid[a].red - sid[b].red));
     const skup = d => E.map((e, i) => i).filter(i => dan[i] <= d);
@@ -920,7 +928,8 @@
     const PLAN = [55, 100, 150, 205, 260, 320, 380, 440];
     const RD = PLAN.map((r, d) => { const [lo, hi] = kraj(d), Hd = Hdana(d); return Math.min(r * M, 0.92 * Math.min(dist(Hd, E[lo]), dist(Hd, E[hi]))); });
     const krugovi = [], rb = [];
-    for (let r = 10 + rnd() * 5, k = 0; r < Math.max(...RD) + 30; k++) {
+    for (let r = 24 + rnd() * 8, k = 0;   // slobodna zona oko središta (kao prava mreža)
+         r < Math.max(...RD) + 30; k++) {
       const pr = krugovi[k - 1];
       rb.push(r);
       krugovi.push(E.map((e, i) => {
@@ -939,15 +948,19 @@
        do 0,7 normalno, dalje se sve više sabija i ostaje < 0,98 (pa točke ostanu različite). Prije su
        lukovi išli iza ruba i pauk je pola vremena plelo izvan ekrana - izgledalo je kao da je nestao. */
     const zbij = u => u <= 0.7 ? u : 0.7 + 0.28 * (1 - Math.exp(-(u - 0.7) / 0.28));
-    const udio = krugovi.map((kr, k) => { const Hd = Hdana(Math.max(0, danLuka(k))); return kr.map((r, i) => zbij(r / dist(Hd, E[i]))); });
+    /* GRAVITACIJA: kod pravih okomitih mreža je dio ispod središta veći - lukovi prema dolje sežu
+       dalje. „Dolje" na ekranu je u donjoj (zakrenutoj) mreži -y u njezinim koordinatama. */
+    const dolje = o.cls ? -1 : 1;
+    const grav = (i, Hd) => { const L = dist(Hd, E[i]); return 1 + 0.35 * Math.max(0, (E[i][1] - Hd[1]) / L * dolje); };
+    const udio = krugovi.map((kr, k) => { const Hd = Hdana(Math.max(0, danLuka(k))); return kr.map((r, i) => zbij(r * grav(i, Hd) / dist(Hd, E[i]))); });
     /* KOJE ZRAKE LUK SPAJA: SVE zrake toga dana (od krajnje do krajnje; preko otvorene strane NE).
        Kad pauk doda novu zraku, stari lukovi se na nju PRIČVRSTE (zraka u praznini, v. 'spoji') ili
        se do nje PRODUŽE (nova krajnja zraka prema sredini ekrana) - vlasnik: „ne popunjava lukove
        kod novih zraka". */
     const spaja = (k, d) => skup(d);
-    const dijelovi = lista => {                           // susjedne zrake [a, b]
+    const dijelovi = lista => {                           // susjedne zrake [a, b] - preko praznog isječka (uz signalnu nit) NE
       const out = [];
-      for (let n = 0; n + 1 < lista.length; n++) out.push([lista[n], lista[n + 1]]);
+      for (let n = 0; n + 1 < lista.length; n++) if (lista[n] !== iK && lista[n + 1] !== iK) out.push([lista[n], lista[n + 1]]);
       return out;
     };
 
@@ -1041,18 +1054,32 @@
       hoda(od, S);                                        // natrag po niti u središte
       gdje = S;
     });
-    // današnji lukovi: od vanjskog prema unutra, smjer se izmjenjuje; s luka na luk po krajnjoj zraci
-    const [lo, hi] = kraj(DAN);
-    let ide = lo;
-    for (let k = kDo(DAN); k > kDo(DAN - 1); k--) {
-      hoda(gdje, { i: ide, t: udio[k][ide] });
-      const dio = dijelovi(prsten[k].lista), nit = ([a, b]) => prsten[k].niti[a + ':' + b];
-      (ide === lo ? dio : dio.slice().reverse()).forEach(x => plete(nit(x), ide !== lo));   // obrnuto: od b prema a
-      ide = ide === lo ? hi : lo;
-      gdje = { i: ide, t: udio[k][ide] };
-    }
-    if (o.zadnja) hoda(gdje, S);                          // posao za danas gotov: po zraci u središte i ondje ostane (vlasnik)
-    else { hoda(gdje, { i: ide, t: 1 }); hoda({ xy: E[ide] }, van(E[ide])); }   // po krajnjoj zraci do zida, pa s ekrana
+    /* današnji lukovi = LOVNA SPIRALA S OKRETIMA (kao prava): od vanjskog prema unutra, tamo-amo.
+       Prazan isječak oko signalne niti spirala ne prelazi - zato pauk isplete JEDNU POLOVICU (okreti
+       na krajnjoj zraci i na rubu praznog isječka), kroz središte prijeđe na drugu i isplete nju. */
+    const noviK = [];
+    for (let k = kDo(DAN); k > kDo(DAN - 1); k--) noviK.push(k);
+    [x => x < iK, x => x > iK].forEach(strana => {
+      if (!noviK.length) return;
+      const zr = skup(DAN).filter(strana);
+      if (zr.length < 2) return;
+      const vanj = zr[0] < iK ? zr[0] : zr[zr.length - 1];   // krajnja zraka te polovice
+      const unut = vanj === zr[0] ? zr[zr.length - 1] : zr[0];                             // rub praznog isječka
+      let ide = gdje === S ? unut : vanj;                 // iz središta izlazi po zraci uz prazan isječak
+      noviK.forEach(k => {
+        hoda(gdje, { i: ide, t: udio[k][ide] });
+        let dio = dijelovi(prsten[k].lista).filter(([p, q]) => strana(p) && strana(q));
+        const odNize = ide === zr[0];                     // pleteš od manjeg indeksa prema većem
+        if (!odNize) dio = dio.reverse();
+        dio.forEach(x => plete(prsten[k].niti[x[0] + ':' + x[1]], !odNize));   // obrnuto: od b prema a
+        ide = ide === vanj ? unut : vanj;
+        gdje = { i: ide, t: udio[k][ide] };
+      });
+      hoda(gdje, S); gdje = S;                            // po zraci u središte (pa na drugu polovicu)
+    });
+    const ide = iT;                                       // izlaz s ekrana ide po poprečnoj niti (strana T)
+    if (o.zadnja) hoda(gdje, S);                          // posao za danas gotov: u središtu ostane (vlasnik)
+    else { hoda(gdje, S); hoda(S, { i: ide, t: 1 }); hoda({ xy: E[ide] }, van(E[ide])); }   // kroz središte po zraci do zida, pa s ekrana   // po krajnjoj zraci do zida, pa s ekrana
 
     // ---- SVG ----
     const web = document.createElement('div');

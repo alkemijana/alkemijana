@@ -45,7 +45,11 @@
   function initHero(A) {
     var el = document.getElementById('hero-logo');
     if (!el) { heroDone(); return; }
-    var anim = A.create(el, { vrsta: 'potpis', autoplay: false, mirovanje: false });
+    /* 31. 10. i 1. 11. hero se ispisuje „krvlju" - isti potez, ali na kraju s
+       loga kapne nekoliko kapi koje se slijevaju. Boju ne diramo: pod html.hw-on
+       je --lavender ionako već prebojan u tamnu krv, a --aa-boja ga prati. */
+    var krv = !!(window.AJHalloween && window.AJHalloween.krvniHero);
+    var anim = A.create(el, { vrsta: krv ? 'krv' : 'potpis', autoplay: false, mirovanje: false });
     var played = false, visible = false, flashT = 0;
     var revealed = !document.documentElement.classList.contains('aj-loading');
 

@@ -37,8 +37,25 @@
     } catch (e) { return false; }
   }
 
+  /* Vrhunac tjedna: 31. 10. i 1. 11. Tada hero logo koristi animaciju „krv"
+     (ispiše se pa s poteza kapne nekoliko kapi) - čita je js/logo.js.
+     `?halloween=krv` ju uključi bilo kad radi pregleda. */
+  function isBloodNight() {
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.get('halloween') === 'krv') return true;
+    } catch (e) {}
+    try {
+      const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Zagreb', month: 'numeric', day: 'numeric' })
+        .formatToParts(new Date());
+      const m = +parts.find(p => p.type === 'month').value;
+      const d = +parts.find(p => p.type === 'day').value;
+      return (m === 10 && d === 31) || (m === 11 && d === 1);
+    } catch (e) { return false; }
+  }
+
   const active = isHalloweenWeek();
-  window.AJHalloween = { active };
+  window.AJHalloween = { active, krvniHero: active && isBloodNight() };
   if (!active) return;
 
   // rečenica ispod loga na početnoj (app.js applyTexts) - samo ovaj tjedan, TEXTS ostaje netaknut

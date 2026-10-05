@@ -1312,6 +1312,13 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   Pamti se u **localStorage `aj_hw_intro` = godina** (navedeno u Pravilima privatnosti, t. 6 — ne uklanjati),
   pa se svako sljedeće učitavanje tog tjedna odmah otvara u Halloween temi, a iduće godine uvod opet ide.
   Bez localStoragea i uz `prefers-reduced-motion` uvoda nema. Ponovni pregled: `?halloween=intro`.
+- **Krvavi hero logo — SAMO 31. 10. i 1. 11.** (`AJHalloween.krvniHero`, `isBloodNight()` u halloween.js;
+  pregled bilo kad: `?halloween=krv`). `js/logo.js` tada hero stvara s vrstom **`krv`** umjesto `potpis`:
+  isti ispis, ali kad je logo gotov, s pet mjesta (obje noge slova A, obod i dva slova) skupi se kap,
+  nabubri i slijeva se niz nevidljivi trag, pa nestane. Boja se NE postavlja — pod `html.hw-on` je
+  `--lavender` ionako prebojan u tamnu krv, a `--aa-boja` ga prati. Animacija je u **`logo/animacije/`**
+  (izvan repoa): `anim-src.js` → `node logo/animacije/izradi.js` piše `js/alkemijana-anim.js`.
+  Detalji i zamke su u `logo/README.md`.
 - **Jack-o'-lantern iza hero loga** (`initJack`, `.hw-jack`): obris očiju i nazubljenih usta PRECRTAN s
   poslane slike (koordinate u pikselima slike 192x120, zrcaljeno oko x = 96), iza „Potpisa" na početnoj.
   Naglo se upali na vrhu završnog bljeska ispisa i izblijedi (~0,23 s). Trenutak javlja `js/logo.js`

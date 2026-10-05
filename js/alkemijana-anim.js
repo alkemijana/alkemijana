@@ -122,6 +122,8 @@
     preobrazba: { vb: D.vb.a, which: { a: 1, hat: 1 }, label: 'Alkemijana' },
     ucitavanje: { vb: D.vb.a, which: { a: 1 }, label: 'Učitavanje…', loop: true },
     brisanje: { vb: D.vb.full, which: { a: 1, txt: 1, erase: 1 }, label: 'Alkemijana' },
+    // 31. 10. i 1. 11.: isti ispis kao potpis, ali s poteza kapne nekoliko kapi koje se slijevaju
+    krv: { vb: D.vb.full, which: { a: 1, txt: 1, shine: 1 }, label: 'Alkemijana' },
     // ekran učitavanja: „Znak A" pa preobrazba u šešir; šešir ostaje
     uvod: { vb: D.vb.a, which: { a: 1, hat: 1 }, label: 'Učitavanje…' },
     // logo u traci: šešir; na hover šešir → A → „lkemijana", na odlazak natrag (v. hoverIn/hoverOut)
@@ -144,7 +146,7 @@
     const { defs, body } = parts(p, V.which);
     el.innerHTML = `<svg class="aa-svg" xmlns="${NS}" viewBox="${V.vb}" role="img" aria-label="${V.label}">` +
       `<defs>${defs}</defs><g class="aa-float"><g transform="${D.rot}">${body}</g></g>` +
-      `<g class="aa-fx" aria-hidden="true"><g class="aa-parts"></g>${starEl(p, 'aa-tip')}${starEl(p, 'aa-glint')}` +
+      `<g class="aa-fx" aria-hidden="true"><g class="aa-kapi"></g><g class="aa-parts"></g>${starEl(p, 'aa-tip')}${starEl(p, 'aa-glint')}` +
       `${starEl(p, 'aa-tw aa-tw0')}${starEl(p, 'aa-tw aa-tw1')}${starEl(p, 'aa-tw aa-tw2')}</g></svg>`;
     const svg = el.firstChild;
     const q = s => svg.querySelector(s), qa = s => [...svg.querySelectorAll(s)];
@@ -164,7 +166,50 @@
       S.dots = qa('[data-dot]');
       if (V.which.erase) S.er = D.sweeps.map((_, i) => stroke('er' + i, M_TXT));
     }
-    const tip = q('.aa-tip'), glint = q('.aa-glint'), tws = qa('.aa-tw'), partsG = q('.aa-parts');
+    const tip = q('.aa-tip'), glint = q('.aa-glint'), tws = qa('.aa-tw'), partsG = q('.aa-parts'), kapiG = q('.aa-kapi');
+
+    /* ---- kapanje (vrsta „krv") ----
+       Kap se skupi na najnižoj točki poteza, nabubri, pa se slijeva niz nevidljivi trag.
+       Točke se NE upisuju ručno nego se traže po samom potezu (`niskaTocka`), pa se drže
+       loga i kad se logo promijeni. Sve je u koordinatama sloja .aa-fx (kao iskre i bljesak),
+       zato točka ide kroz matricu poteza - isti obrazac kao `glintAt` i `burst`. */
+    const niskaTocka = s => {
+      let best = null;
+      for (let i = 0; i <= 28; i++) {
+        const q0 = s.e.getPointAtLength(s.len * i / 28);
+        const pt = s.M.transformPoint(new DOMPoint(q0.x, q0.y));
+        if (!best || pt.y > best.y) best = pt;
+      }
+      return best;
+    };
+    const novaKap = (pt, r, duljina) => {
+      const trag = document.createElementNS(NS, 'path');
+      trag.setAttribute('d', `M${pt.x.toFixed(2)} ${pt.y.toFixed(2)}v${duljina.toFixed(2)}`);
+      trag.setAttribute('fill', 'none');
+      trag.setAttribute('stroke-linecap', 'round');
+      trag.setAttribute('style', `stroke:var(--aa-boja,var(--lavender,#a890d0));stroke-width:${(r * 0.75).toFixed(2)}`);
+      const glava = document.createElementNS(NS, 'ellipse');
+      glava.setAttribute('style', FILL);
+      kapiG.append(trag, glava);
+      return { trag, glava, pt, r, duljina, len: duljina };
+    };
+    const kapni = (k, t0, trajanje) => fx(t0, trajanje, v => {
+      // 0-0,22 nabubri na mjestu | 0,22-0,86 klizi dolje i vuče trag | 0,86-1 nestane
+      const nabuja = Math.min(1, v / 0.22);
+      const pad = v < 0.22 ? 0 : Math.min(1, (v - 0.22) / 0.64);
+      const nestaje = v < 0.86 ? 1 : 1 - (v - 0.86) / 0.14;
+      const y = k.pt.y + k.duljina * E.inOut(pad);
+      // MORA krenuti od nule: prije svog trenutka kap se iscrtava s v = 0, pa bi
+      // inače stajala na logu kao točka od početka animacije (bio stvarni kvar)
+      const rx = k.r * nabuja;
+      k.glava.setAttribute('cx', k.pt.x.toFixed(2));
+      k.glava.setAttribute('cy', y.toFixed(2));
+      k.glava.setAttribute('rx', rx.toFixed(2));
+      k.glava.setAttribute('ry', (rx * (1 + 0.5 * pad)).toFixed(2));   // kap se u padu izduži
+      k.glava.setAttribute('opacity', nestaje.toFixed(3));
+      k.trag.setAttribute('stroke-dasharray', `${(k.duljina * E.inOut(pad)).toFixed(2)} ${(k.duljina + 1).toFixed(2)}`);
+      k.trag.setAttribute('opacity', (nestaje * 0.85).toFixed(3));
+    }, E.lin, k);
     const shines = qa('.aa-shine').map(e => ({ e, f: +e.dataset.f, o: +e.dataset.o }));
     const floatG = q('.aa-float');
     let shineLen = 0;
@@ -252,14 +297,28 @@
     let end, idle = null, loopFrom = 0;   // trenutak na koji se petlja vraća
     const SEGS = {};                      // navigacija: odvojeni dijelovi animacije
     const segment = (name, build) => { const i = T.length, d = build(); SEGS[name] = { T: T.splice(i), dur: d }; };
-    if (vrsta === 'potpis' || vrsta === 'nastavak') {
+    if (vrsta === 'potpis' || vrsta === 'nastavak' || vrsta === 'krv') {
       // nastavak = potpis u kojem je znak A već gotov; slova se dopisuju potpuno isto
       let t;
-      if (vrsta === 'potpis') t = writeA(.2 / speed, 68);
-      else { for (const x of [...S.a, S.ab]) track(-1, .001, x, 'draw', E.lin, false); t = .2 / speed; }
+      if (vrsta === 'nastavak') { for (const x of [...S.a, S.ab]) track(-1, .001, x, 'draw', E.lin, false); t = .2 / speed; }
+      else t = writeA(.2 / speed, 68);
       t = writeTxt(t + .12 / speed);
       glintAt(t - .1 / speed, apex, 1.1); end = bloom(t - .15 / speed);
       idle = idleShine(apex);
+      if (vrsta === 'krv') {
+        /* Kapi kreću TEK kad je logo gotov, inače bi curile iz poteza koji se još piše.
+           Pet kapi: obje noge slova A, obod i dva slova - razmaknuto po širini, s razmakom
+           u vremenu da ne padaju u taktu. */
+        const izvori = [S.a[0], S.a[1], S.ab, S.t[2] && S.t[2][0], S.t[6] && S.t[6][0]].filter(Boolean);
+        const H = vb[3];
+        let tk = end + .12 / speed;
+        izvori.forEach((s, i) => {
+          const k = novaKap(niskaTocka(s), H * (0.016 + (i % 2) * 0.004), H * (0.1 + (i % 3) * 0.05));
+          const kraj = kapni(k, tk, (1.5 + (i % 3) * 0.35) / speed);
+          if (kraj > end) end = kraj;
+          tk += (0.28 + (i % 2) * 0.16) / speed;
+        });
+      }
     } else if (vrsta === 'znak') {
       const t = writeA(.2 / speed, 52);
       glintAt(t - .05 / speed, apex); end = bloom(t - .1 / speed);

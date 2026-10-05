@@ -473,9 +473,9 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   width: 15px;
   height: 15px;
   margin: -7.5px 0 0 -7.5px;
-  /* IZNAD sadržaja (.content je z-index 2), ispod trake i izbornika (200+): s z-index 1, kao mreže,
-     pauk se gubio ispod neprozirnih dijelova stranice dok se nit oko njega i dalje crtala */
-  z-index: 5;
+  /* IZA sadržaja stranice (vlasnik), kao i mreže: .content je z-index 2. Dodan je poslije mreža, pa je
+     iznad njihovih niti. */
+  z-index: 1;
   pointer-events: none;
   opacity: 0.9;
   will-change: transform;
@@ -500,7 +500,7 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   width: 9px;
   height: 9px;
   margin: -4.5px 0 0 -4.5px;
-  z-index: 5;
+  z-index: 1;                                   /* iza sadržaja stranice, kao pauk i mreže */
   pointer-events: none;
   will-change: transform;
 }

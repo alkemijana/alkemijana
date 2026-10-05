@@ -1398,10 +1398,14 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   - **Nesavršenost kao prava mreža** (vlasnik: „nekad se dogode rupe, uleti mušica, pauk popravlja"):
     svaki dan (od drugog) se na STARIJEM dijelu pokida 2–3 niti luka (`stete`); dio pauk isti dan popravi
     (`dPop` - drugačiji progib i pregib u sredini), ostale ostanu RUPE (`dRupa` - dva komadića vise s
-    zraka). Neke dane (naizmjence gornja/donja mreža) uleti MUŠICA (`.hw-muha`): pokida nit, koprca se,
-    pauk dođe po zraci, zamota je (ostane svijetli zamotuljak) i popravi nit. Šteta se bira samo na nitima
-    između zraka između kojih NIKAD ne dođe nova zraka (inače bi je 'spoji' rascijepio) i nikad na
-    najunutarnjem luku; mušica samo na nitima koje nisu zbijene uz zid. Sve je određeno danom.
+    zraka). Šteta se bira samo na nitima između zraka između kojih NIKAD ne dođe nova zraka (inače bi je
+    'spoji' rascijepio) i nikad na najunutarnjem luku. Sve je određeno danom.
+  - **MUŠICE NAKON POSLA** (vlasnik): tek kad pauk završi današnji posao, svakih 2–5 min uleti mušica
+    (`.hw-muha`) nasumično u gornju ili donju mrežu i zapne na zdravom luku (ne uz sam zid, `zaMuhu`).
+    Dok pauk ne dođe, KOPRCA SE I TRESE CIJELU MREŽU (središte te mreže nepravilno titra, mreža se
+    elastično preslaže svaki drugi kadar). Pauk dolazi SAMO PO NITIMA (u drugu mrežu: po krajnjoj zraci
+    do zida, uz zid izvan ekrana, po krajnjoj zraci druge mreže u središte), zamota je u KUGLICU i vrati
+    se u središte te mreže (tamo onda sjedi). Kuglica izblijedi kroz 150 s pa nestane. `muhaDolazi`.
     (Probana je i „signalna nit s praznim isječkom" po Zygiella x-notata - vlasnik je NIJE htio.)
   - **Lukovi VISE PO GRAVITACIJI** (vlasnik): kontrolna točka luka je ISPOD tetive na ekranu (`objesi`;
     u donjoj, zakrenutoj mreži je to -y), ne prema središtu mreže (prije - lukovi su djelovali ravni).
@@ -1421,8 +1425,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   - **Položaj pauka se NE računa preko `getScreenCTM`** - Firefox/Safari u njemu ne uračunaju CSS zakret
     donje mreže (rotate 180°), pa je pauk dok plete donju mrežu bio izvan ekrana. `naEkran` = pravokutnik
     elementa + vlastiti zakret (`okrenuta`). Provjereno: pauk je na vrhu niti ±0,07 px u obje mreže.
-  - **Pauk je IZNAD sadržaja** (`z-index: 5`; `.content` je 2), mreže ispod (1) - inače se gubio ispod
-    neprozirnih dijelova stranice.
+  - **Pauk i mušice su IZA sadržaja stranice** (`z-index: 1`, kao mreže; vlasnik). (Bili su iznad - z-index 5.)
   - **Niti u praznim kutovima** (vlasnik: „tu i tamo koju nit i u ostala dva kuta"): svaki dan 1–2 labave
     niti preko jednog praznog kuta (naizmjence gore lijevo / dolje desno), od ruba do ruba, objesene
     prema dolje; stare ostaju. Pauk ih isplete na putu od gornje do donje mreže (uz zid do sidra, nit,

@@ -168,8 +168,9 @@
       const out = await Promise.all(src.map(async u => {
         const im = new Image(); im.src = u; await within(im.decode(), 1500);
         if (!im.complete || !im.naturalWidth) throw new Error('nije učitano');   // inače bi PNG bio prazan
-        const c = document.createElement('canvas'); c.width = 192; c.height = 144;
-        c.getContext('2d').drawImage(im, 0, 0, 192, 144);
+        // 384x288: otkad su šišmiši duplo veći, na velikom ekranu premaše 192 px pa bi se bitmapa rastezala
+        const c = document.createElement('canvas'); c.width = 384; c.height = 288;
+        c.getContext('2d').drawImage(im, 0, 0, 384, 288);
         return c.toDataURL('image/png');
       }));
       await Promise.all(out.map(u => { const i = new Image(); i.src = u; return within(i.decode(), 1500); }));
@@ -329,7 +330,7 @@
       shake(360, 16);
     }
     /* JATO - šišmiši izlijeću iz DONJEG LIJEVOG KUTA i lete ravno PREKO
-       MJESECA (svaki cilja nasumičnu točku na disku) i dalje van ekrana. Mali, puno njih (~60), JEDNOSTAVNA
+       MJESECA (svaki cilja nasumičnu točku na disku) i dalje van ekrana. Puno njih (~60), JEDNOSTAVNA
        silueta (swarmBatSvg - krilo s jednim urezom, bez detalja), zamućeni od
        brzine i u RAVNOJ crti: bez lelujanja, nagiba i poskakivanja.
        (Prijašnje verzije - veliki detaljni šišmiši s nemirnim letom -
@@ -352,7 +353,7 @@
       const moonX = vw / 2, moonY = vh * (mob ? 0.46 : 0.5);
       for (let i = 0; i < 60; i++) {
         const depth = Math.random();                              // 0 = daleko, 1 = blizu
-        const size = m * (0.025 + depth * 0.055) + 10;            // mali
+        const size = m * (0.05 + depth * 0.11) + 20;              // duplo veći nego prije (vlasnik)
         const el = document.createElement('div');
         el.className = 'hw-bat hwi-bat';
         const im = swarmBatImgs(), fl = (0.07 + Math.random() * 0.04).toFixed(3) + 's', ph = (-Math.random() * 0.1).toFixed(3) + 's';

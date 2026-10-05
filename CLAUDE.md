@@ -1226,7 +1226,9 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   ekran učitavanja krene **normalno** (ljubičasto, „Znak A" se crta; overlay je proziran) → **munja ga prekine**
   i overlay ga pokrije nebom → nebo potamni → **Mjesec se postupno stvori U SREDINI** (~2 s, samo opacity + jedva scale; NE izlazi
   odozdo - to je bilo predugo; isti realistični SVG kao u
-  pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 MALIH, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja)
+  pozadini, stvarna faza) → zakrvavi (vrlo tamna krv) uz „otkucaje srca" → jato (~60 njih, jednostavna silueta `swarmBatSvg`, JAKO zamućeni (blur 2-5px), ravan let bez lelujanja;
+  **od 5. 10. 2026. DUPLO veći** na zahtjev — `size` u `buildSwarm` je `m*(0.05+depth*0.11)+20`, a PNG iz
+  `rasterSwarmImgs` je zbog toga 384×288 jer bi se na 192 px bitmapa rastezala)
   izleti iz donjeg lijevog kuta RAVNO PREKO MJESECA, traje ~1,5 s (detaljni/veliki/nemirni su izgledali kao leptirići) → završna munja: **u bljesku
   se doda `hw-on`, a Mjesec odmah postane tamnosiv kao u pozadini** → kratak crni predah s Mjesecom (2 s, `tOut`) →
   overlay nestane, a ekran učitavanja crta logo

@@ -885,7 +885,7 @@ html.hw-on .hm-moon {
   margin: calc(var(--hw-moon-w) / -2) 0 0 calc(var(--hw-moon-w) / -2);
   border-radius: 50%;
 }
-html.hw-on .hm-moon canvas, html.hw-on .hm-moon::before { display: none; }
+html.hw-on .hm-moon canvas { display: none; }
 html.hw-on .hm-text {
   position: absolute; left: 0; right: 0;
   top: calc(50% + var(--hw-moon-w, min(58vmin, 560px)) / 2 + clamp(1rem, 3dvh, 2rem));
@@ -904,7 +904,6 @@ html.hw-on .hm-text {
 /* Mjesec u pozadini zasvijetli dok je slide „Mjesec sada" na ekranu */
 html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.9s; }
 .hm-wrap {
-  isolation: isolate;   /* vinjeta (z-index:-1) ostaje u ovom bloku, ne pada na dno cijele stranice */
   display: flex; flex-direction: column; align-items: center;
   text-decoration: none; color: inherit; cursor: pointer;
 }
@@ -915,20 +914,6 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
   aspect-ratio: 1;
   transition: transform 0.4s ease;
 }
-/* svijetla tema: Mjesec stoji na crnoj vinjeti (komad noćnog neba) - inače bi tamni dio
-   Mjeseca bio bijel kao stranica. Puna crna do ruba diska, pa meko izblijedi. */
-.hm-moon::before {
-  content: ""; position: absolute; inset: -45%; border-radius: 50%; pointer-events: none; z-index: -1;
-  /* rub od ruba diska do 0,45 promjera; smoothstep u 13 točaka - bez lomova ("stepenica") */
-  background: radial-gradient(circle closest-side,
-    #07060f 0, rgba(7, 6, 15, 1.000) 52.6%, rgba(7, 6, 15, 0.980) 56.6%,
-    rgba(7, 6, 15, 0.926) 60.5%, rgba(7, 6, 15, 0.844) 64.5%, rgba(7, 6, 15, 0.741) 68.4%,
-    rgba(7, 6, 15, 0.624) 72.3%, rgba(7, 6, 15, 0.500) 76.3%, rgba(7, 6, 15, 0.376) 80.3%,
-    rgba(7, 6, 15, 0.259) 84.2%, rgba(7, 6, 15, 0.156) 88.2%, rgba(7, 6, 15, 0.074) 92.1%,
-    rgba(7, 6, 15, 0.020) 96.0%, rgba(7, 6, 15, 0.000) 100.0%);
-  opacity: 0; transition: opacity 0.4s;
-}
-:root[data-theme="light"] .hm-moon.hm-ready::before { opacity: 1; }
 .hm-moon-cv { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }
 .hm-text {
   display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
@@ -974,12 +959,12 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
 .hm-count-when { font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
 
 /* Desktop (vlasnik): tekst DESNO od Mjeseca, poravnat lijevo i okomito centriran. Bez teksta
-   ispod Mjesec smije biti veći. Razmak raste s Mjesecom da tekst ne legne na vinjetu/sjaj.
+   ispod Mjesec smije biti veći. Razmak raste s Mjesecom (sjaj).
    Halloween ima svoj raspored (gore), zato :not(.hw-on). */
 @media (min-width: 769px) and (min-aspect-ratio: 4/3) {
   html:not(.hw-on) .hm-wrap {
     --hm-w: clamp(220px, min(58dvh, 38vw), 520px);
-    flex-direction: row; gap: calc(var(--hm-w) * 0.36);
+    flex-direction: row; gap: calc(var(--hm-w) * 0.2);
   }
   html:not(.hw-on) .hm-moon { width: var(--hm-w); flex: 0 0 auto; }
   /* tekst u kućici (vlasnik), obje teme - ista podloga i obrub kao ostale kartice */

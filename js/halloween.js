@@ -1323,11 +1323,12 @@
       return [q.x, q.y];
     };
     let i = 0, tk = 0, last = 0, kut = null, pr = null;
-    /* MUŠICE NAKON POSLA (vlasnik): kad pauk završi današnji posao, svakih nekoliko minuta (2-5 min)
-       uleti mušica, nasumično u gornju ili donju mrežu, i zapne na luku (koprca se). Pauk dođe po
-       njoj SAMO PO NITIMA (ako je u drugoj mreži: po krajnjoj zraci do zida, uz zid izvan ekrana, po
-       krajnjoj zraci druge mreže u središte), po zraci do nje, zamota je u kuglicu i vrati se u središte.
-       Kuglica postupno izblijedi kroz par minuta. Mušica i pauk su IZA sadržaja stranice (z-index 1). */
+    /* MUŠICE NAKON POSLA (vlasnik): kad pauk završi današnji posao, svakih 30-90 s uleti mušica,
+       nasumično u gornju ili donju mrežu - STALNOM brzinom, zabije se (mreža se trzne) - i zapne na
+       luku (koprca se). Pauk dođe po njoj SAMO PO NITIMA (ako je u drugoj mreži: po krajnjoj zraci do
+       zida, uz zid izvan ekrana, po krajnjoj zraci druge mreže u središte), po zraci do nje, zamota je
+       u kuglicu, JEDE ~15 s (kuglica se smanjuje, mreža se povremeno trzne) i vrati se u središte.
+       Ostatak izblijedi kroz minutu. Mušica i pauk su IZA sadržaja stranice (z-index 1). */
     const muhe = [];                                      // { el, m, seg, st: 'leti'|'zapela'|'kuglica' }
     const novaMuha = () => {
       const el = document.createElement('div');
@@ -1338,19 +1339,52 @@
       return el;
     };
     const muhaCilj = mu => naEkran(mu.m, tockaNa(mu.seg.el, mu.seg.t));
-    const muhaPostavi = (mu, p, kut2) => { if (p) mu.el.style.transform = `translate(${p[0].toFixed(1)}px, ${p[1].toFixed(1)}px) rotate(${(kut2 || 0).toFixed(0)}deg)`; };
+    const muhaPostavi = (mu, p, kut2) => { if (p) mu.el.style.transform = `translate(${p[0].toFixed(1)}px, ${p[1].toFixed(1)}px) rotate(${(kut2 || 0).toFixed(0)}deg)` + (mu.sc != null && mu.sc !== 1 ? ` scale(${mu.sc.toFixed(3)})` : ''); };
     addEventListener('resize', () => muhe.forEach(mu => { if (mu.st === 'kuglica') muhaPostavi(mu, muhaCilj(mu)); }));
     let sjediU = mreze[mreze.length - 1], radi = true;   // u kojoj mreži pauk sjedi; radi = rAF petlja ide
     const sredina = m => m.rj({ i: 0, t: 0 }, m.Hc);
-    const trajanje = k => k.tip === 'stoji' ? (k.s || 3) : k.tip === 'muha' ? 2.6 : k.tip === 'zamota' ? 1.8 : k.len * mj.get(k.m) / BRZINA;
+    const JEDE = 15;                                      // koliko pauk jede mušicu (s) - vlasnik
+    const trajanje = k => k.tip === 'stoji' ? (k.s || 3) : k.tip === 'muha' ? 2.6 : k.tip === 'zamota' ? 1.8 : k.tip === 'jede' ? JEDE : k.len * mj.get(k.m) / BRZINA;
     const hodaK = (m, A, B) => { const a = m.rj(A, m.Hc), b = m.rj(B, m.Hc), len = Math.hypot(b[0] - a[0], b[1] - a[1]); return len > 0.3 ? [{ tip: 'hoda', m, A, B, len }] : []; };
+    /* JEDE (vlasnik): ~15 s stoji uz zamotanu mušicu; kuglica se smanjuje, a mreža se tu i tamo
+       kratko trzne (kao da je pauk čupa). Trzaji su unaprijed nasumično raspoređeni po koraku. */
+    const trzaji = () => { const r = []; for (let t = 1 + Math.random() * 2; t < JEDE - 1; t += 1.5 + Math.random() * 3.5) r.push([t, 0.3 + Math.random() * 0.6]); return r; };
+    /* VISI NA NITI (vlasnik): kad odmara u GORNJOJ mreži, pauk se ponekad iz središta spusti ravno
+       dolje na svojoj niti i ondje visi (lagano se njiše) dok ne uleti mušica - onda se po niti
+       popne natrag u središte i ode po nju. Nit je zaseban path u SVG-u mreže (jedinice mreže). */
+    let spustT = null;
+    const dolje = m => m.okrenuta ? -1 : 1;              // „dolje" na ekranu u jedinicama mreže
+    const visiTocka = (m, Lu, now) => {
+      const c = m.rj({ i: 0, t: 0 }, m.tresC || m.Hc), lj = now ? Math.sin(now / 1400) * Lu * 0.05 : 0;
+      return [c, [c[0] + lj * dolje(m), c[1] + Lu * dolje(m)]];
+    };
+    const nitVisi = (m, Lu, now) => {
+      if (!m.vlakno) { m.vlakno = document.createElementNS('http://www.w3.org/2000/svg', 'path'); m.svg.appendChild(m.vlakno); }
+      if (!Lu) { m.vlakno.setAttribute('d', ''); return null; }
+      const [c, p] = visiTocka(m, Lu, now);
+      m.vlakno.setAttribute('d', `M${c[0].toFixed(2)} ${c[1].toFixed(2)}L${p[0].toFixed(2)} ${p[1].toFixed(2)}`);
+      return naEkran(m, p);
+    };
+    function spusti() {
+      spustT = null;
+      if (radi) return;
+      const m = sjediU, L = 70 + Math.random() * 110, Lu = L / mj.get(m);   // px na ekranu
+      koraci.push({ tip: 'spusti', m, len: Lu, Lu, s: L / BRZINA }, { tip: 'visi', m, Lu, len: 0, s: Infinity });
+      tk = 0; last = 0; radi = true;
+      requestAnimationFrame(kadar);
+    }
     function muhaDolazi() {
+      clearTimeout(spustT); spustT = null;
       const m = mreze[Math.floor(Math.random() * mreze.length)], seg = m.zaMuhu();
       if (!seg) { setTimeout(muhaDolazi, 60000); return; }
       const mu = { el: novaMuha(), m, seg, st: 'leti' };
       muhe.push(mu);
       const S0 = { i: 0, t: 0 }, nk = [];
-      nk.push({ tip: 'muha', m: sjediU, mu });             // uleti i zapne; pauk čeka u svom središtu
+      // visi li pauk (ili se upravo spušta)? onda visi dok mušica ne udari, pa se popne po niti
+      const vi = koraci.findIndex((k, j) => j >= i && k.tip === 'visi'), visiK = vi >= 0 ? koraci[vi] : null;
+      if (visiK) visiK.s = vi === i ? tk : 0;             // prestane visjeti čim stigne do tog koraka
+      nk.push({ tip: 'muha', m: sjediU, mu, visiLu: visiK ? visiK.Lu : 0 });   // uleti i zapne; pauk čeka
+      if (visiK) nk.push({ tip: 'penje', m: visiK.m, len: visiK.Lu, Lu: visiK.Lu });
       if (sjediU !== m) {                                  // u drugu mrežu: po krajnjoj zraci do zida, uz zid, i natrag
         const a = sjediU, z = a.krajnja, z2 = m.krajnja;
         nk.push(...hodaK(a, S0, { i: z, t: 1 }), ...hodaK(a, { i: z, t: 1 }, { xy: a.vanZid(z) }));
@@ -1359,15 +1393,17 @@
       }
       nk.push(...hodaK(m, S0, seg.at));                    // po zraci do mušice
       nk.push({ tip: 'zamota', m, mu, at: seg.at });
+      nk.push({ tip: 'jede', m, mu, at: seg.at, trz: trzaji() });
       nk.push(...hodaK(m, seg.at, S0));                    // i natrag u središte
       nk.forEach(k => { k.s = trajanje(k); });
       sjediU = m;
       koraci.push(...nk);
+      if (visiK) return;                                   // petlja već ide (pauk visi)
       tk = 0; last = 0; radi = true;
       pauk.classList.add('hw-pauk-hoda');
       requestAnimationFrame(kadar);
     }
-    const sljedecaMuha = () => setTimeout(muhaDolazi, (120 + Math.random() * 180) * 1000);
+    const sljedecaMuha = () => setTimeout(muhaDolazi, (30 + Math.random() * 60) * 1000);   // 30-90 s (vlasnik)
     const sjedi = () => {                                 // pauk miruje u središtu mreže
       const e = naEkran(sjediU, sredina(sjediU));
       if (e) pauk.style.transform = `translate(${e[0].toFixed(1)}px, ${e[1].toFixed(1)}px) rotate(${(kut || 0).toFixed(1)}deg)`;
@@ -1378,13 +1414,15 @@
       if (k.tip === 'kutNit') k.x.el.style.strokeDashoffset = 0;
       if (k.tip === 'napni') { k.m.Hc = k.H2; k.m.napeta(); k.m.oblikuj(k.H2); }
       if (k.tip === 'spoji') k.fn(k.m.Hc);              // luk se pričvrsti na zraku
-      if (k.tip === 'muha') { k.mu.st = 'zapela'; k.mu.el.classList.remove('hw-muha-leti'); }
-      if (k.tip === 'zamota') {                           // kuglica; postupno izblijedi kroz ~2,5 min pa nestane
+      if (k.tip === 'muha') { k.mu.st = 'zapela'; k.mu.el.classList.remove('hw-muha-leti'); k.mu.m.udar = performance.now(); }   // udarac trzne mrežu
+      if (k.tip === 'zamota') { const mu = k.mu; mu.st = 'kuglica'; mu.el.classList.add('hw-muha-zamotana'); muhaPostavi(mu, muhaCilj(mu)); }
+      if (k.tip === 'jede') {                             // pojedena: ostatak izblijedi kroz minutu pa nestane
         const mu = k.mu;
-        mu.st = 'kuglica'; mu.el.classList.add('hw-muha-zamotana'); muhaPostavi(mu, muhaCilj(mu));
-        requestAnimationFrame(() => { mu.el.style.transition = 'opacity 150s linear'; mu.el.style.opacity = '0'; });
-        setTimeout(() => { mu.el.remove(); muhe.splice(muhe.indexOf(mu), 1); }, 152000);
+        mu.sc = 0.5; muhaPostavi(mu, muhaCilj(mu));
+        requestAnimationFrame(() => { mu.el.style.transition = 'opacity 60s linear'; mu.el.style.opacity = '0'; });
+        setTimeout(() => { mu.el.remove(); muhe.splice(muhe.indexOf(mu), 1); }, 62000);
       }
+      if (k.tip === 'penje') nitVisi(k.m, 0);             // nit se povuče s paukom
       if (k.tip === 'popravak') { if (!k.el) k.el = k.m.postavi(k.key, 'pop', k.m.Hc); if (k.el) k.el.style.strokeDashoffset = 0; }
     };
     function kadar(now) {
@@ -1398,20 +1436,32 @@
         radi = false;
         sjedi();
         sljedecaMuha();
+        // u gornjoj mreži se ponekad spusti na niti i visi dok ne dođe mušica (vlasnik)
+        if (sjediU === mreze[0] && Math.random() < 0.4) spustT = setTimeout(spusti, (6 + Math.random() * 20) * 1000);
         return;
       }
       const k = koraci[i], v = k.s ? tk / k.s : 1;
       let e = null, okreni = null;
-      /* ZAPELA MUŠICA SE KOPRCA I TRESE CIJELU MREŽU (vlasnik): središte te mreže nepravilno titra
-         (pa se sve niti elastično njišu, i mušica s njima). Mreža se preslaže svaki drugi kadar. */
+      /* TRESENJE MREŽE (vlasnik) - središte mreže titra pa se sve niti elastično njišu:
+         - zapela mušica se koprca (stalno, blago)
+         - udarac mušice u mrežu (kratak jak trzaj koji se smiri)
+         - pauk jede (povremeni kratki trzaji)
+         Mreža se preslaže svaki drugi kadar; m.tresC = trenutno (pomaknuto) središte. */
       mreze.forEach(m => {
-        const tresu = muhe.some(mu => mu.st === 'zapela' && mu.m === m);
-        if (tresu && (m.tresK = (m.tresK || 0) + 1) % 2 === 0) {
-          const A = 1.4;
-          m.oblikuj([m.Hc[0] + (Math.sin(now / 41) + 0.6 * Math.sin(now / 17)) * A, m.Hc[1] + (Math.cos(now / 53) + 0.5 * Math.sin(now / 23)) * A]);
-          m.tresla = true;
-        } else if (!tresu && m.tresla) { m.oblikuj(m.Hc); m.tresla = false; }
+        let dx = 0, dy = 0, ide = false;
+        if (muhe.some(mu => mu.st === 'zapela' && mu.m === m)) {
+          dx += (Math.sin(now / 41) + 0.6 * Math.sin(now / 17)) * 1.4; dy += (Math.cos(now / 53) + 0.5 * Math.sin(now / 23)) * 1.4; ide = true;
+        }
+        const ud = m.udar ? now - m.udar : 1e9;
+        if (ud < 700) { const a = 6 * Math.exp(-ud / 150); dx += Math.sin(ud / 22) * a * 0.5; dy += Math.cos(ud / 22) * a; ide = true; }
+        if (k.tip === 'jede' && k.m === m && k.trz.some(([a, d]) => tk >= a && tk < a + d)) {
+          dx += (Math.sin(now / 11) + 0.5 * Math.sin(now / 7)) * 1.8; dy += (Math.cos(now / 13) + 0.5 * Math.sin(now / 5)) * 1.8; ide = true;
+        }
+        m.tresC = ide ? [m.Hc[0] + dx, m.Hc[1] + dy] : null;
+        if (ide && (m.tresK = (m.tresK || 0) + 1) % 2 === 0) { m.oblikuj(m.tresC); m.tresla = true; }
+        else if (!ide && m.tresla) { m.oblikuj(m.Hc); m.tresla = false; }
       });
+      pauk.classList.toggle('hw-pauk-hoda', k.tip !== 'visi' && k.tip !== 'jede' && k.tip !== 'muha');   // noge mirne dok visi/jede/čeka
       muhe.forEach(mu => { if (mu.st === 'zapela') { const T2 = muhaCilj(mu); if (T2) muhaPostavi(mu, [T2[0] + Math.sin(now / 37) * 1.2, T2[1] + Math.cos(now / 53) * 1.2], Math.sin(now / 90) * 40); } });
       if (k.tip === 'plete') {
         const el = k.nit.el;
@@ -1420,18 +1470,28 @@
       } else if (k.tip === 'hoda') {
         const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc);
         e = naEkran(k.m, [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v]);
-      } else if (k.tip === 'muha') {                      // pauk čeka u središtu, mušica uleti iz smjera sredine ekrana
-        e = naEkran(k.m, sredina(k.m));
+      } else if (k.tip === 'muha') {                      // pauk čeka (u središtu ili na niti), mušica uleti iz smjera sredine ekrana
+        if (k.visiLu) { e = nitVisi(k.m, k.visiLu, now); okreni = 90 * dolje(k.m) + (k.m.okrenuta ? 180 : 0); }
+        else e = naEkran(k.m, sredina(k.m));
         const T2 = muhaCilj(k.mu), W = innerWidth || 800, H2 = innerHeight || 600;
         if (T2) {
           const sm = [W / 2 - T2[0], H2 / 2 - T2[1]], sl = Math.hypot(...sm) || 1;
           const od = [T2[0] + sm[0] / sl * 420, T2[1] + sm[1] / sl * 420];
-          const w = glatko(v), vij = Math.sin(v * Math.PI * 5) * 26 * (1 - v);
+          // STALNOM brzinom ravno u mrežu - ne usporava pred njom, zabije se (vlasnik)
+          const w = v, vij = Math.sin(v * Math.PI * 5) * 18 * (1 - v);
           muhaPostavi(k.mu, [od[0] + (T2[0] - od[0]) * w - sm[1] / sl * vij, od[1] + (T2[1] - od[1]) * w + sm[0] / sl * vij], Math.atan2(T2[1] - od[1], T2[0] - od[0]) * 180 / Math.PI);
         }
-      } else if (k.tip === 'zamota') {                    // stoji uz mušicu i zamata je
-        e = naEkran(k.m, k.m.rj(k.at, k.m.Hc));
+      } else if (k.tip === 'spusti' || k.tip === 'visi' || k.tip === 'penje') {   // na niti ispod središta
+        const Lu = k.tip === 'spusti' ? k.Lu * v : k.tip === 'penje' ? k.Lu * (1 - v) : k.Lu;
+        e = nitVisi(k.m, Math.max(0.01, Lu), k.tip === 'visi' ? now : 0);
+        if (k.tip === 'visi') okreni = 90 * dolje(k.m) + (k.m.okrenuta ? 180 : 0);   // visi glavom prema dolje
+      } else if (k.tip === 'zamota' || k.tip === 'jede') {   // stoji uz mušicu i zamata je / jede (miče se s mrežom)
+        e = naEkran(k.m, k.m.rj(k.at, k.m.tresC || k.m.Hc));
         const T2 = muhaCilj(k.mu);
+        if (k.tip === 'jede') {                           // kuglica se smanjuje i prati mrežu
+          k.mu.sc = 1 - 0.5 * v;
+          if (T2) muhaPostavi(k.mu, T2);
+        }
         if (e && T2) okreni = Math.atan2(T2[1] - e[1], T2[0] - e[0]) * 180 / Math.PI;
       } else if (k.tip === 'popravak') {                  // isplete novu nit preko rupe
         if (!k.el) {

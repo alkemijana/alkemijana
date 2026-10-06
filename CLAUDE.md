@@ -24,6 +24,7 @@ ALKEMIJANA WEBSITE/
 ├── index.html                      ← Glavna stranica + SVG zviježđa + ekran učitavanja + admin HTML
 ├── css/style.css                   ← Svi stilovi
 ├── css/loader.css                  ← Ekran učitavanja + ulazna animacija stranice (prefiks ajl-/aj-)
+├── css/lite.css                    ← LITE način za slabije uređaje (samo pod html.aj-lite; gasi zamućenja i sjaj) — v. „Glatkoća na svim uređajima”
 ├── css/nav-drawer.css              ← Izbornik: gumb ☰ + panel odozgo, okvir logotipa (prefiks nd-)
 ├── css/home-slides.css             ← Slide deck početne stranice (prefiks hs-)
 ├── css/halloween.css               ← Halloween tjedan (prefiks hw-, sve pod html.hw-on)
@@ -54,6 +55,7 @@ ALKEMIJANA WEBSITE/
 │   ├── halloween.js                ← Halloween tjedan 25. 10.–1. 11.: sablasna tema, stvarni Mjesec, šišmiši, Samhain (samostalan, SINKRONO u <head>)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
 │   ├── loader.js                   ← Ekran učitavanja: animacija loga + čeka fontove i 'aj:ready' iz app.js, pa otkrije stranicu
+│   ├── perf.js                     ← LITE način: mjeri kašnjenje kadrova pri pokretu, po potrebi doda html.aj-lite (window.AJPerf); ?lite / ?lite=0
 │   ├── alkemijana-anim.js          ← Logo: animacije + statični SVG (GENERIRAN iz logo/animacije/ — ne uređivati ručno)
 │   ├── logo.js                     ← Logo na stranici: hero (Potpis prvi put), traka (šešir + hover), podnožje
 │   ├── home-slides.js              ← Slide deck početne: kotačić/tipkovnica/swipe, vodoravni blog slide
@@ -1221,7 +1223,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006r`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006s`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1324,6 +1326,24 @@ Detalji na koje treba paziti:
 - `prefers-reduced-motion` gasi sve animacije (i loadera i ulazne).
 - Boja zvjezdica loadera ide preko `--ajl-star` s posebnom vrijednošću za svijetlu temu
   (`--silver-bright` je tamo taman pa bi „zvijezde" bile mrlje).
+
+### Glatkoća na svim uređajima — LITE način (css/lite.css + js/perf.js)
+Cilj (vlasnik): animacije i scroll glatki i na slabim uređajima. Na slabom GPU-u najviše koštaju
+**zamućenja** (`backdrop-filter` ispod trake/izbornika/strelica - preglednik pri svakom pomaku ponovno
+zamućuje cijelu površinu), **sjaj zvijezda** (SVG `feGaussianBlur` na ~220 zvijezda u `#sky-bg`),
+`drop-shadow` na živom kotaču i blur u ulaznoj animaciji. Pod `html.aj-lite` ih `css/lite.css` gasi, a
+`--nav-bg` postane skoro neprozirna - izgled ostaje praktički isti.
+- **Kad se uključi:** odmah u inline skripti u `<head>` za očito slab uređaj (≤ 2 jezgre, ≤ 2 GB,
+  ušteda podataka); inače `js/perf.js` MJERI: nakon svakog pokreta (scroll, kotačić, prst, tipka) i ulazne
+  animacije ~0,9 s broji kadrove; nakon 90 kadrova, ako je > 18 % zakasnilo (propušteno osvježavanje
+  zaslona; mjerilo je najviše 60 Hz da i uređaj koji stalno vrti 30 kadrova/s bude prepoznat), uključi lite.
+  Nema stalne rAF petlje, mjerenje se gasi nakon ~60 s pokreta, jednom uključen lite ostaje do kraja posjeta.
+  **Ništa se ne sprema ni šalje** (zato nije u pravilima privatnosti).
+- Izmjereno u (sporom) pregledniku: prijelazi slideova 51,5 → 34,1 ms po kadru, kadrova > 50 ms 111 → 24.
+- **Novi skupi efekt** (backdrop-filter, blur, drop-shadow, SVG filter) → dodaj gašenje u `css/lite.css`.
+- **`z-index: -1` NE stavljati** na pseudo-element unutar velikih blokova bez `isolation: isolate` na
+  bliskom roditelju - padne na dno cijelog `.content` pa preglednik pri scrollu slaže slojeve cijele
+  stranice (izmjereno na vinjeti Mjeseca, 6. 10. 2026.).
 
 ### Halloween tjedan (js/halloween.js + css/halloween.css, prefiks `hw-`)
 Uključuje se **sam od 25. 10. do 1. 11.** (uključivo, `Europe/Zagreb`) i sam se gasi. Pregled bilo kad:

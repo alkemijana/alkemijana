@@ -1,0 +1,33 @@
+/* ============================================================
+   LITE način (js/perf.js) - za slabije uređaje
+   ------------------------------------------------------------
+   html.aj-lite postavlja inline skripta u <head> (očito slab uređaj)
+   ili js/perf.js (izmjereno: pri pokretu kasni previše kadrova).
+   Gasi SAMO najskuplje efekte za iscrtavanje - izgled ostaje isti:
+   - backdrop-filter (zamućenje ispod trake, izbornika, strelica...):
+     uz svaki pomak sadržaja ispod njih preglednik ponovno zamućuje
+     cijelu površinu - na slabom GPU-u to je glavni uzrok štekanja
+     pri scrollu. Umjesto toga podloga je skoro neprozirna.
+   - sjaj zvijezda na nebu (SVG feGaussianBlur na 220 zvijezda)
+   - drop-shadow na živom natalnom kotaču (stotine elemenata)
+   - zamućenje u ulaznoj animaciji hero dijela
+   Pregled: ?lite (uključi) / ?lite=0 (isključi), samo za taj prikaz.
+   ============================================================ */
+html.aj-lite *,
+html.aj-lite *::before,
+html.aj-lite *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.aj-lite { --nav-bg: rgba(6, 8, 15, 0.95); }
+html.aj-lite[data-theme="light"] { --nav-bg: rgba(244, 238, 249, 0.96); }
+
+html.aj-lite #sky-bg [filter] { filter: none; }
+
+html.aj-lite .home-live-natal-svg svg { filter: none !important; }
+
+@keyframes ajHeroInLite {
+  from { opacity: 0; transform: translateY(28px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+html.aj-lite.aj-reveal .page.active .hero > div > * { animation-name: ajHeroInLite; }

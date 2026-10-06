@@ -1105,7 +1105,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006d`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006e`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1413,14 +1413,19 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     zraka). Šteta se bira samo na nitima između zraka između kojih NIKAD ne dođe nova zraka (inače bi je
     'spoji' rascijepio) i nikad na najunutarnjem luku. Sve je određeno danom.
   - **MUŠICE NAKON POSLA** (vlasnik): tek kad pauk završi današnji posao, svakih **50–120 s** uleti mušica
-    (`.hw-muha`) nasumično u gornju ili donju mrežu, **stalnom brzinom - ne usporava, zabije se** (udarac kratko trzne mrežu, `m.udar`) - i zapne na zdravom luku (ne uz sam zid, `zaMuhu`). **Dolazi i prvi dan:** ako takvog luka nema, uzme bilo koji zdrav luk, a ako ni njega - zraku blizu središta (t 0,25–0,45).
+    (`.hw-muha`) u gornju (**70 %**) ili donju (30 %) mrežu, **stalnom brzinom - ne usporava, zabije se** (udarac kratko trzne mrežu, `m.udar`) - i zapne na zdravom luku (ne uz sam zid, `zaMuhu`). **Dolazi i prvi dan:** ako takvog luka nema, uzme bilo koji zdrav luk, a ako ni njega - zraku blizu središta (t 0,25–0,45).
     Dok pauk ne dođe, KOPRCA SE I TRESE CIJELU MREŽU (središte te mreže nepravilno titra, mreža se
-    elastično preslaže svaki drugi kadar). Pauk dolazi SAMO PO NITIMA (u drugu mrežu: po krajnjoj zraci
-    do zida, uz zid izvan ekrana, po krajnjoj zraci druge mreže u središte), zamota je u KUGLICU, **JEDE je
-    15 s** (`JEDE`; kuglica se smanji na pola, mreža se u nasumičnim trenucima kratko trzne - `trzaji()`) i vrati
-    se u središte te mreže (tamo onda sjedi). Ostatak izblijedi kroz 60 s pa nestane. `muhaDolazi`.
+    elastično preslaže svaki drugi kadar). Pauk dolazi SAMO PO NITIMA i **NAJKRAĆIM PUTEM DO SAME
+    mušice** (vlasnik): po zraci do luka pa PO LUKU (korak `luk`) do STOP=6 px ispred nje, od dva kraja
+    luka bira kraći; iz DRUGE mreže po krajnjoj zraci do zida, uz zid izvan ekrana do sidra BAŠ TE zrake
+    i po njoj - **ne kroz središte**. **Prema plijenu ide 50 % brže** (koraci do zamatanja `s /= 1.5`),
+    natrag normalno. Zamota je u KUGLICU, **JEDE je 15 s** (`JEDE`; kuglica se smanji na pola, mreža se u
+    nasumičnim trenucima kratko i BLAGO trzne - `trzaji()`, amplituda 0,5 jer je 1,8 bilo previše), pa se
+    istim lukom i zrakom vrati u središte te mreže (tamo onda sjedi). Ostatak izblijedi kroz 60 s pa nestane. `muhaDolazi`.
     **Visi na niti:** kad sjedi u GORNJOJ mreži, PONEKAD (40 %, 6–26 s nakon odmora) se iz središta spusti
-    ravno dolje na niti (70–180 px, `spusti`/`visi`, nit = `m.vlakno`) i visi glavom dolje, lagano se njišući,
+    ravno dolje na niti (70–180 px, `spusti`/`visi`, nit = `m.vlakno`) i visi glavom dolje, lagano se njišući
+    (njihanje kreće IZ SREDINE i pojača se kroz 3 s, a dok mušica leti smiri se na nulu - `ljT0`/`ljAmp`;
+    prije je na početku i pri penjanju skakalo),
     dok mušica ne udari - onda se po niti popne (`penje`) i ode po nju. U donjoj mreži nikad.
     Tresenje mreže (koprcanje, udarac, jedenje) je jedno mjesto u `kadar` → `m.tresC` (pomaknuto središte).
     (Probana je i „signalna nit s praznim isječkom" po Zygiella x-notata - vlasnik je NIJE htio.)

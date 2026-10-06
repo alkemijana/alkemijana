@@ -3212,6 +3212,9 @@ body.moon-mode #natal-guide-section { display: none !important; }
 .ml-sl-val { font-family: 'Quicksand', sans-serif; font-size: 0.86rem; color: var(--text-muted); text-align: right; }
 
 .ml-stage {
+  /* isolate: vinjeta Mjeseca (z-index:-1) ostaje iza sadržaja OVOG bloka - bez toga padne na
+     dno cijelog .content pa preglednik pri scrollu slaže slojeve cijele stranice (štekanje) */
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 2.5rem;

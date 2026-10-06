@@ -904,6 +904,7 @@ html.hw-on .hm-text {
 /* Mjesec u pozadini zasvijetli dok je slide „Mjesec sada" na ekranu */
 html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.9s; }
 .hm-wrap {
+  isolation: isolate;   /* vinjeta (z-index:-1) ostaje u ovom bloku, ne pada na dno cijele stranice */
   display: flex; flex-direction: column; align-items: center;
   text-decoration: none; color: inherit; cursor: pointer;
 }

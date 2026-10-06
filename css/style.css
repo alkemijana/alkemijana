@@ -3233,9 +3233,14 @@ body.moon-mode #natal { overflow-x: clip; }
 /* svijetla tema: Mjesec stoji na crnoj vinjeti (komad noćnog neba) - inače bi tamni dio
    Mjeseca bio bijel kao stranica. Puna crna do ruba diska, pa meko izblijedi. */
 .ml-moon::before {
-  content: ""; position: absolute; inset: -30%; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle closest-side, #07060f 0 60%, rgba(7, 6, 15, 0.82) 66%,
-    rgba(7, 6, 15, 0.35) 80%, rgba(7, 6, 15, 0) 100%);
+  content: ""; position: absolute; inset: -45%; border-radius: 50%; pointer-events: none; z-index: -1;
+  /* rub od ruba diska do 0,45 promjera; smoothstep u 13 točaka - bez lomova ("stepenica") */
+  background: radial-gradient(circle closest-side,
+    #07060f 0, rgba(7, 6, 15, 1.000) 52.6%, rgba(7, 6, 15, 0.980) 56.6%,
+    rgba(7, 6, 15, 0.926) 60.5%, rgba(7, 6, 15, 0.844) 64.5%, rgba(7, 6, 15, 0.741) 68.4%,
+    rgba(7, 6, 15, 0.624) 72.3%, rgba(7, 6, 15, 0.500) 76.3%, rgba(7, 6, 15, 0.376) 80.3%,
+    rgba(7, 6, 15, 0.259) 84.2%, rgba(7, 6, 15, 0.156) 88.2%, rgba(7, 6, 15, 0.074) 92.1%,
+    rgba(7, 6, 15, 0.020) 96.0%, rgba(7, 6, 15, 0.000) 100.0%);
   opacity: 0; transition: opacity 0.4s;
 }
 :root[data-theme="light"] .ml-moon.ml-ready::before { opacity: 1; }
@@ -3297,10 +3302,15 @@ body.moon-mode #natal { overflow-x: clip; }
 }
 .ml-day-date { font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
 .ml-day-moon { position: relative; width: 56px; height: 56px; margin: 0.35rem 0; }
-.ml-day-moon canvas { display: block; width: 100%; height: 100%; }
+.ml-day-moon canvas { position: relative; display: block; width: 100%; height: 100%; }   /* relative: iznad vinjete (::before) */
 :root[data-theme="light"] .ml-day-moon::before {
-  content: ""; position: absolute; inset: -14%; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle closest-side, #07060f 0 79%, rgba(7, 6, 15, 0.5) 89%, rgba(7, 6, 15, 0) 100%);
+  content: ""; position: absolute; inset: -24%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side,
+    #07060f 0, rgba(7, 6, 15, 1.000) 68.0%, rgba(7, 6, 15, 0.980) 70.7%,
+    rgba(7, 6, 15, 0.926) 73.3%, rgba(7, 6, 15, 0.844) 76.0%, rgba(7, 6, 15, 0.741) 78.7%,
+    rgba(7, 6, 15, 0.624) 81.3%, rgba(7, 6, 15, 0.500) 84.0%, rgba(7, 6, 15, 0.376) 86.7%,
+    rgba(7, 6, 15, 0.259) 89.3%, rgba(7, 6, 15, 0.156) 92.0%, rgba(7, 6, 15, 0.074) 94.7%,
+    rgba(7, 6, 15, 0.020) 97.3%, rgba(7, 6, 15, 0.000) 100.0%);
 }
 .ml-day-phase {
   font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.82rem; line-height: 1.25;

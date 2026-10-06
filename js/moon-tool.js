@@ -193,6 +193,7 @@
     // točan trenutak na koji su klizači pomaknuli sidro (mjesno vrijeme mjesta)
     $('ml-readout').textContent = fmt(s.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) +
       ' u ' + fmtTime(s.date);
+    renderHourWheel();
     clearTimeout(fullTimer);
     if (quick) {
       paintMoon(s.date, true);
@@ -200,56 +201,95 @@
     } else { paintMoon(s.date, false); renderWeek(); }
   }
 
-  /* ---------- tjedan: odabrani dan + sljedećih 6, u isto doba dana ----------
-     Male sličice (bez sjaja) crtaju se jedna za drugom; ključ (mjesto + trenutak + tema)
-     sprječava ponovno crtanje kad se promijeni nešto što tjedan ne dira. */
-  let weekKey = "", weekGen = 0;
-  async function renderWeek() {
-    const box = $("ml-week");
-    const first = selectedInstant(0);
-    if (!box || !first || first.error) return;
-    const light = document.documentElement.getAttribute("data-theme") === "light";
-    const key = [place.lat, place.lon, first.date.getTime(), light].join("|");
-    if (key === weekKey) return;
+  /* ---------- TRAKE ZA DAN I SAT (vlasnik) ----------
+     Umjesto klizača: sličice dana su vodoravna traka (±30 dana od datuma upisanog gore) i
+     ODABRAN JE DAN U SREDINI; sati su druga takva traka (±24 h od upisanog vremena). Mobitel:
+     lista se prstom; računalo: strelice lijevo/desno (i kotačić/touchpad). Svaki novi dan / sat
+     koji dođe u sredinu kratko „klikne" (vibracija, gdje uređaj to podržava). Trake samo
+     postavljaju vrijednosti skrivenih klizača (ml-sl-day / ml-sl-hour) - ostatak alata čita njih.
+     (Prije: 7 dana u mreži + klizači - zamijenjeno na zahtjev.) */
+  let weekKey = '', weekGen = 0;
+  const renderWeek = () => renderDayWheel();
+  const DAY_R = 30, HOUR_R = 24;
+
+  // mehanika traka (sredina, „cak", strelice) je zajednička - js/ui-wheel.js
+  const attachWheel = (el, fn) => window.AJWheel.attach(el, fn);
+  const wheelJump = (el, idx) => window.AJWheel.jump(el, idx);
+
+  function anchorParts() {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec($('ml-date').value);
+    if (!m) return null;
+    const [h, mi] = ($('ml-time').value || '12:00').split(':').map(Number);
+    return { y: +m[1], mo: +m[2], d: +m[3], h, mi };
+  }
+
+  // traka dana: ±30 dana od sidra, u vrijeme sidra (bez pomaka sati - inače bi se svaki sat
+  // morala ponovno crtati cijela traka); odabrani dan = ml-sl-day
+  async function renderDayWheel() {
+    const box = $('ml-week'), a = anchorParts();
+    if (!box || !a) return;
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    const key = ['wheel', place.lat, place.lon, a.y, a.mo, a.d, a.h, a.mi, light, window.AJMoon.hasHeight()].join('|');
+    const want = +$('ml-sl-day').value + DAY_R;
+    if (key === weekKey) { if (box._idx !== want) wheelJump(box, want); return; }
     weekKey = key;
     const my = ++weekGen;
+    box.classList.add('ml-wheel');
     const days = [];
-    for (let i = 0; i < 7; i++) {
-      const s = selectedInstant(i);
-      if (s && !s.error) days.push({ i, date: s.date });
+    for (let j = -DAY_R; j <= DAY_R; j++) {
+      const date = localToUtc(a.y, a.mo, a.d + j, a.h, a.mi, place.tz).date;
+      days.push({ j, w: j + DAY_R, date });
     }
     box.innerHTML = days.map(d => {
-      const k = window.Astronomy.Illumination("Moon", d.date).phase_fraction;
-      return "<button type=\"button\" class=\"ml-day" + (d.i === 0 ? " ml-day-sel" : "") + "\" role=\"listitem\" data-i=\"" + d.i + "\"" +
-        (d.i === 0 ? " aria-current=\"date\"" : "") + ">" +
-        "<span class=\"ml-day-name\">" + fmt(d.date, { weekday: "short" }) + "</span>" +
-        "<span class=\"ml-day-date\">" + dmy(d.date) + "</span>" +
-        "<span class=\"ml-day-moon\"></span>" +
-        "<span class=\"ml-day-phase\">" + window.AJMoon.phaseName(d.date) + "</span>" +
-        "<span class=\"ml-day-pct\">" + Math.round(k * 100) + " %</span></button>";
-    }).join("");
+      const k = window.Astronomy.Illumination('Moon', d.date).phase_fraction;
+      return '<button type="button" class="ml-day" role="listitem" data-w="' + d.w + '">' +
+        '<span class="ml-day-name">' + fmt(d.date, { weekday: 'short' }) + '</span>' +
+        '<span class="ml-day-date">' + dmy(d.date) + '</span>' +
+        '<span class="ml-day-moon"></span>' +
+        '<span class="ml-day-phase">' + window.AJMoon.phaseName(d.date) + '</span>' +
+        '<span class="ml-day-pct">' + Math.round(k * 100) + ' %</span></button>';
+    }).join('');
+    attachWheel(box, idx => {
+      $('ml-sl-day').value = idx - DAY_R;
+      sliderLabels(); update(true);
+    });
+    wheelJump(box, want);
+    // sličice: od odabranog dana prema van (najprije one koje se vide)
     const D = Math.round(56 * Math.min(window.devicePixelRatio || 1, 2));
-    for (const d of days) {
+    const order = days.slice().sort((p, q) => Math.abs(p.w - want) - Math.abs(q.w - want));
+    for (const d of order) {
       const g = window.AJMoon.geometry(d.date, place.lat, place.lon);
       const c = await window.AJMoon.render(D, g, Object.assign({ glow: false, relief: window.AJMoon.hasHeight() }, light ? { dark: 0 } : { earth: 0.07 }));
       if (my !== weekGen) return;
-      const slot = box.querySelector("[data-i=\"" + d.i + "\"] .ml-day-moon");
+      const slot = box.children[d.w] && box.children[d.w].querySelector('.ml-day-moon');
       if (slot) slot.appendChild(c);
     }
   }
 
-  // klik na dan: taj dan postaje datum (klizač dana se vrati na 0, sat ostaje)
-  function pickDay(i) {
-    const s = selectedInstant(i);
-    if (!s || s.error) return;
-    const p = {};
-    for (const x of new Intl.DateTimeFormat("en-GB", { timeZone: place.tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })
-      .formatToParts(s.date)) p[x.type] = x.value;
-    $("ml-date").value = p.year + "-" + p.month + "-" + p.day;
-    $("ml-time").value = (p.hour === "24" ? "00" : p.hour) + ":" + p.minute;
-    $("ml-sl-day").value = 0; $("ml-sl-hour").value = 0;
-    sliderLabels();
-    update();
+  // traka sati: ±24 h od vremena sidra, oznaka = mjesno vrijeme (uz „+1 d"/„−1 d" preko ponoći)
+  let hourKey = '';
+  function renderHourWheel() {
+    const box = $('ml-hourwheel'), a = anchorParts();
+    if (!box || !a) return;
+    const want = Math.round(+$('ml-sl-hour').value) + HOUR_R;
+    const key = a.h + ':' + a.mi;
+    if (key !== hourKey) {
+      hourKey = key;
+      let html = '';
+      for (let k = -HOUR_R; k <= HOUR_R; k++) {
+        const t = a.h * 60 + a.mi + k * 60, dd = Math.floor(t / 1440), mm = ((t % 1440) + 1440) % 1440;
+        html += '<button type="button" class="ml-hour" data-w="' + (k + HOUR_R) + '"><span class="ml-hour-t">' +
+          pad(Math.floor(mm / 60)) + ':' + pad(mm % 60) + '</span><span class="ml-hour-d">' +
+          (dd ? (dd > 0 ? '+' : '−') + Math.abs(dd) + ' d' : '') + '</span></button>';
+      }
+      box.innerHTML = html;
+      attachWheel(box, idx => {
+        $('ml-sl-hour').value = idx - HOUR_R;
+        sliderLabels(); update(true);
+      });
+      box._idx = -1;
+    }
+    if (box._idx !== want) wheelJump(box, want);
   }
 
   function sliderLabels() {
@@ -274,14 +314,22 @@
     setAnchorNow();
     sliderLabels();
 
-    $('ml-week').addEventListener('click', e => {
-      const b = e.target.closest('.ml-day');
-      if (b && b.dataset.i !== '0') pickDay(+b.dataset.i);
-    });
+    // strelice uz trake rješava js/ui-wheel.js (zajedničko s tranzitima)
     $('ml-now').addEventListener('click', () => { setAnchorNow(); sliderLabels(); update(); });
-    ['ml-date', 'ml-time'].forEach(id => $(id).addEventListener('change', () => update()));
+    // novi datum/vrijeme gore = nova sredina traka (pomaci dana i sati se vrate na 0)
+    ['ml-date', 'ml-time'].forEach(id => $(id).addEventListener('change', () => {
+      $('ml-sl-day').value = 0; $('ml-sl-hour').value = 0; sliderLabels(); update();
+    }));
     ['ml-sl-hour', 'ml-sl-day'].forEach(id => {
       $(id).addEventListener('input', () => { sliderLabels(); update(true); });
+    });
+    // promjena širine (okretanje uređaja, prozor): elementi traka mijenjaju širinu - vrati odabrani u sredinu
+    let rz = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(rz);
+      rz = setTimeout(() => ['ml-week', 'ml-hourwheel'].forEach(id => {
+        const el = $(id); if (el && el._idx >= 0) wheelJump(el, el._idx);
+      }), 150);
     });
     new MutationObserver(() => { if (document.body.classList.contains('moon-mode')) update(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

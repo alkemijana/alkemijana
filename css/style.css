@@ -3358,3 +3358,148 @@ body.moon-mode #natal { overflow-x: clip; }
   box-shadow: var(--shadow-glow);
 }
 .tool-cards-grid .tool-card.is-active::before { opacity: 1; }
+
+/* ============================================================
+   Trake za DAN i SAT u alatu „Mjesec" (js/moon-tool.js) - umjesto 7 dana u mreži i klizača.
+   Odabran je element u SREDINI trake. Prazni ::before/::after (pola trake - pola elementa)
+   omogućuju da i prvi/zadnji element dođu u sredinu. Mobitel: prstom (scroll-snap);
+   računalo: strelice ‹ › (≥769 px). Rubovi blijede (mask) da se vidi da se traka nastavlja.
+   ============================================================ */
+.ml-daywrap { grid-area: week; min-width: 0; margin-top: 1.8rem; }
+.ml-daywrap .ml-week { grid-area: auto; margin-top: 0; }
+.ml-wheel-wrap { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.ml-week, .ml-hourwheel {
+  --wg: 0.5rem;
+  flex: 1 1 auto; min-width: 0;
+  display: flex; gap: var(--wg);
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  padding: 0.35rem 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+.ml-week::-webkit-scrollbar, .ml-hourwheel::-webkit-scrollbar { display: none; }
+.ml-week::before, .ml-week::after, .ml-hourwheel::before, .ml-hourwheel::after {
+  content: ""; flex: 0 0 calc(50% - var(--wi) / 2 - var(--wg));
+}
+.ml-week { --wi: 96px; }
+.ml-week .ml-day,
+.ml-week .ml-day:nth-child(n+5) { display: flex; flex: 0 0 var(--wi); scroll-snap-align: center; opacity: 0.6; transition: opacity 0.2s, border-color 0.2s; }
+.ml-week .ml-day.ml-wsel { opacity: 1; border-color: var(--lavender); box-shadow: var(--shadow-glow); }
+
+.ml-hourwrap { margin-bottom: 0.2rem; }
+.ml-hourwheel { --wi: 64px; }
+.ml-hour {
+  flex: 0 0 var(--wi); scroll-snap-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.05rem;
+  padding: 0.45rem 0 0.35rem; border: 1px solid transparent; background: none; cursor: pointer;
+  font-family: 'Quicksand', sans-serif; color: var(--text-muted); transition: color 0.2s, border-color 0.2s;
+}
+.ml-hour-t { font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+.ml-hour-d { font-size: 0.62rem; min-height: 0.8em; color: var(--sage); }
+.ml-hour.ml-wsel { color: var(--lavender); border-color: var(--lavender); background: var(--card-bg); }
+.ml-hour:focus-visible, .ml-week .ml-day:focus-visible { outline: none; border-color: var(--lavender); }
+@media (hover: hover) {
+  .ml-hour:hover { color: var(--text); }
+  .ml-week .ml-day:hover { opacity: 0.9; }
+}
+
+/* strelice: samo računalo */
+.ml-warrow {
+  flex: 0 0 auto; width: 2.2rem; height: 2.2rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--card-bg); color: var(--lavender);
+  font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0;
+  transition: border-color 0.2s;
+}
+.ml-warrow:focus-visible { outline: none; border-color: var(--lavender); }
+@media (hover: hover) { .ml-warrow:hover { border-color: var(--lavender); } }
+@media (max-width: 768px) {
+  .ml-warrow { display: none; }
+  .ml-week { --wi: 84px; }
+}
+/* klizači su samo skriveno spremište pomaka */
+.ml-sliders .tr-row { display: none !important; }
+
+/* Gumb × za brisanje polja ime/mjesto (initClearButtons u js/natal.js). Vidljiv samo kad
+   polje nije prazno (:placeholder-shown) - radi i kad polje isprazni kod. */
+.nt-clearwrap { position: relative; display: block; }
+.nt-clearwrap > input { padding-right: 2.6rem; }
+.nt-clear-x {
+  position: absolute; right: 0.45rem; top: 50%; transform: translateY(-50%);
+  width: 1.8rem; height: 1.8rem; padding: 0; border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: none; color: var(--text-muted); font-size: 1.25rem; line-height: 1; cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+.nt-clearwrap > input:placeholder-shown + .nt-clear-x { display: none; }
+.nt-clear-x:focus-visible { outline: none; color: var(--lavender); background: var(--card-bg); }
+@media (hover: hover) {
+  .nt-clear-x:hover { color: var(--lavender); background: var(--card-bg); }
+}
+
+/* MOBITEL (vlasnik: na iPhone 13 mini moraju ISTODOBNO stati Mjesec, traka dana i traka sati).
+   Najgori slučaj = Safari s trakama ≈ 375 × 630, od toga ~97 px zauzme traka stranice → za
+   Mjesec + napomenu + dane + sate ostaje ~530 px. Zato su sličice dana sažete (bez naziva mijene -
+   odabrani dan ga ima u naslovu iznad Mjeseca), a razmaci stisnuti. Izmjereno: 591 → ~460 px. */
+@media (max-width: 600px) {
+  /* Mjesec se smanji i po VISINI ekrana (svh = vidljivo uz prikazane trake preglednika): ostatak
+     (traka stranice + napomena + dani + sati + razmaci) treba ~360 px - inače na niskim telefonima
+     (iPhone SE: ~375 × 548) trake dana i sati ne bi stale zajedno s Mjesecom */
+  .ml-moon { margin: 5% 0 4%; width: clamp(110px, min(74%, 100svh - 360px), 380px); }
+  .ml-horizon { font-size: 0.76rem; min-height: 0; }
+  .ml-daywrap { margin-top: 0.6rem; }
+  .ml-week { --wi: 66px; }
+  .ml-week .ml-day, .ml-week .ml-day:nth-child(n+5) { padding: 0.35rem 0.1rem 0.3rem; gap: 0; }
+  .ml-week .ml-day-phase { display: none; }
+  .ml-week .ml-day-moon { width: 38px; height: 38px; margin: 0.2rem 0; }
+  .ml-week .ml-day-name { font-size: 0.62rem; }
+  .ml-week .ml-day-date, .ml-week .ml-day-pct { font-size: 0.66rem; }
+  .ml-sliders { margin-top: 0.4rem; }
+  .ml-hourwheel { padding: 0.2rem 0; }
+  .ml-hour { padding: 0.3rem 0 0.2rem; }
+  .ml-readout { margin-top: 0.3rem; }
+}
+
+/* ============================================================
+   TRANZITI: kartice Dan · Mjesec · Godina + traka s odabirom u sredini (js/ui-wheel.js,
+   natal-transit.js) - umjesto tri klizača. Klizači/brojevi su skriveno spremište pomaka.
+   Izgled trake = traka sati iz alata „Mjesec" (.ml-hourwheel / .ml-hour).
+   ============================================================ */
+#transit-sliders { display: none; }
+.tr-units { display: flex; border: 1px solid var(--border); }
+.tr-unit {
+  flex: 1 1 0; padding: 0.45rem 0.3rem; border: none; background: none; cursor: pointer;
+  font-family: 'Quicksand', sans-serif; font-size: 0.8rem; letter-spacing: 0.04em; color: var(--text-muted);
+  transition: background-color 0.2s, color 0.2s;
+}
+.tr-unit + .tr-unit { border-left: 1px solid var(--border); }
+.tr-unit.active { background: var(--lavender); color: var(--bg-deep); }
+.tr-unit:focus-visible { outline: none; box-shadow: inset 0 0 0 1px var(--lavender); }
+@media (hover: hover) { .tr-unit:not(.active):hover { color: var(--text); } }
+.tr-strip { --wi: 74px; }
+.tr-strip .ml-hour-t { font-size: 0.86rem; white-space: nowrap; }
+
+/* mobitel/tablet: ispod karte prvo trenutak, jedinica i traka - sidro tek iza njih */
+@media (max-width: 1039px) {
+  .tr-panel .tr-readout     { order: -5; }
+  .tr-panel .tr-units       { order: -4; }
+  .tr-panel .tr-wheelwrap   { order: -3; }
+  .tr-panel .tr-hint        { order: -1; }
+}
+
+/* TRANZITI NA MOBITELU (vlasnik): karta + trenutak + jedinica + traka moraju ISTODOBNO stati,
+   a karta se ne smanjuje gdje god je moguće. Ispod karte treba ~130 px kontrola + ~97 px traka
+   stranice → karta = min(100vw, 100svh − 232 px): na 375×630 (iPhone 13 mini) i većima ostaje
+   PUNA širina, smanji se samo na niskim telefonima (iPhone SE ~375×548 → ~316 px). */
+@media (max-width: 640px) {
+  #transit-result .tw-stack {
+    --tw: min(100vw, 100svh - 232px);
+    width: var(--tw); max-width: var(--tw);
+    margin-left: calc(50% - var(--tw) / 2); margin-right: 0;
+  }
+  #transit-result .tr-stage-inner { gap: 0.4rem; }
+  #transit-result .tr-panel { padding: 0.5rem 0.8rem 0.9rem; gap: 0.45rem; }
+  #transit-result .tr-readout { font-size: 0.88rem; text-align: center; }
+  #transit-result .tr-readout-lbl { display: none; }   /* samo datum - stane u jedan red */
+}

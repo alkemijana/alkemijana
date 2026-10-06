@@ -1,7 +1,7 @@
 /* ============================================================
    Alkemijana - TRANZITI (natalna karta + tranzitni planeti, živi bi-wheel)
-   Glue modul: treći mod, kontrola vremena (datum-sidro + 5 slidera
-   Sat/Dan/Tjedan/Mjesec/Godina), živo osvježavanje (rAF), submit, PDF.
+   Glue modul: treći mod, kontrola vremena (datum-sidro + kartice Dan/Mjesec/Godina
+   i traka s odabirom u sredini - js/ui-wheel.js), živo osvježavanje (rAF), submit, PDF.
    Ovisi o:
      natal.js        - currentNodeType, showNatalError, loadScript, selectedPlace
      natal-synastry.js - readPerson, validatePerson, personToChart, serializePerson, fillPersonFields, setNatalMode
@@ -28,11 +28,12 @@ const TR_MONTHS = ['siječnja', 'veljače', 'ožujka', 'travnja', 'svibnja', 'li
                    'srpnja', 'kolovoza', 'rujna', 'listopada', 'studenoga', 'prosinca'];
 
 /* trenutni tranzitni datum = sidro + Σ(offseti); mjeseci/godine kalendarski */
-function transitDate() {
+function transitDate(o) {
+  o = o || transitOffsets;
   const d = new Date(transitAnchorMs);
-  d.setFullYear(d.getFullYear() + transitOffsets.year);
-  d.setMonth(d.getMonth() + transitOffsets.month);
-  d.setTime(d.getTime() + ((transitOffsets.week * 7 + transitOffsets.day) * 86400 + transitOffsets.hour * 3600) * 1000);
+  d.setFullYear(d.getFullYear() + o.year);
+  d.setMonth(d.getMonth() + o.month);
+  d.setTime(d.getTime() + ((o.week * 7 + o.day) * 86400 + o.hour * 3600) * 1000);
   return d;
 }
 
@@ -95,6 +96,8 @@ function applyTransit(full) {
   const tChart = computeTransitChart(d);
   if (full) {
     renderTransitResult(transitNatalChart, tChart);
+    // traka: nakon punog iscrtavanja (rezultat je tada vidljiv pa traka ima mjere)
+    requestAnimationFrame(buildTransitStrip);
   } else {
     redrawTransitDynamic(tChart);
     scheduleTransitTables();
@@ -112,6 +115,66 @@ function requestTransitUpdate() {
 function scheduleTransitTables() {
   clearTimeout(transitTableTimer);
   transitTableTimer = setTimeout(() => { renderTransitTables(); }, 160);
+}
+
+/* ============ TRAKA ZA POMAK (vlasnik: „cak cak" kao kod Mjeseca) ============
+   Umjesto tri klizača: kartice Dan · Mjesec · Godina + JEDNA traka (js/ui-wheel.js) za
+   odabranu jedinicu; odabran je element u sredini, svaki korak „klikne". Na elementu piše
+   stvarni datum za taj pomak (uz pomake ostalih jedinica) i sam pomak. Traka postavlja
+   transitOffsets i skrivene klizače/brojeve - izračun je isti kao prije. */
+const TR_RANGE = { day: 31, month: 12, year: 100 };
+const TR_MON_SHORT = ['sij', 'velj', 'ožu', 'tra', 'svi', 'lip', 'srp', 'kol', 'ruj', 'lis', 'stu', 'pro'];
+let transitUnit = 'day';
+
+function setTransitOffset(unit, v) {
+  transitOffsets[unit] = v;
+  const s = document.querySelector('#transit-sliders .tr-slider[data-unit="' + unit + '"]');
+  const n = document.querySelector('#transit-sliders .tr-num[data-unit="' + unit + '"]');
+  if (s) s.value = v;
+  if (n) n.value = v;
+  requestTransitUpdate();
+}
+
+function buildTransitStrip() {
+  const el = document.getElementById('transit-strip');
+  if (!el || !transitNatalChart || !el.offsetWidth) return;   // skrivena traka nema mjere
+  const unit = transitUnit, R = TR_RANGE[unit];
+  let html = '';
+  for (let k = -R; k <= R; k++) {
+    const d = transitDate(Object.assign({}, transitOffsets, { [unit]: k }));
+    const main = unit === 'day' ? d.getDate() + '. ' + (d.getMonth() + 1) + '.'
+      : unit === 'month' ? TR_MON_SHORT[d.getMonth()] + ' ' + d.getFullYear()
+      : String(d.getFullYear());
+    const sub = k ? (k > 0 ? '+' : '−') + Math.abs(k) : '·';
+    html += '<button type="button" class="ml-hour" data-w="' + (k + R) + '"><span class="ml-hour-t">' + main +
+      '</span><span class="ml-hour-d">' + sub + '</span></button>';
+  }
+  el.innerHTML = html;
+  el.dataset.unit = unit;
+  window.AJWheel.attach(el, idx => setTransitOffset(transitUnit, idx - TR_RANGE[transitUnit]));
+  const cur = Math.max(-R, Math.min(R, transitOffsets[unit] || 0));
+  window.AJWheel.jump(el, cur + R);
+}
+
+function initTransitUnits() {
+  const box = document.getElementById('transit-units');
+  if (!box) return;
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.tr-unit');
+    if (!b || b.dataset.unit === transitUnit) return;
+    transitUnit = b.dataset.unit;
+    box.querySelectorAll('.tr-unit').forEach(x => {
+      const on = x === b;
+      x.classList.toggle('active', on); x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    buildTransitStrip();
+  });
+  // promjena širine: elementi mijenjaju razmak - vrati odabrani u sredinu
+  let rz = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => { const el = document.getElementById('transit-strip'); if (el && el._idx >= 0) window.AJWheel.jump(el, el._idx); }, 150);
+  });
 }
 
 /* ============ INICIJALIZACIJA KONTROLA ============ */
@@ -223,6 +286,7 @@ async function transitSubmit(ev) {
 window.addEventListener('load', () => {
   if (!document.getElementById('transit-result')) return;
   initTransitSliders();
+  initTransitUnits();
   initTransitAnchor();
   initTransitChartControls();
   initTransitTabs();

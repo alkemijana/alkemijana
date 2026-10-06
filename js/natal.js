@@ -324,6 +324,36 @@ async function sha256Hex(str) {
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+/* ============ GUMB × ZA BRISANJE POLJA (vlasnik) ============
+   U poljima za ime i mjesto (sva astro polja + alat „Mjesec") mali × desno briše cijeli
+   unos odjednom. Vidljiv je samo kad u polju nešto piše - to radi CSS (:placeholder-shown),
+   pa se skriva i kad polje isprazni kod (npr. „Očisti sva polja"). Nakon brisanja se šalje
+   'input' događaj: kod mjesta tako autocomplete sam poništi odabrano mjesto, skrije ✓ i popis. */
+const CLEARABLE_INPUTS = ['natal-name', 'natal-place', 'natal-name-2', 'natal-place-2', 'ml-place'];
+function initClearButtons() {
+  CLEARABLE_INPUTS.forEach(id => {
+    const inp = document.getElementById(id);
+    if (!inp || inp.parentNode.classList.contains('nt-clearwrap')) return;
+    const wrap = document.createElement('span');
+    wrap.className = 'nt-clearwrap';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'nt-clear-x';
+    b.setAttribute('aria-label', 'Obriši');
+    b.title = 'Obriši';
+    b.textContent = '×';
+    b.addEventListener('click', () => {
+      inp.value = '';
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+      inp.focus();
+    });
+    wrap.appendChild(b);
+  });
+}
+document.addEventListener('DOMContentLoaded', initClearButtons);
+
 /* ============ INIT ============ */
 
 window.addEventListener('load', () => {

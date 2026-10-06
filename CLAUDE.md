@@ -40,7 +40,8 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-date.js               ← Datum kao 3 polja (dan/mjesec/godina) — prije natal.js
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
 │   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
-│   ├── natal-transit.js            ← Tranziti: kontrola vremena (5 slidera), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
+│   ├── ui-wheel.js                 ← Trake s odabirom u SREDINI + „cak" (window.AJWheel) - alat Mjesec i tranziti; prije natal-transit.js
+│   ├── natal-transit.js            ← Tranziti: kontrola vremena (kartice Dan/Mjesec/Godina + traka), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
 │   ├── natal-acg.js                ← AstroCartography: submit, izračun MC/IC/ASC/DSC linija po planetu (glue — nakon natal-transit.js)
 │   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
 │   ├── natal-birthcard.js          ← Tarot karta rođenja (Greer) iznad PDF gumbi natalne karte + blok u radnom PDF-u, natal + sinastrija (samostalan)
@@ -378,6 +379,10 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   zadanim opcijama (sjaj, pun tamni dio) i i dalje računa **za Rab** (vlasnik: Halloween ostaje kako je).
   Opcije: `glow`, `earth` (Zemljin odsjaj), `dark` (prozirnost tamnog dijela). Učitava se
   sinkrono u `<head>` prije halloween.js. `AJMoon.phaseName(date)` daje naziv mijene.
+- **Gumb × u poljima ime/mjesto** (sva astro polja + alat Mjesec; `initClearButtons` u natal.js,
+  popis `CLEARABLE_INPUTS`): briše cijeli unos i šalje `input` (autocomplete mjesta tako sam poništi
+  odabrano mjesto i ✓). Vidljiv samo kad polje nije prazno - CSS `:placeholder-shown`, pa radi i kad
+  polje isprazni kod. Polje se omata u `.nt-clearwrap`.
 - **Mali Mjesec u traci** (`#nd-moon`, `js/nav-moon.js`, CSS u nav-drawer.css): lijevo od ☰,
   30 px, stvarna faza **iz Hrvatske** (središte, 45.10 / 15.20). To je `<button>` — **klik mijenja
   svijetlu/tamnu temu** (`toggleTheme(event)`, krug animacije kreće iz Mjeseca). NE otvara alat
@@ -401,16 +406,24 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   od Mjeseca; mobitel niži od 820 px skriva natpis, datum uštapa i poziv (klik na Mjesec i dalje vodi u alat).
 - **Alat „Mjesec"** (`js/moon-tool.js`, prefiks **`ml-`**): peta kartica na Astro alatima
   (`openMoonTool()`), vlastita forma (mjesto · datum · vrijeme · ⟳ Sada). Ispod velikog
-  Mjeseca je **tjedan** (`#ml-week`: odabrani dan + sljedećih 6 u isto doba dana, male sličice
-  bez sjaja, mijena i %; klik na dan ga postavi kao datum; ≤600 px samo prva 4 dana, manja —
-  vodoravno listanje je probano i vlasnik ga NE želi),
-  a tek ispod toga klizači Sat/Dan za fino pomicanje (vlasnik: klizači nisu glavni način).
-  **Raspored (grid-template-areas na `.ml-stage`):** široko = Mjesec lijevo, naslov mijene
-  (`.ml-head`) + tablica desno, tjedan i klizači ispod oboje; ≤768 px = naslov → Mjesec → tjedan
-  → klizači → tablica (vlasnik: naslov IZNAD Mjeseca). Polja forme nemaju marginu
-  (`.ml-form .form-group`), razmak daje samo gap mreže. Ispod klizača
-  NEMA rečenice s uputom (vlasnik: nepotrebna), nego „Prikazano: <dan, datum u sat>" (`#ml-readout`,
-  osvježava `update()`) - točan trenutak na koji su klizači pomaknuli sidro. Pravopis: „posljednja četvrt", datumi „6. 10. 2026."
+  Mjeseca su **TRAKE ZA DAN I SAT** (vlasnik; zamijenile 7 dana u mreži i klizače): `#ml-week` = ±30
+  dana od datuma upisanog gore, `#ml-hourwheel` = ±24 h od upisanog vremena; **odabran je element u
+  SREDINI**. Mobitel: lista se prstom (scroll-snap, bez vidljive trake); računalo (≥769 px): strelice
+  `.ml-warrow` ‹ › uz trake. Svaki novi dan/sat u sredini kratko „klikne" (`haptic()`: Android
+  `navigator.vibrate(6)`; iPhone nema Vibration API - skriveni `<input type=checkbox switch>` koji
+  Safari na iOS-u 18+ pri prebacivanju „klikne"; nije zajamčeno na svim iPhoneima). Trake samo
+  postavljaju SKRIVENE klizače `ml-sl-day`/`ml-sl-hour` (spremište pomaka koje čita ostatak alata).
+  Novi datum/vrijeme gore ili ⟳ Sada = nova sredina (pomaci na 0). Sličice dana su u vrijeme sidra
+  (bez pomaka sati - inače bi se pri svakom satu crtala cijela traka), crtaju se od sredine prema van.
+  Centriranje: prazni `::before/::after` = pola trake − pola elementa; odabir = `round(scrollLeft /
+  razmak)`. Ispod je „Prikazano: <dan, datum u sat>" (`#ml-readout`).
+  **iPhone 13 mini (vlasnik, OBAVEZNO):** Mjesec + traka dana + traka sati moraju ISTODOBNO stati na
+  ekran. Najgori slučaj Safari s trakama ≈ 375 × 630, minus ~97 px traka stranice → ~533 px. Zato ≤600 px
+  sličice dana nemaju naziv mijene (ima ga naslov), manje su, a razmaci stisnuti: Mjesec→sati = 471 px.
+  Mjesec se na mobitelu smanjuje i po visini: `clamp(110px, min(74%, 100svh - 360px), 380px)`.
+  Provjereno (vidljivo uz trake preglednika): 320×460 (SE 1), 375×548 (SE 2/3), 360×560, 375×630
+  (13 mini), 360×680, 390×664, 430×750, 412×800 - na svima stanu Mjesec + dani + sati.
+  Pri svakoj promjeni ovog dijela PROVJERI barem 375 × 548 i 375 × 630. Pravopis: „posljednja četvrt", datumi „6. 10. 2026."
   (Intl za hr daje „06." pa ih slaže `dmy()`), tisućice razmakom („374 412 km"), neprelomivi
   razmaci ispred „%"/„km"/„dana" i unutar datuma.
   **Nije u prekidaču modova** (pet gumba je pretijesno na mobitelu): dok je otvoren, `body` ima
@@ -606,9 +619,16 @@ Usporedba **dviju** karata na istoj stranici **#natal** — besplatno za posjeti
 Treći mod na stranici **#natal** (prekidač: Natalna karta · Sinastrija · **Tranziti**) — besplatno.
 Natalna karta + **tranzitni planeti** za odabrani trenutak, sa **živim klizanjem kroz vrijeme**.
 
-- **Kontrola vremena:** polje **datum-sidro** (+vrijeme, zadano „sada") i **5 slidera**
-  (Sat/Dan/Tjedan/Mjesec/Godina) sa **brojčanim poljima** uz svaki (− je unazad). Svih pet se
-  **zbraja** na sidro; živi prikaz točnog datuma. Gumb „⟳ Sada" resetira sidro i offsete.
+- **Kontrola vremena (vlasnik: „cak cak" kao kod Mjeseca):** polje **datum-sidro** (+vrijeme, zadano
+  „sada") + kartice **Dan · Mjesec · Godina** i JEDNA traka (`#transit-strip`, `js/ui-wheel.js`) za
+  odabranu jedinicu - odabran je element u SREDINI, svaki korak „klikne"; na elementu piše stvarni datum
+  („12. 10." / „lis 2026" / „2027") i pomak. Raspon: dan ±31, mjesec ±12, godina ±100. Pomaci svih
+  jedinica se i dalje **zbrajaju** na sidro (`transitOffsets`); stari klizači + brojevi su skriveno
+  spremište (`#transit-sliders`). Traka se gradi nakon punog iscrtavanja i pri promjeni jedinice
+  (`buildTransitStrip`). **Mobitel (≤640 px): karta + datum + jedinice + traka moraju ISTODOBNO stati**
+  - karta je `min(100vw, 100svh − 232px)` (pune širine na iPhone 13 mini i većim, manja samo na niskim:
+  SE 316 px, SE1 228 px), natpis „Trenutak tranzita:" skriven, razmaci stisnuti; sidro je ispod trake.
+  Provjereno na 8 veličina (320×460 … 430×750). Gumb „⟳ Sada" resetira sidro i offsete.
   Mjeseci/godine = kalendarska aritmetika; datum izvan 1900–2099 → Kiron se izostavi (napomena).
 - **Živo, glatko osvježavanje:** natalna karta (baza) se izračuna jednom; pri pomaku slidera
   računaju se **samo tranzitni položaji** (`computeChart` noTime — geocentrični, neovisni o mjestu)
@@ -1195,7 +1215,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006j`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006k`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

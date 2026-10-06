@@ -27,6 +27,55 @@
     document.getElementById('hm-meta').textContent = 'osvijetljen ' + Math.round(k * 100) + ' % · u ' + SIGN_LOC[si];
   }
 
+  /* ODBROJAVANJE DO SLJEDEĆEG UŠTAPA (vlasnik). Trenutak uštapa se računa jednom
+     (Astronomy.SearchMoonPhase 180°) i ponovno tek kad prođe; brojke se osvježavaju svake
+     sekunde, ali samo dok je slide na ekranu (inače ih nitko ne vidi). Oznake su u
+     ispravnom hrvatskom obliku (1 dan, 2 dana, 5 dana; 1 sat, 3 sata, 7 sati…). */
+  let fullAt = null;
+  const plural = (n, one, few, many) => {
+    const d = n % 10, dd = n % 100;
+    if (d === 1 && dd !== 11) return one;
+    if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return few;
+    return many;
+  };
+  const p2 = n => String(n).padStart(2, '0');
+  function nextFull() {
+    const t = window.Astronomy.SearchMoonPhase(180, new Date(), 40);
+    fullAt = t ? t.date : null;
+    const when = document.getElementById('hm-count-when');
+    if (fullAt && when) {
+      const p = {};
+      for (const x of new Intl.DateTimeFormat('hr-HR', { timeZone: 'Europe/Zagreb', weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
+        .formatToParts(fullAt)) p[x.type] = x.value;
+      when.textContent = p.weekday + ', ' + (+p.day) + '. ' + (+p.month) + '. ' + p.year + '. u ' + p.hour + ':' + p.minute;
+    }
+  }
+  function tick() {
+    const box = document.getElementById('hm-count');
+    if (!box || !window.Astronomy) return;
+    if (!fullAt || fullAt <= new Date()) nextFull();
+    if (!fullAt) return;
+    let s = Math.max(0, Math.floor((fullAt - new Date()) / 1000));
+    const d = Math.floor(s / 86400); s -= d * 86400;
+    const h = Math.floor(s / 3600); s -= h * 3600;
+    const m = Math.floor(s / 60); s -= m * 60;
+    const set = (id, v) => { const e = document.getElementById(id); if (e.textContent !== v) e.textContent = v; };
+    set('hm-cd-d', String(d)); set('hm-cd-du', plural(d, 'dan', 'dana', 'dana'));
+    set('hm-cd-h', p2(h));     set('hm-cd-hu', plural(h, 'sat', 'sata', 'sati'));
+    set('hm-cd-m', p2(m));     set('hm-cd-mu', plural(m, 'minuta', 'minute', 'minuta'));
+    set('hm-cd-s', p2(s));     set('hm-cd-su', plural(s, 'sekunda', 'sekunde', 'sekundi'));
+    box.hidden = false;
+  }
+  function startCountdown() {
+    const slide = document.querySelector('.hs-slide[data-hs-name="mjesec"]');
+    tick();
+    setInterval(() => {
+      if (document.hidden) return;
+      if (slide && !slide.classList.contains('hs-active')) return;
+      tick();
+    }, 1000);
+  }
+
   async function paint() {
     const el = document.getElementById('hm-moon');
     if (!el || !window.Astronomy || !window.AJMoon) return;
@@ -83,6 +132,7 @@
       (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
     Promise.all([lib.catch(() => {}), HW ? null : window.AJMoon.loadMapHi((document.getElementById('hm-moon') || {}).clientWidth * (window.devicePixelRatio || 1) || 0)]).then(() => {
       paint();
+      startCountdown();
       setInterval(() => { if (!document.hidden) paint(); }, 10 * 60 * 1000);
       if (!HW) new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     });

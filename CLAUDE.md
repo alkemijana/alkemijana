@@ -392,6 +392,13 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   slidea je onaj iz pozadine (`.hw-moon`) - `.hm-moon` je tada prazno klikabilno mjesto točno preko
   njega (iste mjere kao `.hw-moon-geo`, PAZI ako se one mijenjaju), tekst stoji ispod, a dok je slide
   na ekranu `<html>` ima `hm-lit` i pozadinski Mjesec zasvijetli (0.15 → 0.6).
+  **Odbrojavanje do sljedećeg uštapa** (`#hm-count`, vlasnik): dani/sati/minute/sekunde u kutijicama +
+  datum i vrijeme uštapa (Europe/Zagreb). Uštap iz `SearchMoonPhase(180)`, računa se ponovno tek kad
+  prođe; brojke se osvježavaju svake sekunde SAMO dok je slide aktivan. Oznake u ispravnom obliku
+  (`plural`: 1 dan / 2 dana; 1 sat / 3 sata / 7 sati; minuta/minute; sekunda/sekunde/sekundi).
+  Mjesec slidea je zato `min(50dvh, 72vw, 100dvh - 420px)` - inače na niskom mobitelu dira traku.
+  Halloween (tekst ispod pozadinskog Mjeseca ne stane): široko (≥769 px, omjer ≥ 4:3) tekst ide DESNO
+  od Mjeseca; mobitel niži od 820 px skriva natpis, datum uštapa i poziv (klik na Mjesec i dalje vodi u alat).
 - **Alat „Mjesec"** (`js/moon-tool.js`, prefiks **`ml-`**): peta kartica na Astro alatima
   (`openMoonTool()`), vlastita forma (mjesto · datum · vrijeme · ⟳ Sada). Ispod velikog
   Mjeseca je **tjedan** (`#ml-week`: odabrani dan + sljedećih 6 u isto doba dana, male sličice
@@ -1188,7 +1195,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006i`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006j`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

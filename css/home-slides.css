@@ -909,7 +909,8 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
 }
 .hm-moon {
   position: relative; display: block;
-  width: clamp(180px, min(50dvh, 72vw), 460px);
+  /* 100dvh - 420px: ispod Mjeseca mora stati tekst + odbrojavanje do uštapa, a iznad traka */
+  width: clamp(180px, min(50dvh, 72vw, 100dvh - 420px), 460px);
   aspect-ratio: 1;
   transition: transform 0.4s ease;
 }
@@ -940,4 +941,40 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
 @media (hover: hover) {
   .hm-wrap:hover .hm-moon { transform: scale(1.03); }
   .hm-wrap:hover .hm-cta { border-bottom-color: var(--lavender); }
+}
+
+/* Odbrojavanje do sljedećeg uštapa (js/home-moon.js) - ispod osvijetljenosti/znaka */
+.hm-count { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; margin-top: clamp(0.5rem, 1.6dvh, 1rem); }
+.hm-count[hidden] { display: none; }
+.hm-count-lbl {
+  font-family: 'Quicksand', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--sage);
+}
+.hm-count-row { display: flex; gap: clamp(0.5rem, 2vw, 1rem); }
+.hm-cd {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: clamp(3.1rem, 9vw, 4rem);
+  padding: 0.4rem 0.3rem 0.35rem;
+  border: 1px solid var(--border); background: var(--card-bg);
+}
+.hm-cd-n {
+  font-family: 'Playfair Display', serif; font-size: clamp(1.15rem, min(3.4vw, 3.2dvh), 1.6rem);
+  line-height: 1.1; color: var(--lavender); font-variant-numeric: tabular-nums;
+}
+.hm-cd-u { font-family: 'Quicksand', sans-serif; font-size: 0.66rem; color: var(--text-muted); }
+.hm-count-when { font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
+
+/* HALLOWEEN + odbrojavanje: tekst ispod pozadinskog Mjeseca (koji se ne dira) ne stane na
+   niske ekrane. Široko → tekst DESNO od Mjeseca, okomito centriran; nizak mobitel → bez
+   sitnih redaka (natpis, datum uštapa, poziv - klik na Mjesec i dalje vodi u alat). */
+@media (min-width: 769px) and (min-aspect-ratio: 4/3) {
+  html.hw-on .hm-text {
+    top: 50%; left: calc(50% + min(58vmin, 560px) / 2 + 3vw); right: auto;
+    transform: translateY(-50%); align-items: flex-start; text-align: left; padding: 0;
+  }
+  html.hw-on .hm-count { align-items: flex-start; }
+}
+@media (max-width: 768px) and (max-height: 820px) {
+  html.hw-on .hm-eyebrow, html.hw-on .hm-count-when, html.hw-on .hm-cta { display: none; }
+  html.hw-on .hm-text { gap: 0.15rem; }
 }

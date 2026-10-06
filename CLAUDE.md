@@ -1105,7 +1105,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006b`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1281,7 +1281,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
   overlay nestane, a ekran učitavanja crta logo
   **ISPOČETKA i DO KRAJA** (šešir) prije otvaranja. Samo DVA bljeska (više je bilo previše). **Ne može se
   preskočiti** (vlasnik). `js/loader.js`: `introDone`/`afterIntro()`/`fullLogo` — dok uvod traje nema
-  otkrivanja ni failsafea; strop 25 s. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
+  otkrivanja ni failsafea; strop 25 s (broji se samo dok je kartica vidljiva). **U kartici u pozadini uvod ČEKA da je posjetitelj otvori** (`whenVisible` u mountIntro) - inače bi se kartica koja se 25. 10. sama ponovno učita odvrtjela uvod dok nitko ne gleda i zapisala ga kao viđen; munja dolazi ~2 s nakon što se kartica pokaže. Dok uvod traje, `<html>` ima `hw-intro` umjesto `hw-on`.
   **Rečenice na kraju NEMA** — bila je „Granica između svjetova je tanka…" (prije toga „Veo…"), izbačena
   na zahtjev vlasnika jer nijedna varijanta nije sjela: uvod završava slikom, ne tekstom. S njom su otišli
   `.hwi-text` (CSS) i zatamnjenje Mjeseca (`.hwi-moon-dim`, služilo samo čitljivosti teksta), a završni

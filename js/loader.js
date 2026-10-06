@@ -211,7 +211,15 @@
   if (intro) {
     introDone = false;
     intro.then(afterIntro, afterIntro);
-    setTimeout(afterIntro, 25000);   // ako uvod iz bilo kojeg razloga zapne
+    // strop ako uvod iz bilo kojeg razloga zapne - broji se SAMO dok je kartica vidljiva,
+    // jer uvod u pozadinskoj kartici čeka da je posjetitelj otvori (js/halloween.js)
+    var ceil = null;
+    var armCeil = function () {
+      clearTimeout(ceil);
+      ceil = (document.hidden || introDone) ? null : setTimeout(afterIntro, 25000);
+    };
+    document.addEventListener('visibilitychange', armCeil);
+    armCeil();
   }
   begin();
 })();

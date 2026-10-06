@@ -379,7 +379,7 @@
        - astronomy-engine + oba Mjeseca (obični i krvavi) unaprijed iscrtana
        - traka silueta za jato (preloadBatSheet), font rečenice
        Za to vrijeme vidi se normalni ekran učitavanja. Strop 8 s pa ide svejedno. */
-    const t0 = performance.now();
+    let t0 = performance.now();
     async function prepare() {
       if (document.readyState === 'loading') await new Promise(r => document.addEventListener('DOMContentLoaded', r, { once: true }));
       const lib = window.Astronomy ? null :
@@ -411,7 +411,23 @@
       at(5400 + sh, swarm);
       at(6900 + sh, finale);      // šišmiši ~1,5 s
     }
-    Promise.race([prepare(), new Promise(r => setTimeout(r, 8000))]).catch(() => {}).then(startTimeline);
+    /* KARTICA U POZADINI: uvod čeka da je posjetitelj otvori. Inače bi se (npr. kad se kartica
+       otvorena preko ponoći 25. 10. sama ponovno učita) odvrtio dok nitko ne gleda i zapisao
+       se kao viđen. Priprema teče i u pozadini; munja dolazi ~2 s nakon što se kartica pokaže. */
+    const whenVisible = () => !document.hidden ? Promise.resolve() : new Promise(r => {
+      const f = () => {
+        if (document.hidden) return;
+        document.removeEventListener('visibilitychange', f);
+        t0 = performance.now();
+        r();
+      };
+      document.addEventListener('visibilitychange', f);
+    });
+    const prep = prepare();
+    prep.catch(() => {});
+    whenVisible()
+      .then(() => Promise.race([prep, new Promise(r => setTimeout(r, 8000))]))
+      .catch(() => {}).then(startTimeline);
   }
 
   /* ---- 2. Šišmiš oko šešira u traci ---- */

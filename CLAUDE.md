@@ -57,7 +57,9 @@ ALKEMIJANA WEBSITE/
 │   ├── logo.js                     ← Logo na stranici: hero (Potpis prvi put), traka (šešir + hover), podnožje
 │   ├── home-slides.js              ← Slide deck početne: kotačić/tipkovnica/swipe, vodoravni blog slide
 │   └── lib/                        ← Vendorirane biblioteke (astronomy-engine, jsPDF, svg2pdf, leaflet/) — lazy-load
-├── assets/halloween/moon-lroc-1k.jpg ← NASA karta Mjeseca (javno vlasništvo, NASA SVS) za Halloween Mjesec
+├── assets/halloween/moon-lroc-1k.jpg ← NASA karta Mjeseca (javno vlasništvo, NASA SVS) za Halloween Mjesec i traku
+├── assets/halloween/moon-lroc-2k.jpg / -4k.jpg ← ista karta (LROC „poles" 2019, iz NASA-inog TIF-a) za alat i slide „Mjesec" (2k 376 KB, 4k 1,5 MB)
+├── assets/halloween/moon-height-2k.png ← NASA karta VISINA (LDEM) za reljef i sjene kratera; R·256+G = pola metra + 20 000 (2,2 MB, GENERIRAN: tools/moon-height.js)
 ├── assets/fonts/                   ← TTF fontovi koji se ugrađuju u PDF (Playfair, Quicksand, Dancing Script; Tangerine se više ne koristi)
 ├── tarot/                          ← Virtualni tarot — skoro potpuno samostalan modul (v. odjeljak niže)
 │   ├── tarot.css                   ← Svi stilovi (dark/light preko istih CSS varijabli kao style.css)
@@ -81,6 +83,7 @@ ALKEMIJANA WEBSITE/
 │   └── ai/                         ← AI tumačenje (server): core.js (cache+limiti+dispatch), providers.js (adapteri), prompt.js
 ├── tools/halloween-backs.js        ← Dev: generira tarot/assets/decks/*/back-halloween.svg (node) - nije dio stranice
 ├── tools/halloween-palette.js      ← Dev: generira css/halloween-palette.css (node) - nije dio stranice
+├── tools/moon-height.js           ← Dev: NASA ldem_16_uint.tif → assets/halloween/moon-height-2k.png (node) - nije dio stranice
 ├── tools/serve.ps1                 ← Lokalni dev HTTP server (PowerShell) — nije dio stranice
 ├── tools/pdf-view.html             ← Dev: pregled PDF-a iz tools/_upload.bin preko pdf.js (CDN)
 ├── .gitignore
@@ -383,7 +386,8 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   (`#main-nav:has(.nd-moon-ready) .nd-bar .nd-theme`); gumb „Promijeni temu" u izborniku ostaje. U svijetloj temi tamni dio je potpuno skriven
   (`dark: 0`), u tamnoj jedva vidljiv. U Halloween tjednu (`hw-on`/`hw-intro`) se ne prikazuje.
 - **Slide „Mjesec sada"** (`js/home-moon.js`, CSS u home-slides.css, prefiks **`hm-`**): ispod karte
-  dana, veliki trenutni Mjesec iz Hrvatske + mijena, osvijetljenost, znak u lokativu („u Lavu"); cijeli
+  dana, veliki trenutni Mjesec iz Hrvatske (najveća razlučivost kao u alatu: `opts.hi` + css px ×
+  devicePixelRatio) + mijena, osvijetljenost, znak u lokativu („u Lavu"); cijeli
   je poveznica na `openMoonTool()`. **U Halloween tjednu slide NE crta svoj Mjesec** (vlasnik): Mjesec
   slidea je onaj iz pozadine (`.hw-moon`) - `.hm-moon` je tada prazno klikabilno mjesto točno preko
   njega (iste mjere kao `.hw-moon-geo`, PAZI ako se one mijenjaju), tekst stoji ispod, a dok je slide
@@ -407,7 +411,31 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   Prikazuje mijenu, osvijetljenost, znak (EclipticGeoMoon — ekliptika datuma), starost, visinu
   nad obzorom i smjer, izlazak/zalazak za MJESNI dan, sljedeći mlađak/uštap, udaljenost
   (+ „supermjesec" uz uštap < 361 863 km). Dok se vuče klizač crta se mali pregled (140 px),
-  puna kvaliteta 220 ms nakon zadnjeg pomaka. Sjaj je platno 150 % i smije do ruba
+  puna kvaliteta 220 ms nakon zadnjeg pomaka — i to u **najvećoj razlučivosti** (vlasnik): velika
+  karta (`AJMoon.loadMapHi(promjerDiskaPx)` + `opts.hi`): **2k** ako je disk ≤ 1024 px, inače **4k**
+  (disk pokriva pola karte, pa karta treba ~2× promjer). Izvor: NASA SVS 4720,
+  `lroc_color_poles_4k.tif` → JPG (q86) 4096 i 2048 preko System.Drawing. **8k se NE isplati**
+  (Mjesec na ekranu ≤ ~1400 px, a 8k u memoriji = 134 MB - mobitel bi pao). Halloween i traka i dalje
+  koriste 1k smanjenu na 384×192 (vlasnik: Halloween pozadinu ne dirati). Platno = css px ×
+  devicePixelRatio (strop 2400 px). Izmjereno: 4k + disk 1400 px = ~0,65 s crtanja (u komadima).
+  **RELJEF I SJENE KRATERA** (`opts.relief`, `AJMoon.loadHeight()`; vlasnik: „kao na NASA-inoj
+  stranici"): karta visina `moon-height-2k.png` (NASA SVS 4720 `ldem_16_uint.tif` → `node
+  tools/moon-height.js <tif>`, box filter na 2048×1024, zaokruženo na 8 m; 16-bit rastavljen u R/G jer
+  canvas zna samo 8 bita - dekodirano provjereno, vrijednosti točne). U `renderMoon`: nagib iz susjednih
+  piksela karte nagne normalu (reljefno osvjetljenje), a gdje je Sunce nisko (sin visine < 0,3) zraka
+  se po karti „hoda" prema Suncu (korak ×1,13, do 0,3 rad) i provjerava zaklanja li ga teren → bačena
+  sjena s polusjenom (malo šira od Sunčeva diska, `0.016`). Reljef je pretjeran `RELIEF_X = 2,5`.
+  **Protiv „točkica" uz granicu** (vlasnik): karta visina se pri učitavanju zagladi (1-2-1), a
+  u drugom prolazu se zagladi SAMO VIDLJIVOST Sunca (granica + bačena sjena, `litBuf`; šator 1-2-1,
+  na disku > 1100 px 1-2-3-2-1) - nestanu usamljeni osvijetljeni pikseli i nazubljeni rubovi sjena.
+  **Sjenčanje terena (`baseBuf`) se NE zaglađuje** - prvi pokušaj je zaglađivao cijelo svjetlo i
+  Mjesec je izgledao mutno (vlasnik), jer je detalj kratera upravo njihovo sjenčanje. Granica svjetla je
+  tada oštra (kao pravi Mjesec), bez `(tl - 0.72) * 0.07` trika. ~3× sporije (disk 1000 px: 1,0 s
+  umjesto 0,33 s). **Alat:** karta visina se učita nakon prvog crtanja (ne čeka se), pa se Mjesec i
+  tjedan ponovno nacrtaju; nakon toga i mali pregled pri klizanju ima reljef (da ne skače iz meke u
+  oštru granicu). **Slide:** karta visina se skida TEK kad je aktivan slide karte dana ili Mjeseca
+  (`reliefWhenNear`) - ne sa svakim otvaranjem početne. **Halloween i traka: bez reljefa** (vlasnik:
+  Halloween pozadinu ne dirati) - podrazumijevani put u `renderMoon` je nepromijenjen. Sjaj je platno 150 % i smije do ruba
   ekrana (vlasnik: rez na rubu stupca je izgledao ružno) — `overflow-x: clip` je zato na
   `body.moon-mode #natal` (široka kao ekran), NE na stupcu; bez toga sjaj na mobitelu širi stranicu. Ništa se ne sprema.
   Tekstovi kartice su zasad u HTML-u (nisu u TEXTS/adminu).
@@ -1160,7 +1188,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006h`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006i`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

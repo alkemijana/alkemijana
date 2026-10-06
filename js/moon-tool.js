@@ -161,14 +161,23 @@
     const el = $('ml-moon'), my = ++gen;
     const g = window.AJMoon.geometry(date, place.lat, place.lon);
     const css = el.clientWidth || 320;
-    const D = quick ? 140 : Math.min(900, Math.round(css * Math.min(window.devicePixelRatio || 1, 2)));
+    // konačna slika u PUNOJ razlučivosti ekrana (css px × devicePixelRatio, strop 2400 px) i iz
+    // pune karte (vlasnik: najveća moguća razlučivost); dok se vuče klizač - mali brzi pregled
+    const D = quick ? 140 : Math.min(2400, Math.round(css * (window.devicePixelRatio || 1)));
     const light = document.documentElement.getAttribute('data-theme') === 'light';
-    const c = await window.AJMoon.render(D, g, light ? { dark: 0 } : { earth: 0.05 });
+    const base = light ? { dark: 0 } : { earth: 0.05 };
+    const put = c => {
+      c.className = 'ml-moon-cv';
+      const old = el.querySelector('canvas');
+      if (old) old.replaceWith(c); else el.appendChild(c);
+      el.classList.add('ml-ready');
+    };
+    // reljef i sjene kratera čim je karta visina tu - i u malom pregledu (malen je, pa brz), da
+    // Mjesec ne skače iz meke granice u oštru; dok karte visina još nema, crta se bez reljefa
+    const relief = window.AJMoon.hasHeight();
+    const c = await window.AJMoon.render(D, g, Object.assign({ hi: !quick, relief }, base));
     if (my !== gen) return;                       // u međuvremenu je zatražen noviji trenutak
-    c.className = 'ml-moon-cv';
-    const old = el.querySelector('canvas');
-    if (old) old.replaceWith(c); else el.appendChild(c);
-    el.classList.add('ml-ready');
+    put(c);
   }
 
   function update(quick) {
@@ -222,7 +231,7 @@
     const D = Math.round(56 * Math.min(window.devicePixelRatio || 1, 2));
     for (const d of days) {
       const g = window.AJMoon.geometry(d.date, place.lat, place.lon);
-      const c = await window.AJMoon.render(D, g, light ? { glow: false, dark: 0 } : { glow: false, earth: 0.07 });
+      const c = await window.AJMoon.render(D, g, Object.assign({ glow: false, relief: window.AJMoon.hasHeight() }, light ? { dark: 0 } : { earth: 0.07 }));
       if (my !== weekGen) return;
       const slot = box.querySelector("[data-i=\"" + d.i + "\"] .ml-day-moon");
       if (slot) slot.appendChild(c);
@@ -278,7 +287,11 @@
       .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     const lib = window.Astronomy ? Promise.resolve() : loadScript('js/lib/astronomy.browser.min.js');
-    Promise.all([lib, window.AJMoon.loadMap()]).then(() => { ready = true; update(); }, () => {
+    Promise.all([lib, window.AJMoon.loadMap(), window.AJMoon.loadMapHi(($('ml-moon').clientWidth || 380) * (window.devicePixelRatio || 1))]).then(() => {
+      ready = true; update();
+      // karta visina (2,2 MB) za reljef i sjene - ne čeka se; kad stigne, Mjesec i tjedan se ponovno nacrtaju
+      window.AJMoon.loadHeight().then(() => { if (window.AJMoon.hasHeight()) { weekKey = ''; update(); } });
+    }, () => {
       const err = $('ml-error');
       err.textContent = 'Astronomska biblioteka se nije učitala. Provjeri internetsku vezu.';
       err.style.display = '';

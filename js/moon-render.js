@@ -14,6 +14,8 @@
         opts.glow  (true)  sjaj oko osvijetljenog dijela; platno je tada D + 2·25 %
         opts.earth (0.025) Zemljin odsjaj na tamnom dijelu (svjetlina)
         opts.dark  (1)     prozirnost tamnog dijela (0 = nevidljiv, 1 = pun)
+        opts.hi    (false) velika karta 2k/4k (treba AJMoon.loadMapHi(promjerDiskaPx)) - alat i slide
+        opts.relief (false) reljef i bačene sjene kratera (treba AJMoon.loadHeight()) - alat i slide
 
    Učitava se SINKRONO u <head> PRIJE halloween.js (samo definira funkcije).
    ============================================================ */
@@ -120,6 +122,77 @@
       im.src = MOON_MAP;
     }));
   }
+  /* VELIKA karta, bez smanjivanja - za alat „Mjesec" i slide „Mjesec sada", gdje je Mjesec
+     velik i treba najviše detalja (vlasnik). Halloween i traka ostaju na mekanoj 384×192.
+     Ista NASA karta (LROC „poles", 2019) u 2k i 4k - JPG pretvoren iz NASA-inog TIF-a.
+     Disk promjera D piksela pokriva pola karte (180° dužine), pa za puni detalj karta treba
+     biti široka ~2·D: do D = 1024 dovoljna je 2k (376 KB), iznad toga 4k (1,5 MB; mobitel s
+     oštrim zaslonom). Veća (8k) se ne isplati: Mjesec na ekranu nije veći od ~1400 px, a
+     samo pikseli karte bi u memoriji zauzeli 134 MB. Ako velika karta padne, koristi se 1k. */
+  const MOON_MAP_HI = { 2048: 'assets/halloween/moon-lroc-2k.jpg', 4096: 'assets/halloween/moon-lroc-4k.jpg' };
+  let mapHi = null;
+  const mapHiPromises = {};
+  function loadMoonMapHi(diskPx) {
+    const want = (diskPx || 0) * 2 > 2048 ? 4096 : 2048;
+    if (mapHi && mapHi.w >= want) return Promise.resolve();   // već imamo dovoljno veliku
+    if (mapHiPromises[want]) return mapHiPromises[want];
+    return (mapHiPromises[want] = new Promise(res => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const w = im.naturalWidth, h = im.naturalHeight;
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+          const m = { w, h, d: x.getImageData(0, 0, w, h).data };
+          if (!mapHi || m.w > mapHi.w) mapHi = m;
+        } catch (e) { /* ostaje manja karta */ }
+        res();
+      };
+      im.onerror = () => loadMoonMap().then(res);       // velika ne ide - barem 1k
+      im.src = MOON_MAP_HI[want];
+    }));
+  }
+
+  /* KARTA VISINA (NASA LDEM, CGI Moon Kit) za reljef i sjene - assets/halloween/moon-height-2k.png,
+     izrađen alatom tools/moon-height.js: 2048×1024, visina = R·256 + G (pola metra + 20 000).
+     Visine se drže u km × RELIEF_X (pretjerivanje: na ekranu je Mjesec malen, pa bi stvarni
+     reljef bio jedva vidljiv - kao i na NASA-inim prikazima). */
+  const MOON_R = 1737.4, RELIEF_X = 2.5;
+  const MOON_HEIGHT = 'assets/halloween/moon-height-2k.png';
+  let heightMap = null, heightPromise = null;
+  function loadHeight() {
+    if (heightPromise) return heightPromise;
+    return (heightPromise = new Promise(res => {
+      const im = new Image();
+      im.onload = () => {
+        try {
+          const w = im.naturalWidth, h = im.naturalHeight;
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+          const px = x.getImageData(0, 0, w, h).data, raw = new Float32Array(w * h);
+          for (let i = 0, j = 0; i < raw.length; i++, j += 4) raw[i] = ((px[j] * 256 + px[j + 1]) - 20000) / 2000 * RELIEF_X;
+          /* blago zaglađivanje (1-2-1 vodoravno pa okomito): nagibi iz susjednih piksela
+             nezaglađene karte su nemirni pa su uz granicu svjetla iskakale pojedinačne
+             svijetle točkice (vlasnik) */
+          const tmp = new Float32Array(w * h), v = new Float32Array(w * h);
+          for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+            const o = yy * w, l = xx ? xx - 1 : w - 1, r = xx === w - 1 ? 0 : xx + 1;
+            tmp[o + xx] = (raw[o + l] + 2 * raw[o + xx] + raw[o + r]) / 4;
+          }
+          let max = -1e9;
+          for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+            const u = Math.max(0, yy - 1) * w + xx, dn = Math.min(h - 1, yy + 1) * w + xx, i = yy * w + xx;
+            const km = (tmp[u] + 2 * tmp[i] + tmp[dn]) / 4;
+            v[i] = km; if (km > max) max = km;
+          }
+          heightMap = { w, h, v, max };
+        } catch (e) { heightMap = null; }
+        res();
+      };
+      im.onerror = () => res();
+      im.src = MOON_HEIGHT;
+    }));
+  }
 
   /* Crtanje je POSTUPNO (async): radi se u komadima od ~8 ms s predahom između, pa
      animacija loga koja se tada vrti ne zapne (u jednom komadu je blokiralo ~0,3 s).
@@ -131,7 +204,7 @@
     const P = GLOW ? Math.round(D * 0.25) : 0, W = D + 2 * P, R = D / 2;
     const face = document.createElement('canvas'); face.width = face.height = D;
     const fx = face.getContext('2d');
-    const map = mapData;
+    const map = (opts.hi && mapHi) || mapData;        // opts.hi: velika karta (alat i slide „Mjesec")
     let img;
     if (map) img = fx.createImageData(D, D);
     else {                                            // bez fotografije: tekstura crtana kodom
@@ -147,6 +220,27 @@
     const sx = Math.sin(ph) * Math.cos(L), sy = Math.sin(ph) * Math.sin(L), sz = Math.cos(ph);
     const EARTH = opts.earth == null ? 0.025 : opts.earth;   // Zemljin odsjaj na tamnom dijelu - jedva (vlasnik: tamnije)
     const TINT = [1, 0.97, 0.9];                      // blago topla boja kosti
+    /* RELJEF I SJENE (opts.relief, treba AJMoon.loadHeight()) - samo alat i slide „Mjesec".
+       Karta visina daje nagib terena u svakoj točki; normala kugle se nagne za taj nagib pa
+       strane kratera okrenute Suncu posvijetle, a suprotne potamne. Za točke uz granicu
+       svjetla (Sunce nisko) uz to se po karti visina „hoda" prema Suncu i provjeri zaklanja
+       li ga rub kratera ili planina - tako u kratere padaju duge sjene, s mekim rubom
+       (polusjena) koliko je širok Sunčev disk. Sve u koordinatama Mjeseca:
+       X desno, Y gore (sjever), Z prema gledatelju. */
+    const HM = opts.relief ? heightMap : null;
+    let SmX = 0, SmY = 0, SmZ = 0;
+    if (HM) { SmX = sx * cf - sy * sf; SmY = -(sx * sf + sy * cf); SmZ = sz; }
+    const hw = HM ? HM.w : 0, hh = HM ? HM.h : 0, hv = HM ? HM.v : null;
+    const hAt = (u, v) => {                           // visina (km × pretjerivanje), bilinearno
+      if (v < 0) v = 0; else if (v > hh - 1.001) v = hh - 1.001;
+      u %= hw; if (u < 0) u += hw;
+      const x0 = u | 0, y0 = v | 0, x1 = x0 + 1 === hw ? 0 : x0 + 1, ax = u - x0, ay = v - y0;
+      const a = hv[y0 * hw + x0], b = hv[y0 * hw + x1], c = hv[(y0 + 1) * hw + x0], e = hv[(y0 + 1) * hw + x1];
+      return a + (b - a) * ax + (c - a + (e - c - b + a) * ax) * ay;
+    };
+    const RAD_U = HM ? hw / (2 * Math.PI) : 0, RAD_V = HM ? hh / Math.PI : 0;   // piksela karte po radijanu
+    // s reljefom: VIDLJIVOST Sunca (granica + bačena sjena) se zagladi, sjenčanje terena ostaje oštro
+    const litBuf = HM ? new Float32Array(D * D).fill(-1) : null, baseBuf = HM ? new Float32Array(D * D) : null;
     let until = performance.now() + 8;
     for (let y = 0, k = 0; y < D; y++) {
       const ny = (y + 0.5 - R) / R;
@@ -154,6 +248,46 @@
         const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
         if (r2 >= 1) { d[k + 3] = 0; m[k + 3] = 0; continue; }
         const nz = Math.sqrt(1 - r2);
+        let reliefMu = null, shadowLit = 1;
+        if (map || HM) {
+          const px = nx * cf - ny * sf, py = nx * sf + ny * cf;
+          const lat = Math.asin(Math.max(-1, Math.min(1, -py))), lon = Math.atan2(px, nz);
+          if (HM) {
+            const sLat = -py, cLat = Math.max(1e-4, Math.sqrt(1 - py * py));
+            const sLon = px / cLat, cLon = nz / cLat;
+            const hu = (lon / (2 * Math.PI) + 0.5) * hw - 0.5, hvv = (0.5 - lat / Math.PI) * hh - 0.5;
+            // nagib (km po radijanu) iz razlike susjednih piksela karte
+            const dLon = (hAt(hu + 1, hvv) - hAt(hu - 1, hvv)) * RAD_U / 2;
+            const dLat = (hAt(hu, hvv - 1) - hAt(hu, hvv + 1)) * RAD_V / 2;
+            const kLat = dLat / MOON_R, kLon = dLon / (MOON_R * cLat);
+            // osnovni vektori: istok (eLon) i sjever (eLat) u točki
+            const eLx = cLon, eLz = -sLon;
+            const eNx = -sLat * sLon, eNy = cLat, eNz = -sLat * cLon;
+            let Nx = px - kLat * eNx - kLon * eLx, Ny = sLat - kLat * eNy, Nz = nz - kLat * eNz - kLon * eLz;
+            const nl = Math.sqrt(Nx * Nx + Ny * Ny + Nz * Nz); Nx /= nl; Ny /= nl; Nz /= nl;
+            reliefMu = Nx * SmX + Ny * SmY + Nz * SmZ;
+            // bačene sjene: samo dok je Sunce nisko iznad lokalnog obzora
+            const sinAlt = px * SmX + sLat * SmY + nz * SmZ;
+            if (reliefMu > 0 && sinAlt < 0.3) {
+              const cosAlt = Math.sqrt(Math.max(1e-6, 1 - sinAlt * sinAlt)), tanAlt = sinAlt / cosAlt;
+              // smjer prema Suncu po površini (jedinični), pa brzina promjene širine/dužine
+              const Tx = (SmX - sinAlt * px) / cosAlt, Ty = (SmY - sinAlt * sLat) / cosAlt, Tz = (SmZ - sinAlt * nz) / cosAlt;
+              const rLat = Tx * eNx + Ty * eNy + Tz * eNz, rLon = (Tx * eLx + Tz * eLz) / cLat;
+              const h0 = hAt(hu, hvv);
+              let dd = 1.3 / RAD_U;
+              while (dd < 0.3) {
+                const ray = h0 + MOON_R * dd * (tanAlt + dd / 2);    // visina zrake iznad kugle (km)
+                if (ray > HM.max) break;                             // iznad najvišeg vrha - slobodno
+                const hq = hAt(hu + rLon * dd * RAD_U, hvv - rLat * dd * RAD_V);
+                const pen = MOON_R * dd * 0.016;                     // širina polusjene (~Sunčev disk, malo šire = mekše)
+                const l = (ray - hq) / pen + 0.5;
+                if (l < shadowLit) { shadowLit = l; if (shadowLit <= 0) { shadowLit = 0; break; } }
+                dd *= 1.13;
+              }
+              if (shadowLit > 1) shadowLit = 1;
+            }
+          }
+        }
         if (map) {                                    // NASA karta omotana oko kugle (bilinearno)
           const px = nx * cf - ny * sf, py = nx * sf + ny * cf;
           const lat = Math.asin(Math.max(-1, Math.min(1, -py))), lon = Math.atan2(px, nz);
@@ -172,20 +306,71 @@
         const edge = Math.min(1, (1 - Math.sqrt(r2)) * R * 1.2);     // zaglađen rub diska
         // hrapava granica: svjetlina teksture malo pomakne granicu (planine/krateri uz terminator)
         const tl = (d[k] + d[k + 1] + d[k + 2]) / 765;
-        const mu0 = nx * sx + ny * sy + nz * sz + (tl - 0.72) * 0.07;
         let lit = 0;
-        if (mu0 > -0.1) {
-          const m0 = Math.max(mu0, 0);
-          // Lommel-Seeliger (pravi Mjesec) + malo Lamberta = postupno tamnjenje prema granici
-          lit = Math.min(1.1, 0.75 * (2 * m0 / (m0 + nz + 1e-4)) + 0.25 * m0);
-          const t = Math.min(1, Math.max(0, (mu0 + 0.1) / 0.4));    // široki mekani prijelaz
-          lit *= t * t * (3 - 2 * t);
+        if (reliefMu !== null) {
+          // s reljefom: stvarni nagib terena + bačena sjena; granica je oštrija (kao na pravom
+          // Mjesecu), a mekši je samo prijelaz unutar polusjene
+          let vis = 0;
+          if (reliefMu > 0) {
+            lit = Math.min(1.1, 0.75 * (2 * reliefMu / (reliefMu + nz + 1e-4)) + 0.25 * reliefMu);
+            const t = Math.min(1, reliefMu / 0.07);
+            vis = t * t * (3 - 2 * t) * shadowLit * shadowLit * (3 - 2 * shadowLit);
+          }
+          if (litBuf) { litBuf[k >> 2] = vis; baseBuf[k >> 2] = lit; continue; }   // sjenčanje u drugom prolazu
+          lit *= vis;
+        } else {
+          const mu0 = nx * sx + ny * sy + nz * sz + (tl - 0.72) * 0.07;
+          if (mu0 > -0.1) {
+            const m0 = Math.max(mu0, 0);
+            // Lommel-Seeliger (pravi Mjesec) + malo Lamberta = postupno tamnjenje prema granici
+            lit = Math.min(1.1, 0.75 * (2 * m0 / (m0 + nz + 1e-4)) + 0.25 * m0);
+            const t = Math.min(1, Math.max(0, (mu0 + 0.1) / 0.4));    // široki mekani prijelaz
+            lit *= t * t * (3 - 2 * t);
+          }
         }
         const shade = EARTH + (1 - EARTH) * lit * 0.95;
         d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge * (DARK + (1 - DARK) * Math.min(1, lit));
         m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
       }
       if (performance.now() > until) { await yieldFrame(); until = performance.now() + 8; }
+    }
+    if (litBuf) {
+      /* ZAGLAĐIVANJE SAMO VIDLJIVOSTI SUNCA (granica svjetla + bačene sjene), NE sjenčanja terena
+         ni fotografije: uklanja usamljene osvijetljene točkice uz granicu i nazubljene rubove
+         sjena (vlasnik: „točkice"), a krateri ostaju oštri. (Prvi pokušaj je zaglađivao cijelo
+         svjetlo - Mjesec je izgledao mutno, jer je detalj kratera upravo njihovo sjenčanje.)
+         Šator-filtar 1-2-1 (r = 1), na velikom Mjesecu 1-2-3-2-1 (r = 2). */
+      const rb = D > 1100 ? 2 : 1, tmpL = new Float32Array(D * D);
+      for (let pass = 0; pass < 2; pass++) {
+        const srcL = pass ? tmpL : litBuf, dstL = pass ? litBuf : tmpL;
+        for (let a = 0; a < D; a++) {
+          for (let b = 0; b < D; b++) {
+            const i = pass ? b * D + a : a * D + b;
+            if (srcL[i] < 0) { dstL[i] = -1; continue; }
+            let sum = 0, cnt = 0;
+            for (let o = -rb; o <= rb; o++) {
+              const bb = b + o; if (bb < 0 || bb >= D) continue;
+              const j = pass ? bb * D + a : a * D + bb, v = srcL[j], wgt = rb + 1 - Math.abs(o);
+              if (v >= 0) { sum += v * wgt; cnt += wgt; }
+            }
+            dstL[i] = sum / cnt;
+          }
+          if (performance.now() > until) { await yieldFrame(); until = performance.now() + 8; }
+        }
+      }
+      for (let y = 0, k = 0; y < D; y++) {
+        const ny = (y + 0.5 - R) / R;
+        for (let x = 0; x < D; x++, k += 4) {
+          const vis = litBuf[k >> 2];
+          if (vis < 0) continue;
+          const lit = baseBuf[k >> 2] * vis;
+          const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
+          const edge = Math.min(1, (1 - Math.sqrt(r2)) * R * 1.2);
+          const shade = EARTH + (1 - EARTH) * lit * 0.95;
+          d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge * (DARK + (1 - DARK) * Math.min(1, lit));
+          m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
+        }
+      }
     }
     fx.putImageData(img, 0, 0);
     if (!GLOW) return face;
@@ -240,6 +425,9 @@
 
   window.AJMoon = {
     loadMap: loadMoonMap,
+    loadMapHi: loadMoonMapHi,
+    loadHeight,
+    hasHeight: () => !!heightMap,
     hasMap: () => !!mapData,
     geometry: moonGeometry,
     render: renderMoon,

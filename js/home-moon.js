@@ -10,6 +10,7 @@
    HALLOWEEN (vlasnik): slide NE crta svoj Mjesec - Mjesec slidea je
    onaj iz pozadine (.hw-moon), a dok je slide na ekranu <html> dobije
    klasu `hm-lit` pa pozadinski Mjesec zasvijetli (css/home-slides.css).
+   Reljef i sjene kratera (karta visina) - v. reliefWhenNear().
    ============================================================ */
 (function () {
   'use strict';
@@ -34,9 +35,10 @@
     paintText(now, g.k);
     if (HW) return;                                   // Halloween: Mjesec je onaj u pozadini
     const css = el.clientWidth || 300;
-    const D = Math.max(200, Math.min(900, Math.round(css * Math.min(window.devicePixelRatio || 1, 2))));
+    // najveća moguća razlučivost (vlasnik): puna karta + platno = css px × devicePixelRatio (strop 2400)
+    const D = Math.max(200, Math.min(2400, Math.round(css * (window.devicePixelRatio || 1))));
     const light = document.documentElement.getAttribute('data-theme') === 'light';
-    const c = await window.AJMoon.render(D, g, light ? { dark: 0 } : { earth: 0.05 });
+    const c = await window.AJMoon.render(D, g, Object.assign({ hi: true, relief: window.AJMoon.hasHeight() }, light ? { dark: 0 } : { earth: 0.05 }));
     c.className = 'hm-moon-cv';
     const old = el.querySelector('canvas');
     if (old) old.replaceWith(c); else el.appendChild(c);
@@ -56,12 +58,30 @@
     sync();
   }
 
+  /* Karta visina (2,2 MB, reljef i sjene kratera) se NE skida sa svakom početnom - tek kad
+     posjetitelj dođe na kartu dana (slide prije) ili na sam slide Mjeseca; onda se Mjesec
+     ponovno nacrta sa sjenama. */
+  function reliefWhenNear() {
+    const slides = ['karta-dana', 'mjesec'].map(n => document.querySelector('.hs-slide[data-hs-name="' + n + '"]')).filter(Boolean);
+    if (!slides.length) return;
+    let done = false;
+    const check = () => {
+      if (done || !slides.some(s => s.classList.contains('hs-active'))) return;
+      done = true; mo.disconnect();
+      window.AJMoon.loadHeight().then(() => { if (window.AJMoon.hasHeight()) paint(); });
+    };
+    const mo = new MutationObserver(check);
+    slides.forEach(s => mo.observe(s, { attributes: true, attributeFilter: ['class'] }));
+    check();
+  }
+
   function start() {
     if (!window.AJMoon) return;
     if (HW) watchSlide();
+    else reliefWhenNear();
     const lib = window.Astronomy ? Promise.resolve() :
       (typeof loadScript === 'function') ? loadScript('js/lib/astronomy.browser.min.js') : Promise.reject();
-    Promise.all([lib.catch(() => {}), HW ? null : window.AJMoon.loadMap()]).then(() => {
+    Promise.all([lib.catch(() => {}), HW ? null : window.AJMoon.loadMapHi((document.getElementById('hm-moon') || {}).clientWidth * (window.devicePixelRatio || 1) || 0)]).then(() => {
       paint();
       setInterval(() => { if (!document.hidden) paint(); }, 10 * 60 * 1000);
       if (!HW) new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

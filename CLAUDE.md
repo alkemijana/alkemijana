@@ -41,7 +41,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-date.js               ← Datum kao 3 polja (dan/mjesec/godina) — prije natal.js
 │   ├── natal.js                    ← Natalna karta: forma, geocoding, init (glue)
 │   ├── natal-synastry.js           ← Sinastrija: prekidač moda, forma 2. osobe, submit, kontrole (glue — nakon natal.js)
-│   ├── ui-wheel.js                 ← Trake s odabirom u SREDINI + „cak" (window.AJWheel) - alat Mjesec i tranziti; prst, strelice i POVLAČENJE MIŠEM (snap isključen dok se vuče, klik nakon povlačenja poništen); prije natal-transit.js
+│   ├── ui-wheel.js                 ← Trake s odabirom u SREDINI + „cak" (window.AJWheel) - alat Mjesec i tranziti; prst, strelice, KLIK NA ELEMENT (dovede ga u sredinu) i POVLAČENJE MIŠEM (snap isključen dok se vuče, klik nakon povlačenja poništen; pointer capture tek kad vuča krene, inače klik ne pogodi element); prije natal-transit.js
 │   ├── natal-transit.js            ← Tranziti: kontrola vremena (kartice Dan/Mjesec/Godina + traka), živi bi-wheel, submit, PDF (glue — nakon natal-synastry.js)
 │   ├── natal-acg.js                ← AstroCartography: submit, izračun MC/IC/ASC/DSC linija po planetu (glue — nakon natal-transit.js)
 │   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
@@ -1223,7 +1223,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006s`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006t`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

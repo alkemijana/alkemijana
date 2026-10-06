@@ -78,26 +78,32 @@
      nakon puštanja se glatko poravna na najbliži element. Klik na element nakon povlačenja
      (> 5 px) se poništi, da se povlačenjem ne odabere slučajno element pod mišem.
      Dodir (prst/olovka) ide i dalje nativnim scrollom - ovo je samo za miš. */
+  /* Pointer capture se uzima TEK kad povlačenje stvarno krene (> 5 px): s captureom od
+     pritiska klik ide na cijelu traku umjesto na sličicu, pa klik na sličicu nije radio. */
   function attachMouseDrag(el) {
     let down = false, startX = 0, startLeft = 0, moved = 0;
     el.addEventListener('pointerdown', e => {
       if (e.pointerType !== 'mouse' || e.button !== 0) return;
       down = true; moved = 0; startX = e.clientX; startLeft = el.scrollLeft;
       el._dragged = false;
-      el.style.scrollSnapType = 'none';
-      el.classList.add('aj-dragging');
-      try { el.setPointerCapture(e.pointerId); } catch (err) {}
     });
     el.addEventListener('pointermove', e => {
       if (!down) return;
       const dx = e.clientX - startX;
       moved = Math.max(moved, Math.abs(dx));
-      if (moved > 5) el._dragged = true;
+      if (moved <= 5) return;
+      if (!el._dragged) {
+        el._dragged = true;
+        el.style.scrollSnapType = 'none';
+        el.classList.add('aj-dragging');
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      }
       el.scrollLeft = startLeft - dx;
     });
     const end = e => {
       if (!down) return;
       down = false;
+      if (!el._dragged) return;                  // običan klik - odradi ga 'click' (sličica u sredinu)
       el.classList.remove('aj-dragging');
       try { el.releasePointerCapture(e.pointerId); } catch (err) {}
       const idx = Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollLeft / pitch(el))));

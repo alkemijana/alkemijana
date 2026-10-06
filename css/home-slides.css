@@ -981,7 +981,12 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
     flex-direction: row; gap: calc(var(--hm-w) * 0.36);
   }
   html:not(.hw-on) .hm-moon { width: var(--hm-w); flex: 0 0 auto; }
-  html:not(.hw-on) .hm-text { margin-top: 0; align-items: flex-start; text-align: left; }
+  /* tekst u kućici (vlasnik), obje teme - ista podloga i obrub kao ostale kartice */
+  html:not(.hw-on) .hm-text {
+    margin-top: 0; align-items: flex-start; text-align: left;
+    padding: clamp(1.4rem, 3.4dvh, 2.4rem) clamp(1.6rem, 3vw, 2.6rem);
+    background: var(--card-bg); border: 1px solid var(--border);   /* bez blura: slide se pomiče */
+  }
   html:not(.hw-on) .hm-count { align-items: flex-start; }
 }
 

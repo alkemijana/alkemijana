@@ -395,7 +395,7 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
 - **Svijetla tema - alat i slide (vlasnik):** veliki Mjesec, sličice dana i Mjesec slidea crtaju se
   ISTO kao u tamnoj temi (pun tamni dio + Zemljin odsjaj), izravno na svijetloj stranici. Prije je
   tamni dio bio `dark: 0` pa se kroz njega vidjela bijela stranica - vlasniku se to nije sviđalo.
-  Crna vinjeta iza Mjeseca je probana pa **uklonjena na zahtjev** (svugdje, 6. 10. 2026.) - ne vraćati.
+  Crna vinjeta iza Mjeseca je probana pa **uklonjena na zahtjev** (svugdje, 6. 10. 2026.) - ne vraćati. Osvijetljeni dio je u svijetloj temi jači: `opts.gain` = `AJMoon.themeGain()` (1.35, i mali Mjesec u traci).
 - **Slide „Mjesec sada"** (`js/home-moon.js`, CSS u home-slides.css, prefiks **`hm-`**): ispod karte
   dana, veliki trenutni Mjesec iz Hrvatske (najveća razlučivost kao u alatu: `opts.hi` + css px ×
   devicePixelRatio) + mijena, osvijetljenost, znak u lokativu („u Lavu"); cijeli
@@ -1223,7 +1223,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006t`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006u`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

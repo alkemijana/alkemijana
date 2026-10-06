@@ -16,6 +16,7 @@
         opts.dark  (1)     prozirnost tamnog dijela (0 = nevidljiv, 1 = pun)
         opts.hi    (false) velika karta 2k/4k (treba AJMoon.loadMapHi(promjerDiskaPx)) - alat i slide
         opts.relief (false) reljef i bačene sjene kratera (treba AJMoon.loadHeight()) - alat i slide
+        opts.gain  (1)     pojačanje svjetline osvijetljenog dijela (svijetla tema 1.35); tamni dio se ne mijenja
 
    Učitava se SINKRONO u <head> PRIJE halloween.js (samo definira funkcije).
    ============================================================ */
@@ -219,6 +220,7 @@
     const L = g.limbDeg * Math.PI / 180;
     const sx = Math.sin(ph) * Math.cos(L), sy = Math.sin(ph) * Math.sin(L), sz = Math.cos(ph);
     const EARTH = opts.earth == null ? 0.025 : opts.earth;   // Zemljin odsjaj na tamnom dijelu - jedva (vlasnik: tamnije)
+    const GAIN = opts.gain || 1;                      // svjetlina OSVIJETLJENOG dijela (svijetla tema: jače); tamni dio ostaje
     const TINT = [1, 0.97, 0.9];                      // blago topla boja kosti
     /* RELJEF I SJENE (opts.relief, treba AJMoon.loadHeight()) - samo alat i slide „Mjesec".
        Karta visina daje nagib terena u svakoj točki; normala kugle se nagne za taj nagib pa
@@ -328,7 +330,7 @@
             lit *= t * t * (3 - 2 * t);
           }
         }
-        const shade = EARTH + (1 - EARTH) * lit * 0.95;
+        const shade = EARTH + (1 - EARTH) * lit * 0.95 * GAIN;
         d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge * (DARK + (1 - DARK) * Math.min(1, lit));
         m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
       }
@@ -366,7 +368,7 @@
           const lit = baseBuf[k >> 2] * vis;
           const nx = (x + 0.5 - R) / R, r2 = nx * nx + ny * ny;
           const edge = Math.min(1, (1 - Math.sqrt(r2)) * R * 1.2);
-          const shade = EARTH + (1 - EARTH) * lit * 0.95;
+          const shade = EARTH + (1 - EARTH) * lit * 0.95 * GAIN;
           d[k] *= shade; d[k + 1] *= shade; d[k + 2] *= shade; d[k + 3] = 255 * edge * (DARK + (1 - DARK) * Math.min(1, lit));
           m[k] = m[k + 1] = m[k + 2] = 255; m[k + 3] = 255 * Math.min(1, lit) * edge;
         }
@@ -423,7 +425,12 @@
     return 'Mlađak';
   }
 
+  // svijetla tema (vlasnik): osvijetljeni dio jače - na svijetloj stranici je inače djelovao sivo
+  const LIGHT_GAIN = 1.35;     // vlasnik: „okej tako"; izmjereno +23 % svjetline, u bijelo izgori ~0,3 % točaka
+  const themeGain = () => document.documentElement.getAttribute('data-theme') === 'light' ? LIGHT_GAIN : 1;
+
   window.AJMoon = {
+    themeGain,                                         // → opts.gain za trenutnu temu
     loadMap: loadMoonMap,
     loadMapHi: loadMoonMapHi,
     loadHeight,

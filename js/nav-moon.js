@@ -26,7 +26,7 @@
     const css = el.clientWidth || 30;
     const D = Math.round(css * Math.min(window.devicePixelRatio || 1, 3));
     const light = document.documentElement.getAttribute('data-theme') === 'light';
-    const c = await window.AJMoon.render(D, g, { glow: false, earth: 0.13, dark: light ? 0 : 0.28 });
+    const c = await window.AJMoon.render(D, g, { glow: false, earth: 0.13, dark: light ? 0 : 0.28, gain: window.AJMoon.themeGain() });
     const old = el.querySelector('canvas');
     if (old) old.replaceWith(c); else el.appendChild(c);
     el.title = 'Mjesec sada, viđen iz Hrvatske: ' + lcFirst(window.AJMoon.phaseName(now)) +

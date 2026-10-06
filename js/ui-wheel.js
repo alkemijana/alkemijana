@@ -66,9 +66,49 @@
     }, { passive: true });
     // dodir na element: dovede ga u sredinu (pa se odabere kao da je doklizao)
     el.addEventListener('click', e => {
+      if (el._dragged) { el._dragged = false; e.preventDefault(); e.stopPropagation(); return; }
       const it = e.target.closest('[data-w]');
       if (it) el.scrollTo({ left: +it.dataset.w * pitch(el), behavior: 'smooth' });
     });
+    attachMouseDrag(el);
+  }
+
+  /* POVLAČENJE MIŠEM (računalo, vlasnik): uhvati traku i vuci lijevo/desno - kao prstom.
+     Dok se vuče, scroll-snap je isključen (inače bi traka „skakala" po elementima pod mišem);
+     nakon puštanja se glatko poravna na najbliži element. Klik na element nakon povlačenja
+     (> 5 px) se poništi, da se povlačenjem ne odabere slučajno element pod mišem.
+     Dodir (prst/olovka) ide i dalje nativnim scrollom - ovo je samo za miš. */
+  function attachMouseDrag(el) {
+    let down = false, startX = 0, startLeft = 0, moved = 0;
+    el.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = 0; startX = e.clientX; startLeft = el.scrollLeft;
+      el._dragged = false;
+      el.style.scrollSnapType = 'none';
+      el.classList.add('aj-dragging');
+      try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    el.addEventListener('pointermove', e => {
+      if (!down) return;
+      const dx = e.clientX - startX;
+      moved = Math.max(moved, Math.abs(dx));
+      if (moved > 5) el._dragged = true;
+      el.scrollLeft = startLeft - dx;
+    });
+    const end = e => {
+      if (!down) return;
+      down = false;
+      el.classList.remove('aj-dragging');
+      try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+      const idx = Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollLeft / pitch(el))));
+      el.scrollTo({ left: idx * pitch(el), behavior: 'smooth' });
+      // snap natrag tek kad se glatko poravna (inače preuzme i „trzne")
+      setTimeout(() => { el.style.scrollSnapType = ''; }, 350);
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    // slike/tekst unutar elemenata se ne smiju „vući" kao datoteka
+    el.addEventListener('dragstart', e => e.preventDefault());
   }
   function jump(el, idx) {
     el._quiet = true;

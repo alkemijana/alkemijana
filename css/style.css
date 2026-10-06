@@ -3503,3 +3503,10 @@ body.moon-mode #natal { overflow-x: clip; }
   #transit-result .tr-readout { font-size: 0.88rem; text-align: center; }
   #transit-result .tr-readout-lbl { display: none; }   /* samo datum - stane u jedan red */
 }
+
+/* Trake (js/ui-wheel.js): na računalu se hvataju i vuku mišem - pokazivač „ruka" */
+@media (hover: hover) and (pointer: fine) {
+  .ml-week, .ml-hourwheel, .ml-week .ml-day, .ml-hourwheel .ml-hour { cursor: grab; user-select: none; -webkit-user-select: none; }
+  .ml-week.aj-dragging, .ml-hourwheel.aj-dragging { cursor: grabbing; }
+  .ml-week.aj-dragging *, .ml-hourwheel.aj-dragging * { cursor: grabbing; }
+}

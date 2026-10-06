@@ -289,6 +289,7 @@
     if (typeof showPage === 'function') showPage('natal');
     document.body.classList.add('moon-mode');
     $('moon-tool').hidden = false;
+    document.querySelectorAll('.tool-card[data-tool]').forEach(c => c.classList.toggle('is-active', c.dataset.tool === 'moon'));
     init();
     if (ready) update();
     requestAnimationFrame(() => {

@@ -324,9 +324,13 @@ normalno — zaključava se samo dok je početna aktivna.
 
 ## Astro alati (stranica #natal) — natalna karta, sinastrija, tranziti, astrokartografija
 
-Stranica **#natal** (nav link "Astro alati") okuplja sve astro alate, birane
-prekidačem `.nt-mode-seg` (natal/synastry/transit/acg — `setNatalMode()` u
-natal-synastry.js). Iznad forme je **5 kartica alata** (`.tool-cards-grid` u
+Stranica **#natal** (nav link "Astro alati") okuplja sve astro alate (natal/synastry/
+transit/acg — `setNatalMode()` u natal-synastry.js). **Alat se bira KARTICAMA**; prekidač
+`.nt-mode-seg` je SKRIVEN (vlasnik: nepotreban uz kartice) ali ostaje u DOM-u jer ga
+inicijalizacija koristi. Odabrana kartica ima `.is-active` (`data-tool` na kartici;
+postavljaju `setNatalMode()` i `MoonTool.open()`), a `openAstroTool()` scrolla do
+`#natal-mode-hint`. Polja forme: razmak SAMO kroz gap/marginu reda (`.nt-form-row`, 1rem),
+`.form-group` unutar reda nema marginu - inače su razmaci bili 49 / 26 / 50 px. Iznad forme je **5 kartica alata** (`.tool-cards-grid` u
 index.html; peta je „Mjesec"). Kartice su **kompaktne** (vlasnik: velike su zauzimale pola
 stranice): široko 5 u redu s malom ikonom, ≤1100 px vodoravne (ikona lijevo, tekst desno,
 3 + 2), ≤760 px 2 + 2 + 1, ≤520 px samo ikona + naziv u jednom uskom redu (opis skriven) — svaka s ručno crtanim SVG motivom (kotač/dvostruki krug/orbita/globus,
@@ -1156,7 +1160,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006g`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006h`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

@@ -2958,8 +2958,11 @@ body.acg-mode .nt-mode-hint { max-height: 5rem; opacity: 1; margin: 0 auto 1.6re
 }
 
 /* Natalna forma - poravnanje i tamni native pickeri */
-.nt-form-row { align-items: start; }
-.nt-form-row .form-group { margin-bottom: 1.6rem; }
+/* Jednaki razmaci (vlasnik: bili su 49 / 26 / 50 px - unutar reda su se zbrajali margina
+   polja i gap, između redova samo margina). Sada razmak daje SAMO gap (1rem) unutar
+   reda i ista margina (1rem) između redova - na mobitelu i na desktopu. */
+.nt-form-row { align-items: start; gap: 1rem 1.5rem; margin-bottom: 1rem; }
+.nt-form-row .form-group { margin-bottom: 0; }
 #natal-form input[type="date"],
 #natal-form input[type="time"] { color-scheme: dark; }
 :root[data-theme="light"] #natal-form input[type="date"],
@@ -3181,7 +3184,7 @@ body.moon-mode #synastry-result,
 body.moon-mode #transit-result,
 body.moon-mode #acg-result,
 body.moon-mode #natal-guide-section { display: none !important; }
-body.moon-mode #tool-card-moon { border-color: var(--lavender); }
+
 
 .ml-tool { max-width: 1040px; margin: 0 auto 3rem; }
 .ml-tool[hidden] { display: none; }
@@ -3345,3 +3348,13 @@ body.moon-mode #natal { overflow-x: clip; }
   font-family: 'Quicksand', sans-serif; font-size: 0.88rem; color: var(--text-muted);
 }
 .ml-readout strong { color: var(--lavender); font-weight: 600; }
+
+/* Prekidač modova je SKRIVEN (vlasnik: nepotreban, alati su gore kao kartice).
+   Ostaje u DOM-u (natal-synastry.js ga koristi pri inicijalizaciji); odabrani alat
+   pokazuje kartica s .is-active (postavljaju setNatalMode i MoonTool.open). */
+.nt-mode-row { display: none; }
+.tool-cards-grid .tool-card.is-active {
+  border-color: var(--lavender);
+  box-shadow: var(--shadow-glow);
+}
+.tool-cards-grid .tool-card.is-active::before { opacity: 1; }

@@ -157,9 +157,8 @@ function redrawChartWheel() {
     showCuspDegrees: NATAL_CHART_OPTS.showCuspDegrees
   });
 }
-
 /* Otvori stranicu Astro alati s odabranim modom (natal/synastry/transit/acg) i
-   scrolla do prekidača moda (Natalna karta/Sinastrija/...) - zajednička ulazna
+   scrolla do opisa iznad forme (prekidač modova je skriven) - zajednička ulazna
    točka za kartice alata i kolut na početnoj. */
 function openAstroTool(mode) {
   showPage('natal');
@@ -167,7 +166,7 @@ function openAstroTool(mode) {
     window.Synastry.setNatalMode(mode, true);
   }
   requestAnimationFrame(() => {
-    const target = document.getElementById('natal-mode-seg');
+    const target = document.getElementById('natal-mode-hint');   // prekidač je skriven - cilj je opis iznad forme
     if (!target) return;
     const navEl = document.querySelector('nav');
     const offset = (navEl ? navEl.offsetHeight : 0) + 16;

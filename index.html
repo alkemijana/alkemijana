@@ -201,8 +201,8 @@
     document.documentElement.className += ' aj-loading';
   </script>
   <!-- Halloween tjedan 25. 10. - 1. 11. (samostalan, sinkrono - mora prije prvog iscrtavanja i prije tarot-data.js) -->
-  <script src="js/moon-render.js?v=20261006g"></script><!-- crtanje Mjeseca (window.AJMoon) - prije halloween.js -->
-  <script src="js/halloween.js?v=20261006g"></script>
+  <script src="js/moon-render.js?v=20261006h"></script><!-- crtanje Mjeseca (window.AJMoon) - prije halloween.js -->
+  <script src="js/halloween.js?v=20261006h"></script>
 
   <!-- Fontovi (lokalno hostani - bez slanja IP-a Googleu).
        Preload za fontove "iznad pregiba" - ekran učitavanja čeka fontove
@@ -211,21 +211,21 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2"><!-- Playfair Display 700 -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2"><!-- Atkinson 400 latin -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G07JIoSwQ.woff2"><!-- Atkinson 400 latin-ext -->
-  <link rel="stylesheet" href="css/fonts.css?v=20261006g">
+  <link rel="stylesheet" href="css/fonts.css?v=20261006h">
 
   <!-- Stilovi (loader.css prvi - definira skrivanje sadržaja i ekran učitavanja) -->
-  <link rel="stylesheet" href="css/loader.css?v=20261006g">
-  <link rel="stylesheet" href="css/style.css?v=20261006g">
-  <link rel="stylesheet" href="css/nav-drawer.css?v=20261006gb"><!-- nakon style.css - nadjačava .nav-links -->
-  <link rel="stylesheet" href="css/home-slides.css?v=20261006g">
-  <link rel="stylesheet" href="tarot/tarot.css?v=20261006g">
-  <link rel="stylesheet" href="css/halloween-palette.css?v=20261006g"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
-  <link rel="stylesheet" href="css/halloween.css?v=20261006g"><!-- vrijedi samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/loader.css?v=20261006h">
+  <link rel="stylesheet" href="css/style.css?v=20261006h">
+  <link rel="stylesheet" href="css/nav-drawer.css?v=20261006hb"><!-- nakon style.css - nadjačava .nav-links -->
+  <link rel="stylesheet" href="css/home-slides.css?v=20261006h">
+  <link rel="stylesheet" href="tarot/tarot.css?v=20261006h">
+  <link rel="stylesheet" href="css/halloween-palette.css?v=20261006h"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/halloween.css?v=20261006h"><!-- vrijedi samo pod html.hw-on -->
 
   <!-- Animacije loga (ekran učitavanja, hero, traka) — mora prije loader.js -->
-  <script src="js/alkemijana-anim.js?v=20261006g" defer></script>
+  <script src="js/alkemijana-anim.js?v=20261006h" defer></script>
   <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
-  <script src="js/loader.js?v=20261006g" defer></script>
+  <script src="js/loader.js?v=20261006h" defer></script>
 </head>
 <body>
 
@@ -1016,7 +1016,7 @@
       <p class="section-subtitle" id="t-natalPageSub">Izradi svoju natalnu kartu online - pozicije planeta, kuće, aspekti i dominante.</p>
 
       <div class="tool-cards-grid">
-        <button type="button" class="tool-card" onclick="openAstroTool('natal')">
+        <button type="button" class="tool-card" data-tool="natal" onclick="openAstroTool('natal')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <!-- vanjski i unutarnji prsten (zodijak + kuće) -->
@@ -1041,7 +1041,7 @@
           <p id="t-toolCardNatalDesc"></p>
         </button>
 
-        <button type="button" class="tool-card" onclick="openAstroTool('synastry')">
+        <button type="button" class="tool-card" data-tool="synastry" onclick="openAstroTool('synastry')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <circle cx="38" cy="50" r="30" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
@@ -1052,7 +1052,7 @@
           <p id="t-toolCardSynastryDesc"></p>
         </button>
 
-        <button type="button" class="tool-card" onclick="openAstroTool('transit')">
+        <button type="button" class="tool-card" data-tool="transit" onclick="openAstroTool('transit')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <!-- eliptična orbita: kretanje planeta kroz vrijeme -->
@@ -1070,7 +1070,7 @@
           <p id="t-toolCardTransitDesc"></p>
         </button>
 
-        <button type="button" class="tool-card" onclick="openAstroTool('acg')">
+        <button type="button" class="tool-card" data-tool="acg" onclick="openAstroTool('acg')">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <ellipse cx="50" cy="50" rx="42" ry="42" fill="none" stroke="var(--lavender)" stroke-width="2.5"/>
@@ -1085,7 +1085,7 @@
         </button>
 
         <!-- Mjesec - samostalan alat (js/moon-tool.js), NE ide kroz prekidač modova -->
-        <button type="button" class="tool-card" id="tool-card-moon" onclick="openMoonTool()">
+        <button type="button" class="tool-card" id="tool-card-moon" data-tool="moon" onclick="openMoonTool()">
           <div class="tool-card-icon">
             <svg viewBox="0 0 100 100" aria-hidden="true">
               <!-- obris punog Mjeseca + osvijetljeni srp -->
@@ -1150,7 +1150,8 @@
         <p class="nt-note ml-note">Izračun se radi u tvom pregledniku (astronomy-engine). Slika Mjeseca: NASA's Scientific Visualization Studio (LRO). Nagib Mjeseca prikazan je onako kako se vidi s odabranog mjesta.</p>
       </div>
 
-      <!-- Prekidač: natalna karta (jedna osoba) ↔ sinastrija (dvije osobe) -->
+      <!-- Prekidač modova - SKRIVEN (vlasnik: alati su već gore kao kartice, koje sada pokazuju
+           odabrani alat). Ostaje u DOM-u jer ga natal-synastry.js koristi pri inicijalizaciji. -->
       <div class="nt-mode-row">
         <div class="nt-seg nt-mode-seg" id="natal-mode-seg" role="tablist" aria-label="Vrsta karte">
           <button type="button" class="nt-seg-btn active" data-mode="natal" id="natal-mode-natal">Natalna karta</button>
@@ -2060,39 +2061,39 @@
   });
 </script>
 
-<script src="js/data.js?v=20261006g"></script>
-<script src="js/app.js?v=20261006g"></script>
-<script src="js/nav-moon.js?v=20261006g"></script><!-- mali Mjesec u traci (PROTOTIP) -->
-<script src="js/home-slides.js?v=20261006g"></script><!-- slide deck početne (nakon app.js) -->
-<script src="js/logo.js?v=20261006g"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
-<script src="js/admin.js?v=20261006g"></script>
-<script src="js/natal-chiron.js?v=20261006g"></script>
-<script src="js/natal-data.js?v=20261006g"></script>
-<script src="js/natal-calc.js?v=20261006g"></script>
-<script src="js/natal-render.js?v=20261006g"></script>
-<script src="js/natal-pdf.js?v=20261006g"></script>
-<script src="js/natal-date.js?v=20261006g"></script>
-<script src="js/natal.js?v=20261006g"></script>
-<script src="js/natal-synastry.js?v=20261006g"></script>
-<script src="js/natal-transit.js?v=20261006g"></script>
-<script src="js/natal-acg.js?v=20261006g"></script>
-<script src="js/natal-acg-render.js?v=20261006g"></script>
-<script src="js/natal-ai.js?v=20261006g"></script>
-<script src="js/natal-birthcard.js?v=20261006g"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
-<script src="js/moon-tool.js?v=20261006g"></script><!-- alat „Mjesec" na Astro alatima (koristi natal-data.js, natal.js, moon-render.js) -->
-<script src="js/home-moon.js?v=20261006g"></script><!-- slide „Mjesec sada" na početnoj -->
-<script src="js/natal-live.js?v=20261006g"></script>
+<script src="js/data.js?v=20261006h"></script>
+<script src="js/app.js?v=20261006h"></script>
+<script src="js/nav-moon.js?v=20261006h"></script><!-- mali Mjesec u traci (PROTOTIP) -->
+<script src="js/home-slides.js?v=20261006h"></script><!-- slide deck početne (nakon app.js) -->
+<script src="js/logo.js?v=20261006h"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
+<script src="js/admin.js?v=20261006h"></script>
+<script src="js/natal-chiron.js?v=20261006h"></script>
+<script src="js/natal-data.js?v=20261006h"></script>
+<script src="js/natal-calc.js?v=20261006h"></script>
+<script src="js/natal-render.js?v=20261006h"></script>
+<script src="js/natal-pdf.js?v=20261006h"></script>
+<script src="js/natal-date.js?v=20261006h"></script>
+<script src="js/natal.js?v=20261006h"></script>
+<script src="js/natal-synastry.js?v=20261006h"></script>
+<script src="js/natal-transit.js?v=20261006h"></script>
+<script src="js/natal-acg.js?v=20261006h"></script>
+<script src="js/natal-acg-render.js?v=20261006h"></script>
+<script src="js/natal-ai.js?v=20261006h"></script>
+<script src="js/natal-birthcard.js?v=20261006h"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
+<script src="js/moon-tool.js?v=20261006h"></script><!-- alat „Mjesec" na Astro alatima (koristi natal-data.js, natal.js, moon-render.js) -->
+<script src="js/home-moon.js?v=20261006h"></script><!-- slide „Mjesec sada" na početnoj -->
+<script src="js/natal-live.js?v=20261006h"></script>
 
 <!-- Virtualni tarot (samostalan modul, tarot/; TAROT_CARD_TEXTS živi u js/data.js
      radi admin uređivanja - v. CLAUDE.md) -->
-<script src="tarot/tarot-data.js?v=20261006g"></script>
-<script src="tarot/tarot-engine.js?v=20261006g"></script>
-<script src="tarot/tarot-render.js?v=20261006g"></script>
-<script src="tarot/tarot.js?v=20261006g"></script>
+<script src="tarot/tarot-data.js?v=20261006h"></script>
+<script src="tarot/tarot-engine.js?v=20261006h"></script>
+<script src="tarot/tarot-render.js?v=20261006h"></script>
+<script src="tarot/tarot.js?v=20261006h"></script>
 
 <!-- Privola za kolačiće (GDPR) - samostalan modul, učitava se zadnji jer
      koristi showPage() iz app.js za poveznicu na pravila privatnosti -->
-<script src="js/consent.js?v=20261006g"></script>
+<script src="js/consent.js?v=20261006h"></script>
 
 </body>
 </html>

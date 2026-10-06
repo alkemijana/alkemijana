@@ -34,6 +34,8 @@ function setNatalMode(mode, persist) {
   seg.querySelectorAll('.nt-seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
   wrap.setAttribute('data-natal-mode', mode);
   if (window.MoonTool) window.MoonTool.close();   // alat „Mjesec" (js/moon-tool.js) je izvan prekidača
+  // prekidač je skriven - odabrani alat pokazuju kartice iznad forme
+  document.querySelectorAll('.tool-card[data-tool]').forEach(c => c.classList.toggle('is-active', c.dataset.tool === mode));
   document.body.classList.toggle('syn-mode', mode === 'synastry');
   document.body.classList.toggle('transit-mode', mode === 'transit');
   document.body.classList.toggle('acg-mode', mode === 'acg');

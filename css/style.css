@@ -634,7 +634,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 /* ---- KARTICE USLUGA ---- */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));   /* min(): na 320 px kartica od 300 px + rubovi nije stala */
   gap: 2rem;
   margin-top: 3rem;
 }
@@ -816,7 +816,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 /* ---- RECENZIJE ---- */
 .reviews-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 2rem;
   margin-top: 3rem;
 }
@@ -844,7 +844,7 @@ body > svg[viewBox="0 0 1920 1080"] {
 /* ---- BLOG KARTICE ---- */
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));   /* min(): na 320 px kartica od 300 px + rubovi nije stala */
   gap: 2.5rem;
   margin-top: 3rem;
 }
@@ -1333,7 +1333,13 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
 .footer-logo-art { display: block; width: 100%; aspect-ratio: 77.435 / 27.511; }
 .footer-logo-art svg { display: block; width: 100%; height: 100%; }
 .footer-tagline { font-family: 'Atkinson Hyperlegible', sans-serif; font-style: italic; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 0.18em; font-size: 1.45rem; }
-.footer-social  { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+.footer-social  { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; padding: 0 1rem; }
+/* Dva gumba (~168 px svaki) na 320 px nisu stala u red i gurala su stranicu 16 px u
+   širinu - na uskom ekranu se stisnu, a ako ni to nije dovoljno, prelome u dva reda. */
+@media (max-width: 380px) {
+  .footer-social { gap: 0.6rem; padding: 0 0.5rem; }
+  .footer-social .social-link { padding: 0.6rem 0.8rem; letter-spacing: 0.06em; gap: 0.45rem; }
+}
 .footer-copy    { color: var(--text-muted); font-family: 'Quicksand', sans-serif; font-size: 0.82rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); letter-spacing: 0.08em; }
 .footer-credit  { color: rgba(90, 84, 112, 0.45); font-family: 'Quicksand', sans-serif; font-size: 0.62rem; letter-spacing: 0.12em; margin-top: 1rem; }
 
@@ -1889,11 +1895,43 @@ footer { border-top: 1px solid var(--border); padding: 3rem 2rem 2rem; text-alig
   font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.96rem; color: var(--text);
   line-height: 1.5; margin: 0;
 }
-@media (max-width: 900px) {
-  .tool-cards-grid { grid-template-columns: repeat(2, 1fr); }
+/* Pet kartica (s Mjesecom) - KOMPAKTNE (vlasnik: bile su prevelike, zauzimale pola
+   stranice). Široko: svih 5 u redu, mala ikona iznad. Uže: vodoravne kartice (ikona
+   lijevo, naslov + opis desno) - 3 + 2 (centrirano), a na mobitelu jedna ispod druge. */
+.tool-cards-grid { gap: 0.8rem; margin-bottom: 1.8rem; }
+.tool-cards-grid .tool-card { padding: 1rem 0.9rem; }
+.tool-cards-grid .tool-card-icon { width: 44px; height: 44px; margin-bottom: 0.55rem; }
+.tool-cards-grid .tool-card h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+.tool-cards-grid .tool-card p { font-size: 0.84rem; line-height: 1.4; color: var(--text-muted); }
+@media (min-width: 1101px) {
+  .tool-cards-grid { grid-template-columns: repeat(5, 1fr); max-width: 1180px; }
 }
+@media (max-width: 1100px) {
+  .tool-cards-grid { grid-template-columns: repeat(6, 1fr); max-width: 980px; grid-auto-rows: 1fr; }
+  .tool-cards-grid .tool-card {
+    grid-column: span 2;
+    display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); column-gap: 0.85rem;
+    align-items: center; text-align: left; padding: 0.8rem 0.95rem;
+  }
+  .tool-cards-grid .tool-card:nth-child(4) { grid-column: 2 / span 2; }
+  .tool-cards-grid .tool-card-icon { grid-row: 1 / span 2; width: 2.5rem; height: 2.5rem; margin: 0; }
+  .tool-cards-grid .tool-card h3 { align-self: end; margin: 0 0 0.1rem; }
+  .tool-cards-grid .tool-card p { align-self: start; font-size: 0.8rem; line-height: 1.35; }
+}
+@media (max-width: 760px) {
+  .tool-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool-cards-grid .tool-card,
+  .tool-cards-grid .tool-card:nth-child(4) { grid-column: auto; }
+  .tool-cards-grid .tool-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+/* mobitel: samo ikona + naziv, jedan uski red po alatu - opis ondje pokazuje
+   tekst ispod prekidača modova (opis na kartici je udvostručio visinu popisa) */
 @media (max-width: 520px) {
-  .tool-cards-grid { grid-template-columns: 1fr; }
+  .tool-cards-grid { grid-template-columns: minmax(0, 1fr); gap: 0.45rem; grid-auto-rows: auto; }
+  .tool-cards-grid .tool-card { padding: 0.6rem 0.9rem; grid-template-columns: 2rem minmax(0, 1fr); }
+  .tool-cards-grid .tool-card-icon { grid-row: auto; width: 2rem; height: 2rem; }
+  .tool-cards-grid .tool-card h3 { align-self: center; margin: 0; }
+  .tool-cards-grid .tool-card p { display: none; }
 }
 
 /* - AstroCartography (Leaflet karta) - */
@@ -3129,3 +3167,181 @@ html.cc-blocking body > *:not(.cc-banner):not(.cc-overlay):not(#aj-loader) {
   .cc-panel-actions .cc-btn { flex: 1 1 auto; }
   .legal-dense p { text-align: left; }  /* justify na uskom zaslonu radi ružne rupe */
 }
+
+/* ============================================================
+   Alat „Mjesec" (js/moon-tool.js, prefiks ml-)
+   Dok je otvoren, body ima .moon-mode: skriva se sve što pripada
+   ostalim četirima alatima (prekidač, njihova forma, rezultati, vodič).
+   ============================================================ */
+body.moon-mode .nt-mode-row,
+body.moon-mode #natal-mode-hint,
+body.moon-mode #natal-form-wrap,
+body.moon-mode #natal-result,
+body.moon-mode #synastry-result,
+body.moon-mode #transit-result,
+body.moon-mode #acg-result,
+body.moon-mode #natal-guide-section { display: none !important; }
+body.moon-mode #tool-card-moon { border-color: var(--lavender); }
+
+.ml-tool { max-width: 1040px; margin: 0 auto 3rem; }
+.ml-tool[hidden] { display: none; }
+.ml-form { max-width: none; }
+.ml-form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.ml-form-grid > * { min-width: 0; }
+/* razmak ide SAMO kroz gap mreže - margina .form-group se inače zbrajala s njim (~42 px) */
+.ml-form .form-group { margin-bottom: 0; }
+.ml-form .nt-error { margin: 1rem 0 0; }
+/* srednji ekran: mjesto preko cijelog reda, datum i vrijeme ispod (inače se vrijeme stisne) */
+@media (max-width: 1000px) {
+  .ml-form-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .ml-place { grid-column: 1 / -1; }
+}
+.ml-time-row { display: flex; gap: 0.5rem; align-items: stretch; }
+.ml-time-row input { flex: 1 1 auto; min-width: 0; }
+.ml-now { flex: 0 0 auto; padding: 0.5rem 0.9rem; }
+.ml-sliders { max-width: 760px; margin: 1.6rem auto 0; display: grid; gap: 0.35rem; }
+.ml-sliders .tr-row { grid-template-columns: 4.2rem 1fr 4.4rem; }
+.ml-sl-val { font-family: 'Quicksand', sans-serif; font-size: 0.86rem; color: var(--text-muted); text-align: right; }
+
+.ml-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: center;
+  margin-top: 2.2rem;
+}
+/* Sjaj (platno 150 %) smije preko stupca sve do ruba ekrana (vlasnik: odrezan je izgledao
+   ružno), ali ne smije raširiti stranicu - zato se reže tek na cijeloj stranici, koja je
+   široka kao ekran. clip (ne hidden) ne stvara scroll pa ne kvari sticky/scroll. */
+.ml-moon-col { display: flex; flex-direction: column; align-items: center; }
+body.moon-mode #natal { overflow-x: clip; }
+.ml-moon {
+  position: relative;
+  width: min(380px, 100%);
+  aspect-ratio: 1;
+  margin: 12% 0;          /* mjesto za sjaj (platno je 150 %) */
+  transition: opacity 0.4s ease;
+}
+/* obris punog diska - u svijetloj temi tamni dio Mjeseca nije nacrtan, pa ovaj
+   tanki krug pokazuje gdje je ostatak */
+.ml-moon::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px dashed var(--border); opacity: 0; transition: opacity 0.4s;
+}
+:root[data-theme="light"] .ml-moon.ml-ready::before { opacity: 1; }
+.ml-moon-cv { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; display: block; pointer-events: none; }
+/* ispod obzora: potamnjen, ali neproziran (kroz proziran Mjesec su se vidjele zvijezde) */
+.ml-moon.ml-below .ml-moon-cv { filter: brightness(0.38) saturate(0.6); }
+.ml-horizon {
+  min-height: 1.4em; margin: 0; text-align: center;
+  font-family: 'Quicksand', sans-serif; font-size: 0.86rem; color: var(--text-muted);
+}
+
+.ml-phase { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--lavender); margin: 0 0 0.2rem; }
+.ml-when { font-family: 'Quicksand', sans-serif; font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1.2rem; }
+.ml-facts { margin: 0; display: grid; border-top: 1px solid var(--border); }
+.ml-fact {
+  display: grid; grid-template-columns: 9.5rem 1fr; gap: 0.8rem;
+  padding: 0.55rem 0; border-bottom: 1px solid var(--border);
+}
+.ml-fact dt { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); align-self: center; }
+.ml-fact dd { margin: 0; font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.ml-glyph { color: var(--lavender); flex: 0 0 auto; }
+.ml-badge {
+  font-family: 'Quicksand', sans-serif; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+  border: 1px solid var(--sage); color: var(--sage); padding: 0.1rem 0.45rem;
+}
+.ml-note { text-align: center; margin-top: 1.8rem; }
+
+@media (max-width: 768px) {
+  .ml-form-grid { grid-template-columns: 1fr; }
+  .ml-stage { grid-template-columns: 1fr; gap: 1rem; margin-top: 1.2rem; }
+  .ml-moon { width: min(380px, 74%); }
+  .ml-fact { grid-template-columns: 8rem 1fr; }
+  .ml-phase, .ml-when { text-align: center; }
+}
+
+/* Tjedan ispod Mjeseca: 7 dana u redu; na mobitelu se traka vodoravno lista
+   (scroll samo unutar trake - stranica se ne smije raširiti) */
+.ml-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 1.8rem;
+}
+.ml-day {
+  display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+  padding: 0.7rem 0.3rem 0.6rem;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 0;
+  color: var(--text); font: inherit; cursor: pointer; min-width: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.ml-day:focus-visible { outline: none; border-color: var(--lavender); }
+@media (hover: hover) {
+  .ml-day:hover { border-color: var(--lavender); transform: translateY(-2px); }
+}
+.ml-day.ml-day-sel { border-color: var(--lavender); box-shadow: var(--shadow-glow); cursor: default; }
+.ml-day-name {
+  font-family: 'Quicksand', sans-serif; font-size: 0.74rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--lavender);
+}
+.ml-day-date { font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
+.ml-day-moon { position: relative; width: 56px; height: 56px; margin: 0.35rem 0; }
+.ml-day-moon canvas { display: block; width: 100%; height: 100%; }
+:root[data-theme="light"] .ml-day-moon::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px dashed var(--border);
+}
+.ml-day-phase {
+  font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.82rem; line-height: 1.25;
+  text-align: center; min-height: 2.5em;
+}
+.ml-day-pct { font-family: 'Quicksand', sans-serif; font-size: 0.78rem; color: var(--text-muted); }
+
+/* Uski ekran (vlasnik): BEZ vodoravnog listanja - prikazuju se samo prva 4 dana,
+   manje sličice, i sva 4 stanu u red. */
+@media (max-width: 600px) {
+  .ml-week { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
+  .ml-day:nth-child(n+5) { display: none; }
+  .ml-day { padding: 0.55rem 0.15rem 0.5rem; gap: 0.1rem; }
+  .ml-day-name { font-size: 0.68rem; letter-spacing: 0.05em; }
+  .ml-day-date, .ml-day-pct { font-size: 0.72rem; }
+  .ml-day-moon { width: 42px; height: 42px; margin: 0.25rem 0; }
+  .ml-day-phase { font-size: 0.74rem; }
+  .ml-sliders .tr-row { grid-template-columns: 2.8rem 1fr 3.6rem; gap: 0.6rem; }
+}
+.ml-nw { white-space: nowrap; }
+
+/* Raspored alata „Mjesec" (vlasnik): kad opis stane sa strane - Mjesec lijevo,
+   opis desno, a tjedan i klizači ispod oboje. Kad ne stane - ispod Mjeseca
+   PRVO tjedan i klizači, pa tek onda tablica s opisom. */
+.ml-stage {
+  grid-template-areas: "moon head" "moon info" "week week" "sliders sliders";
+  grid-template-rows: auto auto;
+  row-gap: 0;
+}
+.ml-moon-col { grid-area: moon; align-self: center; }
+.ml-head     { grid-area: head; align-self: end; }
+.ml-info     { grid-area: info; align-self: start; }
+.ml-week     { grid-area: week; min-width: 0; }   /* bez min-width:0 bi traka na mobitelu raširila stupac umjesto da se lista */
+.ml-sliders  { grid-area: sliders; width: 100%; }
+@media (max-width: 768px) {
+  .ml-stage { grid-template-areas: "head" "moon" "week" "sliders" "info"; }
+  .ml-head { text-align: center; }
+  .ml-head .ml-when { margin-bottom: 0; }
+  .ml-moon { margin: 7% 0 8%; }   /* sjaj smije zaći malo pod naslov - inače je razmak prevelik */
+  .ml-info { margin-top: 2rem; }
+
+}
+/* bez jedne riječi same u zadnjem redu (npr. „vidi.") */
+.ml-horizon, .ml-when, .ml-tool .tr-hint, .ml-note { text-wrap: balance; }
+/* točan trenutak na koji su pomaknuti klizači */
+.ml-readout {
+  margin: 0.6rem 0 0; text-align: center; text-wrap: balance;
+  font-family: 'Quicksand', sans-serif; font-size: 0.88rem; color: var(--text-muted);
+}
+.ml-readout strong { color: var(--lavender); font-weight: 600; }

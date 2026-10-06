@@ -342,3 +342,32 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---- Mali Mjesec uz ☰ (js/nav-moon.js) - GUMB ZA TEMU (svijetla/tamna) ----
+   margin-left:auto ga gura udesno (uz ☰, ili na kraj trake kad je ☰ skriven);
+   auto margina "pojede" slobodan prostor pa space-between trake ostaje netaknut. */
+.nd-moon {
+  margin-left: auto;
+  margin-right: 0.35rem;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease, transform 0.25s;
+  position: relative;
+  padding: 0; border: none; background: none; border-radius: 50%;
+  cursor: pointer;
+}
+/* veća površina za dodir (lijevo, gore, dolje) - NE udesno, prema ☰, da se ne pogodi krivi gumb */
+.nd-moon::after { content: ""; position: absolute; inset: -7px 0 -7px -8px; }
+.nd-moon:focus-visible { outline: 1px solid var(--lavender); outline-offset: 3px; }
+@media (hover: hover) {
+  .nd-moon:hover { transform: scale(1.1); }
+}
+.nd-moon canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
+/* Mjesec je sada gumb za temu - stari okrugli gumb u traci bi bio dupli. Samo kad se
+   Mjesec stvarno iscrtao (:has), inače bi traka ostala bez promjene teme. */
+#main-nav:has(.nd-moon-ready) .nd-bar .nd-theme { display: none; }
+.nd-moon.nd-moon-ready { opacity: 0.92; }
+html.nd-bar-on .nd-moon { margin-left: 1.6rem; margin-right: 0; }
+html.hw-on .nd-moon, html.hw-intro .nd-moon { display: none; }   /* u Halloween tjednu je veliki Mjesec u pozadini */

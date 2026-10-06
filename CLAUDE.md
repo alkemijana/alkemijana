@@ -46,6 +46,10 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-birthcard.js          ← Tarot karta rođenja (Greer) iznad PDF gumbi natalne karte + blok u radnom PDF-u, natal + sinastrija (samostalan)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
+│   ├── moon-render.js              ← Crtanje Mjeseca (window.AJMoon: NASA karta, faza, nagib, sjaj) — zajedničko za Halloween, traku i alat; SINKRONO u <head> prije halloween.js
+│   ├── nav-moon.js                 ← Mali Mjesec u traci uz ☰ (stvarna faza iz Hrvatske; nije klikabilan; skriven u Halloween tjednu)
+│   ├── moon-tool.js                ← Alat „Mjesec" na Astro alatima (peta kartica, izvan prekidača modova)
+│   ├── home-moon.js                ← Slide „Mjesec sada" na početnoj (prefiks hm-, klik → alat Mjesec; u Halloweenu zasvijetli pozadinski Mjesec)
 │   ├── halloween.js                ← Halloween tjedan 25. 10.–1. 11.: sablasna tema, stvarni Mjesec, šišmiši, Samhain (samostalan, SINKRONO u <head>)
 │   ├── consent.js                  ← GDPR: privola za kolačiće, učitava GA tek nakon pristanka (samostalan)
 │   ├── loader.js                   ← Ekran učitavanja: animacija loga + čeka fontove i 'aj:ready' iz app.js, pa otkrije stranicu
@@ -163,7 +167,7 @@ normalno — zaključava se samo dok je početna aktivna.
 
 - **Datoteke:** `css/home-slides.css` + `js/home-slides.js` (prefiks **`hs-`**),
   `css/nav-drawer.css` (prefiks **`nd-`**, logika `toggleMenu`/`closeMenu` u app.js).
-- **Slideovi (redom):** hero → natalna karta → karta dana → *usluge* → *CTA* → blog →
+- **Slideovi (redom):** hero → natalna karta → karta dana → **Mjesec sada** → *usluge* → *CTA* → blog →
   *recenzije* → **izbornik (karte razložene u spread)**.
   Kurzivom označeni ovise o togglovima u adminu: nose `data-hs-requires="<id>"` i deck ih
   **preskače kad je taj element `display:none`**. Popis se računa iz stvarne vidljivosti, ne iz
@@ -322,8 +326,10 @@ normalno — zaključava se samo dok je početna aktivna.
 
 Stranica **#natal** (nav link "Astro alati") okuplja sve astro alate, birane
 prekidačem `.nt-mode-seg` (natal/synastry/transit/acg — `setNatalMode()` u
-natal-synastry.js). Iznad forme su **4 kartice alata** (`.tool-cards-grid` u
-index.html) — svaka s ručno crtanim SVG motivom (kotač/dvostruki krug/orbita/globus,
+natal-synastry.js). Iznad forme je **5 kartica alata** (`.tool-cards-grid` u
+index.html; peta je „Mjesec"). Kartice su **kompaktne** (vlasnik: velike su zauzimale pola
+stranice): široko 5 u redu s malom ikonom, ≤1100 px vodoravne (ikona lijevo, tekst desno,
+3 + 2), ≤760 px 2 + 2 + 1, ≤520 px samo ikona + naziv u jednom uskom redu (opis skriven) — svaka s ručno crtanim SVG motivom (kotač/dvostruki krug/orbita/globus,
 `var(--lavender)`/`var(--sage)` boje, prati temu), naslovom i kratkim opisom;
 tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
 
@@ -356,6 +362,51 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   prekidača modova, hintova i submit gumba po modu također su u TEXTS
   (`natalMode*`, `natalHint*`, `natalBtnSynastry/Transit/Acg` —
   `applyModeTexts()` u natal-synastry.js).
+
+## Mjesec — zajedničko crtanje, mali Mjesec u traci, alat „Mjesec"
+
+- **`js/moon-render.js` (`window.AJMoon`)** je JEDINO mjesto gdje se Mjesec crta: NASA karta
+  (`assets/halloween/moon-lroc-1k.jpg`) omotana oko kugle, osvjetljenje kao na kugli, nagib iz
+  paralaktičkog kuta. Izvučeno iz halloween.js bez promjene izgleda — Halloween ga zove sa
+  zadanim opcijama (sjaj, pun tamni dio) i i dalje računa **za Rab** (vlasnik: Halloween ostaje kako je).
+  Opcije: `glow`, `earth` (Zemljin odsjaj), `dark` (prozirnost tamnog dijela). Učitava se
+  sinkrono u `<head>` prije halloween.js. `AJMoon.phaseName(date)` daje naziv mijene.
+- **Mali Mjesec u traci** (`#nd-moon`, `js/nav-moon.js`, CSS u nav-drawer.css): lijevo od ☰,
+  30 px, stvarna faza **iz Hrvatske** (središte, 45.10 / 15.20). To je `<button>` — **klik mijenja
+  svijetlu/tamnu temu** (`toggleTheme(event)`, krug animacije kreće iz Mjeseca). NE otvara alat
+  „Mjesec" (vlasnik: preblizu ☰). Proširena površina za dodir ide samo lijevo/gore/dolje, ne prema ☰.
+  Kad je Mjesec iscrtan, stari okrugli gumb za temu u širokoj traci se skriva
+  (`#main-nav:has(.nd-moon-ready) .nd-bar .nd-theme`); gumb „Promijeni temu" u izborniku ostaje. U svijetloj temi tamni dio je potpuno skriven
+  (`dark: 0`), u tamnoj jedva vidljiv. U Halloween tjednu (`hw-on`/`hw-intro`) se ne prikazuje.
+- **Slide „Mjesec sada"** (`js/home-moon.js`, CSS u home-slides.css, prefiks **`hm-`**): ispod karte
+  dana, veliki trenutni Mjesec iz Hrvatske + mijena, osvijetljenost, znak u lokativu („u Lavu"); cijeli
+  je poveznica na `openMoonTool()`. **U Halloween tjednu slide NE crta svoj Mjesec** (vlasnik): Mjesec
+  slidea je onaj iz pozadine (`.hw-moon`) - `.hm-moon` je tada prazno klikabilno mjesto točno preko
+  njega (iste mjere kao `.hw-moon-geo`, PAZI ako se one mijenjaju), tekst stoji ispod, a dok je slide
+  na ekranu `<html>` ima `hm-lit` i pozadinski Mjesec zasvijetli (0.15 → 0.6).
+- **Alat „Mjesec"** (`js/moon-tool.js`, prefiks **`ml-`**): peta kartica na Astro alatima
+  (`openMoonTool()`), vlastita forma (mjesto · datum · vrijeme · ⟳ Sada). Ispod velikog
+  Mjeseca je **tjedan** (`#ml-week`: odabrani dan + sljedećih 6 u isto doba dana, male sličice
+  bez sjaja, mijena i %; klik na dan ga postavi kao datum; ≤600 px samo prva 4 dana, manja —
+  vodoravno listanje je probano i vlasnik ga NE želi),
+  a tek ispod toga klizači Sat/Dan za fino pomicanje (vlasnik: klizači nisu glavni način).
+  **Raspored (grid-template-areas na `.ml-stage`):** široko = Mjesec lijevo, naslov mijene
+  (`.ml-head`) + tablica desno, tjedan i klizači ispod oboje; ≤768 px = naslov → Mjesec → tjedan
+  → klizači → tablica (vlasnik: naslov IZNAD Mjeseca). Polja forme nemaju marginu
+  (`.ml-form .form-group`), razmak daje samo gap mreže. Ispod klizača
+  NEMA rečenice s uputom (vlasnik: nepotrebna), nego „Prikazano: <dan, datum u sat>" (`#ml-readout`,
+  osvježava `update()`) - točan trenutak na koji su klizači pomaknuli sidro. Pravopis: „posljednja četvrt", datumi „6. 10. 2026."
+  (Intl za hr daje „06." pa ih slaže `dmy()`), tisućice razmakom („374 412 km"), neprelomivi
+  razmaci ispred „%"/„km"/„dana" i unutar datuma.
+  **Nije u prekidaču modova** (pet gumba je pretijesno na mobitelu): dok je otvoren, `body` ima
+  `moon-mode` koji skriva prekidač, formu i rezultate ostalih alata; `setNatalMode()` ga zatvara.
+  Prikazuje mijenu, osvijetljenost, znak (EclipticGeoMoon — ekliptika datuma), starost, visinu
+  nad obzorom i smjer, izlazak/zalazak za MJESNI dan, sljedeći mlađak/uštap, udaljenost
+  (+ „supermjesec" uz uštap < 361 863 km). Dok se vuče klizač crta se mali pregled (140 px),
+  puna kvaliteta 220 ms nakon zadnjeg pomaka. Sjaj je platno 150 % i smije do ruba
+  ekrana (vlasnik: rez na rubu stupca je izgledao ružno) — `overflow-x: clip` je zato na
+  `body.moon-mode #natal` (široka kao ekran), NE na stupcu; bez toga sjaj na mobitelu širi stranicu. Ništa se ne sprema.
+  Tekstovi kartice su zasad u HTML-u (nisu u TEXTS/adminu).
 
 ## Natalna karta (js/natal.js)
 
@@ -1105,7 +1156,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006f`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006g`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

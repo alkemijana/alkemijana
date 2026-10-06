@@ -867,3 +867,77 @@ html.hs-lock body {
 
   .hs-hint svg { animation: none; }
 }
+
+/* ============================================================
+   Slide „Mjesec sada" (js/home-moon.js, prefiks hm-)
+   Veliki Mjesec u sredini, ispod naziv mijene; cijela cjelina je
+   poveznica na alat „Mjesec". Mjere po obrascu min(vh, vw) kao kotač.
+   ============================================================ */
+#home-moon-section { display: flex; justify-content: center; }
+/* HALLOWEEN (vlasnik): slide ne crta svoj Mjesec - Mjesec slidea JE onaj iz pozadine
+   (.hw-moon, halloween.css), koji dok je slide na ekranu postane svjetliji (html.hm-lit,
+   js/home-moon.js). .hm-moon je tada prazno (klikabilno) mjesto točno preko njega - iste
+   mjere kao .hw-moon-geo - a tekst stoji ispod. */
+html.hw-on .hm-moon {
+  --hw-moon-w: min(58vmin, 560px);
+  position: absolute; left: 50%; top: 50%;
+  width: var(--hw-moon-w); height: var(--hw-moon-w);
+  margin: calc(var(--hw-moon-w) / -2) 0 0 calc(var(--hw-moon-w) / -2);
+  border-radius: 50%;
+}
+html.hw-on .hm-moon canvas, html.hw-on .hm-moon::before { display: none; }
+html.hw-on .hm-text {
+  position: absolute; left: 0; right: 0;
+  top: calc(50% + var(--hw-moon-w, min(58vmin, 560px)) / 2 + clamp(1rem, 3dvh, 2rem));
+  margin: 0; padding: 0 1rem;
+}
+@media (max-width: 768px) {
+  html.hw-on .hm-moon { --hw-moon-w: min(92vw, 440px); top: 46%; }
+  html.hw-on .hm-text { top: calc(46% + min(92vw, 440px) / 2 + 1rem); }
+}
+@media (min-width: 769px) {
+  html.hw-on .hm-text { top: calc(50% + min(58vmin, 560px) / 2 + clamp(1rem, 3dvh, 2rem)); }
+}
+@media (hover: hover) {
+  html.hw-on .hm-wrap:hover .hm-moon { transform: none; }
+}
+/* Mjesec u pozadini zasvijetli dok je slide „Mjesec sada" na ekranu */
+html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.9s; }
+.hm-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  text-decoration: none; color: inherit; cursor: pointer;
+}
+.hm-moon {
+  position: relative; display: block;
+  width: clamp(180px, min(50dvh, 72vw), 460px);
+  aspect-ratio: 1;
+  transition: transform 0.4s ease;
+}
+/* svijetla tema: tamni dio se ne crta, tanki obris pokazuje cijeli disk */
+.hm-moon::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px dashed var(--border); opacity: 0;
+}
+:root[data-theme="light"] .hm-moon.hm-ready::before { opacity: 1; }
+.hm-moon-cv { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }
+.hm-text {
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  margin-top: clamp(1.2rem, 4dvh, 2.4rem); text-align: center;
+}
+.hm-eyebrow {
+  font-family: 'Quicksand', sans-serif; font-size: 0.74rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--sage);
+}
+.hm-phase { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, min(4vw, 4dvh), 2.2rem); color: var(--lavender); }
+.hm-meta { font-family: 'Quicksand', sans-serif; font-size: 0.92rem; color: var(--text-muted); }
+.hm-cta {
+  margin-top: 0.5rem; font-family: 'Quicksand', sans-serif; font-size: 0.85rem;
+  letter-spacing: 0.04em; color: var(--lavender); text-wrap: balance;
+  border-bottom: 1px solid transparent; transition: border-color 0.25s;
+}
+.hm-wrap:focus-visible { outline: none; }
+.hm-wrap:focus-visible .hm-cta { border-bottom-color: var(--lavender); }
+@media (hover: hover) {
+  .hm-wrap:hover .hm-moon { transform: scale(1.03); }
+  .hm-wrap:hover .hm-cta { border-bottom-color: var(--lavender); }
+}

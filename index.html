@@ -201,7 +201,8 @@
     document.documentElement.className += ' aj-loading';
   </script>
   <!-- Halloween tjedan 25. 10. - 1. 11. (samostalan, sinkrono - mora prije prvog iscrtavanja i prije tarot-data.js) -->
-  <script src="js/halloween.js?v=20261006f"></script>
+  <script src="js/moon-render.js?v=20261006g"></script><!-- crtanje Mjeseca (window.AJMoon) - prije halloween.js -->
+  <script src="js/halloween.js?v=20261006g"></script>
 
   <!-- Fontovi (lokalno hostani - bez slanja IP-a Googleu).
        Preload za fontove "iznad pregiba" - ekran učitavanja čeka fontove
@@ -210,21 +211,21 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2"><!-- Playfair Display 700 -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G04pIo.woff2"><!-- Atkinson 400 latin -->
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/web/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45G07JIoSwQ.woff2"><!-- Atkinson 400 latin-ext -->
-  <link rel="stylesheet" href="css/fonts.css?v=20261006f">
+  <link rel="stylesheet" href="css/fonts.css?v=20261006g">
 
   <!-- Stilovi (loader.css prvi - definira skrivanje sadržaja i ekran učitavanja) -->
-  <link rel="stylesheet" href="css/loader.css?v=20261006f">
-  <link rel="stylesheet" href="css/style.css?v=20261006f">
-  <link rel="stylesheet" href="css/nav-drawer.css?v=20261006fb"><!-- nakon style.css - nadjačava .nav-links -->
-  <link rel="stylesheet" href="css/home-slides.css?v=20261006f">
-  <link rel="stylesheet" href="tarot/tarot.css?v=20261006f">
-  <link rel="stylesheet" href="css/halloween-palette.css?v=20261006f"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
-  <link rel="stylesheet" href="css/halloween.css?v=20261006f"><!-- vrijedi samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/loader.css?v=20261006g">
+  <link rel="stylesheet" href="css/style.css?v=20261006g">
+  <link rel="stylesheet" href="css/nav-drawer.css?v=20261006gb"><!-- nakon style.css - nadjačava .nav-links -->
+  <link rel="stylesheet" href="css/home-slides.css?v=20261006g">
+  <link rel="stylesheet" href="tarot/tarot.css?v=20261006g">
+  <link rel="stylesheet" href="css/halloween-palette.css?v=20261006g"><!-- GENERIRANO (tools/halloween-palette.js), samo pod html.hw-on -->
+  <link rel="stylesheet" href="css/halloween.css?v=20261006g"><!-- vrijedi samo pod html.hw-on -->
 
   <!-- Animacije loga (ekran učitavanja, hero, traka) — mora prije loader.js -->
-  <script src="js/alkemijana-anim.js?v=20261006f" defer></script>
+  <script src="js/alkemijana-anim.js?v=20261006g" defer></script>
   <!-- Orkestracija ekrana učitavanja (defer: pokreće se prije DOMContentLoaded) -->
-  <script src="js/loader.js?v=20261006f" defer></script>
+  <script src="js/loader.js?v=20261006g" defer></script>
 </head>
 <body>
 
@@ -530,6 +531,8 @@
     <!-- logo = šešir; js/logo.js ga iscrta (desktop: animacija na hover) -->
     <div class="logo" id="nav-logo" onclick="goHome()"><span class="visually-hidden">Alkemijana</span><span class="logo-art" aria-hidden="true"></span></div>
     <div class="nd-bar" id="nd-bar"></div>
+    <!-- mali Mjesec u stvarnoj fazi (js/nav-moon.js) - klik mijenja svijetlu/tamnu temu -->
+    <button type="button" class="nd-moon" id="nd-moon" onclick="toggleTheme(event)" aria-label="Promijeni temu (svijetla / tamna)"></button>
     <button class="nd-toggle" id="nd-toggle" onclick="toggleMenu()"
             aria-label="Otvori izbornik" aria-expanded="false" aria-controls="nd-drawer">
       <span class="nd-icon nd-icon-open"  aria-hidden="true">☰</span>
@@ -612,6 +615,24 @@
         <div class="hs-inner">
           <div class="container">
             <div id="vtar-cotd-root"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3b. Mjesec sada (js/home-moon.js, prefiks hm-) - klik otvara alat „Mjesec".
+           U Halloween tjednu se preskače (veliki Mjesec je ionako u pozadini). -->
+      <div class="hs-slide" data-hs-name="mjesec" data-hs-requires="home-moon-section">
+        <div class="hs-inner">
+          <div class="container" id="home-moon-section">
+            <a class="hm-wrap" href="#natal" onclick="openMoonTool(); return false;" aria-label="Mjesec sada - otvori alat Mjesec">
+              <span class="hm-moon" id="hm-moon" aria-hidden="true"></span>
+              <span class="hm-text">
+                <span class="hm-eyebrow">Mjesec sada</span>
+                <span class="hm-phase" id="hm-phase"></span>
+                <span class="hm-meta" id="hm-meta"></span>
+                <span class="hm-cta">Pogledaj Mjesec za bilo koji dan i&nbsp;mjesto&nbsp;→</span>
+              </span>
+            </a>
           </div>
         </div>
       </div>
@@ -1062,6 +1083,71 @@
           <h3 id="t-toolCardAcgTitle"></h3>
           <p id="t-toolCardAcgDesc"></p>
         </button>
+
+        <!-- Mjesec - samostalan alat (js/moon-tool.js), NE ide kroz prekidač modova -->
+        <button type="button" class="tool-card" id="tool-card-moon" onclick="openMoonTool()">
+          <div class="tool-card-icon">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <!-- obris punog Mjeseca + osvijetljeni srp -->
+              <circle cx="50" cy="50" r="36" fill="none" stroke="var(--lavender)" stroke-width="1.3" opacity="0.5"/>
+              <path d="M50,14 A36,36 0 0,1 50,86 A22,36 0 0,0 50,14 Z" fill="var(--lavender)" opacity="0.85"/>
+              <circle cx="20" cy="24" r="1.8" fill="var(--silver-bright)"/>
+              <circle cx="84" cy="30" r="1.4" fill="var(--silver-bright)"/>
+            </svg>
+          </div>
+          <h3>Mjesec</h3>
+          <p>Kako Mjesec izgleda u odabranom trenutku s odabranog mjesta - mijena, osvijetljenost, znak, izlazak i zalazak.</p>
+        </button>
+      </div>
+
+      <!-- ===== ALAT „MJESEC" (js/moon-tool.js, prefiks ml-) =====
+           Vlastita jednostavna forma (mjesto + trenutak); dok je otvoren, body ima
+           klasu moon-mode koja skriva prekidač modova, formu i rezultate ostalih alata. -->
+      <div class="ml-tool" id="moon-tool" hidden>
+        <div class="form-section ml-form">
+          <div class="ml-form-grid">
+            <div class="form-group nt-place-group ml-place">
+              <label for="ml-place">Mjesto <span id="ml-place-ok" class="nt-place-ok" style="display:none">✓</span></label>
+              <input type="text" id="ml-place" placeholder="počni tipkati pa odaberi s popisa…" autocomplete="off">
+              <div class="nt-dd" id="ml-place-dd"></div>
+            </div>
+            <div class="form-group ml-date">
+              <label for="ml-date">Datum</label>
+              <input type="date" id="ml-date" min="1900-01-01" max="2099-12-31">
+            </div>
+            <div class="form-group ml-time">
+              <label for="ml-time">Vrijeme</label>
+              <div class="ml-time-row">
+                <input type="time" id="ml-time">
+                <button type="button" class="nt-swap-btn ml-now" id="ml-now">⟳ Sada</button>
+              </div>
+            </div>
+          </div>
+          <p class="nt-error" id="ml-error" style="display:none"></p>
+        </div>
+
+        <div class="ml-stage">
+          <div class="ml-moon-col">
+            <div class="ml-moon" id="ml-moon" role="img" aria-label="Mjesec u odabranom trenutku"></div>
+            <p class="ml-horizon" id="ml-horizon"></p>
+          </div>
+          <!-- naslov je zaseban dio mreže: na uskom ekranu ide IZNAD Mjeseca, na širokom desno iznad tablice -->
+          <div class="ml-head">
+            <h3 class="ml-phase" id="ml-phase"></h3>
+            <p class="ml-when" id="ml-when"></p>
+          </div>
+          <div class="ml-info">
+            <dl class="ml-facts" id="ml-facts"></dl>
+          </div>
+          <!-- Tjedan: odabrani dan + idućih 6 (isto doba dana) - klik na dan ga odabere -->
+          <div class="ml-week" id="ml-week" role="list" aria-label="Mjesec idućih dana"></div>
+          <div class="ml-sliders">
+            <div class="tr-row"><span class="tr-lbl">Sat</span><input type="range" class="tr-slider" id="ml-sl-hour" min="-24" max="24" step="0.25" value="0"><output class="ml-sl-val" id="ml-sl-hour-val">0 h</output></div>
+            <div class="tr-row"><span class="tr-lbl">Dan</span><input type="range" class="tr-slider" id="ml-sl-day" min="-30" max="30" step="1" value="0"><output class="ml-sl-val" id="ml-sl-day-val">0 d</output></div>
+            <p class="ml-readout"><span class="ml-readout-lbl">Prikazano:</span> <strong id="ml-readout"></strong></p>
+          </div>
+        </div>
+        <p class="nt-note ml-note">Izračun se radi u tvom pregledniku (astronomy-engine). Slika Mjeseca: NASA's Scientific Visualization Studio (LRO). Nagib Mjeseca prikazan je onako kako se vidi s odabranog mjesta.</p>
       </div>
 
       <!-- Prekidač: natalna karta (jedna osoba) ↔ sinastrija (dvije osobe) -->
@@ -1974,36 +2060,39 @@
   });
 </script>
 
-<script src="js/data.js?v=20261006f"></script>
-<script src="js/app.js?v=20261006f"></script>
-<script src="js/home-slides.js?v=20261006f"></script><!-- slide deck početne (nakon app.js) -->
-<script src="js/logo.js?v=20261006f"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
-<script src="js/admin.js?v=20261006f"></script>
-<script src="js/natal-chiron.js?v=20261006f"></script>
-<script src="js/natal-data.js?v=20261006f"></script>
-<script src="js/natal-calc.js?v=20261006f"></script>
-<script src="js/natal-render.js?v=20261006f"></script>
-<script src="js/natal-pdf.js?v=20261006f"></script>
-<script src="js/natal-date.js?v=20261006f"></script>
-<script src="js/natal.js?v=20261006f"></script>
-<script src="js/natal-synastry.js?v=20261006f"></script>
-<script src="js/natal-transit.js?v=20261006f"></script>
-<script src="js/natal-acg.js?v=20261006f"></script>
-<script src="js/natal-acg-render.js?v=20261006f"></script>
-<script src="js/natal-ai.js?v=20261006f"></script>
-<script src="js/natal-birthcard.js?v=20261006f"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
-<script src="js/natal-live.js?v=20261006f"></script>
+<script src="js/data.js?v=20261006g"></script>
+<script src="js/app.js?v=20261006g"></script>
+<script src="js/nav-moon.js?v=20261006g"></script><!-- mali Mjesec u traci (PROTOTIP) -->
+<script src="js/home-slides.js?v=20261006g"></script><!-- slide deck početne (nakon app.js) -->
+<script src="js/logo.js?v=20261006g"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
+<script src="js/admin.js?v=20261006g"></script>
+<script src="js/natal-chiron.js?v=20261006g"></script>
+<script src="js/natal-data.js?v=20261006g"></script>
+<script src="js/natal-calc.js?v=20261006g"></script>
+<script src="js/natal-render.js?v=20261006g"></script>
+<script src="js/natal-pdf.js?v=20261006g"></script>
+<script src="js/natal-date.js?v=20261006g"></script>
+<script src="js/natal.js?v=20261006g"></script>
+<script src="js/natal-synastry.js?v=20261006g"></script>
+<script src="js/natal-transit.js?v=20261006g"></script>
+<script src="js/natal-acg.js?v=20261006g"></script>
+<script src="js/natal-acg-render.js?v=20261006g"></script>
+<script src="js/natal-ai.js?v=20261006g"></script>
+<script src="js/natal-birthcard.js?v=20261006g"></script><!-- tarot karta rođenja (koristi tarot/tarot-data.js tek pri izradi karte) -->
+<script src="js/moon-tool.js?v=20261006g"></script><!-- alat „Mjesec" na Astro alatima (koristi natal-data.js, natal.js, moon-render.js) -->
+<script src="js/home-moon.js?v=20261006g"></script><!-- slide „Mjesec sada" na početnoj -->
+<script src="js/natal-live.js?v=20261006g"></script>
 
 <!-- Virtualni tarot (samostalan modul, tarot/; TAROT_CARD_TEXTS živi u js/data.js
      radi admin uređivanja - v. CLAUDE.md) -->
-<script src="tarot/tarot-data.js?v=20261006f"></script>
-<script src="tarot/tarot-engine.js?v=20261006f"></script>
-<script src="tarot/tarot-render.js?v=20261006f"></script>
-<script src="tarot/tarot.js?v=20261006f"></script>
+<script src="tarot/tarot-data.js?v=20261006g"></script>
+<script src="tarot/tarot-engine.js?v=20261006g"></script>
+<script src="tarot/tarot-render.js?v=20261006g"></script>
+<script src="tarot/tarot.js?v=20261006g"></script>
 
 <!-- Privola za kolačiće (GDPR) - samostalan modul, učitava se zadnji jer
      koristi showPage() iz app.js za poveznicu na pravila privatnosti -->
-<script src="js/consent.js?v=20261006f"></script>
+<script src="js/consent.js?v=20261006g"></script>
 
 </body>
 </html>

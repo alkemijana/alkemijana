@@ -1189,7 +1189,17 @@
         for (let k = 1; k <= kDo(DAN); k++) dijelovi(prsten[k].lista).forEach(([a, b]) => {
           if (!stanje[k + ':' + a + ':' + b] && udio[k][a] < 0.6 && udio[k][b] < 0.6) kand.push([k, a, b]);
         });
-        if (!kand.length) return null;
+        // PRVI DAN (vlasnik: „neka mušice dolaze i prvi dan") lukova u sredini još nema: onda bilo koji
+        // zdrav luk, a ako ni njega nema - ZRAKA blizu središta (ravna nit od središta do sidra)
+        if (!kand.length) for (let k = 0; k <= kDo(DAN); k++) if (prsten[k]) dijelovi(prsten[k].lista).forEach(([a, b]) => {
+          if (!stanje[k + ':' + a + ':' + b] && prsten[k].niti[a + ':' + b]) kand.push([k, a, b]);
+        });
+        if (!kand.length) {
+          const zr = zrNit.map((n, i) => n ? i : -1).filter(i => i >= 0);
+          if (!zr.length) return null;
+          const i = zr[Math.floor(Math.random() * zr.length)], t = 0.25 + Math.random() * 0.2;
+          return { zraka: i, el: zrNit[i].el, t, at: { i, t } };
+        }
         const [k, a, b] = kand[Math.floor(Math.random() * kand.length)];
         return { k, a, b, el: prsten[k].niti[a + ':' + b].el, t: 0.3 + Math.random() * 0.4, at: { i: a, t: udio[k][a] } };
       },
@@ -1323,7 +1333,7 @@
       return [q.x, q.y];
     };
     let i = 0, tk = 0, last = 0, kut = null, pr = null;
-    /* MUŠICE NAKON POSLA (vlasnik): kad pauk završi današnji posao, svakih 30-90 s uleti mušica,
+    /* MUŠICE NAKON POSLA (vlasnik): kad pauk završi današnji posao, svakih 50-120 s uleti mušica,
        nasumično u gornju ili donju mrežu - STALNOM brzinom, zabije se (mreža se trzne) - i zapne na
        luku (koprca se). Pauk dođe po njoj SAMO PO NITIMA (ako je u drugoj mreži: po krajnjoj zraci do
        zida, uz zid izvan ekrana, po krajnjoj zraci druge mreže u središte), po zraci do nje, zamota je
@@ -1403,7 +1413,7 @@
       pauk.classList.add('hw-pauk-hoda');
       requestAnimationFrame(kadar);
     }
-    const sljedecaMuha = () => setTimeout(muhaDolazi, (30 + Math.random() * 60) * 1000);   // 30-90 s (vlasnik)
+    const sljedecaMuha = () => setTimeout(muhaDolazi, (50 + Math.random() * 70) * 1000);   // 50-120 s (vlasnik)
     const sjedi = () => {                                 // pauk miruje u središtu mreže
       const e = naEkran(sjediU, sredina(sjediU));
       if (e) pauk.style.transform = `translate(${e[0].toFixed(1)}px, ${e[1].toFixed(1)}px) rotate(${(kut || 0).toFixed(1)}deg)`;

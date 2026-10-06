@@ -406,6 +406,8 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   prođe; brojke se osvježavaju svake sekunde SAMO dok je slide aktivan. Oznake u ispravnom obliku
   (`plural`: 1 dan / 2 dana; 1 sat / 3 sata / 7 sati; minuta/minute; sekunda/sekunde/sekundi).
   Mjesec slidea je zato `min(50dvh, 72vw, 100dvh - 420px)` - inače na niskom mobitelu dira traku.
+  **Desktop (≥769 px, omjer ≥ 4:3; vlasnik): tekst je DESNO od Mjeseca** (poravnat lijevo), Mjesec
+  `--hm-w` = `clamp(220px, min(58dvh, 38vw), 520px)`, razmak 0,24 × Mjesec (da tekst ne legne na vinjetu).
   Halloween (tekst ispod pozadinskog Mjeseca ne stane): široko (≥769 px, omjer ≥ 4:3) tekst ide DESNO
   od Mjeseca; mobitel niži od 820 px skriva natpis, datum uštapa i poziv (klik na Mjesec i dalje vodi u alat).
 - **Alat „Mjesec"** (`js/moon-tool.js`, prefiks **`ml-`**): peta kartica na Astro alatima
@@ -1219,7 +1221,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006m`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006n`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

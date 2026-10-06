@@ -967,6 +967,19 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
 .hm-cd-u { font-family: 'Quicksand', sans-serif; font-size: 0.66rem; color: var(--text-muted); }
 .hm-count-when { font-family: 'Quicksand', sans-serif; font-size: 0.8rem; color: var(--text-muted); }
 
+/* Desktop (vlasnik): tekst DESNO od Mjeseca, poravnat lijevo i okomito centriran. Bez teksta
+   ispod Mjesec smije biti veći. Razmak raste s Mjesecom da tekst ne legne na vinjetu/sjaj.
+   Halloween ima svoj raspored (gore), zato :not(.hw-on). */
+@media (min-width: 769px) and (min-aspect-ratio: 4/3) {
+  html:not(.hw-on) .hm-wrap {
+    --hm-w: clamp(220px, min(58dvh, 38vw), 520px);
+    flex-direction: row; gap: calc(var(--hm-w) * 0.24);
+  }
+  html:not(.hw-on) .hm-moon { width: var(--hm-w); flex: 0 0 auto; }
+  html:not(.hw-on) .hm-text { margin-top: 0; align-items: flex-start; text-align: left; }
+  html:not(.hw-on) .hm-count { align-items: flex-start; }
+}
+
 /* HALLOWEEN + odbrojavanje: tekst ispod pozadinskog Mjeseca (koji se ne dira) ne stane na
    niske ekrane. Široko → tekst DESNO od Mjeseca, okomito centriran; nizak mobitel → bez
    sitnih redaka (natpis, datum uštapa, poziv - klik na Mjesec i dalje vodi u alat). */

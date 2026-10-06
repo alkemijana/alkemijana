@@ -1585,8 +1585,30 @@
       } else pr = null;                                   // na putu između mreža (izvan ekrana)
       requestAnimationFrame(kadar);
     }
+    /* PLETE SAMO PRI PRVOM DOLASKU TOG DANA (vlasnik): kad pauk počne današnji posao, zapamti se datum
+       (localStorage 'aj_hw_mreza', samo datum - navedeno u Pravilima privatnosti). Svaki sljedeći dolazak
+       ili osvježavanje istog dana - i kad je posjetitelj otišao prije kraja - mreža je odmah ispletena
+       (svi koraci se samo primijene), pauk sjedi u središtu i odmah čeka mušice. Uz pregled
+       (?halloween / ?mreza) se ne pamti ništa i pletenje se uvijek odigra. */
+    const MKEY = 'aj_hw_mreza';
+    let danas = '', pregled = false;
+    try {
+      const q = new URLSearchParams(location.search);
+      pregled = q.has('halloween') || q.has('mreza');
+      danas = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Zagreb' }).format(new Date());
+    } catch (e) {}
+    let vecIspleteno = false;
+    if (!pregled && danas) { try { vecIspleteno = localStorage.getItem(MKEY) === danas; } catch (e) {} }
+    if (vecIspleteno) {
+      koraci.forEach(zavrsi);                             // primijeni sve što bi pauk danas napravio
+      mreze.forEach(m => { m.napeta(); m.oblikuj(m.Hc); });
+      i = koraci.length;
+      sjedi();                                            // odmah u središtu (ne u kutu dok se stranica otkriva)
+    }
+    const zapamti = () => { if (!pregled && danas) { try { localStorage.setItem(MKEY, danas); } catch (e) {} } };
+
     pauk.classList.add('hw-pauk-hoda');
-    const kreni = () => requestAnimationFrame(kadar);
+    const kreni = () => { zapamti(); requestAnimationFrame(kadar); };
     if (!root.classList.contains('aj-loading')) setTimeout(kreni, 1500);
     else document.addEventListener('aj:revealed', () => setTimeout(kreni, 1500), { once: true });
   }

@@ -1105,7 +1105,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006e`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261006f`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1406,7 +1406,12 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     pleten „unatrag" ima negativan offset) i `transform` pauka; samo dok traje napinjanje (1,5 s)
     preslože se sve niti te mreže. U skrivenoj kartici rAF stoji pa pletenje stane i nastavi
     (pri testu u pozadinskom oknu preglednika zato „ništa ne radi"). Sve je `position:fixed`.
-    **Napredak se ne pamti** (nema pohrane, pa ni izmjene pravila privatnosti).
+    **Plete SAMO PRI PRVOM DOLASKU TOG DANA** (vlasnik): kad pauk krene, zapamti se datum u
+    **localStorage `aj_hw_mreza`** (samo datum; navedeno u Pravilima privatnosti - ne uklanjati). Svaki
+    sljedeći dolazak/osvježavanje istog dana - i kad je posjetitelj otišao prije kraja - mreža je odmah
+    gotova (`koraci.forEach(zavrsi)`, pa `i = koraci.length`), pauk sjedi u središtu donje mreže i čeka
+    mušice. Provjereno: gotova mreža je nit po nit IDENTIČNA ispletenoj. Uz `?halloween`/`?mreza` se ne
+    pamti ništa i pletenje se uvijek odigra (pregled).
   - **Nesavršenost kao prava mreža** (vlasnik: „nekad se dogode rupe, uleti mušica, pauk popravlja"):
     svaki dan (od drugog) se na STARIJEM dijelu pokida 2–3 niti luka (`stete`); dio pauk isti dan popravi
     (`dPop` - drugačiji progib i pregib u sredini), ostale ostanu RUPE (`dRupa` - dva komadića vise s

@@ -3230,11 +3230,13 @@ body.moon-mode #natal { overflow-x: clip; }
   margin: 12% 0;          /* mjesto za sjaj (platno je 150 %) */
   transition: opacity 0.4s ease;
 }
-/* obris punog diska - u svijetloj temi tamni dio Mjeseca nije nacrtan, pa ovaj
-   tanki krug pokazuje gdje je ostatak */
+/* svijetla tema: Mjesec stoji na crnoj vinjeti (komad noćnog neba) - inače bi tamni dio
+   Mjeseca bio bijel kao stranica. Puna crna do ruba diska, pa meko izblijedi. */
 .ml-moon::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  border: 1px dashed var(--border); opacity: 0; transition: opacity 0.4s;
+  content: ""; position: absolute; inset: -30%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side, #07060f 0 60%, rgba(7, 6, 15, 0.82) 66%,
+    rgba(7, 6, 15, 0.35) 80%, rgba(7, 6, 15, 0) 100%);
+  opacity: 0; transition: opacity 0.4s;
 }
 :root[data-theme="light"] .ml-moon.ml-ready::before { opacity: 1; }
 .ml-moon-cv { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; display: block; pointer-events: none; }
@@ -3297,7 +3299,8 @@ body.moon-mode #natal { overflow-x: clip; }
 .ml-day-moon { position: relative; width: 56px; height: 56px; margin: 0.35rem 0; }
 .ml-day-moon canvas { display: block; width: 100%; height: 100%; }
 :root[data-theme="light"] .ml-day-moon::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px dashed var(--border);
+  content: ""; position: absolute; inset: -14%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side, #07060f 0 79%, rgba(7, 6, 15, 0.5) 89%, rgba(7, 6, 15, 0) 100%);
 }
 .ml-day-phase {
   font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 0.82rem; line-height: 1.25;

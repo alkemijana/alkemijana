@@ -86,8 +86,8 @@
     const css = el.clientWidth || 300;
     // najveća moguća razlučivost (vlasnik): puna karta + platno = css px × devicePixelRatio (strop 2400)
     const D = Math.max(200, Math.min(2400, Math.round(css * (window.devicePixelRatio || 1))));
-    const light = document.documentElement.getAttribute('data-theme') === 'light';
-    const c = await window.AJMoon.render(D, g, Object.assign({ hi: true, relief: window.AJMoon.hasHeight() }, light ? { dark: 0 } : { earth: 0.05 }));
+    // obje teme jednako: u svijetloj tamni dio leži na crnoj vinjeti (CSS), ne na bijeloj stranici
+    const c = await window.AJMoon.render(D, g, Object.assign({ hi: true, relief: window.AJMoon.hasHeight() }, { earth: 0.05 }));
     c.className = 'hm-moon-cv';
     const old = el.querySelector('canvas');
     if (old) old.replaceWith(c); else el.appendChild(c);

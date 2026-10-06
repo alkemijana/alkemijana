@@ -914,10 +914,13 @@ html.hw-on.hm-lit .hw-moon.hw-moon-ready { opacity: 0.6; transition-duration: 0.
   aspect-ratio: 1;
   transition: transform 0.4s ease;
 }
-/* svijetla tema: tamni dio se ne crta, tanki obris pokazuje cijeli disk */
+/* svijetla tema: Mjesec stoji na crnoj vinjeti (komad noćnog neba) - inače bi tamni dio
+   Mjeseca bio bijel kao stranica. Puna crna do ruba diska, pa meko izblijedi. */
 .hm-moon::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  border: 1px dashed var(--border); opacity: 0;
+  content: ""; position: absolute; inset: -30%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle closest-side, #07060f 0 60%, rgba(7, 6, 15, 0.82) 66%,
+    rgba(7, 6, 15, 0.35) 80%, rgba(7, 6, 15, 0) 100%);
+  opacity: 0; transition: opacity 0.4s;
 }
 :root[data-theme="light"] .hm-moon.hm-ready::before { opacity: 1; }
 .hm-moon-cv { position: absolute; left: -25%; top: -25%; width: 150%; height: 150%; pointer-events: none; }

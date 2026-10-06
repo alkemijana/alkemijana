@@ -164,8 +164,8 @@
     // konačna slika u PUNOJ razlučivosti ekrana (css px × devicePixelRatio, strop 2400 px) i iz
     // pune karte (vlasnik: najveća moguća razlučivost); dok se vuče klizač - mali brzi pregled
     const D = quick ? 140 : Math.min(2400, Math.round(css * (window.devicePixelRatio || 1)));
-    const light = document.documentElement.getAttribute('data-theme') === 'light';
-    const base = light ? { dark: 0 } : { earth: 0.05 };
+    // obje teme jednako: u svijetloj tamni dio leži na crnoj vinjeti (CSS), ne na bijeloj stranici
+    const base = { earth: 0.05 };
     const put = c => {
       c.className = 'ml-moon-cv';
       const old = el.querySelector('canvas');
@@ -259,7 +259,7 @@
     const order = days.slice().sort((p, q) => Math.abs(p.w - want) - Math.abs(q.w - want));
     for (const d of order) {
       const g = window.AJMoon.geometry(d.date, place.lat, place.lon);
-      const c = await window.AJMoon.render(D, g, Object.assign({ glow: false, relief: window.AJMoon.hasHeight() }, light ? { dark: 0 } : { earth: 0.07 }));
+      const c = await window.AJMoon.render(D, g, Object.assign({ glow: false, relief: window.AJMoon.hasHeight() }, { earth: 0.07 }));
       if (my !== weekGen) return;
       const slot = box.children[d.w] && box.children[d.w].querySelector('.ml-day-moon');
       if (slot) slot.appendChild(c);

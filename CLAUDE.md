@@ -443,8 +443,8 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   karta (`AJMoon.loadMapHi(promjerDiskaPx)` + `opts.hi`): **2k** ako je disk ≤ 1024 px, inače **4k**
   (disk pokriva pola karte, pa karta treba ~2× promjer). Izvor: NASA SVS 4720,
   `lroc_color_poles_4k.tif` → JPG (q86) 4096 i 2048 preko System.Drawing. **8k se NE isplati**
-  (Mjesec na ekranu ≤ ~1400 px, a 8k u memoriji = 134 MB - mobitel bi pao). Halloween i traka i dalje
-  koriste 1k smanjenu na 384×192 (vlasnik: Halloween pozadinu ne dirati). Platno = css px ×
+  (Mjesec na ekranu ≤ ~1400 px, a 8k u memoriji = 134 MB - mobitel bi pao). Traka (i Halloween dok se ne nadogradi) 
+  koriste 1k smanjenu na 384×192. Platno = css px ×
   devicePixelRatio (strop 2400 px). Izmjereno: 4k + disk 1400 px = ~0,65 s crtanja (u komadima).
   **RELJEF I SJENE KRATERA** (`opts.relief`, `AJMoon.loadHeight()`; vlasnik: „kao na NASA-inoj
   stranici"): karta visina `moon-height-2k.png` (NASA SVS 4720 `ldem_16_uint.tif` → `node
@@ -462,8 +462,13 @@ tekstovi kartica uredivi u adminu (Teksti → "Astro alati — kartice").
   umjesto 0,33 s). **Alat:** karta visina se učita nakon prvog crtanja (ne čeka se), pa se Mjesec i
   tjedan ponovno nacrtaju; nakon toga i mali pregled pri klizanju ima reljef (da ne skače iz meke u
   oštru granicu). **Slide:** karta visina se skida TEK kad je aktivan slide karte dana ili Mjeseca
-  (`reliefWhenNear`) - ne sa svakim otvaranjem početne. **Halloween i traka: bez reljefa** (vlasnik:
-  Halloween pozadinu ne dirati) - podrazumijevani put u `renderMoon` je nepromijenjen. Sjaj je platno 150 % i smije do ruba
+  (`reliefWhenNear`) - ne sa svakim otvaranjem početne. **Traka: bez reljefa** - podrazumijevani put u `renderMoon` je nepromijenjen.
+  **Halloween pozadina, ekran učitavanja i uvod: OD 7. 10. 2026. S RELJEFOM** (vlasnik: „kao u alatu, sa
+  sjenama; zatamnjenost ostavi") - `moonHQ` u halloween.js: velika karta + reljef, ostale opcije
+  (sjaj, tamni dio, prozirnost) kao prije. Bez uvoda: prvo brzi Mjesec (mala karta), pa 2 s nakon
+  otvaranja stranice u `requestIdleCallback` `upgradeMoon()` učita karte i nacrta ponovno (u komadićima).
+  S uvodom: `prepare()` čeka karte najviše 4 s, pa je Mjesec uvoda već s reljefom (inače brzi + kasnija
+  nadogradnja). `loadHeight`/`loadMapHi` u moon-render.js obrađuju u komadićima od ~8 ms + `img.decode()`. Sjaj je platno 150 % i smije do ruba
   ekrana (vlasnik: rez na rubu stupca je izgledao ružno) — `overflow-x: clip` je zato na
   `body.moon-mode #natal` (široka kao ekran), NE na stupcu; bez toga sjaj na mobitelu širi stranicu. Ništa se ne sprema.
   Tekstovi kartice su zasad u HTML-u (nisu u TEXTS/adminu).
@@ -1223,7 +1228,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007e`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007f`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

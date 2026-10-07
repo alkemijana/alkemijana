@@ -386,6 +386,13 @@
         (typeof loadScript === 'function' ? loadScript('js/lib/astronomy.browser.min.js').catch(() => {}) : null);
       const fonts = document.fonts && document.fonts.load ? document.fonts.load('italic 400 1em "Playfair Display"').catch(() => {}) : null;
       await Promise.all([within(lib, 5000), within(fonts, 2500), within(pageReady, 6000), within(preloadBatSheet(), 4000), within(loadMoonMap(), 5000)]);
+      /* PUNA KVALITETA i u uvodu (vlasnik): velika karta + karta visina (reljef, sjene). Ako ne stignu
+         za 4 s (spora veza), uvod ide s brzim Mjesecom, a pozadinski se nadogradi poslije (upgradeMoon) -
+         teško crtanje NE smije pasti usred animacije. */
+      if (window.AJMoon.loadMapHi) {
+        const ok = await within(Promise.all([window.AJMoon.loadMapHi(moonSize()), window.AJMoon.loadHeight()]).then(() => true), 4000);
+        if (ok === true && window.AJMoon.hasHeight()) moonHQ = true;
+      }
       const g = currentMoon();
       await paintMoon($('.hwi-ml-n'), g, false);
       await paintMoon($('.hwi-ml-r'), g, true);
@@ -502,7 +509,14 @@
      js/moon-render.js (window.AJMoon) - isti Mjesec koriste i traka i alat „Mjesec".
      Ovdje su samo tanki omotači, pa ostatak ovog filea radi kao prije. */
   function loadMoonMap() { return window.AJMoon.loadMap(); }
-  function renderMoon(D, g) { return window.AJMoon.render(D, g); }
+  /* PUNA KVALITETA (vlasnik: „kao u alatu za Mjesec, sa sjenama i svime; zatamnjenost ostavi"):
+     velika NASA karta + reljef i bačene sjene kratera. Prvo se Mjesec nacrta BRZO s malom kartom
+     (ekran učitavanja, uvod, prvo otvaranje - ništa ne čeka 2,6 MB karata), a kad je stranica
+     otvorena i preglednik slobodan, učitaju se velika karta i karta visina pa se pozadinski Mjesec
+     nacrta ponovno (sve u komadićima od ~8 ms - ništa ne zapne) i zamijeni. Opcije sjaja i
+     zatamnjenja ostaju zadane, kao prije - mijenja se samo detalj površine. */
+  let moonHQ = false;
+  function renderMoon(D, g) { return window.AJMoon.render(D, g, moonHQ ? { hi: true, relief: window.AJMoon.hasHeight() } : {}); }
   const yieldFrame = () => new Promise(r => setTimeout(r, 0));
   // krvava verzija = preobojena obična (ne crta se ponovno), također postupno
   async function bloodFrom(src) {
@@ -528,7 +542,7 @@
      ms) - drugi put se samo kopira, pa u završnom bljesku ništa ne zapne. */
   const moonCache = new Map();
   function moonKey(D, g, blood) {
-    return [D, g.k.toFixed(3), g.limbDeg.toFixed(1), g.faceDeg.toFixed(1), blood ? 1 : 0, window.AJMoon.hasMap() ? 1 : 0].join('|');
+    return [D, g.k.toFixed(3), g.limbDeg.toFixed(1), g.faceDeg.toFixed(1), blood ? 1 : 0, window.AJMoon.hasMap() ? 1 : 0, moonHQ ? 1 : 0].join('|');
   }
   function moonSize() {
     // strop 900 px: Mjesec je prigušen, veća rezolucija se ne vidi, a crtanje je sporije
@@ -610,6 +624,19 @@
     // faza i nagib se mijenjaju - osvježi svakih 30 min, kad je preglednik slobodan
     const idle = window.requestIdleCallback || (f => setTimeout(f, 200));
     setInterval(() => { if (window.Astronomy) idle(() => paintMoon(moon, currentMoon())); }, 30 * 60 * 1000);
+    // puna kvaliteta (reljef, sjene) tek kad je stranica otvorena (i uvod gotov) + 2 s predaha
+    const hq = () => setTimeout(() => idle(upgradeMoon, { timeout: 4000 }), 2000);
+    if (!root.classList.contains('aj-loading')) hq();
+    else document.addEventListener('aj:revealed', hq, { once: true });
+  }
+  async function upgradeMoon() {
+    if (moonHQ || !window.AJMoon || !window.AJMoon.loadMapHi) return;
+    const D = moonSize();
+    await Promise.all([within(window.AJMoon.loadMapHi(D), 20000), within(window.AJMoon.loadHeight(), 20000)]).catch(() => {});
+    if (!window.Astronomy || !bgMoonEl) return;
+    moonHQ = true;
+    const g = currentMoon(), src = await moonCanvas(g, false);   // crta se u komadićima
+    putMoon(bgMoonEl, src, g);
   }
 
   /* Lice Jack-o'-lanterna iza hero loga - naglo se upali u završnom bljesku

@@ -139,8 +139,9 @@
     if (mapHiPromises[want]) return mapHiPromises[want];
     return (mapHiPromises[want] = new Promise(res => {
       const im = new Image();
-      im.onload = () => {
+      im.onload = async () => {
         try {
+          if (im.decode) await im.decode().catch(() => {});   // dekodiranje izvan glavne dretve
           const w = im.naturalWidth, h = im.naturalHeight;
           const c = document.createElement('canvas'); c.width = w; c.height = h;
           const x = c.getContext('2d'); x.drawImage(im, 0, 0);
@@ -165,26 +166,42 @@
     if (heightPromise) return heightPromise;
     return (heightPromise = new Promise(res => {
       const im = new Image();
-      im.onload = () => {
+      /* Obrada (2048×1024, tri prolaza) ide U KOMADIĆIMA od ~8 ms, a slika se dekodira izvan glavne
+         dretve (decode) - u jednom komadu je to blokiralo preglednik pa bi zapela animacija u tijeku
+         (Halloween pozadina ga učitava dok je stranica već otvorena). */
+      im.onload = async () => {
         try {
+          if (im.decode) await im.decode().catch(() => {});
           const w = im.naturalWidth, h = im.naturalHeight;
           const c = document.createElement('canvas'); c.width = w; c.height = h;
           const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+          await yieldFrame();
           const px = x.getImageData(0, 0, w, h).data, raw = new Float32Array(w * h);
-          for (let i = 0, j = 0; i < raw.length; i++, j += 4) raw[i] = ((px[j] * 256 + px[j + 1]) - 20000) / 2000 * RELIEF_X;
+          let until = performance.now() + 8;
+          const pauza = async yy => { if (performance.now() > until) { await yieldFrame(); until = performance.now() + 8; } };
+          for (let yy = 0; yy < h; yy++) {
+            for (let i = yy * w, j = i * 4, e = i + w; i < e; i++, j += 4) raw[i] = ((px[j] * 256 + px[j + 1]) - 20000) / 2000 * RELIEF_X;
+            await pauza(yy);
+          }
           /* blago zaglađivanje (1-2-1 vodoravno pa okomito): nagibi iz susjednih piksela
              nezaglađene karte su nemirni pa su uz granicu svjetla iskakale pojedinačne
              svijetle točkice (vlasnik) */
           const tmp = new Float32Array(w * h), v = new Float32Array(w * h);
-          for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
-            const o = yy * w, l = xx ? xx - 1 : w - 1, r = xx === w - 1 ? 0 : xx + 1;
-            tmp[o + xx] = (raw[o + l] + 2 * raw[o + xx] + raw[o + r]) / 4;
+          for (let yy = 0; yy < h; yy++) {
+            for (let xx = 0; xx < w; xx++) {
+              const o = yy * w, l = xx ? xx - 1 : w - 1, r = xx === w - 1 ? 0 : xx + 1;
+              tmp[o + xx] = (raw[o + l] + 2 * raw[o + xx] + raw[o + r]) / 4;
+            }
+            await pauza(yy);
           }
           let max = -1e9;
-          for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
-            const u = Math.max(0, yy - 1) * w + xx, dn = Math.min(h - 1, yy + 1) * w + xx, i = yy * w + xx;
-            const km = (tmp[u] + 2 * tmp[i] + tmp[dn]) / 4;
-            v[i] = km; if (km > max) max = km;
+          for (let yy = 0; yy < h; yy++) {
+            for (let xx = 0; xx < w; xx++) {
+              const u = Math.max(0, yy - 1) * w + xx, dn = Math.min(h - 1, yy + 1) * w + xx, i = yy * w + xx;
+              const km = (tmp[u] + 2 * tmp[i] + tmp[dn]) / 4;
+              v[i] = km; if (km > max) max = km;
+            }
+            await pauza(yy);
           }
           heightMap = { w, h, v, max };
         } catch (e) { heightMap = null; }

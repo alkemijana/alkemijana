@@ -417,7 +417,7 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url(../assets/fonts/web/IMFellDWPica-Italic.ttf?v=20261007h) format('truetype');
+  src: url(../assets/fonts/web/IMFellDWPica-Italic.ttf?v=20261007i) format('truetype');
 }
 .hw-on #home .hero-desc {
   font-family: 'IM Fell DW Pica', 'Josefin Sans', serif;
@@ -486,6 +486,13 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hw-pauk ellipse { stroke: #8a7f70; stroke-width: 0.45; }
 .hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { fill: none; stroke: #5d544a; stroke-width: 0.8; stroke-linecap: round; stroke-linejoin: round; }
 /* noge (poza i korak po niti) crta JS - js/halloween.js, nogeCrtaj */
+/* MOBITEL: duplo manji (vlasnik: „izgleda preveliko na mobitelu"). Koraci nogu se računaju iz
+   stvarne širine (offsetWidth / 24), pa se i hod sam prilagodi. */
+@media (max-width: 768px) {
+  .hw-pauk { width: 7.5px; height: 7.5px; margin: -3.75px 0 0 -3.75px; }
+  .hw-pauk ellipse { stroke-width: 0.7; }
+  .hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { stroke-width: 1.1; }
+}
 @media (prefers-reduced-motion: reduce) { .hw-pauk { display: none; } }
 
 /* Mušica koja uleti u paukovu mrežu (js/halloween.js pletiMreze): tamno tijelo, prozirna krila koja

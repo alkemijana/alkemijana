@@ -1228,7 +1228,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007f`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007h`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1515,6 +1515,17 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     cijela mreža se elastično prilagodi (poprečna postane napeti „V"); tek onda se po napetoj zraci
     vrati u središte. (Prije je napinjao iz središta pa je izgledalo kao da se pauk gura prema rubu.) Zatim lukovi od vanjskog prema unutra
     (izmjenični smjer), s luka na luk po poprečnoj niti. Mreža je trokut između poprečne niti i kuta.
+  - **PAUK NIKAD NE HODA PO ZRAKU (vlasnik, 7. 10. 2026.; po Eberhardu/Zschokkeu, *Araneus*):**
+    poprečnu nit pričvrsti kod T i ODNESE je uz zid oko kuta do R; NOVU ZRAKU nosi iz središta po
+    POSTOJEĆOJ susjednoj zraci do zida, uz zid do novog sidra (nit se vidi od središta do pauka -
+    `n.kraj`, korak `hoda` s `nosi`), pričvrsti je (`pripni`), OKRENE SE prema središtu i tek onda
+    nategne (prednje noge vuku nit ruku pod ruku, `nVuce`), pa se po novoj zraci vrati. Na kraju svakog
+    komada luka `pripni`: kratka stanka i bočni zakret ~30° (stražnjim nogama drži zraku, nogom IV
+    pričvrsti). **Smjer tijela je iz OBLIKA niti** (`smjerNiti`/`smjerTo`), ne iz pomaka po kadru.
+    **Okret veći od ~20° (kod natezanja 12°) radi NA MJESTU** - korak stane (`drzi`), pauk se okrene
+    ~230°/s (stopala usidrena pa prekoračuje), pa nastavi. Provjereno mjerenjem udaljenosti pauka do
+    najbliže vidljive niti: 0 od ~1000 mjerenja > 4 px (i s mušicom). Povratak na staro:
+    tag `backup/pauk-prije-preradbe`.
   - **Rast kroz tjedan - mreža kao „organski proizvod koji se svaki dan mijenja i proširuje"** (vlasnik):
     prvi dan namjerno manja poprečna + 3 zrake; SVAKI sljedeći dan dvije nove KRAJNJE zrake usidrene sve
     dalje uz gornji i bočni rub (do `aMax`/`bMax`, mreža se širi) + često jedna u najveću prazninu.

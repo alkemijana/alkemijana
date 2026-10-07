@@ -885,10 +885,12 @@
       const q = objesi(a, b, p, p.m);
       return [0.25 * a[0] + 0.5 * q[0] + 0.25 * b[0], 0.25 * a[1] + 0.5 * q[1] + 0.25 * b[1]];
     };
+    /* NIT KOJU PAUK NOSI (n.kraj): dok pauk nosi novu nit (poprečnu ili zraku), ona ide od mjesta gdje je
+       pričvršćena do pauka - kraj = trenutni položaj pauka. Kad je pričvrsti, kraj se briše. */
     const most = { gen: Hc => `M${f(T[0])} ${f(T[1])}L${f(Hc[0])} ${f(Hc[1])}L${f(R[0])} ${f(R[1])}`, z: 1, novo: DAN === 0 };
-    if (most.novo) most.gen0 = () => dRavna(T, R);        // dok je još ravna (prije prvog napinjanja)
+    if (most.novo) most.gen0 = () => dRavna(T, most.kraj || R);   // dok je još ravna (prije prvog napinjanja)
     const zrNit = [];
-    E.forEach((e, i) => { if (unutra(i) && dan[i] <= DAN) zrNit[i] = { gen: Hc => dRavna(Hc, e), z: 1, novo: dan[i] === DAN }; });
+    E.forEach((e, i) => { if (unutra(i) && dan[i] <= DAN) { const n = zrNit[i] = { z: 1, novo: dan[i] === DAN }; n.gen = Hc => dRavna(Hc, n.kraj || e); } });
     const nitLuka = (k, a, b, novo) => ({ gen: Hc => { const st = stanje[k + ':' + a + ':' + b]; return st === 'rupa' ? dRupa(k, a, b, Hc) : st === 'pop' ? dPop(k, a, b, Hc) : dLuk(k, a, b, Hc); }, novo });
     // lukovi: jučerašnji spajaju zrake do jučer (danas ih pauk pričvrsti na nove), današnji sve današnje
     const prsten = {};
@@ -906,12 +908,25 @@
     const rj = (ref, H) => ref.xy ? ref.xy : pt(ref.i, ref.t, H);
     const hoda = (A, B) => { const l = dist(rj(A, Hc), rj(B, Hc)); if (l > 0.3) put.push({ tip: 'hoda', A, B, len: l }); };
     const plete = (nit, obrnuto, luk) => { if (luk) nit.luk = true; put.push({ tip: 'plete', nit, len: 0, obrnuto }); };
+    // hod koji NOSI novu nit (od mjesta pričvršćenja do pauka)
+    const nosi = (A, B, nit) => { const l = dist(rj(A, Hc), rj(B, Hc)); if (l > 0.3) put.push({ tip: 'hoda', A, B, len: l, nosi: nit }); };
+    /* PRIČVRŠĆIVANJE (Araneus, Eberhard/Zschokke): na kraju svakog komada luka pauk stražnjim nogama
+       uhvati zraku, BOČNO zakrene tijelo i nogom IV pričvrsti nit na zraku - kratka stanka. */
+    const pripni = (luk, obrnuto) => put.push({ tip: 'pripni', luk, obrnuto, len: 0 });
+    // uz zid (rub ekrana) od sidra do sidra - preko kuta ako su na različitim rubovima
+    const uzZid = (a, b, nit) => {
+      if ((sid[a].s < 0) === (sid[b].s < 0)) nosi({ xy: E[a] }, { xy: E[b] }, nit);
+      else { nosi({ xy: E[a] }, { xy: [400, 0] }, nit); nosi({ xy: [400, 0] }, { xy: E[b] }, nit); }
+    };
     const van = e => ({ xy: e[1] === 0 ? [e[0], -40] : [440, e[1]] });   // iza sidra, s ekrana (uz zid)
     const S = { i: iT, t: 0 };                            // središte (bilo koja zraka, udio 0)
     let gdje;
     if (DAN === 0) {
       hoda(van(T), { xy: T });
-      plete(most);                                        // prvo ravna poprečna nit
+      /* POPREČNA NIT: pauk ne hoda kroz zrak - pričvrsti nit kod T, odnese je UZ ZID oko kuta do R
+         (vidi se kako je drži) i ondje je pričvrsti. */
+      uzZid(iT, iR, most);
+      put.push({ tip: 'pripni', nosi: most, at: R, len: 0 });
       gdje = { i: iR, t: 1 };
     } else {
       const ulaz = kraj(DAN - 1)[0];                      // dolazi uz zid do krajnje zrake od jučer
@@ -928,10 +943,19 @@
         n.el = noviEl(n); n.el.setAttribute('d', n.gen(H));
       });
     };
+    /* NOVA ZRAKA kao kod pravog kružnog prelca: pauk u središtu pričvrsti nit, pa je NOSI van po
+       POSTOJEĆOJ susjednoj zraci do zida, uz zid do novog sidra, pričvrsti je, okrene se prema
+       središtu i nategne, pa se po novoj zraci vrati. Nikad ne hoda kroz zrak. */
+    const postoji = new Set([iT, iR, ...E.map((e, i) => i).filter(i => unutra(i) && dan[i] < DAN)]);
     redZ.forEach((i, n) => {
       if (dan[i] !== DAN) return;
       hoda(gdje, S);                                      // po zraci do središta
-      plete(zrNit[i]);
+      let j = -1;
+      postoji.forEach(x => { if (j < 0 || Math.abs(sid[x].s - sid[i].s) < Math.abs(sid[j].s - sid[i].s)) j = x; });
+      nosi(S, { i: j, t: 1 }, zrNit[i]);                 // van po susjednoj zraci
+      uzZid(j, i, zrNit[i]);                              // uz zid do novog sidra
+      put.push({ tip: 'pripni', nosi: zrNit[i], at: E[i], len: 0 });
+      postoji.add(i);
       /* NAPINJE S RUBA (vlasnik): pauk ostane uz sidro na rubu ekrana i povuče nit PREMA SEBI -
          središte mreže dođe prema njemu. Tek onda se po napetoj zraci vrati u središte. */
       const Hn = Hnakon[n];
@@ -951,6 +975,7 @@
           p.lista = [...p.lista, i].sort((x, y) => x - y);
           hoda(od, { i: na, t: udio[k][na] });
           plete(nit, na !== a, true);                     // obrnuto: od b prema a
+          pripni(nit, na !== a);
           na = na === i ? n2 : i;
           od = { i: na, t: udio[k][na] };
         });
@@ -979,7 +1004,7 @@
     for (let k = kDo(DAN); k > kDo(DAN - 1); k--) {
       hoda(gdje, { i: ide, t: udio[k][ide] });
       const dio = dijelovi(prsten[k].lista), nit = ([a, b]) => prsten[k].niti[a + ':' + b];
-      (ide === lo ? dio : dio.slice().reverse()).forEach(x => plete(nit(x), ide !== lo, true));   // obrnuto: od b prema a
+      (ide === lo ? dio : dio.slice().reverse()).forEach(x => { plete(nit(x), ide !== lo, true); pripni(nit(x), ide !== lo); });   // obrnuto: od b prema a
       ide = ide === lo ? hi : lo;
       gdje = { i: ide, t: udio[k][ide] };
     }
@@ -1008,6 +1033,7 @@
     oblikuj(Hpoc);
     return {
       web, svg, put, Hpoc, oblikuj, rj, okrenuta: !!o.cls,
+      nitD: (n, H) => n === most && ravnaJos ? n.gen0() : n.gen(H),   // izgled jedne niti sada
       // šteta/popravak u trenutku (pletiMreze): promijeni izgled niti i vrati njezin element
       postavi: (key, st, H) => {
         stanje[key] = st;
@@ -1122,6 +1148,7 @@
       if (k.tip === 'stoji') k.s = k.s || 4;
       else if (k.tip === 'napni') k.s = 1.5;
       else if (k.tip === 'spoji') k.s = 0.35;
+      else if (k.tip === 'pripni') k.s = k.luk ? 0.4 : 0.5;
       else if (k.tip === 'muha') k.s = 2.6;              // mušica uleti
       else if (k.tip === 'zamota') k.s = 1.8;            // pauk je zamota
       else if (k.tip === 'px') k.s = k.len / BRZINA;                       // već u pikselima
@@ -1166,6 +1193,7 @@
     NOGE.forEach(l => [-1, 1].forEach(s => STOP.push({ l, s, g: (l.g + (s > 0 ? 1 : 0)) % 2, F: null, kor: null })));
     const PRAG = 3.2, KOR_S = 0.09;                        // prag koraka (jedinice crteža), trajanje koraka (s)
     const nogePath = pauk.querySelector('.hw-pauk-n path');
+    let nVuce = null;                                     // faza potezanja (0..1) dok vuče nit, inače null
     let nB = 1, nCilj = 1, nBP = 1, nCiljP = 1, nE = null, nKut = 0, nV = [0, 0], nRaf = 0, nLast = 0;
     const jed = () => (pauk.offsetWidth || 15) / 24;       // px po jedinici crteža
     const uSvijet = (p, e, a, u) => { const c = Math.cos(a), s = Math.sin(a); return [e[0] + u * (p[0] * c - p[1] * s), e[1] + u * (p[0] * s + p[1] * c)]; };
@@ -1197,12 +1225,22 @@
       let nemir = false;
       const W = st => { const w = uSvijet(cilj(st), e, a, u); return [w[0] + vod[0], w[1] + vod[1]]; };
       STOP.forEach(st => { if (!st.F) st.F = W(st); });
+      /* VUČE NIT (natezanje zrake): prednji par naizmjence vuče nit ruku pod ruku - noga se ispruži
+         naprijed po niti, uhvati je i povuče prema tijelu. Ta stopala nisu usidrena (pomiču nit). */
+      if (nVuce != null) STOP.forEach(st => {
+        if (!st.l.p) return;
+        const ph = (nVuce * 2 + (st.s > 0 ? 0.5 : 0)) % 1, c = cilj(st);
+        const pomak = ph < 0.5 ? 2.6 - 5.2 * (ph * 2) : -2.6 + 5.2 * ((ph - 0.5) * 2);   // vuče natrag, pa se ispruži
+        st.F = uSvijet([c[0] + pomak, c[1] + (ph < 0.5 ? 0 : 0.9 * st.s)], e, a, u);
+        st.kor = null; st.vuce = true;
+      });
       const korakaju = g => STOP.some(st => st.g === g && st.kor);
+      if (nVuce == null) STOP.forEach(st => { st.vuce = false; });
       [0, 1].forEach(g => {
         if (korakaju(g) || korakaju(1 - g)) return;
         const skup = STOP.filter(st => st.g === g);
         const gr = skup.map(st => Math.hypot(st.F[0] - W(st)[0], st.F[1] - W(st)[1]) / u);
-        if (Math.max(...gr) > PRAG) skup.forEach((st, j) => { if (gr[j] > 0.6) st.kor = { od: st.F, t0: now }; });
+        if (Math.max(...gr) > PRAG) skup.forEach((st, j) => { if (gr[j] > 0.6 && !st.vuce) st.kor = { od: st.F, t0: now }; });
       });
       let d = '';
       STOP.forEach(st => {
@@ -1248,12 +1286,25 @@
       const sv = el.ownerSVGElement;
       let mj2 = sv.__mjerac;
       if (!mj2) { mj2 = sv.__mjerac = document.createElementNS('http://www.w3.org/2000/svg', 'path'); mj2.setAttribute('visibility', 'hidden'); mj2.style.strokeDasharray = 'none'; sv.appendChild(mj2); }
-      mj2.setAttribute('d', el.getAttribute('d'));
-      const q = mj2.getPointAtLength(mj2.getTotalLength() * Math.max(0, Math.min(1, w)));
+      const d = el.getAttribute('d');
+      if (mj2.__d !== d) { mj2.setAttribute('d', d); mj2.__d = d; mj2.__L = mj2.getTotalLength(); }
+      const q = mj2.getPointAtLength(mj2.__L * Math.max(0, Math.min(1, w)));
       return [q.x, q.y];
     };
-    const duljina = el => { tockaNa(el, 0); return el.ownerSVGElement.__mjerac.getTotalLength(); };   // u jedinicama mreže
-    let i = 0, tk = 0, last = 0, kut = null, pr = null;
+    const duljina = el => { tockaNa(el, 0); return el.ownerSVGElement.__mjerac.__L; };
+    /* SMJER NITI na udjelu w, u smjeru hoda (dir = +1 / -1), u stupnjevima na ekranu - iz OBLIKA niti,
+       ne iz pomaka po kadru (taj drhti pa se tijelo (vlasnik: bezveze se vrtjelo)). m = null: nit je već u px. */
+    const smjerNiti = (m, el, w, dir) => {
+      const a = Math.max(0, Math.min(1, w - 0.015 * dir)), b = Math.max(0, Math.min(1, w + 0.015 * dir));
+      if (a === b) return null;
+      let p1 = tockaNa(el, a), p2 = tockaNa(el, b);
+      if (m) { p1 = naEkran(m, p1); p2 = naEkran(m, p2); }
+      if (!p1 || !p2) return null;
+      const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+      return dx * dx + dy * dy < 1e-4 ? null : Math.atan2(dy, dx) * 180 / Math.PI;
+    };
+    const smjerTo = (p1, p2) => { if (!p1 || !p2) return null; const dx = p2[0] - p1[0], dy = p2[1] - p1[1]; return dx * dx + dy * dy < 0.25 ? null : Math.atan2(dy, dx) * 180 / Math.PI; };   // u jedinicama mreže
+    let i = 0, tk = 0, last = 0, kut = null, pr = null, drzi = false;   // drzi: okreće se na mjestu, korak stoji
     /* MUŠICE NAKON POSLA (vlasnik): kad pauk završi današnji posao, svakih 50-120 s uleti mušica,
        nasumično u gornju ili donju mrežu - STALNOM brzinom, zabije se (mreža se trzne) - i zapne na
        luku (koprca se). Pauk dođe po njoj SAMO PO NITIMA (ako je u drugoj mreži: po krajnjoj zraci do
@@ -1377,6 +1428,7 @@
       if (k.tip === 'kutNit') k.x.el.style.strokeDashoffset = 0;
       if (k.tip === 'napni') { k.m.Hc = k.H2; k.m.napeta(); k.m.oblikuj(k.H2); }
       if (k.tip === 'spoji') k.fn(k.m.Hc);              // luk se pričvrsti na zraku
+      if (k.tip === 'pripni' && k.nosi) { k.nosi.kraj = null; k.nosi.el.style.strokeDashoffset = 0; k.nosi.el.setAttribute('d', k.m.nitD(k.nosi, k.m.Hc)); }
       if (k.tip === 'muha') { k.mu.st = 'zapela'; k.mu.el.classList.remove('hw-muha-leti'); k.mu.m.udar = performance.now(); }   // udarac trzne mrežu
       if (k.tip === 'zamota') { const mu = k.mu; mu.st = 'kuglica'; mu.el.classList.add('hw-muha-zamotana'); muhaPostavi(mu, muhaCilj(mu)); }
       if (k.tip === 'jede') {                             // pojedena: ostatak izblijedi kroz minutu pa nestane
@@ -1391,7 +1443,7 @@
     function kadar(now) {
       const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;   // skrivena kartica: rAF stoji, nema skoka
       last = now;
-      tk += dt;
+      if (!drzi) tk += dt;                                // dok se okreće na mjestu, korak ne napreduje
       while (i < koraci.length && tk >= koraci[i].s) { tk -= koraci[i].s; zavrsi(koraci[i]); i++; }
       if (i >= koraci.length) {                           // posao gotov: pauk SJEDI u središtu i čeka mušicu
         pauk.classList.remove('hw-pauk-hoda');            // noge mirne
@@ -1432,9 +1484,16 @@
         const el = k.nit.el;
         el.style.strokeDashoffset = ((k.obrnuto ? -1 : 1) * (1 - v)).toFixed(4);   // obrnuto: crtica raste od kraja
         e = naEkran(k.m, tockaNa(el, k.obrnuto ? 1 - v : v));   // pauk ide PO luku
+        okreni = smjerNiti(k.m, el, k.obrnuto ? 1 - v : v, k.obrnuto ? -1 : 1);
       } else if (k.tip === 'hoda') {
-        const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc);
-        e = naEkran(k.m, [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v]);
+        const A = k.m.rj(k.A, k.m.Hc), B = k.m.rj(k.B, k.m.Hc), P = [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v];
+        e = naEkran(k.m, P);
+        okreni = smjerTo(naEkran(k.m, A), naEkran(k.m, B));
+        if (k.nosi) {                                     // nosi novu nit: od mjesta pričvršćenja do pauka
+          k.nosi.kraj = P;
+          k.nosi.el.style.strokeDashoffset = 0;
+          k.nosi.el.setAttribute('d', k.m.nitD(k.nosi, k.m.Hc));
+        }
       } else if (k.tip === 'muha') {                      // pauk čeka (u središtu ili na niti), mušica uleti iz smjera sredine ekrana
         if (k.visiLu) {                                   // dok mušica leti, njihanje se smiri na nulu
           e = nitVisi(k.m, k.visiLu, now, (k.m.ljAmp || 0) * (1 - v));
@@ -1454,9 +1513,11 @@
         if (k.tip === 'visi' && !k.m.ljT0) k.m.ljT0 = now;   // faza njihanja kreće od nule
         if (k.tip === 'visi') k.m.ljAmp = Math.min(1, (now - k.m.ljT0) / 3000);
         e = nitVisi(k.m, Math.max(0.01, Lu), now, k.tip === 'visi' ? k.m.ljAmp : 0);
-        if (k.tip === 'visi') okreni = 90 * dolje(k.m) + (k.m.okrenuta ? 180 : 0);   // visi glavom prema dolje
+        // visi i spušta se glavom prema dolje, penje se glavom gore
+        okreni = 90 * dolje(k.m) + (k.m.okrenuta ? 180 : 0) + (k.tip === 'penje' ? 180 : 0);
       } else if (k.tip === 'luk') {                       // hoda PO luku (do mušice ili natrag do zrake)
         e = naEkran(k.m, tockaNa(k.el, k.od + (k.do - k.od) * v));
+        okreni = smjerNiti(k.m, k.el, k.od + (k.do - k.od) * v, k.do >= k.od ? 1 : -1);
       } else if (k.tip === 'zamota' || k.tip === 'jede') {   // stoji uz mušicu i zamata je / jede (miče se s mrežom)
         e = naEkran(k.m, k.luk ? tockaNa(k.luk.el, k.luk.t) : k.m.rj(k.at, k.m.tresC || k.m.Hc));
         const T2 = muhaCilj(k.mu);
@@ -1473,14 +1534,29 @@
         const vv = Math.min(1, tk / k.s);
         k.el.style.strokeDashoffset = (1 - vv).toFixed(4);
         e = naEkran(k.m, tockaNa(k.el, vv));
+        okreni = smjerNiti(k.m, k.el, vv, 1);
       } else if (k.tip === 'px') {                        // uz zid, u pikselima ekrana
         const A = k.A(), B = k.B();
         e = [A[0] + (B[0] - A[0]) * v, A[1] + (B[1] - A[1]) * v];
+        okreni = smjerTo(A, B);
       } else if (k.tip === 'kutNit') {                    // nit u praznom kutu (SVG je već u pikselima)
         const el = k.x.el;
         el.style.strokeDashoffset = (1 - v).toFixed(4);
         e = tockaNa(el, v);
+        okreni = smjerNiti(null, el, v, 1);
       } else if (k.tip === 'spoji') e = naEkran(k.m, k.m.rj(k.at, k.m.Hc));   // stoji i pričvršćuje
+      else if (k.tip === 'pripni') {                    // pričvršćuje: nit na zraku (luk) ili nošenu nit na sidro
+        if (k.luk) {
+          // stražnjim nogama drži zraku i BOČNO zakrene tijelo (zadak prema zraci), pa se vrati
+          const w = k.obrnuto ? 0 : 1, dir = k.obrnuto ? -1 : 1, el = k.luk.el;
+          e = naEkran(k.m, tockaNa(el, w));
+          const t = smjerNiti(k.m, el, w, dir), hub = naEkran(k.m, sredina(k.m));
+          if (t != null && e && hub) {
+            const a = t * Math.PI / 180, str = Math.cos(a) * (hub[1] - e[1]) - Math.sin(a) * (hub[0] - e[0]) > 0 ? 1 : -1;
+            okreni = t + str * 30 * Math.sin(Math.PI * v);
+          }
+        } else e = naEkran(k.m, k.at);
+      }
       else if (k.tip === 'napni') {                     // pauk uz sidro vuče nit prema sebi: središte dolazi k njemu
         if (!k.m.napetaV) { k.m.napeta(); k.m.napetaV = 1; }
         // tri potezanja: svako malo povuče središte, a pauk se pri potezu malo nagne unatrag (prema rubu)
@@ -1489,6 +1565,7 @@
         k.m.oblikuj(c);
         const trz = Math.sin(Math.PI * fr) * 1.6;
         e = naEkran(k.m, [k.kod[0] + k.u[0] * trz, k.kod[1] + k.u[1] * trz]);
+        nVuce = drzi ? null : fr;                         // prednje noge vuku nit (ruku pod ruku)
         const sr = naEkran(k.m, c);                       // gleda prema središtu (koje vuče)
         if (e && sr) okreni = Math.atan2(sr[1] - e[1], sr[0] - e[0]) * 180 / Math.PI;
       }
@@ -1496,42 +1573,37 @@
       // noge: raširene u središtu (čeka, zamata, jede), napola dok plete luk, inače na niti
       const rasiren = k.tip === 'zamota' || k.tip === 'jede' || k.tip === 'stoji' || (k.tip === 'muha' && !k.visiLu);
       const nitLuka = (k.tip === 'plete' && k.nit.luk) || k.tip === 'popravak';
-      nCilj = rasiren ? 0 : nitLuka ? 0.7 : 1;
+      nCilj = rasiren ? 0 : nitLuka ? 0.7 : (k.tip === 'pripni' && k.luk) ? 0.45 : 1;
       /* VISI NA NITI (vlasnik): drži se STRAŽNJIM nogama za nit (nit je iza zatka - visi glavom
          dolje), a prednje su raširene. Isto dok se spušta i penje. */
       const naVlaknu = k.tip === 'visi' || k.tip === 'spusti' || k.tip === 'penje' || (k.tip === 'muha' && k.visiLu);
       nCiljP = naVlaknu ? 0 : nCilj;
       if (e) {
-        /* LUK (vlasnik: „pravi pauk se ne okreće u smjeru niti - uhvati susjednu nit i zatkom napravi
-           mrežu"): tijelo NE gleda niz luk nego koso prema središtu mreže (glavom prema susjednoj
-           zraci i središtu), a nit izlazi iz zatka. Samo ~20° (vlasnik: kod ~57° je previše „driftao" -
-           išao je bočno kao rak). Smjer niti se uzima iz SAME NITI (dvije točke ispred/iza), ne iz pomaka
-           po kadru - taj drhti pa je i tijelo vrludalo. */
-        if (okreni == null && nitLuka) {
-          const el = k.tip === 'plete' ? k.nit.el : k.el, hub = naEkran(k.m, sredina(k.m));
-          const w = k.tip === 'plete' && k.obrnuto ? 1 - v : v, sm = k.tip === 'plete' && k.obrnuto ? -1 : 1;
-          const p1 = el && naEkran(k.m, tockaNa(el, w - 0.03 * sm)), p2 = el && naEkran(k.m, tockaNa(el, w + 0.03 * sm));
-          if (p1 && p2 && hub && Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) > 0.1) {
-            const t = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]), hx = hub[0] - e[0], hy = hub[1] - e[1];
-            const a1 = t + 0.35, a2 = t - 0.35;           // ~20° od smjera niti, na stranu središta
-            const s1 = Math.cos(a1) * hx + Math.sin(a1) * hy, s2 = Math.cos(a2) * hx + Math.sin(a2) * hy;
-            okreni = (s1 > s2 ? a1 : a2) * 180 / Math.PI;
+        /* SMJER TIJELA (vlasnik: "radi neke rotacije bezveze dok hoda"): smjer se uzima iz OBLIKA niti
+           po kojoj ide (glava naprijed), ne iz pomaka po kadru - taj drhti čim se mreža pomakne.
+           OKRET NA MJESTU (vlasnik: "povlači mrežu još dok se nije okrenuo"): kad je razlika veća od
+           ~20° (kod natezanja ~12°), korak STANE (drzi) i pauk se okrene na mjestu stalnom brzinom - noge
+           pritom prekoračuju jer su stopala usidrena na nitima - pa tek onda nastavi. Manje razlike
+           (zavoj luka, bočni zakret pri pričvršćivanju) prati glatko. */
+        const ide = k.tip === 'hoda' || k.tip === 'plete' || k.tip === 'luk' || k.tip === 'popravak' || k.tip === 'kutNit' || k.tip === 'px' || k.tip === 'spusti' || k.tip === 'penje' || k.tip === 'napni';
+        if (okreni != null) {
+          if (kut == null || !pr) kut = okreni;           // tek se pojavio: odmah u smjeru niti
+          const raz = (okreni - kut + 540) % 360 - 180, gr = k.tip === 'napni' ? 12 : 20;
+          if (ide && (drzi ? Math.abs(raz) > 4 : Math.abs(raz) > gr)) {
+            drzi = true;
+            const max = 230 * Math.max(dt, 0.016);       // okret na mjestu: ~230°/s, mekano pred kraj
+            kut += Math.sign(raz) * Math.min(Math.abs(raz), max, Math.max(max * 0.35, Math.abs(raz) * 0.3));
+          } else {
+            drzi = false;
+            const max = 300 * Math.max(dt, 0.016);
+            kut += Math.max(-max, Math.min(max, raz * 0.25));
           }
-        }
-        let cilj = okreni;
-        if (cilj == null && pr) {
-          const dx = e[0] - pr[0], dy = e[1] - pr[1];
-          if (dx * dx + dy * dy > 0.01) cilj = Math.atan2(dy, dx) * 180 / Math.PI;
-        }
-        /* OKRET (vlasnik: „da bude stvarno okretanje"): glatko i NAJVIŠE ~240°/s - tijelo se zakreće
-           oko stopala koja stoje na nitima (v. NOGE), a noge pritom prekoračuju. */
-        if (cilj != null) {
-          if (kut == null) kut = cilj;
-          else { const raz = (cilj - kut + 540) % 360 - 180, max = 240 * Math.max(dt, 0.016); kut += Math.max(-max, Math.min(max, raz * 0.15)); }
-        }
+        } else drzi = false;
+        if (drzi) nVuce = null;
         pr = e;
         pauk.style.transform = `translate(${e[0].toFixed(1)}px, ${e[1].toFixed(1)}px) rotate(${(kut || 0).toFixed(1)}deg)`;
-      } else pr = null;                                   // na putu između mreža (izvan ekrana)
+      } else { pr = null; drzi = false; }                 // na putu između mreža (izvan ekrana)
+      if (k.tip !== 'napni') nVuce = null;
       if (nRaf) { cancelAnimationFrame(nRaf); nRaf = 0; }   // noge vodi petlja hoda
       nogeKadar(e, kut, now);
       requestAnimationFrame(kadar);

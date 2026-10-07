@@ -886,6 +886,10 @@ html.hw-on .hm-moon {
   border-radius: 50%;
 }
 html.hw-on .hm-moon canvas { display: none; }
+/* ZAMKA (kao kod .hero): ulazni pomak `.hs-inner > *` (translateY) bi sekciju dok traje
+   učinio okvirom za apsolutni .hm-text/.hm-moon - tekst bi bio uzak (sekcija je široka
+   kao sadržaj) pa bi nakon animacije skočio na pravo mjesto. Zato bez transforma, samo fade. */
+html.hw-on #home .hs-slide .hs-inner > #home-moon-section { transform: none; }
 html.hw-on .hm-text {
   position: absolute; left: 0; right: 0;
   top: calc(50% + var(--hw-moon-w, min(58vmin, 560px)) / 2 + clamp(1rem, 3dvh, 2rem));

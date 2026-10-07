@@ -1223,7 +1223,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007c`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007d`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo
@@ -1532,7 +1532,7 @@ Dok je aktivan, `<html>` ima klasu `hw-on`, a `window.AJHalloween.active === tru
     (`Hdana`). Zato se i stari dio smije pomaknuti dok pauk vuče (vlasnik je to tražio), a ipak je
     mreža svaki dan ista za sve. Slučajni brojevi se uzimaju za SVAKU nit, i nevidljivu.
   - **Pauk** (~15 px, TAMAN - tamno tijelo s tankim svjetlijim obrubom; svijetao je „izgledao kao mušica"; malo prednje tijelo, veći zadak, 4 para DUGIH nogu - dva naprijed,
-    dva natrag; s kratkim nogama u stranu „izgledao je kao rak") **Noge crta JS** (`nogeCrtaj`, vlasnik: „noge idu pokraj niti, ne po njoj"): dok hoda/plete/visi vrhovi svih nogu su NA NITI ispred i iza tijela (koljena izbočena u stranu, dvozglobna IK), korak je izmjeničan i ide s PRIJEĐENIM PUTEM (noga ne klizi po niti); u središtu (čeka/zamata/jede) noge se glatko rašire po zrakama. **hoda SAMO po nitima koje već
+    dva natrag; s kratkim nogama u stranu „izgledao je kao rak") **Noge crta JS** (`nogeKadar`, vlasnik: „noge idu pokraj niti, ne po njoj"; „da se pri okretu cijelo vrijeme drži za niti"): STOPALA SU USIDRENA U SVIJETU - stoje gdje su stala dok tijelo ide/okreće se, a prekorače tek kad zaostanu (izmjenično po četiri, dvozglobna IK). Poza oko tijela: NA NITI (vrhovi na niti ispred i iza tijela) pri hodu/visenju, RAŠIREN u središtu (čeka/zamata/jede), NAPOLA dok plete luk. **Luk:** tijelo NE gleda niz nit nego ~57° koso prema središtu mreže (drži susjednu zraku, nit izlazi iz zatka). Okret je ograničen na ~240°/s. Izmjereno: stopala stoje ~60 % vremena i pri okretu. **hoda SAMO po nitima koje već
     postoje** i **UVIJEK ISTOM BRZINOM** (`BRZINA` = 32 px/s, i pletenje i hod; 16 je bilo presporo) - trajanje nije bitno
     (prvi dan ~1,5 min, zadnji ~5 min). Trajanje koraka se računa iz STVARNE duljine niti (`getTotalLength`)
     - luk se objesi pa je dulji od tetive, inače bi pauk po lukovima jurio. Točke puta su simboličke (zraka + udio) jer se središte usput pomiče.

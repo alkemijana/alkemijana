@@ -1107,13 +1107,75 @@
     pauk.setAttribute('aria-hidden', 'true');
     /* Pauk odozgo, glava u +x: malo prednje tijelo, veći zadak iza struka, 4 para DUGIH nogu -
        dva para naprijed, dva natrag (ne u stranu, kao rak). Noge u dvije skupine (izmjenični hod). */
-    const noga = (y0, x0, kx, ky, tx, ty) => `M${x0} ${y0}L${kx} ${ky}L${tx} ${ty}M${x0} ${-y0}L${kx} ${-ky}L${tx} ${-ty}`;
     pauk.innerHTML = '<svg viewBox="-12 -12 24 24" xmlns="http://www.w3.org/2000/svg">' +
-      `<g class="hw-pauk-n hw-pauk-n1"><path d="${noga(-1, 2.6, 6, -4.6, 10.5, -5.8)}${noga(-1.2, 0.6, -1.8, -5.6, -5.2, -8.6)}"/></g>` +
-      `<g class="hw-pauk-n hw-pauk-n2"><path d="${noga(-1.3, 1.8, 3.8, -6, 7, -9.4)}${noga(-1, -0.2, -3.6, -4, -10, -5.4)}"/></g>` +
+      '<g class="hw-pauk-n"><path/></g>' +
       '<path class="hw-pauk-p" d="M3.4 -0.7L4.8 -1.2M3.4 0.7L4.8 1.2"/>' +
       '<ellipse cx="1.5" cy="0" rx="2.1" ry="1.55"/><ellipse cx="-3.9" cy="0" rx="3.4" ry="2.5"/></svg>';
     document.body.appendChild(pauk);
+
+    /* NOGE (vlasnik: „noge su cijelo vrijeme pored mreže, kao da ide pokraj niti, ne po njoj").
+       Dvije poze po nozi (gornja strana; donja je zrcalna), između kojih se glatko prelazi:
+       - RAŠIREN (u središtu mreže, dok čeka/zamata/jede): noge leže preko zraka oko središta;
+       - NA NITI (hoda, plete, visi): vrhovi svih nogu su NA NITI (y ≈ 0) ispred i iza tijela, a
+         koljena izbočena u stranu - kao pravi pauk koji se drži jedne niti.
+       Hod: izmjenični četveronožni korak (L1 L3 D2 D4 / ostale). Faza ide s PRIJEĐENIM PUTEM, ne s
+       vremenom: noga na niti stoji na mjestu dok tijelo ide naprijed, pa se podigne i prebaci
+       naprijed - vrhovi nogu ne klize po niti. Koljeno iz duljina bedra i potkoljenice (dvozglobna
+       IK), pa noga ne mijenja duljinu. Crta se jedan <path> po kadru, samo dok se nešto mijenja. */
+    const NOGE = [   // baza, vrh (raširen), vrh (na niti), g: grupa koraka
+      { b: [2.6, -1], r: [10.5, -5.8], n: [11, -0.35], g: 0 },
+      { b: [1.8, -1.3], r: [7, -9.4], n: [7.2, -0.35], g: 1 },
+      { b: [0.6, -1.2], r: [-5.2, -8.6], n: [-8.6, -0.35], g: 0 },
+      { b: [-0.2, -1], r: [-10, -5.4], n: [-11.2, -0.35], g: 1 }
+    ];
+    // duljine bedra/potkoljenice: malo dulje od pola razmaka baza-vrh, da je noga uvijek savijena
+    NOGE.forEach(l => {
+      const dr = Math.hypot(l.r[0] - l.b[0], l.r[1] - l.b[1]), dn = Math.hypot(l.n[0] - l.b[0], l.n[1] - l.b[1]);
+      l.L = Math.max(dr, dn) * 0.555;
+    });
+    const KORAK = 4.2;                                     // pomak vrha nogom (jedinice crteža)
+    const nogePath = pauk.querySelector('.hw-pauk-n path');
+    let nB = 1, nCilj = 1, nFaza = 0, nPomak = 0, nRaf = 0;
+    const koljeno = (B, T, L, s) => {                      // s = strana (-1 gore, +1 dolje): koljeno van
+      const dx = T[0] - B[0], dy = T[1] - B[1], d = Math.max(0.01, Math.hypot(dx, dy));
+      const h = Math.sqrt(Math.max(0, L * L - d * d / 4));
+      const nx = -dy / d, ny = dx / d, sg = ny * s >= 0 ? 1 : -1;
+      return [B[0] + dx / 2 + nx * h * sg, B[1] + dy / 2 + ny * h * sg];
+    };
+    const nogeCrtaj = () => {
+      let d = '';
+      NOGE.forEach(l => [-1, 1].forEach(s => {
+        const grupa = (l.g + (s > 0 ? 1 : 0)) % 2;       // dijagonalno: L1 s D2...
+        const ps = (nFaza + grupa * 0.5) % 1;
+        let ox, dig;
+        if (ps < 0.5) { ox = KORAK * (0.5 - 2 * ps); dig = 0; }               // stoji na niti
+        else { const w = (ps - 0.5) * 2; ox = KORAK * (w - 0.5); dig = Math.sin(Math.PI * w); }   // prebacuje se naprijed
+        const nx = l.n[0] + ox * nPomak, ny = Math.abs(l.n[1]) + dig * 1.4 * nPomak, ry = Math.abs(l.r[1]);
+        const B = [l.b[0], Math.abs(l.b[1]) * s];
+        const T = [l.r[0] + (nx - l.r[0]) * nB, (ry + (ny - ry) * nB) * s];
+        const K = koljeno(B, T, l.L, s);
+        d += `M${B[0].toFixed(2)} ${B[1].toFixed(2)}L${K[0].toFixed(2)} ${K[1].toFixed(2)}L${T[0].toFixed(2)} ${T[1].toFixed(2)}`;
+      }));
+      nogePath.setAttribute('d', d);
+    };
+    const nogeEase = () => {                               // dovrši prijelaz poze kad petlja hoda stoji
+      nRaf = 0;
+      nB += (nCilj - nB) * 0.12; nPomak *= 0.85;
+      if (Math.abs(nCilj - nB) < 0.005) nB = nCilj;
+      if (nPomak < 0.01) nPomak = 0;
+      nogeCrtaj();
+      if (nB !== nCilj || nPomak) nRaf = requestAnimationFrame(nogeEase);
+    };
+    const noge = (cilj, put) => {                          // put = prijeđeni put u px u ovom kadru
+      nCilj = cilj;
+      const j = put / ((pauk.offsetWidth || 15) / 24);
+      nFaza = (nFaza + j / (2 * KORAK)) % 1;
+      nPomak += ((j > 0.05 ? 1 : 0) - nPomak) * 0.2;
+      nB += (nCilj - nB) * 0.12;
+      if (Math.abs(nCilj - nB) < 0.005) nB = nCilj;
+      nogeCrtaj();
+    };
+    nogeCrtaj();
 
     /* Točka mreže (viewBox 400) -> piksel ekrana. NE preko getScreenCTM: Firefox i Safari u njemu ne
        uračunaju CSS zakret (donja mreža je .hw-web-dl, rotate 180°), pa je pauk dok plete donju mrežu
@@ -1282,6 +1344,7 @@
         pauk.style.visibility = '';
         radi = false;
         sjedi();
+        nCilj = 0; if (!nRaf) nRaf = requestAnimationFrame(nogeEase);   // u središtu raširi noge
         sljedecaMuha();
         // u gornjoj mreži se ponekad spusti na niti i visi dok ne dođe mušica (vlasnik)
         if (sjediU === mreze[0] && Math.random() < 0.4) spustT = setTimeout(spusti, (6 + Math.random() * 20) * 1000);
@@ -1376,6 +1439,9 @@
         if (e && sr) okreni = Math.atan2(sr[1] - e[1], sr[0] - e[0]) * 180 / Math.PI;
       }
       pauk.style.visibility = e ? '' : 'hidden';
+      // noge: raširene u središtu (čeka, zamata, jede), inače na niti
+      const rasiren = k.tip === 'zamota' || k.tip === 'jede' || k.tip === 'stoji' || (k.tip === 'muha' && !k.visiLu);
+      noge(rasiren ? 0 : 1, e && pr ? Math.hypot(e[0] - pr[0], e[1] - pr[1]) : 0);
       if (e) {
         if (okreni != null) kut = kut == null ? okreni : kut + ((okreni - kut + 540) % 360 - 180) * 0.15;
         else if (pr) {
@@ -1408,7 +1474,8 @@
       koraci.forEach(zavrsi);                             // primijeni sve što bi pauk danas napravio
       mreze.forEach(m => { m.napeta(); m.oblikuj(m.Hc); });
       i = koraci.length;
-      sjedi();                                            // odmah u središtu (ne u kutu dok se stranica otkriva)
+      sjedi();
+      nB = nCilj = 0; nogeCrtaj();                                            // odmah u središtu (ne u kutu dok se stranica otkriva)
     }
     const zapamti = () => { if (!pregled && danas) { try { localStorage.setItem(MKEY, danas); } catch (e) {} } };
 

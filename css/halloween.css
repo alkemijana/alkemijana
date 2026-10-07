@@ -417,7 +417,7 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url(../assets/fonts/web/IMFellDWPica-Italic.ttf?v=20261007b) format('truetype');
+  src: url(../assets/fonts/web/IMFellDWPica-Italic.ttf?v=20261007c) format('truetype');
 }
 .hw-on #home .hero-desc {
   font-family: 'IM Fell DW Pica', 'Josefin Sans', serif;
@@ -485,10 +485,7 @@ html body > #hw-intro#hw-intro.hwi-out { opacity: 0 !important; }
 .hw-pauk svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #2a241f; }
 .hw-pauk ellipse { stroke: #8a7f70; stroke-width: 0.45; }
 .hw-pauk .hw-pauk-n path, .hw-pauk .hw-pauk-p { fill: none; stroke: #5d544a; stroke-width: 0.8; stroke-linecap: round; stroke-linejoin: round; }
-/* dok hoda, dvije skupine nogu se izmjenično blago pomiču */
-.hw-pauk.hw-pauk-hoda .hw-pauk-n1 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate; }
-.hw-pauk.hw-pauk-hoda .hw-pauk-n2 { animation: hwPaukNoge 0.32s ease-in-out infinite alternate-reverse; }
-@keyframes hwPaukNoge { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+/* noge (poza i korak po niti) crta JS - js/halloween.js, nogeCrtaj */
 @media (prefers-reduced-motion: reduce) { .hw-pauk { display: none; } }
 
 /* Mušica koja uleti u paukovu mrežu (js/halloween.js pletiMreze): tamno tijelo, prozirna krila koja

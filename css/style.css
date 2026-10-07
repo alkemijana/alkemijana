@@ -3234,7 +3234,7 @@ body.moon-mode #natal { overflow-x: clip; }
 /* ispod obzora: potamnjen, ali neproziran (kroz proziran Mjesec su se vidjele zvijezde) */
 .ml-moon.ml-below .ml-moon-cv { filter: brightness(0.38) saturate(0.6); }
 .ml-horizon {
-  min-height: 1.4em; margin: 0; text-align: center;
+  min-height: 1.4em; margin: 0.4rem 0 0; text-align: center;
   font-family: 'Quicksand', sans-serif; font-size: 0.86rem; color: var(--text-muted);
 }
 

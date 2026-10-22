@@ -20,6 +20,8 @@
   'use strict';
 
   const BLEED = 3;          // napust u mm sa svake strane
+  const SLUG = 15;          // bijeli rub izvan napusta za oznake reza i poravnanja (tisak + folija)
+  const REG = '#010203';    // „registracijska" boja: u CMYK-u C100 M100 Y100 K100 - vidi se na svim pločama
   let foilMin = 0.3;        // najtanja linija u foliji (mm) - bira se u kartici (#natal-art-foil) po uputi tiskare
   const INK_MIN = 0.2;      // najtanja tiskana linija (mm)
   const SIZES = { 30: 300, 40: 400, 50: 500 };
@@ -84,9 +86,11 @@
 
   /* SVG cijelog postera za jedan prikaz: 'preview' | 'print' | 'foil'. */
   function buildArtSVG(c, S, mode) {
-    const W = S + 2 * BLEED, cx = W / 2;
+    // tisak i folija imaju bijeli rub s oznakama (SLUG), pregled je samo poster
+    const slug = mode === 'preview' ? 0 : SLUG, OFF = slug + BLEED;
+    const W = S + 2 * OFF, cx = W / 2;
     // kotač što veći (vlasnik): oznake osi sežu do R0 × 1,09 → ~4,5 % od gornjeg ruba
-    const R0 = S * 0.37, cy = BLEED + S * 0.448;
+    const R0 = S * 0.37, cy = OFF + S * 0.448;
     const R1 = R0 * 0.86;            // unutarnji rub zodijaka
     const RP = R0 * 0.735;           // prsten planeta
     const R2 = R0 * 0.62;            // vanjski rub prstena kuća
@@ -109,7 +113,8 @@
     const iw = Math.max(INK_MIN, R0 * 0.0016);    // debljina tiskanih linija
 
     let s = '<svg viewBox="0 0 ' + W + ' ' + W + '" xmlns="http://www.w3.org/2000/svg">';
-    s += '<rect width="' + W + '" height="' + W + '" fill="' + (mode === 'foil' ? '#ffffff' : INK.bg) + '"/>';
+    s += '<rect width="' + W + '" height="' + W + '" fill="#ffffff"/>';
+    if (mode !== 'foil') s += '<rect x="' + slug + '" y="' + slug + '" width="' + (S + 2 * BLEED) + '" height="' + (S + 2 * BLEED) + '" fill="' + INK.bg + '"/>';
 
     const circle = (r, layer, color, w) => {
       const k = col(layer, color);
@@ -127,11 +132,12 @@
       const [x, y] = pt(lon, r);
       return glyphGroup(key, x, y, size, k);
     };
-    const text = (str, lon, r, size, layer, color, family) => {
+    const text = (str, lon, r, size, layer, color) => {   // obris (labelFont), ne tekst
       const k = col(layer, color);
       if (!k) return '';
       const [x, y] = pt(lon, r);
-      return svgCenteredText(str, x, f(y + size * 0.35), size, k, family || 'Quicksand', family || 'Quicksand', null);
+      const w = labelFont.getAdvanceWidth(str, size);
+      return '<path d="' + labelFont.getPath(str, x - w / 2, y + size * 0.35, size).toPathData(3) + '" fill="' + k + '"/>';
     };
 
     /* ── zodijak: tiskani pojas, obrubi, granice znakova i ljestvica stupnjeva u foliji ── */
@@ -245,53 +251,168 @@
         const w0 = nameFont.getAdvanceWidth(name, fs);
         if (w0 > S * 0.8) fs *= S * 0.8 / w0;
         const w = nameFont.getAdvanceWidth(name, fs);
-        const y = BLEED + S * (nameStyle === 'small' ? 0.915 : 0.928);
+        const y = OFF + S * (nameStyle === 'small' ? 0.915 : 0.928);
         const d = nameFont.getPath(name, cx - w / 2, y, fs).toPathData(3);
         s += '<path d="' + d + nameAttr;
       }
     }
 
+    if (slug) s += printMarks(W, S, OFF, slug, mode, c);
     return s + '</svg>';
   }
 
-  /* Ime se crta kao OBRIS (opentype.js), ne kao tekst s ugrađenim fontom:
-     jsPDF krivo slaže složene glifove ovog fonta (š, č, ž = slovo + kvačica
-     kao dvije komponente) pa je kvačica na „š" bila pomaknuta. Obris je
-     ionako ono što tiskara želi za foliju - ne ovisi o fontu na njihovom
-     računalu. Font i biblioteka se skidaju SAMO za ovaj poster. */
+  /* Oznake za tiskaru u bijelom rubu (izvan napusta, odrežu se):
+     - oznake reza na sva 4 kuta (gdje je format `S × S`),
+     - križići za poravnanje (krug + križ) na sredini svake stranice,
+     - natpis koja je ovo datoteka.
+     U tisku su u „registracijskoj" boji (sve 4 boje 100 %), u foliji crne.
+     Na ISTOM su mjestu u obje datoteke - po njima se folija poravna s tiskom. */
+  function printMarks(W, S, OFF, slug, mode, c) {
+    const k = mode === 'foil' ? '#000000' : REG, w = 0.25, f = n => n.toFixed(3);
+    const ln = (x1, y1, x2, y2) => '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) +
+      '" stroke="' + k + '" stroke-width="' + w + '" stroke-linecap="butt"/>';
+    let s = '';
+    const a = OFF - BLEED - 2, b = a - 8;              // oznaka počinje 2 mm izvan napusta, duga 8 mm
+    for (const tx of [OFF, OFF + S]) for (const ty of [OFF, OFF + S]) {
+      const sx = tx === OFF ? -1 : 1, sy = ty === OFF ? -1 : 1;
+      const ax = tx + sx * (OFF - a), bx = tx + sx * (OFF - b);
+      const ay = ty + sy * (OFF - a), by = ty + sy * (OFF - b);
+      s += ln(ax, ty, bx, ty) + ln(tx, ay, tx, by);
+    }
+    const target = (x, y) => '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="2.6" fill="none" stroke="' + k + '" stroke-width="' + w + '"/>' +
+      ln(x - 4.5, y, x + 4.5, y) + ln(x, y - 4.5, x, y + 4.5);
+    const m = slug / 2;
+    s += target(W / 2, m) + target(W / 2, W - m) + target(m, W / 2) + target(W - m, W / 2);
+    const name = (c.input.name || '').trim();
+    const label = (mode === 'foil' ? 'FOLIJA (srebro) · 100 % K = folija' : 'TISAK · CMYK') +
+      ' · ' + (S / 10) + ' × ' + (S / 10) + ' cm · napust 3 mm' + (name ? ' · ' + name : '');
+    if (labelFont) s += '<path d="' + labelFont.getPath(label, OFF, W - m + 1.2, 3.2).toPathData(3) + '" fill="' + k + '"/>';
+    return s;
+  }
+
+  /* Ime i sve oznake se crtaju kao OBRISI (opentype.js), ne kao tekst: PDF
+     tako nema nijednog fonta i tiskara ga otvara točno kako izgleda kod nas
+     (nema zamjene fonta, nema „nedostaje font"). Kvačice u Cormorantu su
+     sitne, visoko i malo udesno - to je dizajn fonta, ne greška.
+     Fontovi i biblioteka se skidaju SAMO za ovaj poster. */
   const NAME_FONT_FILE = 'assets/fonts/CormorantGaramond-Italic.ttf';
-  let nameFont = null;
+  const LABEL_FONT_FILE = 'assets/fonts/Quicksand-Medium.ttf';
+  let nameFont = null, labelFont = null;
   async function ensureNameFont() {
-    if (nameFont) return;
+    if (nameFont && labelFont) return;
     await loadScript('js/lib/opentype.min.js');
-    const buf = await (await fetch(NAME_FONT_FILE)).arrayBuffer();
-    nameFont = window.opentype.parse(buf);
+    const [a, b] = await Promise.all([NAME_FONT_FILE, LABEL_FONT_FILE].map(u => fetch(u).then(r => r.arrayBuffer())));
+    nameFont = window.opentype.parse(a);
+    labelFont = window.opentype.parse(b);
+  }
+
+  /* ── boje za tiskaru: CMYK ──
+     svg2pdf boje šalje kao RGB (0-255) pa ih ovdje prevedemo u CMYK prije nego
+     dođu u PDF. Tako tiskara NE pretvara boje sama (njihovo RGB→CMYK zna crnu
+     pretvoriti u sivu ili smeđu). Podloga = bogata crna C60 M40 Y40 K100
+     (gusta, ujednačena; ukupno 240 % - ispod uobičajene granice od 300 %).
+     Ploča za foliju: sve što nije bijelo = čista crna K100. */
+  const RICH_BLACK = [0.6, 0.4, 0.4, 1];
+  function rgbToCmyk(r, g, b, mode) {
+    const white = r > 250 && g > 250 && b > 250;
+    if (mode === 'foil') return white ? [0, 0, 0, 0] : [0, 0, 0, 1];
+    if (r === 1 && g === 2 && b === 3) return [1, 1, 1, 1];   // REG - oznake reza i poravnanja
+    if (r + g + b <= 40) return RICH_BLACK;      // podloga (#0a0910) i zadana crna
+    r /= 255; g /= 255; b /= 255;
+    const k = 1 - Math.max(r, g, b);
+    if (k >= 1) return [0, 0, 0, 1];
+    const q = v => +((1 - v - k) / (1 - k)).toFixed(3);
+    return [q(r), q(g), q(b), +k.toFixed(3)];
+  }
+  function useCmyk(doc, mode) {
+    const parse = a => {
+      if (a.length >= 3 && a.slice(0, 3).every(v => typeof v === 'number')) return a.slice(0, 3);
+      if (typeof a[0] === 'string' && /^#?[0-9a-f]{6}$/i.test(a[0])) {
+        const h = a[0].replace('#', '');
+        return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16));
+      }
+      return null;
+    };
+    for (const fn of ['setFillColor', 'setDrawColor', 'setTextColor']) {
+      const orig = doc[fn].bind(doc);
+      doc[fn] = (...a) => {
+        if (a.length === 4) return orig(...a);   // već CMYK
+        const rgb = parse(a);
+        return rgb ? orig(...rgbToCmyk(rgb[0], rgb[1], rgb[2], mode)) : orig(...a);
+      };
+    }
+  }
+
+  /* Jedna datoteka = jedna stranica postera. Nova stranica bi u jsPDF-u
+     naslijedila stanje linije s prethodne (okrugli krajevi od glifova, a
+     svg2pdf za „butt" ništa ne zapiše) - zato su tisak i folija ZASEBNI
+     PDF-ovi, što tiskare ionako traže. */
+  async function makeDoc(W, svg, mode) {
+    const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: [W, W], compress: true });
+    // tisak i folija nemaju teksta (sve je obris) pa ni ugrađenih fontova;
+    // pregled ih treba za stranicu s uputama
+    if (mode === 'preview') registerFonts(doc);
+    else useCmyk(doc, mode);
+    doc.setLineCap('butt'); doc.setLineJoin('miter');
+    await addPosterPage(doc, svg, W, W, true);
+    return doc;
+  }
+
+  /* Druga stranica pregleda: upute koje Jana preda tiskari uz datoteke. */
+  function addPrinterNotes(doc, cm, fileBase) {
+    doc.addPage('a4', 'portrait');
+    const L = 20, maxW = 170;
+    let y = 26;
+    const line = (txt, size, gap) => {
+      doc.setFontSize(size);
+      for (const ln of doc.splitTextToSize(txt, maxW)) { doc.text(ln, L, y); y += size * 0.45; }
+      y += gap || 2;
+    };
+    const full = String((cm * 10 + 2 * (BLEED + SLUG)) / 10).replace('.', ',');
+    doc.setFont('Quicksand', 'normal');
+    doc.setTextColor(30, 30, 30);
+    line('Upute za tiskaru', 18, 4);
+    line('Kvadratni poster ' + cm + ' × ' + cm + ' cm (format nakon reza).', 11, 4);
+    line('Datoteke', 13, 1);
+    line('1. ' + fileBase + '-TISAK.pdf - tisak u boji, CMYK. Podloga je bogata crna C60 M40 Y40 K100 - molimo ne pretvarati boje.', 11);
+    line('2. ' + fileBase + '-FOLIJA.pdf - maska za SREBRNU foliju: 100 % K = folija, bijelo = bez folije. Iste mjere i isto ishodište kao tisak (poravnanje 1 : 1).', 11);
+    line('3. ' + fileBase + '-PREGLED.pdf - samo pregled kako treba izgledati (folija prikazana sivo-srebrno). Ne tiskati.', 11, 4);
+    line('Mjere', 13, 1);
+    line('Tisak i folija su stranice ' + full + ' × ' + full + ' cm: format ' + cm + ' × ' + cm + ' cm + napust 3 mm + bijeli rub ' + (SLUG / 10).toString().replace('.', ',') + ' cm s oznakama. Rezati po oznakama reza na ' + cm + ' × ' + cm + ' cm.', 11, 4);
+    line('Poravnanje', 13, 1);
+    line('Oznake reza (4 kuta) i križići za poravnanje (sredina svake stranice) su na ISTOM mjestu u obje datoteke. U tisku su u registracijskoj boji (C100 M100 Y100 K100), u foliji crne. Molimo foliju poravnati s tiskom po tim oznakama.', 11, 4);
+    line('Redoslijed', 13, 1);
+    // Quicksand nema strelicu „→" pa redoslijed ide riječima
+    line('1. tisak, 2. soft-touch (baršunasta mat) plastifikacija, 3. digitalna srebrna folija.', 11, 4);
+    line('Napomene', 13, 1);
+    line('Najtanja linija u foliji: ' + String(foilMin).replace('.', ',') + ' mm. Razmak između crtica stupnjeva je oko 1,9 mm.', 11);
+    line('Svi tekstovi su pretvoreni u krivulje - u datotekama nema fontova.', 11);
+    line('Molimo probni otisak prije cijele naklade.', 11);
   }
 
   async function downloadArtPoster() {
     if (!chart) return;
     const sel = document.getElementById('natal-art-size');
-    const cm = sel ? sel.value : '40';
-    const S = SIZES[cm] || 400, W = S + 2 * BLEED;
+    const cm = +(sel ? sel.value : '40');
+    const S = SIZES[cm] || 400, W = S + 2 * BLEED, WM = W + 2 * SLUG;
     const fsel = document.getElementById('natal-art-foil');
     foilMin = fsel ? parseFloat(fsel.value) || 0.3 : 0.3;
     const btn = document.getElementById('natal-art-btn');
     await withBtnSpinner(btn, async () => {
       await ensurePdfLibs();
       await ensureNameFont();
-      const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: [W, W] });
-      registerFonts(doc);
-      // jsPDF na početak nove stranice prepiše ZADNJE stanje linije s prethodne
-      // (svg2pdf ga ostavi na „1 J" = okrugli kraj od glifova), a svg2pdf za
-      // stroke-linecap="butt" ništa ne zapiše jer misli da je to zadano - pa je
-      // cijela ploča za foliju imala okrugle krajeve. Zato vrati stanje prije svake stranice.
-      const resetLine = () => { doc.setLineCap('butt'); doc.setLineJoin('miter'); };
-      await addPosterPage(doc, buildArtSVG(chart, S, 'preview'), W, W, true);
-      resetLine();
-      await addPosterPage(doc, buildArtSVG(chart, S, 'print'), W, W, false, [W, W], 'portrait');
-      resetLine();
-      await addPosterPage(doc, buildArtSVG(chart, S, 'foil'), W, W, false, [W, W], 'portrait');
-      doc.save(pdfFileName('poster-folija-' + cm + 'x' + cm + 'cm'));
+      const base = pdfFileName('poster-' + cm + 'x' + cm + 'cm').replace(/\.pdf$/, '');
+      const files = [
+        ['TISAK', await makeDoc(WM, buildArtSVG(chart, S, 'print'), 'print')],
+        ['FOLIJA', await makeDoc(WM, buildArtSVG(chart, S, 'foil'), 'foil')]
+      ];
+      const prev = await makeDoc(W, buildArtSVG(chart, S, 'preview'), 'preview');
+      addPrinterNotes(prev, cm, base);
+      files.push(['PREGLED', prev]);
+      for (const [tag, doc] of files) {
+        doc.save(base + '-' + tag + '.pdf');
+        await new Promise(r => setTimeout(r, 400));   // preglednik inače zna progutati drugo preuzimanje
+      }
     });
   }
 

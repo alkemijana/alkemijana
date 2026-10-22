@@ -595,10 +595,21 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
   plastifikacija (baršun na dodir) → digitalna srebrna folija. Bijelo na pravom crnom papiru traži
   bijelu boju koju rijetka tiskara ima, a obične boje na crnom papiru „nestanu" - zato se crna TISKA.
   Demago ima sve na jednom mjestu (digitalna folija do 480 × 700 mm → 50 × 50 ne stane, 40 × 40 da).
-- **PDF = 3 stranice istih mjera:** 1. pregled (folija kao `FOIL_PREVIEW` srebro), 2. tisak (bez
-  folije; ispod nje ostaje crno), 3. ploča za foliju (100 % crno = srebro, bijela podloga).
-  Tiskari idu 2. i 3. Svaki element ima sloj `'ink'`/`'foil'`, `col(layer, boja)` ga po stranici
-  oboji ili izostavi - **novi element mora dobiti sloj**, inače se pojavi na krivoj stranici.
+- **Izvoz = TRI ZASEBNA PDF-a** (vlasnik: „pouzdan file koji tiskara otvori i ništa se ne promijeni"):
+  `…-TISAK.pdf` i `…-FOLIJA.pdf` idu tiskari, `…-PREGLED.pdf` je za Janu (1. str. poster, 2. str. A4
+  „Upute za tiskaru" - format, napust, poravnanje, redoslijed, boja crne, najtanja linija folije).
+  Zasebni su i zato što nova stranica u jsPDF-u nasljeđuje stanje linije s prethodne (v. niže).
+  - **CMYK, ne RGB** (`useCmyk`): svg2pdf boje šalje kao RGB 0-255, a omotač `setFillColor/
+    setDrawColor/setTextColor` ih pretvori u CMYK prije PDF-a - tiskara ništa ne pretvara sama.
+    Podloga = bogata crna C60 M40 Y40 K100 (`RICH_BLACK`, 240 %); folija = sve K100.
+  - **Nema fontova:** ime (Cormorant) i sve oznake (Quicksand: kuće, ASC/MC, R, natpis u rubu)
+    su OBRISI preko opentype.js. U tisku i foliji se `registerFonts` NE zove.
+  - **Oznake za poravnanje:** tisak i folija imaju bijeli rub `SLUG` 15 mm izvan napusta s
+    oznakama reza (4 kuta), križićima (krug + križ, sredina svake stranice) i natpisom datoteke -
+    na ISTOM mjestu u obje datoteke, pa tiskara po njima poravna foliju s tiskom. U tisku su u
+    registracijskoj boji (`REG` `#010203` → C100 M100 Y100 K100), u foliji crne. Pregled nema rub.
+  Svaki element ima sloj `'ink'`/`'foil'`, `col(layer, boja)` ga po datoteci oboji ili izostavi -
+  **novi element mora dobiti sloj**, inače se pojavi u krivoj datoteci.
 - **U foliji:** obrubi zodijaka, ljestvica stupnjeva, granice znakova, osi, krug aspekata, glifovi
   planeta i crtice na stvarnom stupnju, ime. **Tiskano (boje):** pojas zodijaka, znakovi u bojama
   elemenata, kuće, aspekti po vrsti, oznake ASC/MC i „R". Folija ≥ `foilMin` (zadano 0,3 mm; tanje se zalije).
@@ -1273,7 +1284,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022i`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022j`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

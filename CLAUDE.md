@@ -507,6 +507,9 @@ Besplatni alat za posjetitelje — stranica **#natal** u navigaciji.
   kotača; crtice na unutarnjoj kružnici pokazuju gdje počinju aspektne linije.
   Kad je u kući gust skup pa se glifovi razmaknu (>1°), tanka poveznica vodi od
   stvarnog stupnja (crtica na zodijaku) do razmaknutog glifa.
+- **Glifovi planeta (22. 10. 2026.):** SVI crtani linijom (stroke 1.7) na istoj mreži (y≈3–21,
+  širina ≤ 18). Prije je pola bilo DejaVu obrisa a pola ručno crtano - različita debljina i
+  visina (vlasnik: „kao da su različite vrste glifova"). Novi planet = ista linija, ista mreža.
 - **Glifovi znakova:** DejaVu Sans (slobodni font, bez obveze atribucije), obrisi
   izvučeni i normalizirani u `viewBox 0 0 24 24` kao fill path-evi u `GLYPHS`.
 - **PDF (jsPDF + svg2pdf, lazy-load):** poster A4–A0 (vektorski, tamni dizajn sa
@@ -1253,7 +1256,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022d`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022e`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

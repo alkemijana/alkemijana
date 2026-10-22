@@ -79,7 +79,8 @@
   /* SVG cijelog postera za jedan prikaz: 'preview' | 'print' | 'foil'. */
   function buildArtSVG(c, S, mode) {
     const W = S + 2 * BLEED, cx = W / 2;
-    const R0 = S * 0.34, cy = BLEED + S * 0.43;
+    // kotač što veći (vlasnik): oznake osi sežu do R0 × 1,09 → ~4,5 % od gornjeg ruba
+    const R0 = S * 0.37, cy = BLEED + S * 0.448;
     const R1 = R0 * 0.86;            // unutarnji rub zodijaka
     const RP = R0 * 0.735;           // prsten planeta
     const R2 = R0 * 0.62;            // vanjski rub prstena kuća
@@ -207,7 +208,7 @@
     const kn = col('foil', null);
     if (name && kn) {
       const fs = fitFontSize(name, NAME_FONT.css, null, S * 0.052, S * 0.8);
-      s += svgCenteredText(name, cx, f(BLEED + S * 0.885), fs, kn, NAME_FONT.pdf, NAME_FONT.css, null);
+      s += svgCenteredText(name, cx, f(BLEED + S * 0.928), fs, kn, NAME_FONT.pdf, NAME_FONT.css, null);
     }
 
     return s + '</svg>';

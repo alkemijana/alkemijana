@@ -578,19 +578,21 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
 - **Sadržaj (vlasnik):** samo kotač + ime. Bez datuma/mjesta/vremena - „tko zna čitati kartu,
   pročitat će je". SVE točke kao na kotaču stranice (i J. čvor, Fortuna, Vertex - vlasnik je primijetio
   da fale); bez točke u središtu (vlasniku se nije svidjela).
-- **Font imena: Cormorant Garamond kurziv (NE bold)**, vodoravno ispod kotača (vlasnik: varijanta A;
-  bold i ime po luku su probani i odbijeni). `assets/fonts/CormorantGaramond-Italic.ttf` (OFL, TTF s
-  Google Fontsa, ima đ), skida se SAMO za ovaj poster (`ensureNameFont`), ne preko `FONT_FILES`.
-  **Ime je OBRIS** (`js/lib/opentype.min.js` 1.3.4, vendoriran), ne tekst u jsPDF-u - tiskara za foliju
-  želi obrise, a PDF ne ovisi o fontu kod njih. Kvačice (š, č, ž) u Cormorantu su sitne, visoko i malo
-  udesno - to je DIZAJN fonta (provjereno u pregledniku i u dvije verzije datoteke), ne greška.
+- **Font imena: Dancing Script REGULAR (400)** (vlasnik). Ključ izbora: glifovi su jednolika linija
+  sa ZAOBLJENIM krajevima, pa serifni fontovi (Playfair, Cormorant, Garamond…) uz njih „ne pašu" -
+  probani su i odbijeni (Playfair verzalka, Cormorant kurziv, Cormorant bold, ime po luku).
+  `assets/fonts/DancingScript-Regular.ttf` (OFL, Google Fonts; `DancingScript.ttf` je bold za druge PDF-ove).
+  Ime se uvijek piše Velikim Početnim slovima (`titleCase`, i nakon crtice/apostrofa), veličina 0,058 × S.
+  Najtanji potezi ~0,027 em (40 × 40 → ~0,56 mm); ako je to tanje od `foilMin`, obris dobije obrub.
+  **Ime je OBRIS** (`js/lib/opentype.min.js` 1.3.4, vendoriran), ne tekst u jsPDF-u.
+- **Najtanja linija folije: zadano 0,5 mm** (vlasnik; izbor 0,3/0,4/0,5/0,7 u `#natal-art-foil`).
+  Javni podaci o minimumu se razlikuju (0,18 – 0,7 mm), za MGI JETvarnish ih nismo našli.
+- **Naklada je UVIJEK 1 primjerak** (svaka karta je unikat) - upute za tiskaru zato ne spominju
+  probnu nakladu nego provjeru poravnanja PRIJE folije.
 - **Osi ASC/MC/DSC/IC** (folija) su prekinute preko pojasa znakova (R1–R0) da ne presijecaju znakove
   (vlasnik). Kroz glifove planeta se NE prekidaju (vlasnik izričito).
-- **Najtanja linija folije se bira u kartici** (`#natal-art-foil`, 0,3 / 0,4 / 0,5 / 0,7 mm) - Jana
-  upiše ono što kaže tiskara. Javni podaci o minimumu se razlikuju (0,18 – 0,7 mm), za MGI JETvarnish
-  ih nismo našli. Uz veći minimum ime dobije obrub (`foilMin − 0,42` mm) jer su mu potezi ~0,4 mm.
 - **Format:** KVADRAT 30/40/50 cm (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
-  paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`), stranica = rez + 2 × napust.
+  paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`); tisak i folija još i bijeli rub `SLUG` 15 mm s oznakama (40 × 40 → arak 43,6 cm).
 - **Tehnika (istraženo 22. 10. 2026.):** bijeli papir → tisak (crna podloga + boje) → soft-touch
   plastifikacija (baršun na dodir) → digitalna srebrna folija. Bijelo na pravom crnom papiru traži
   bijelu boju koju rijetka tiskara ima, a obične boje na crnom papiru „nestanu" - zato se crna TISKA.
@@ -1284,7 +1286,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022j`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022k`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

@@ -22,7 +22,7 @@
   const BLEED = 3;          // napust u mm sa svake strane
   const SLUG = 15;          // bijeli rub izvan napusta za oznake reza i poravnanja (tisak + folija)
   const REG = '#010203';    // „registracijska" boja: u CMYK-u C100 M100 Y100 K100 - vidi se na svim pločama
-  let foilMin = 0.3;        // najtanja linija u foliji (mm) - bira se u kartici (#natal-art-foil) po uputi tiskare
+  let foilMin = 0.5;        // najtanja linija u foliji (mm), zadano 0,5 (vlasnik) - bira se u kartici (#natal-art-foil)
   const INK_MIN = 0.2;      // najtanja tiskana linija (mm)
   const SIZES = { 30: 300, 40: 400, 50: 500 };
 
@@ -82,6 +82,13 @@
     const out = {};
     for (const p of arr) out[p.id] = p.d;
     return out;
+  }
+
+  /* Ime na posteru: Veliko Početno Slovo svake riječi, ostalo malo (vlasnik) -
+     bez obzira kako je upisano („ivana HORVAT-šimić" → „Ivana Horvat-Šimić"). */
+  function titleCase(s) {
+    return String(s || '').trim().normalize('NFC').toLocaleLowerCase('hr')
+      .replace(/(^|[\s\-'’])(\p{L})/gu, (m, sep, ch) => sep + ch.toLocaleUpperCase('hr'));
   }
 
   /* SVG cijelog postera za jedan prikaz: 'preview' | 'print' | 'foil'. */
@@ -224,13 +231,17 @@
       if (p.retro) s += text('R', d, RP - gSize * 1.05, R0 * 0.026, 'ink', INK.retro);
     }
 
-    /* ── ime u foliji: Cormorant Garamond kurziv (vlasnik: ne bold), kao OBRIS ── */
-    const name = (c.input.name || '').trim().normalize('NFC');
+    /* ── ime u foliji: Dancing Script Regular (vlasnik: zaobljeni krajevi kao glifovi), kao OBRIS ── */
+    const name = titleCase(c.input.name);
     const kn = col('foil', null);
     if (name && kn && nameFont) {
-      // najtanji potezi kurziva su ~0,4 mm (40 × 40); ako tiskara traži deblje, obris se podeblja obrubom
-      const ns = Math.max(0, foilMin - 0.42);
-      const nameAttr = '" fill="' + kn + '"' + (ns > 0 ? ' stroke="' + kn + '" stroke-width="' + f(ns) + '" stroke-linejoin="round"' : '') + '/>';
+      // najtanji potezi Dancing Scripta su ~0,027 em (izmjereno: 40 × 40 → ~0,56 mm);
+      // ako je to tanje od foilMin, obris se podeblja obrubom do foilMin
+      const attrFor = fs => {
+        const ns = Math.max(0, foilMin - fs * 0.027);
+        return '" fill="' + kn + '"' + (ns > 0 ? ' stroke="' + kn + '" stroke-width="' + f(ns) + '" stroke-linejoin="round"' : '') + '/>';
+      };
+      let nameAttr = attrFor(R0 * 0.085);
       if (nameStyle === 'arc') {
         // po luku ispod kotača, slova okrenuta prema središtu
         const fs = R0 * 0.085, Rn = R0 * 1.2;
@@ -247,9 +258,10 @@
           acc += adv;
         }
       } else {
-        let fs = S * (nameStyle === 'small' ? 0.034 : 0.052);
+        let fs = S * (nameStyle === 'small' ? 0.034 : 0.058);
         const w0 = nameFont.getAdvanceWidth(name, fs);
         if (w0 > S * 0.8) fs *= S * 0.8 / w0;
+        nameAttr = attrFor(fs);
         const w = nameFont.getAdvanceWidth(name, fs);
         const y = OFF + S * (nameStyle === 'small' ? 0.915 : 0.928);
         const d = nameFont.getPath(name, cx - w / 2, y, fs).toPathData(3);
@@ -292,10 +304,9 @@
 
   /* Ime i sve oznake se crtaju kao OBRISI (opentype.js), ne kao tekst: PDF
      tako nema nijednog fonta i tiskara ga otvara točno kako izgleda kod nas
-     (nema zamjene fonta, nema „nedostaje font"). Kvačice u Cormorantu su
-     sitne, visoko i malo udesno - to je dizajn fonta, ne greška.
+     (nema zamjene fonta, nema „nedostaje font").
      Fontovi i biblioteka se skidaju SAMO za ovaj poster. */
-  const NAME_FONT_FILE = 'assets/fonts/CormorantGaramond-Italic.ttf';
+  const NAME_FONT_FILE = 'assets/fonts/DancingScript-Regular.ttf';
   const LABEL_FONT_FILE = 'assets/fonts/Quicksand-Medium.ttf';
   let nameFont = null, labelFont = null;
   async function ensureNameFont() {
@@ -372,7 +383,7 @@
     doc.setFont('Quicksand', 'normal');
     doc.setTextColor(30, 30, 30);
     line('Upute za tiskaru', 18, 4);
-    line('Kvadratni poster ' + cm + ' × ' + cm + ' cm (format nakon reza).', 11, 4);
+    line('Kvadratni poster ' + cm + ' × ' + cm + ' cm (format nakon reza). Naklada: 1 primjerak - svaka karta je unikat.', 11, 4);
     line('Datoteke', 13, 1);
     line('1. ' + fileBase + '-TISAK.pdf - tisak u boji, CMYK. Podloga je bogata crna C60 M40 Y40 K100 - molimo ne pretvarati boje.', 11);
     line('2. ' + fileBase + '-FOLIJA.pdf - maska za SREBRNU foliju: 100 % K = folija, bijelo = bez folije. Iste mjere i isto ishodište kao tisak (poravnanje 1 : 1).', 11);
@@ -387,7 +398,7 @@
     line('Napomene', 13, 1);
     line('Najtanja linija u foliji: ' + String(foilMin).replace('.', ',') + ' mm. Razmak između crtica stupnjeva je oko 1,9 mm.', 11);
     line('Svi tekstovi su pretvoreni u krivulje - u datotekama nema fontova.', 11);
-    line('Molimo probni otisak prije cijele naklade.', 11);
+    line('Budući da je primjerak jedan, molimo prije folije provjeriti poravnanje (npr. foliju na otpadnom arku ili usporedbom oznaka na zaslonu), da se unikat ne pokvari.', 11);
   }
 
   async function downloadArtPoster() {
@@ -396,7 +407,7 @@
     const cm = +(sel ? sel.value : '40');
     const S = SIZES[cm] || 400, W = S + 2 * BLEED, WM = W + 2 * SLUG;
     const fsel = document.getElementById('natal-art-foil');
-    foilMin = fsel ? parseFloat(fsel.value) || 0.3 : 0.3;
+    foilMin = fsel ? parseFloat(fsel.value) || 0.5 : 0.5;
     const btn = document.getElementById('natal-art-btn');
     await withBtnSpinner(btn, async () => {
       await ensurePdfLibs();

@@ -24,7 +24,7 @@
   const REG = '#010203';    // „registracijska" boja: u CMYK-u C100 M100 Y100 K100 - vidi se na svim pločama
   let foilMin = 0.5;        // najtanja linija u foliji (mm), zadano 0,5 (vlasnik) - bira se u kartici (#natal-art-foil)
   const INK_MIN = 0.2;      // najtanja tiskana linija (mm)
-  const SIZES = { 30: 300, 40: 400, 50: 500 };
+  const SIZES = { 30: 300, 35: 350, 40: 400, 50: 500 };
 
   // Boje tiska na crnoj podlozi - prigušene, bez neona; NIKAD zlatna
   const INK = {

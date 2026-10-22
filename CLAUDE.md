@@ -47,6 +47,7 @@ ALKEMIJANA WEBSITE/
 │   ├── natal-acg-render.js         ← AstroCartography: Leaflet karta (lazy-load CDN), legenda, toggle po planetu (nakon natal-acg.js)
 │   ├── natal-birthcard.js          ← Tarot karta rođenja (Greer) iznad PDF gumbi natalne karte + blok u radnom PDF-u, natal + sinastrija (samostalan)
 │   ├── natal-ai.js                 ← Natalna karta: AI uvidi (Janin radni alat — admin-only, generira PDF; samostalan modul)
+│   ├── natal-artposter.js          ← Umjetnički kvadratni poster za tisak sa srebrnom folijom (admin-only; samostalan modul)
 │   ├── natal-chiron.js             ← Chiron efemerida (JPL Horizons 1900–2100, generirano — ne uređivati)
 │   ├── moon-render.js              ← Crtanje Mjeseca (window.AJMoon: NASA karta, faza, nagib, sjaj) — zajedničko za Halloween, traku i alat; SINKRONO u <head> prije halloween.js
 │   ├── nav-moon.js                 ← Mali Mjesec u traci uz ☰ (stvarna faza iz Hrvatske; nije klikabilan; skriven u Halloween tjednu)
@@ -567,6 +568,27 @@ Sve se računa u pregledniku, ništa se ne šalje.
 Greerina metoda i fusnota to tako i kaže). U radnom PDF-u sinastrije `drawPdfSynastry` crta tri
 stupca (osoba A · osoba B · karta odnosa) ispod legende aspekata. Tranziti dijele
 `renderSynastryWorkingContent`, pa je blok uvjetovan s `!cfg.inner` (tranziti ga nemaju).
+
+### Umjetnički poster za tisak (js/natal-artposter.js) — samo Jana
+Kartica `#natal-art-card` (ispod AI uvida) vidljiva samo uz `sessionStorage.aj_pass`; `natal.js`
+zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena javnog postera.
+- **Sadržaj (vlasnik):** samo kotač + ime (razmaknuta verzalka, Playfair). Bez datuma/mjesta/
+  vremena - „tko zna čitati kartu, pročitat će je". Bez Fortune, Vertexa i J. čvora.
+- **Format:** KVADRAT 30/40/50 cm (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
+  paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`), stranica = rez + 2 × napust.
+- **Tehnika (istraženo 22. 10. 2026.):** bijeli papir → tisak (crna podloga + boje) → soft-touch
+  plastifikacija (baršun na dodir) → digitalna srebrna folija. Bijelo na pravom crnom papiru traži
+  bijelu boju koju rijetka tiskara ima, a obične boje na crnom papiru „nestanu" - zato se crna TISKA.
+  Demago ima sve na jednom mjestu (digitalna folija do 480 × 700 mm → 50 × 50 ne stane, 40 × 40 da).
+- **PDF = 3 stranice istih mjera:** 1. pregled (folija kao `FOIL_PREVIEW` srebro), 2. tisak (bez
+  folije; ispod nje ostaje crno), 3. ploča za foliju (100 % crno = srebro, bijela podloga).
+  Tiskari idu 2. i 3. Svaki element ima sloj `'ink'`/`'foil'`, `col(layer, boja)` ga po stranici
+  oboji ili izostavi - **novi element mora dobiti sloj**, inače se pojavi na krivoj stranici.
+- **U foliji:** obrubi zodijaka, ljestvica stupnjeva, granice znakova, osi, krug aspekata, glifovi
+  planeta i crtice na stvarnom stupnju, ime. **Tiskano (boje):** pojas zodijaka, znakovi u bojama
+  elemenata, kuće, aspekti po vrsti, oznake ASC/MC i „R". Folija ≥ `FOIL_MIN` 0,3 mm (tanje se zalije).
+- Ispod svakog glifa planeta je crni krug u tisku da linije kuća ne prolaze kroz srebro.
+- Boje su u `INK` - prigušene, nikad zlatna. `ArtPoster.buildSVG(chart, mm, mode)` za pregled bez PDF-a.
 
 ### AI uvidi za čitanje (Janin radni alat) — izdvojeno u zaseban modul
 **SAMO za prijavljenu Janu** (kartica se ne prikazuje posjetiteljima; endpoint je admin-only).
@@ -1228,7 +1250,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261007i`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022a`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

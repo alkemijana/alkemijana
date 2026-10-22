@@ -232,6 +232,7 @@ async function natalSubmit(ev) {
     renderNatalResult(chart);
     // nova karta - preda je AI modulu (js/natal-ai.js) i resetira staro tumačenje
     if (window.AInatal) window.AInatal.setChart(chart);
+    if (window.ArtPoster) window.ArtPoster.setChart(chart);   // umjetnički poster za tisak (samo admin)
     try { localStorage.setItem('aj_natal_form', JSON.stringify({ name, dateV, timeV: noTime ? '' : timeV, noTime, place: selectedPlace })); } catch (e) {}
     logNatalCreation(chart);
     /* Analitika: SAMO koji je alat korišten i je li upisano vrijeme rođenja.
@@ -286,6 +287,7 @@ function resetNatalForm() {
     if (el) el.style.display = 'none';
   });
   if (window.AInatal) window.AInatal.setChart(null);
+  if (window.ArtPoster) window.ArtPoster.setChart(null);
 
   try {
     localStorage.removeItem('aj_natal_form');

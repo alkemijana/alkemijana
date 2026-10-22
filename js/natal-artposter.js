@@ -30,7 +30,7 @@
   const INK = {
     bg: '#0a0910', band: '#15131f',
     fire: '#c98a8f', earth: '#8fb59a', air: '#b6a6dc', water: '#8fa9d6',
-    harm: '#8fb59a', soft: '#8fa9d6', tense: '#c98a8f',
+    harm: '#8fb59a', soft: '#8fa9d6', tense: '#c98a8f', conj: '#b8b2cc',
     house: '#5d5675', houseNum: '#7d7699', axisText: '#b6a6dc', retro: '#b6a6dc'
   };
   const FOIL_PREVIEW = '#d9dbe3';   // kako folija izgleda u pregledu
@@ -176,12 +176,15 @@
     }
 
     /* ── aspekti (tiskano, u bojama po vrsti) ── */
+    // SVI aspekti kao na kotaču stranice (vlasnik): i konjunkcije (kratka linija između
+    // stvarnih položaja) i aspekti prema ASC/MC
     const lonOf = {};
     for (const p of c.planets) lonOf[p.id] = p.lon;
+    if (!c.noTime) { lonOf.asc = c.asc; lonOf.mc = c.mc; }
     for (const a of (c.aspects || [])) {
-      if (a.aspect === 'conjunction') continue;
-      if (BODIES.indexOf(a.a) < 0 || BODIES.indexOf(a.b) < 0) continue;
-      const color = a.aspect === 'trine' ? INK.harm : a.aspect === 'sextile' ? INK.soft : INK.tense;
+      if (lonOf[a.a] == null || lonOf[a.b] == null) continue;
+      const color = a.aspect === 'conjunction' ? INK.conj : a.aspect === 'trine' ? INK.harm :
+        a.aspect === 'sextile' ? INK.soft : INK.tense;
       const k = col('ink', color);
       if (!k) continue;
       const [x1, y1] = pt(lonOf[a.a], R3), [x2, y2] = pt(lonOf[a.b], R3);

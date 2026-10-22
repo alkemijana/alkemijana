@@ -281,8 +281,15 @@
       await ensureNameFont();
       const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: [W, W] });
       registerFonts(doc);
+      // jsPDF na početak nove stranice prepiše ZADNJE stanje linije s prethodne
+      // (svg2pdf ga ostavi na „1 J" = okrugli kraj od glifova), a svg2pdf za
+      // stroke-linecap="butt" ništa ne zapiše jer misli da je to zadano - pa je
+      // cijela ploča za foliju imala okrugle krajeve. Zato vrati stanje prije svake stranice.
+      const resetLine = () => { doc.setLineCap('butt'); doc.setLineJoin('miter'); };
       await addPosterPage(doc, buildArtSVG(chart, S, 'preview'), W, W, true);
+      resetLine();
       await addPosterPage(doc, buildArtSVG(chart, S, 'print'), W, W, false, [W, W], 'portrait');
+      resetLine();
       await addPosterPage(doc, buildArtSVG(chart, S, 'foil'), W, W, false, [W, W], 'portrait');
       doc.save(pdfFileName('poster-folija-' + cm + 'x' + cm + 'cm'));
     });

@@ -574,8 +574,8 @@ Kartica `#natal-art-card` (ispod AI uvida) vidljiva samo uz `sessionStorage.aj_p
 zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena javnog postera.
 - **Sadržaj (vlasnik):** samo kotač + ime. Bez datuma/mjesta/vremena - „tko zna čitati kartu,
   pročitat će je". Bez Fortune, Vertexa, J. čvora i točke u središtu (vlasniku se nije svidjela).
-- **Font imena: Cormorant Garamond kurziv** (vlasnik izabrao; Playfair verzalka se nije svidjela).
-  `assets/fonts/CormorantGaramond-Italic.ttf` (OFL, statični TTF iz CatharsisFonts/Cormorant, ima đ),
+- **Font imena: Cormorant Garamond BOLD kurziv** (vlasnik; Playfair verzalka se nije svidjela, obični kurziv je bio pretanak za foliju).
+  `assets/fonts/CormorantGaramond-BoldItalic.ttf` (OFL, statični TTF iz CatharsisFonts/Cormorant, ima đ),
   700 KB pa se skida SAMO za ovaj poster (`ensureNameFont`), ne preko `FONT_FILES`.
 - **Format:** KVADRAT 30/40/50 cm (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
   paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`), stranica = rez + 2 × napust.
@@ -1253,7 +1253,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022c`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022d`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

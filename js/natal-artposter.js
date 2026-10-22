@@ -203,7 +203,7 @@
       if (p.retro) s += text('R', d, RP - gSize * 1.05, R0 * 0.026, 'ink', INK.retro);
     }
 
-    /* ── ime u foliji: Cormorant Garamond kurziv (vlasnik) ── */
+    /* ── ime u foliji: Cormorant Garamond bold kurziv (vlasnik) ── */
     const name = (c.input.name || '').trim();
     const kn = col('foil', null);
     if (name && kn) {
@@ -217,7 +217,7 @@
   /* Font imena se učitava SAMO za ovaj poster (700 KB - ne ide u FONT_FILES
      natal-pdf.js, koje se skidaju za svaki PDF). Isti TTF ide i u preglednik
      (FontFace - za mjerenje širine i centriranje) i u jsPDF (ugradnja). */
-  const NAME_FONT = { file: 'assets/fonts/CormorantGaramond-Italic.ttf', pdf: 'CormorantItalic', css: '"AP Cormorant Italic"' };
+  const NAME_FONT = { file: 'assets/fonts/CormorantGaramond-BoldItalic.ttf', pdf: 'CormorantItalic', css: '"AP Cormorant Italic"' };
   let nameFontB64 = null;
   async function ensureNameFont() {
     if (nameFontB64) return;

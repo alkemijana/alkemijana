@@ -800,6 +800,27 @@ body > svg[viewBox="0 0 1920 1080"] {
   cursor: pointer;
 }
 .form-group select option { background: var(--bg-mid); color: var(--text); }
+/* Polja koja preglednik sam popuni (ime, mjesto, e-mail…): Chrome/Edge/Safari im
+   inače stave svoju svijetloplavu/žutu pozadinu i crni tekst, mimo teme. Tu
+   pozadinu CSS ne može izravno pregaziti, pa se njezina promjena „odgodi"
+   beskonačno dugim prijelazom - polje zadrži našu (prozirnu) --form-bg, a tekst
+   se vrati na boju teme. Vrijedi za sva polja na stranici, ne samo obrasce. */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  transition: background-color 100000s ease-in-out 0s, color 100000s ease-in-out 0s,
+    border-color 0.3s, box-shadow 0.3s;
+}
+input:autofill,
+textarea:autofill,
+select:autofill {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  transition: background-color 100000s ease-in-out 0s, color 100000s ease-in-out 0s,
+    border-color 0.3s, box-shadow 0.3s;
+}
 .form-group textarea { resize: vertical; min-height: 150px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 /* Grid stavka se bez ovoga NIKAD ne suzi ispod min-content svog sadržaja:

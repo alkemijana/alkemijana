@@ -591,7 +591,7 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
   probnu nakladu nego provjeru poravnanja PRIJE folije.
 - **Osi ASC/MC/DSC/IC** (folija) su prekinute preko pojasa znakova (R1–R0) da ne presijecaju znakove
   (vlasnik). Kroz glifove planeta se NE prekidaju (vlasnik izričito).
-- **Format:** KVADRAT 30/35/40/50 cm (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
+- **Format:** KVADRAT 30/35/40/50 cm, **zadano 30 × 30** (vlasnik) (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
   paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`); tisak i folija još i bijeli rub `SLUG` 15 mm s oznakama (40 × 40 → arak 43,6 cm).
 - **Tehnika (istraženo 22. 10. 2026.):** bijeli papir → tisak (crna podloga + boje) → soft-touch
   plastifikacija (baršun na dodir) → digitalna srebrna folija. Bijelo na pravom crnom papiru traži
@@ -1286,7 +1286,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022n`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022o`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

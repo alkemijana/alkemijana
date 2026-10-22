@@ -404,8 +404,8 @@
   async function downloadArtPoster() {
     if (!chart) return;
     const sel = document.getElementById('natal-art-size');
-    const cm = +(sel ? sel.value : '40');
-    const S = SIZES[cm] || 400, W = S + 2 * BLEED, WM = W + 2 * SLUG;
+    const cm = +(sel ? sel.value : '30');   // zadano 30 × 30 (vlasnik)
+    const S = SIZES[cm] || 300, W = S + 2 * BLEED, WM = W + 2 * SLUG;
     const fsel = document.getElementById('natal-art-foil');
     foilMin = fsel ? parseFloat(fsel.value) || 0.5 : 0.5;
     const btn = document.getElementById('natal-art-btn');

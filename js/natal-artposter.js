@@ -33,16 +33,17 @@
   };
   const FOIL_PREVIEW = '#d9dbe3';   // kako folija izgleda u pregledu
 
-  // Tijela na posteru - bez izvedenih točaka (Fortuna, Vertex, J. čvor) da kotač diše
+  // Sve točke kao na kotaču stranice (vlasnik: J. čvor, Fortuna i Vertex ne smiju faliti).
+  // Aspekti ionako idu samo između točaka koje ih imaju (computeAspects).
   const BODIES = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn',
-    'uranus', 'neptune', 'pluto', 'node', 'lilith', 'chiron'];
+    'uranus', 'neptune', 'pluto', 'node', 'snode', 'lilith', 'chiron', 'fortune', 'vertex'];
   const ELEMENT_OF_SIGN = ['fire', 'earth', 'air', 'water'];
 
   let chart = null;
 
   window.ArtPoster = {
     setChart(c) { chart = c; updateVisibility(); },
-    buildSVG: (c, S, mode) => buildArtSVG(c, S, mode),   // za pregled/otklanjanje grešaka
+    buildSVG: async (c, S, mode) => { await ensureNameFont(); return buildArtSVG(c, S, mode); },   // za pregled/otklanjanje grešaka
     download: () => downloadArtPoster()
   };
 
@@ -203,32 +204,33 @@
       if (p.retro) s += text('R', d, RP - gSize * 1.05, R0 * 0.026, 'ink', INK.retro);
     }
 
-    /* ── ime u foliji: Cormorant Garamond bold kurziv (vlasnik) ── */
-    const name = (c.input.name || '').trim();
+    /* ── ime u foliji: Cormorant Garamond bold kurziv (vlasnik), kao OBRIS ── */
+    const name = (c.input.name || '').trim().normalize('NFC');
     const kn = col('foil', null);
-    if (name && kn) {
-      const fs = fitFontSize(name, NAME_FONT.css, null, S * 0.052, S * 0.8);
-      s += svgCenteredText(name, cx, f(BLEED + S * 0.928), fs, kn, NAME_FONT.pdf, NAME_FONT.css, null);
+    if (name && kn && nameFont) {
+      let fs = S * 0.052;
+      const w0 = nameFont.getAdvanceWidth(name, fs);
+      if (w0 > S * 0.8) fs *= S * 0.8 / w0;
+      const w = nameFont.getAdvanceWidth(name, fs);
+      const d = nameFont.getPath(name, cx - w / 2, BLEED + S * 0.928, fs).toPathData(3);
+      s += '<path d="' + d + '" fill="' + kn + '"/>';
     }
 
     return s + '</svg>';
   }
 
-  /* Font imena se učitava SAMO za ovaj poster (700 KB - ne ide u FONT_FILES
-     natal-pdf.js, koje se skidaju za svaki PDF). Isti TTF ide i u preglednik
-     (FontFace - za mjerenje širine i centriranje) i u jsPDF (ugradnja). */
-  const NAME_FONT = { file: 'assets/fonts/CormorantGaramond-BoldItalic.ttf', pdf: 'CormorantItalic', css: '"AP Cormorant Italic"' };
-  let nameFontB64 = null;
+  /* Ime se crta kao OBRIS (opentype.js), ne kao tekst s ugrađenim fontom:
+     jsPDF krivo slaže složene glifove ovog fonta (š, č, ž = slovo + kvačica
+     kao dvije komponente) pa je kvačica na „š" bila pomaknuta. Obris je
+     ionako ono što tiskara želi za foliju - ne ovisi o fontu na njihovom
+     računalu. Font i biblioteka se skidaju SAMO za ovaj poster. */
+  const NAME_FONT_FILE = 'assets/fonts/CormorantGaramond-BoldItalic.ttf';
+  let nameFont = null;
   async function ensureNameFont() {
-    if (nameFontB64) return;
-    const buf = await (await fetch(NAME_FONT.file)).arrayBuffer();
-    const face = new FontFace('AP Cormorant Italic', buf);
-    await face.load();
-    document.fonts.add(face);
-    const bytes = new Uint8Array(buf);
-    let bin = '';
-    for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
-    nameFontB64 = btoa(bin);
+    if (nameFont) return;
+    await loadScript('js/lib/opentype.min.js');
+    const buf = await (await fetch(NAME_FONT_FILE)).arrayBuffer();
+    nameFont = window.opentype.parse(buf);
   }
 
   async function downloadArtPoster() {
@@ -242,8 +244,6 @@
       await ensureNameFont();
       const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: [W, W] });
       registerFonts(doc);
-      doc.addFileToVFS(NAME_FONT.pdf + '.ttf', nameFontB64);
-      doc.addFont(NAME_FONT.pdf + '.ttf', NAME_FONT.pdf, 'normal');
       await addPosterPage(doc, buildArtSVG(chart, S, 'preview'), W, W, true);
       await addPosterPage(doc, buildArtSVG(chart, S, 'print'), W, W, false, [W, W], 'portrait');
       await addPosterPage(doc, buildArtSVG(chart, S, 'foil'), W, W, false, [W, W], 'portrait');

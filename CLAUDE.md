@@ -602,6 +602,10 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
 - **U foliji:** obrubi zodijaka, ljestvica stupnjeva, granice znakova, osi, krug aspekata, glifovi
   planeta i crtice na stvarnom stupnju, ime. **Tiskano (boje):** pojas zodijaka, znakovi u bojama
   elemenata, kuće, aspekti po vrsti, oznake ASC/MC i „R". Folija ≥ `foilMin` (zadano 0,3 mm; tanje se zalije).
+- **Spojevi linija moraju biti čisti (vlasnik, folija pod povećalom):** sve linije imaju RAVAN kraj
+  (`stroke-linecap: butt`) koji završava točno na SREDINI kružnice - okrugli kraj je virio preko
+  kružnice. Crtica na stupnju planeta + kosa poveznica do glifa su JEDNA `polyline` iste debljine
+  (dvije linije različite debljine s okruglim krajevima davale su „kvrgu" na pregibu).
 - Ispod svakog glifa planeta je crni krug u tisku da linije kuća ne prolaze kroz srebro.
 - Boje su u `INK` - prigušene, nikad zlatna. `ArtPoster.buildSVG(chart, mm, mode)` za pregled bez PDF-a.
 
@@ -1265,7 +1269,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022g`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022h`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

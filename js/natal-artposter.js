@@ -119,7 +119,7 @@
       const k = col(layer, color);
       if (!k) return '';
       const [x1, y1] = pt(lon, ra), [x2, y2] = pt(lon, rb);
-      return '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + k + '" stroke-width="' + f(w) + '" stroke-linecap="round"/>';
+      return '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + k + '" stroke-width="' + f(w) + '" stroke-linecap="butt"/>';
     };
     const glyph = (key, lon, r, size, layer, color) => {
       const k = col(layer, color);
@@ -172,7 +172,7 @@
       const k = col('ink', color);
       if (!k) continue;
       const [x1, y1] = pt(lonOf[a.a], R3), [x2, y2] = pt(lonOf[a.b], R3);
-      s += '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + k + '" stroke-width="' + f(iw * 1.6) + '" stroke-linecap="round"/>';
+      s += '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + k + '" stroke-width="' + f(iw * 1.6) + '" stroke-linecap="butt"/>';
     }
     s += circle(R3, 'foil', null, fw);
 
@@ -195,13 +195,18 @@
     /* ── planeti: glif u foliji, crtica na pravom stupnju ── */
     for (const p of bodies) {
       const d = disp[p.id];
-      s += radial(p.lon, R1, R1 - R0 * 0.03, 'foil', null, fw * 1.2);
-      if (Math.abs(norm360(d - p.lon + 180) - 180) > 0.6) {
-        const k = col('foil', null);
-        if (k) {
-          const [x1, y1] = pt(p.lon, R1 - R0 * 0.03), [x2, y2] = pt(d, RP + gSize * 0.7);
-          s += '<line x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + k + '" stroke-width="' + f(fw) + '" stroke-linecap="round"/>';
+      // crtica na pravom stupnju + (ako je glif razmaknut) kosa poveznica do glifa -
+      // JEDNA izlomljena linija iste debljine, da na pregibu nema „kvrge" (vlasnik)
+      const kp = col('foil', null);
+      if (kp) {
+        const [x0, y0] = pt(p.lon, R1), [x1, y1] = pt(p.lon, R1 - R0 * 0.03);
+        let pts = f(x0) + ',' + f(y0) + ' ' + f(x1) + ',' + f(y1);
+        if (Math.abs(norm360(d - p.lon + 180) - 180) > 0.6) {
+          const [x2, y2] = pt(d, RP + gSize * 0.7);
+          pts += ' ' + f(x2) + ',' + f(y2);
         }
+        s += '<polyline points="' + pts + '" fill="none" stroke="' + kp + '" stroke-width="' + f(fw) +
+          '" stroke-linecap="butt" stroke-linejoin="round"/>';
       }
       // crni krug ispod glifa da tiskane linije kuća ne prolaze kroz njega
       const bgk = mode === 'foil' ? null : INK.bg;

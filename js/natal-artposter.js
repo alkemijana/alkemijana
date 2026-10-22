@@ -91,10 +91,24 @@
       .replace(/(^|[\s\-'’])(\p{L})/gu, (m, sep, ch) => sep + ch.toLocaleUpperCase('hr'));
   }
 
-  /* SVG cijelog postera za jedan prikaz: 'preview' | 'print' | 'foil'. */
+  /* SVG cijelog postera za jedan prikaz: 'preview' | 'print' | 'foil'.
+     PREGLED SE SLAŽE KAO U TISKARI (vlasnik: „mora biti isto"): prvo CIJELI tisak,
+     pa CIJELA folija preko njega. Prije se crtalo izmiješano pa je crni krug iz
+     tiska ispod glifa u pregledu skrivao srebrnu os koja kroz glif prolazi - na
+     ploči za foliju os je bila cijela, u pregledu prekinuta. Folija se u tiskari
+     nanosi ZADNJA, pa je u pregledu isto: ništa tiskano ne smije ići preko srebra. */
   function buildArtSVG(c, S, mode) {
+    if (mode !== 'preview') return buildLayerSVG(c, S, mode, true);
+    const ink = buildLayerSVG(c, S, 'print', false);
+    const silver = buildLayerSVG(c, S, 'silver', false).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+    return ink.replace(/<\/svg>$/, silver + '</svg>');
+  }
+
+  /* Jedan sloj: 'print' (tisak), 'foil' (ploča za foliju, crno na bijelom) ili
+     'silver' (samo folija u srebrnoj boji, prozirna podloga - za pregled). */
+  function buildLayerSVG(c, S, mode, withMarks) {
     // tisak i folija imaju bijeli rub s oznakama (SLUG), pregled je samo poster
-    const slug = mode === 'preview' ? 0 : SLUG, OFF = slug + BLEED;
+    const slug = withMarks ? SLUG : 0, OFF = slug + BLEED;
     const W = S + 2 * OFF, cx = W / 2;
     // kotač što veći (vlasnik): oznake osi sežu do R0 × 1,09 → ~4,5 % od gornjeg ruba
     const R0 = S * 0.37, cy = OFF + S * 0.448;
@@ -113,15 +127,15 @@
     // boja za sloj u ovom prikazu (null = ne crtaj)
     const col = (layer, inkColor) => {
       if (mode === 'foil') return layer === 'foil' ? '#000000' : null;
-      if (mode === 'print') return layer === 'foil' ? null : inkColor;
-      return layer === 'foil' ? FOIL_PREVIEW : inkColor;
+      if (mode === 'silver') return layer === 'foil' ? FOIL_PREVIEW : null;
+      return layer === 'foil' ? null : inkColor;   // 'print'
     };
     const fw = Math.max(foilMin, R0 * 0.0022);   // debljina linija u foliji
     const iw = Math.max(INK_MIN, R0 * 0.0016);    // debljina tiskanih linija
 
     let s = '<svg viewBox="0 0 ' + W + ' ' + W + '" xmlns="http://www.w3.org/2000/svg">';
-    s += '<rect width="' + W + '" height="' + W + '" fill="#ffffff"/>';
-    if (mode !== 'foil') s += '<rect x="' + slug + '" y="' + slug + '" width="' + (S + 2 * BLEED) + '" height="' + (S + 2 * BLEED) + '" fill="' + INK.bg + '"/>';
+    if (mode !== 'silver') s += '<rect width="' + W + '" height="' + W + '" fill="#ffffff"/>';
+    if (mode === 'print') s += '<rect x="' + slug + '" y="' + slug + '" width="' + (S + 2 * BLEED) + '" height="' + (S + 2 * BLEED) + '" fill="' + INK.bg + '"/>';
 
     const circle = (r, layer, color, w) => {
       const k = col(layer, color);
@@ -197,12 +211,31 @@
     const disp = spreadLongitudes(bodies, (gSize * 1.35 / RP) / D2R);
 
     /* ── osi ASC/DSC, MC/IC u foliji, oznake tiskane izvan kotača ──
-       Os se PREKIDA preko pojasa znakova (R1–R0) da ne presijeca znakove
-       (vlasnik). Kroz glifove planeta NE prekidati (vlasnik). */
+       Os se PREKIDA preko pojasa znakova (R1–R0) da ne presijeca znakove, i
+       MINIMALNO oko glifa planeta kroz koji prolazi (vlasnik: „bolje kao na
+       pregledu", „minimalno se prekida"): rupa = pola glifa + 1 mm. Mora biti
+       stvarni prekid u foliji - crni krug iz tiska ne može sakriti srebro. */
     if (!c.noTime) {
+      const gap = gSize * 0.5 + 1;
       const axes = [[c.asc, 'ASC'], [c.asc + 180, 'DSC'], [c.mc, 'MC'], [c.mc + 180, 'IC']];
       for (const [lon, lbl] of axes) {
-        s += radial(lon, R3, R1, 'foil', null, fw * 1.3);
+        const cuts = [];
+        for (const p of bodies) {
+          const da = Math.abs(norm360(disp[p.id] - lon + 180) - 180) * D2R;
+          if (da > Math.PI / 2) continue;
+          const dist = RP * Math.sin(da);            // udaljenost središta glifa od osi
+          if (dist < gap) {
+            const along = RP * Math.cos(da), h = Math.sqrt(gap * gap - dist * dist);
+            cuts.push([along - h, along + h]);
+          }
+        }
+        cuts.sort((a, b) => a[0] - b[0]);
+        let r = R3;
+        for (const [a, b] of cuts) {
+          if (a > r) s += radial(lon, r, Math.min(a, R1), 'foil', null, fw * 1.3);
+          r = Math.max(r, b);
+        }
+        if (r < R1) s += radial(lon, r, R1, 'foil', null, fw * 1.3);
         s += radial(lon, R0, R0 * 1.035, 'foil', null, fw * 1.3);
         s += text(lbl, lon, R0 * 1.075, R0 * 0.03, 'ink', INK.axisText);
       }
@@ -225,7 +258,7 @@
           '" stroke-linecap="butt" stroke-linejoin="round"/>';
       }
       // crni krug ispod glifa da tiskane linije kuća ne prolaze kroz njega
-      const bgk = mode === 'foil' ? null : INK.bg;
+      const bgk = mode === 'print' ? INK.bg : null;
       if (bgk) {
         const [x, y] = pt(d, RP);
         s += '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(gSize * 0.72) + '" fill="' + bgk + '"/>';

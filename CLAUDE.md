@@ -590,7 +590,12 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
 - **Naklada je UVIJEK 1 primjerak** (svaka karta je unikat) - upute za tiskaru zato ne spominju
   probnu nakladu nego provjeru poravnanja PRIJE folije.
 - **Osi ASC/MC/DSC/IC** (folija) su prekinute preko pojasa znakova (R1–R0) da ne presijecaju znakove
-  (vlasnik). Kroz glifove planeta se NE prekidaju (vlasnik izričito).
+  (vlasnik) i MINIMALNO oko glifa planeta kroz koji prolaze (rupa = pola glifa + 1 mm; vlasnik: „bolje kao
+  na pregledu, minimalno se prekida"). Prekid je STVARAN u foliji - crni krug iz tiska ga ne može sakriti.
+- **PREGLED = TISAK + FOLIJA PREKO** (`buildArtSVG` za `preview` slaže sloj `print` pa sloj `silver`): folija se u
+  tiskari nanosi zadnja, pa ništa tiskano ne smije u pregledu ići preko srebra. Prije je crni krug iz tiska
+  u pregledu skrivao os kroz Veneru, a na ploči za foliju os je bila cijela (vlasnik: „mora biti isto").
+  Provjereno rasterom: 0 piksela razlike između srebra u pregledu i ploče za foliju.
 - **Format:** KVADRAT 30/35/40/50 cm, **zadano 30 × 30** (vlasnik) (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
   paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`); tisak i folija još i bijeli rub `SLUG` 15 mm s oznakama (40 × 40 → arak 43,6 cm).
 - **Tehnika (istraženo 22. 10. 2026.):** bijeli papir → tisak (crna podloga + boje) → soft-touch
@@ -1288,7 +1293,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022q`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022r`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

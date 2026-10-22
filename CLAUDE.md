@@ -578,11 +578,17 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
 - **Sadržaj (vlasnik):** samo kotač + ime. Bez datuma/mjesta/vremena - „tko zna čitati kartu,
   pročitat će je". SVE točke kao na kotaču stranice (i J. čvor, Fortuna, Vertex - vlasnik je primijetio
   da fale); bez točke u središtu (vlasniku se nije svidjela).
-- **Font imena: Cormorant Garamond BOLD kurziv** (vlasnik; Playfair verzalka se nije svidjela, obični kurziv je bio pretanak za foliju).
-  `assets/fonts/CormorantGaramond-BoldItalic.ttf` (OFL, statični TTF iz CatharsisFonts/Cormorant, ima đ),
-  700 KB pa se skida SAMO za ovaj poster (`ensureNameFont`), ne preko `FONT_FILES`.
-  **Ime je OBRIS (`js/lib/opentype.min.js` 1.3.4, vendoriran), NE tekst u jsPDF-u** - jsPDF krivo
-  slaže složene glifove ovog fonta pa je kvačica na „š" bila pomaknuta. Obris je i bolji za foliju.
+- **Font imena: Cormorant Garamond kurziv (NE bold)**, vodoravno ispod kotača (vlasnik: varijanta A;
+  bold i ime po luku su probani i odbijeni). `assets/fonts/CormorantGaramond-Italic.ttf` (OFL, TTF s
+  Google Fontsa, ima đ), skida se SAMO za ovaj poster (`ensureNameFont`), ne preko `FONT_FILES`.
+  **Ime je OBRIS** (`js/lib/opentype.min.js` 1.3.4, vendoriran), ne tekst u jsPDF-u - tiskara za foliju
+  želi obrise, a PDF ne ovisi o fontu kod njih. Kvačice (š, č, ž) u Cormorantu su sitne, visoko i malo
+  udesno - to je DIZAJN fonta (provjereno u pregledniku i u dvije verzije datoteke), ne greška.
+- **Osi ASC/MC/DSC/IC** (folija) su prekinute preko pojasa znakova (R1–R0) da ne presijecaju znakove
+  (vlasnik). Kroz glifove planeta se NE prekidaju (vlasnik izričito).
+- **Najtanja linija folije se bira u kartici** (`#natal-art-foil`, 0,3 / 0,4 / 0,5 / 0,7 mm) - Jana
+  upiše ono što kaže tiskara. Javni podaci o minimumu se razlikuju (0,18 – 0,7 mm), za MGI JETvarnish
+  ih nismo našli. Uz veći minimum ime dobije obrub (`foilMin − 0,42` mm) jer su mu potezi ~0,4 mm.
 - **Format:** KVADRAT 30/40/50 cm (standardni kvadratni okviri; 40 × 40 u okviru 50 × 50 s
   paspartuom izgleda galerijski). Napust 3 mm sa svake strane (`BLEED`), stranica = rez + 2 × napust.
 - **Tehnika (istraženo 22. 10. 2026.):** bijeli papir → tisak (crna podloga + boje) → soft-touch
@@ -595,7 +601,7 @@ zove `window.ArtPoster.setChart(chart)`. Poklon-poster za tiskaru, NE zamjena ja
   oboji ili izostavi - **novi element mora dobiti sloj**, inače se pojavi na krivoj stranici.
 - **U foliji:** obrubi zodijaka, ljestvica stupnjeva, granice znakova, osi, krug aspekata, glifovi
   planeta i crtice na stvarnom stupnju, ime. **Tiskano (boje):** pojas zodijaka, znakovi u bojama
-  elemenata, kuće, aspekti po vrsti, oznake ASC/MC i „R". Folija ≥ `FOIL_MIN` 0,3 mm (tanje se zalije).
+  elemenata, kuće, aspekti po vrsti, oznake ASC/MC i „R". Folija ≥ `foilMin` (zadano 0,3 mm; tanje se zalije).
 - Ispod svakog glifa planeta je crni krug u tisku da linije kuća ne prolaze kroz srebro.
 - Boje su u `INK` - prigušene, nikad zlatna. `ArtPoster.buildSVG(chart, mm, mode)` za pregled bez PDF-a.
 
@@ -1259,7 +1265,7 @@ Purge Everything). Brza provjera: `curl -sI https://alkemijana.com/js/logo.js` �
 U `_headers` je zato za `/js/*`, `/css/*` i tarot skripte `Cache-Control: public, max-age=0,
 must-revalidate` (preglednik svaki put provjeri - 304, jeftino), ALI to vrijedi tek kad je u Cloudflare
 dashboardu *Caching → Configuration → Browser Cache TTL* = **Respect Existing Headers** (inače zona
-nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022f`,
+nadjača). Dok to nije namješteno: **pri svakoj izmjeni JS/CSS-a povećaj `?v=`** (trenutno `20261022g`,
 i u `index.html` i font u `halloween.css`).
 **Halloween i otvorene kartice:** `halloween.js` svakih 30 s provjeri stanje (`off` / `hw:<datum>`) i kad
 se promijeni (tema se upali 25. 10., ugasi 2. 11., ili novi dan u tjednu) stranicu SAMA ponovno učita - samo

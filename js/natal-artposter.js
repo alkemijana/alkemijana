@@ -12,7 +12,7 @@
      3. FOLIJA   - ploča za foliju: 100 % crno = srebro, bijelo = ništa
    Svaki element kotača nosi sloj ('ink' ili 'foil'), a isti crtač ga za
    svaku stranicu nacrta u boji tog prikaza ili izostavi.
-   Folija ne voli tanke linije: sve što je u foliji je najmanje FOIL_MIN mm.
+   Folija ne voli tanke linije: sve što je u foliji je najmanje foilMin mm.
    Ovisi o globalnim helperima iz natal-data.js / natal-pdf.js (glyphGroup,
    svgCenteredText, ensurePdfLibs, registerFonts, addPosterPage, pdfFileName).
    ========================================================================== */
@@ -20,7 +20,7 @@
   'use strict';
 
   const BLEED = 3;          // napust u mm sa svake strane
-  const FOIL_MIN = 0.3;     // najtanja linija u foliji (mm)
+  let foilMin = 0.3;        // najtanja linija u foliji (mm) - bira se u kartici (#natal-art-foil) po uputi tiskare
   const INK_MIN = 0.2;      // najtanja tiskana linija (mm)
   const SIZES = { 30: 300, 40: 400, 50: 500 };
 
@@ -40,10 +40,15 @@
   const ELEMENT_OF_SIGN = ['fire', 'earth', 'air', 'water'];
 
   let chart = null;
+  let nameStyle = 'center';   // 'center' | 'small' | 'arc'
 
   window.ArtPoster = {
     setChart(c) { chart = c; updateVisibility(); },
-    buildSVG: async (c, S, mode) => { await ensureNameFont(); return buildArtSVG(c, S, mode); },   // za pregled/otklanjanje grešaka
+    buildSVG: async (c, S, mode, style) => {   // za pregled/otklanjanje grešaka
+      await ensureNameFont();
+      const old = nameStyle; if (style) nameStyle = style;
+      try { return buildArtSVG(c, S, mode); } finally { nameStyle = old; }
+    },
     download: () => downloadArtPoster()
   };
 
@@ -100,7 +105,7 @@
       if (mode === 'print') return layer === 'foil' ? null : inkColor;
       return layer === 'foil' ? FOIL_PREVIEW : inkColor;
     };
-    const fw = Math.max(FOIL_MIN, R0 * 0.0022);   // debljina linija u foliji
+    const fw = Math.max(foilMin, R0 * 0.0022);   // debljina linija u foliji
     const iw = Math.max(INK_MIN, R0 * 0.0016);    // debljina tiskanih linija
 
     let s = '<svg viewBox="0 0 ' + W + ' ' + W + '" xmlns="http://www.w3.org/2000/svg">';
@@ -171,19 +176,23 @@
     }
     s += circle(R3, 'foil', null, fw);
 
-    /* ── osi ASC/DSC, MC/IC u foliji, oznake tiskane izvan kotača ── */
+    const bodies = c.planets.filter(p => BODIES.indexOf(p.id) >= 0 && GLYPHS[p.id]);
+    const gSize = R0 * 0.07;
+    const disp = spreadLongitudes(bodies, (gSize * 1.35 / RP) / D2R);
+
+    /* ── osi ASC/DSC, MC/IC u foliji, oznake tiskane izvan kotača ──
+       Os se PREKIDA preko pojasa znakova (R1–R0) da ne presijeca znakove
+       (vlasnik). Kroz glifove planeta NE prekidati (vlasnik). */
     if (!c.noTime) {
       const axes = [[c.asc, 'ASC'], [c.asc + 180, 'DSC'], [c.mc, 'MC'], [c.mc + 180, 'IC']];
       for (const [lon, lbl] of axes) {
-        s += radial(lon, R3, R0 * 1.035, 'foil', null, fw * 1.3);
+        s += radial(lon, R3, R1, 'foil', null, fw * 1.3);
+        s += radial(lon, R0, R0 * 1.035, 'foil', null, fw * 1.3);
         s += text(lbl, lon, R0 * 1.075, R0 * 0.03, 'ink', INK.axisText);
       }
     }
 
     /* ── planeti: glif u foliji, crtica na pravom stupnju ── */
-    const bodies = c.planets.filter(p => BODIES.indexOf(p.id) >= 0 && GLYPHS[p.id]);
-    const gSize = R0 * 0.07;
-    const disp = spreadLongitudes(bodies, (gSize * 1.35 / RP) / D2R);
     for (const p of bodies) {
       const d = disp[p.id];
       s += radial(p.lon, R1, R1 - R0 * 0.03, 'foil', null, fw * 1.2);
@@ -204,16 +213,37 @@
       if (p.retro) s += text('R', d, RP - gSize * 1.05, R0 * 0.026, 'ink', INK.retro);
     }
 
-    /* ── ime u foliji: Cormorant Garamond bold kurziv (vlasnik), kao OBRIS ── */
+    /* ── ime u foliji: Cormorant Garamond kurziv (vlasnik: ne bold), kao OBRIS ── */
     const name = (c.input.name || '').trim().normalize('NFC');
     const kn = col('foil', null);
     if (name && kn && nameFont) {
-      let fs = S * 0.052;
-      const w0 = nameFont.getAdvanceWidth(name, fs);
-      if (w0 > S * 0.8) fs *= S * 0.8 / w0;
-      const w = nameFont.getAdvanceWidth(name, fs);
-      const d = nameFont.getPath(name, cx - w / 2, BLEED + S * 0.928, fs).toPathData(3);
-      s += '<path d="' + d + '" fill="' + kn + '"/>';
+      // najtanji potezi kurziva su ~0,4 mm (40 × 40); ako tiskara traži deblje, obris se podeblja obrubom
+      const ns = Math.max(0, foilMin - 0.42);
+      const nameAttr = '" fill="' + kn + '"' + (ns > 0 ? ' stroke="' + kn + '" stroke-width="' + f(ns) + '" stroke-linejoin="round"' : '') + '/>';
+      if (nameStyle === 'arc') {
+        // po luku ispod kotača, slova okrenuta prema središtu
+        const fs = R0 * 0.085, Rn = R0 * 1.2;
+        const total = nameFont.getAdvanceWidth(name, fs);
+        let acc = -total / 2;
+        for (const ch of Array.from(name)) {
+          const adv = nameFont.getAdvanceWidth(ch, fs);
+          const phi = (acc + adv / 2) / Rn;              // kut od dna kotača
+          const gx = cx + Rn * Math.sin(phi), gy = cy + Rn * Math.cos(phi);
+          if (ch !== ' ') {
+            const d = nameFont.getPath(ch, -adv / 2, 0, fs).toPathData(3);
+            s += '<path transform="translate(' + f(gx) + ',' + f(gy) + ') rotate(' + f(-phi / D2R) + ')" d="' + d + nameAttr;
+          }
+          acc += adv;
+        }
+      } else {
+        let fs = S * (nameStyle === 'small' ? 0.034 : 0.052);
+        const w0 = nameFont.getAdvanceWidth(name, fs);
+        if (w0 > S * 0.8) fs *= S * 0.8 / w0;
+        const w = nameFont.getAdvanceWidth(name, fs);
+        const y = BLEED + S * (nameStyle === 'small' ? 0.915 : 0.928);
+        const d = nameFont.getPath(name, cx - w / 2, y, fs).toPathData(3);
+        s += '<path d="' + d + nameAttr;
+      }
     }
 
     return s + '</svg>';
@@ -224,7 +254,7 @@
      kao dvije komponente) pa je kvačica na „š" bila pomaknuta. Obris je
      ionako ono što tiskara želi za foliju - ne ovisi o fontu na njihovom
      računalu. Font i biblioteka se skidaju SAMO za ovaj poster. */
-  const NAME_FONT_FILE = 'assets/fonts/CormorantGaramond-BoldItalic.ttf';
+  const NAME_FONT_FILE = 'assets/fonts/CormorantGaramond-Italic.ttf';
   let nameFont = null;
   async function ensureNameFont() {
     if (nameFont) return;
@@ -238,6 +268,8 @@
     const sel = document.getElementById('natal-art-size');
     const cm = sel ? sel.value : '40';
     const S = SIZES[cm] || 400, W = S + 2 * BLEED;
+    const fsel = document.getElementById('natal-art-foil');
+    foilMin = fsel ? parseFloat(fsel.value) || 0.3 : 0.3;
     const btn = document.getElementById('natal-art-btn');
     await withBtnSpinner(btn, async () => {
       await ensurePdfLibs();

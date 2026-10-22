@@ -42,7 +42,8 @@
 
   window.ArtPoster = {
     setChart(c) { chart = c; updateVisibility(); },
-    buildSVG: (c, S, mode) => buildArtSVG(c, S, mode)   // za pregled/otklanjanje grešaka
+    buildSVG: (c, S, mode) => buildArtSVG(c, S, mode),   // za pregled/otklanjanje grešaka
+    download: () => downloadArtPoster()
   };
 
   function isAdmin() { return !!sessionStorage.getItem('aj_pass'); }
@@ -201,37 +202,32 @@
       if (p.retro) s += text('R', d, RP - gSize * 1.05, R0 * 0.026, 'ink', INK.retro);
     }
 
-    // središte
-    const kc = col('foil', null);
-    if (kc) s += '<circle cx="' + f(cx) + '" cy="' + f(cy) + '" r="' + f(R0 * 0.012) + '" fill="' + kc + '"/>';
-
-    /* ── ime u foliji: razmaknuta verzalka ── */
-    const name = (c.input.name || '').trim().toLocaleUpperCase('hr');
+    /* ── ime u foliji: Cormorant Garamond kurziv (vlasnik) ── */
+    const name = (c.input.name || '').trim();
     const kn = col('foil', null);
-    if (name && kn) s += spacedText(name, cx, BLEED + S * 0.875, S * 0.03, 0.28, S * 0.8, kn);
+    if (name && kn) {
+      const fs = fitFontSize(name, NAME_FONT.css, null, S * 0.052, S * 0.8);
+      s += svgCenteredText(name, cx, f(BLEED + S * 0.885), fs, kn, NAME_FONT.pdf, NAME_FONT.css, null);
+    }
 
     return s + '</svg>';
   }
 
-  /* Centriran tekst s razmakom između slova (tracking u em). svg2pdf ne zna
-     letter-spacing, pa se svako slovo postavi zasebno po izmjerenoj širini.
-     Ako je predugačak, smanji se da stane u maxW. */
-  function spacedText(str, cx, y, size, track, maxW, fill) {
-    const chars = Array.from(str);
-    const widthAt = sz => chars.reduce((w, ch) => w + textWidthPx(ch, 'Playfair Display', null, sz), 0) +
-      (chars.length - 1) * track * sz;
-    let sz = size;
-    const w0 = widthAt(sz);
-    if (w0 > maxW) sz *= maxW / w0;
-    let x = cx - widthAt(sz) / 2, out = '';
-    for (const ch of chars) {
-      if (ch !== ' ') {
-        out += '<text x="' + x.toFixed(3) + '" y="' + y.toFixed(3) + '" fill="' + fill +
-          '" font-family="PlayfairDisplay" font-size="' + sz.toFixed(3) + '">' + escHtml(ch) + '</text>';
-      }
-      x += textWidthPx(ch, 'Playfair Display', null, sz) + track * sz;
-    }
-    return out;
+  /* Font imena se učitava SAMO za ovaj poster (700 KB - ne ide u FONT_FILES
+     natal-pdf.js, koje se skidaju za svaki PDF). Isti TTF ide i u preglednik
+     (FontFace - za mjerenje širine i centriranje) i u jsPDF (ugradnja). */
+  const NAME_FONT = { file: 'assets/fonts/CormorantGaramond-Italic.ttf', pdf: 'CormorantItalic', css: '"AP Cormorant Italic"' };
+  let nameFontB64 = null;
+  async function ensureNameFont() {
+    if (nameFontB64) return;
+    const buf = await (await fetch(NAME_FONT.file)).arrayBuffer();
+    const face = new FontFace('AP Cormorant Italic', buf);
+    await face.load();
+    document.fonts.add(face);
+    const bytes = new Uint8Array(buf);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+    nameFontB64 = btoa(bin);
   }
 
   async function downloadArtPoster() {
@@ -242,9 +238,11 @@
     const btn = document.getElementById('natal-art-btn');
     await withBtnSpinner(btn, async () => {
       await ensurePdfLibs();
-      await document.fonts.load('20px "Playfair Display"');
+      await ensureNameFont();
       const doc = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: [W, W] });
       registerFonts(doc);
+      doc.addFileToVFS(NAME_FONT.pdf + '.ttf', nameFontB64);
+      doc.addFont(NAME_FONT.pdf + '.ttf', NAME_FONT.pdf, 'normal');
       await addPosterPage(doc, buildArtSVG(chart, S, 'preview'), W, W, true);
       await addPosterPage(doc, buildArtSVG(chart, S, 'print'), W, W, false, [W, W], 'portrait');
       await addPosterPage(doc, buildArtSVG(chart, S, 'foil'), W, W, false, [W, W], 'portrait');

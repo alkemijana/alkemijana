@@ -160,6 +160,7 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   assert.match(allText(ids.get('astro-admin-secret')), /Korisničko ime: jana[\s\S]*Privremena lozinka: /);
   assert.match(allText(ids.get('astro-admin-secret')), /https:\/\/astro\.alkemijana\.com/);
   assert.ok(ids.get('astro-admin-secret').querySelectorAll('button').some(el => el.textContent === 'Kopiraj podatke'));
+  assert.match(allText(ids.get('astro-admin-secret')), /Prijava: https:\/\/astro\.alkemijana\.com\/\?u=jana/);
   await click('Odjavi sve');
   assert.equal(lastMutation().path, 'users/jana/logout');
   assert.equal(allText(ids.get('astro-admin-secret')).trim(), '');

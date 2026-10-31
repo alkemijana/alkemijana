@@ -31,7 +31,13 @@ test('whitelist rejects unknown routes, methods, traversal and URL injection', a
     ...['', 'a'.repeat(129), 'a/b', 'a%2Fb', 'č', 'a?x=1', 'a#x', 'a b', 'a\n'].map(id =>
       ['users/jana/devices/' + id + '/clear-suspect', 'POST']),
     ['users/jana/devices/Win-1/clear-suspect/extra', 'POST'],
-    ['users/jana/devices/Win-1/unknown', 'POST']
+    ['users/jana/devices/Win-1/unknown', 'POST'],
+    ['users/jana/seats', 'POST'],
+    ...['GET', 'DELETE', 'PUT'].map(method => ['users/jana/seats/Win-1/release', method]),
+    ...['', 'a'.repeat(129), 'a/b', 'a%2Fb', 'č', 'a?x=1', 'a#x', 'a b', 'a\n'].map(id =>
+      ['users/jana/seats/' + id + '/release', 'POST']),
+    ['users/jana/seats/Win-1/release/extra', 'POST'],
+    ['users/jana/seats/Win-1/unknown', 'POST']
   ]) {
     assert.equal((await onRequest({ request: request(path, method), env })).status, 404, method + ' ' + path);
   }
@@ -40,8 +46,12 @@ test('whitelist rejects unknown routes, methods, traversal and URL injection', a
 test('all allowed route/method pairs forward only the server token and JSON body', async () => {
   for (const [path, method] of [
     ['users', 'GET'], ['users', 'POST'], ['users/jana', 'DELETE'], ['users/jana/devices', 'GET'],
+    ['users/jana/seats', 'GET'],
     ...['password', 'license', 'remove-device', 'logout', 'addons'].map(action => ['users/jana/' + action, 'POST']),
-    ...['A', 'Win_1.2-3', 'a'.repeat(128)].map(id => ['users/jana/devices/' + id + '/clear-suspect', 'POST'])
+    ...['A', 'Win_1.2-3', 'a'.repeat(128)].flatMap(id => [
+      ['users/jana/devices/' + id + '/clear-suspect', 'POST'],
+      ['users/jana/seats/' + id + '/release', 'POST']
+    ])
   ]) {
     const body = method === 'POST' ? { until: '2027-01-31', test: 'čć' } : undefined;
     let calls = 0;
@@ -66,6 +76,18 @@ test('all allowed route/method pairs forward only the server token and JSON body
     assert.equal(response.headers.has('X-Astro-Admin'), false);
     assert.deepEqual(await response.json(), { ok: true });
   }
+});
+
+test('seat release forwards a bodyless POST', async () => {
+  globalThis.fetch = async (url, options) => {
+    assert.equal(String(url), env.ASTRO_API_URL + '/api/admin/users/jana/seats/Win_1.2-3/release');
+    assert.equal(options.method, 'POST');
+    assert.equal(options.body, '');
+    return new Response('{"ok":true}');
+  };
+  const response = await onRequest({ request: request('users/jana/seats/Win_1.2-3/release', 'POST'), env });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true });
 });
 
 test('missing or invalid configuration fails closed', async () => {

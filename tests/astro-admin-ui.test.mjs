@@ -50,6 +50,9 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   const panel = ids.get('ap-astroapp');
   for (const [id, el] of ids) if (id !== 'ap-astroapp') panel.appendChild(el);
   const user = { username: 'jana', role: 'user', license: { until: '2027-01-31' }, addons: [],
+    seats: [{ deviceId: 'Windows_1.2-3', name: '<img src=x onerror=alert(3)>', platform: 'Windows',
+      since: '2026-10-31T09:00:00Z', lastBeat: '2026-10-31T11:00:00Z' },
+      { deviceId: 'legacy' }],
     devices: [{ id: 'Windows_1.2-3', name: '<img src=x onerror=alert(1)>', platform: 'Windows',
       suspect: true, suspectReason: 'multiple_countries,ip_changes', reports: [
         { t: '2026-10-30T10:00:00Z', country: 'HR', ip: 'private-hash' },
@@ -58,6 +61,7 @@ test('tab workflows send the API contract, hide one-time passwords and render de
       ] }, { id: 'legacy', name: 'Stari uređaj' }] };
   const calls = [];
   let clearFails = true;
+  let releaseFails = true;
   const ctx = vm.createContext({ crypto, console, document: {
     createElement: tag => new Element(tag), getElementById: id => ids.get(id)
   }, sessionStorage: { getItem: key => { assert.equal(key, 'aj_pass'); return 'admin-pass'; } },
@@ -67,6 +71,10 @@ test('tab workflows send the API contract, hide one-time passwords and render de
     const path = new URL(url, 'https://website.example.test').searchParams.get('path');
     const body = options.body ? JSON.parse(options.body) : undefined;
     calls.push({ path, method: options.method, body });
+    if (path.endsWith('/release')) {
+      if (releaseFails) return { ok: false, status: 404, json: async () => ({ error: 'not_found' }) };
+      user.seats = user.seats.filter(seat => !path.endsWith('/' + seat.deviceId + '/release'));
+    }
     if (path.endsWith('/clear-suspect')) {
       if (clearFails) return { ok: false, status: 404, json: async () => ({ error: 'not_found' }) };
       user.devices[0].suspect = false;
@@ -87,6 +95,29 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   await ctx.loadAstroAdmin();
   ctx.astroShowUser('jana');
   const allText = el => [el.textContent || '', ...el.children.map(allText)].join(' ');
+  assert.match(allText(ids.get('astro-admin-users')), /2\/3 2\/2/);
+  assert.match(allText(detail), /Zauzeta mjesta \(2\/2\)/);
+  assert.match(allText(detail), /<img src=x onerror=alert\(3\)>/);
+  assert.match(allText(detail), /Od kada \(UTC\): 2026-10-31T09:00:00Z · Zadnje javljanje \(UTC\): 2026-10-31T11:00:00Z/);
+  assert.match(allText(detail), /ID: legacy · Od kada \(UTC\): — · Zadnje javljanje \(UTC\): —/);
+  assert.match(allText(detail), /Uređaji \(2\/3\)/);
+  assert.match(allText(detail), /bez javljanja 30 dana automatski ispadaju/);
+  assert.equal(detail.querySelectorAll('button').filter(el => el.textContent === 'Oslobodi mjesto').length, 2);
+  await click('Oslobodi mjesto');
+  assert.equal(lastMutation().path, 'users/jana/seats/Windows_1.2-3/release');
+  assert.equal(lastMutation().method, 'POST');
+  assert.equal(lastMutation().body, undefined);
+  assert.match(allText(ids.get('astro-admin-message')), /zauzeto mjesto više ne postoji/);
+  assert.match(allText(detail), /Zauzeta mjesta \(2\/2\)/);
+  assert.equal(detail.querySelectorAll('button').find(el => el.textContent === 'Oslobodi mjesto').disabled, false);
+  releaseFails = false;
+  await click('Oslobodi mjesto');
+  assert.match(allText(detail), /Zauzeta mjesta \(1\/2\)/);
+  assert.match(allText(ids.get('astro-admin-users')), /2\/3 1\/2/);
+  await click('Oslobodi mjesto');
+  assert.equal(lastMutation().path, 'users/jana/seats/legacy/release');
+  assert.match(allText(detail), /Nema zauzetih mjesta/);
+  assert.equal(detail.querySelectorAll('button').some(el => el.textContent === 'Oslobodi mjesto'), false);
   assert.match(allText(detail), /<img src=x onerror=alert\(1\)>/);
   assert.equal(detail.querySelectorAll('img').length, 0);
   assert.match(allText(detail), /moguća kopija — javlja se iz više država; naizmjenično s različitih mreža/);
@@ -106,7 +137,7 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   assert.equal(lastMutation().path, 'users/jana/devices/Windows_1.2-3/clear-suspect');
   assert.equal(lastMutation().method, 'POST');
   assert.equal(lastMutation().body, undefined);
-  assert.match(allText(ids.get('astro-admin-message')), /Korisnik ili uređaj više ne postoji/);
+  assert.match(allText(ids.get('astro-admin-message')), /Korisnik, uređaj ili zauzeto mjesto više ne postoji/);
   assert.match(allText(detail), /moguća kopija/);
   assert.equal(detail.querySelectorAll('button').find(el => el.textContent === 'U redu je').disabled, false);
   clearFails = false;
@@ -147,6 +178,14 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   await click('Obriši korisnika');
   assert.equal(lastMutation().method, 'DELETE');
   assert.equal(lastMutation().path, 'users/jana');
+  delete user.seats;
+  delete user.devices;
+  await ctx.loadAstroAdmin();
+  ctx.astroShowUser('jana');
+  assert.match(allText(ids.get('astro-admin-users')), /0\/3 0\/2/);
+  assert.match(allText(detail), /Zauzeta mjesta \(0\/2\)/);
+  assert.match(allText(detail), /Nema zauzetih mjesta/);
+  assert.match(allText(detail), /Nema registriranih uređaja/);
   ctx.astroClearAdmin();
   assert.equal(allText(ids.get('astro-admin-secret')).trim(), '');
   assert.equal(allText(detail).trim(), '');

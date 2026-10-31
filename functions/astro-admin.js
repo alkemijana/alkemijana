@@ -8,6 +8,8 @@ const ROUTES = [
   ['POST', /^users$/],
   ['DELETE', new RegExp(`^users/${USER}$`)],
   ['GET', new RegExp(`^users/${USER}/devices$`)],
+  ['GET', new RegExp(`^users/${USER}/seats$`)],
+  ['POST', new RegExp(`^users/${USER}/seats/${DEVICE}/release$`)],
   ['POST', new RegExp(`^users/${USER}/devices/${DEVICE}/clear-suspect$`)],
   ['POST', new RegExp(`^users/${USER}/(password|license|remove-device|logout|addons)$`)]
 ];

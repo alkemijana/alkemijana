@@ -48,7 +48,7 @@ async function astroRequest(path, method = 'GET', body) {
   if (!response.ok) {
     const errors = {
       user_exists: 'Korisničko ime već postoji.', bad_request: 'Provjeri unesene podatke.',
-      not_found: 'Korisnik ili uređaj više ne postoji. Osvježi popis.',
+      not_found: 'Korisnik, uređaj ili zauzeto mjesto više ne postoji. Osvježi popis.',
       locked: 'Pristup je privremeno zaključan. Pokušaj kasnije.',
       invalid: 'Provjeri konfiguraciju admin tokena na serveru.',
       admin_unavailable: 'Astro admin API nije konfiguriran.'
@@ -109,11 +109,12 @@ function astroRenderUsers() {
   table.style.width = '100%';
   table.style.borderCollapse = 'collapse';
   const header = astroEl('tr', null, astroEl('thead', null, table));
-  for (const text of ['Ime', 'Uloga', 'Licenca do (UTC)', 'Uređaji', 'Stanje', '']) astroEl('th', text, header);
+  for (const text of ['Ime', 'Uloga', 'Licenca do (UTC)', 'Uređaji', 'Zauzeta mjesta', 'Stanje', '']) astroEl('th', text, header);
   const body = astroEl('tbody', null, table);
   for (const user of astroUsers) {
     const row = astroEl('tr', null, body);
-    for (const value of [user.username, user.role, user.license?.until || '—', (user.devices || []).length,
+    for (const value of [user.username, user.role, user.license?.until || '—', (user.devices || []).length + '/3',
+      (user.seats || []).length + '/2',
       astroLicenseState(user.license?.until)]) astroEl('td', value, row);
     astroButton(astroEl('td', null, row), 'Uredi', () => astroShowUser(user.username));
   }
@@ -244,8 +245,23 @@ function astroShowUser(username, keepSecret = false) {
   addon.type = 'checkbox'; addon.checked = (user.addons || []).includes('famous-times');
   astroEl('span', ' Poznate osobe iz Keplera (famous-times)', addonLabel);
   astroButton(root, 'Spremi addon dozvole', () => mutate('addons', { addons: addon.checked ? ['famous-times'] : [] }));
-  astroEl('h4', 'Uređaji', root).style.marginTop = '1rem';
+  const seats = user.seats || [];
+  astroEl('h4', 'Zauzeta mjesta (' + seats.length + '/2)', root).style.marginTop = '1rem';
+  if (!seats.length) astroEl('p', 'Nema zauzetih mjesta.', root);
+  for (const seat of seats) {
+    const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';
+    astroEl('p', (seat.name || seat.deviceId) + ' · ' + (seat.platform || '—'), row);
+    astroEl('p', 'ID: ' + seat.deviceId + ' · Od kada (UTC): ' + (seat.since || '—') +
+      ' · Zadnje javljanje (UTC): ' + (seat.lastBeat || '—'), row);
+    astroButton(row, 'Oslobodi mjesto', () => {
+      if (confirm('Osloboditi mjesto uređaja ' + (seat.name || seat.deviceId) + ' za ' + username + '?')) {
+        mutate('seats/' + seat.deviceId + '/release');
+      }
+    });
+  }
   const devices = user.devices || [];
+  astroEl('h4', 'Uređaji (' + devices.length + '/3)', root).style.marginTop = '1rem';
+  astroEl('p', 'Uređaji bez javljanja 30 dana automatski ispadaju s popisa.', root);
   if (!devices.length) astroEl('p', 'Nema registriranih uređaja.', root);
   for (const device of devices) {
     const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';

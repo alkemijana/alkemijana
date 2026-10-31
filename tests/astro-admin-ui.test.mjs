@@ -97,6 +97,7 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   const allText = el => [el.textContent || '', ...el.children.map(allText)].join(' ');
   assert.match(allText(ids.get('astro-admin-users')), /2\/3 2\/2/);
   assert.match(allText(detail), /Zauzeta mjesta \(2\/2\)/);
+  assert.match(allText(detail), /Korisničko ime se ne može mijenjati/);
   assert.match(allText(detail), /<img src=x onerror=alert\(3\)>/);
   assert.match(allText(detail), /Od: 31\. 10\. 2026\. \d{1,2}:00 · Zadnje javljanje: 31\. 10\. 2026\. \d{1,2}:00 · ID: Windows_1\.2-3/);
   assert.match(allText(detail), /Od: — · Zadnje javljanje: — · ID: legacy/);
@@ -156,6 +157,9 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   assert.equal(lastMutation().path, 'users/jana/password');
   const password = lastMutation().body.password;
   assert.match(allText(ids.get('astro-admin-secret')), new RegExp(password));
+  assert.match(allText(ids.get('astro-admin-secret')), /Korisničko ime: jana[\s\S]*Privremena lozinka: /);
+  assert.match(allText(ids.get('astro-admin-secret')), /https:\/\/astro\.alkemijana\.com/);
+  assert.ok(ids.get('astro-admin-secret').querySelectorAll('button').some(el => el.textContent === 'Kopiraj podatke'));
   await click('Odjavi sve');
   assert.equal(lastMutation().path, 'users/jana/logout');
   assert.equal(allText(ids.get('astro-admin-secret')).trim(), '');

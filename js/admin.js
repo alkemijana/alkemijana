@@ -121,7 +121,7 @@ function astroRenderUsers() {
     const row = astroEl('tr', null, body);
     for (const value of [user.username, user.role, user.license?.until || '—', (user.devices || []).length + '/3',
       (user.seats || []).length + '/2',
-      astroLicenseState(user.license?.until)]) astroEl('td', value, row);
+      astroLicenseState(user.license?.until) + (user.mustChangePassword ? ' · čeka svoju lozinku' : '')]) astroEl('td', value, row);
     astroButton(astroEl('td', null, row), 'Uredi', () => astroShowUser(user.username));
   }
   table.querySelectorAll('th, td').forEach(cell => {
@@ -139,13 +139,44 @@ function astroPassword() {
   return password.length >= 16 ? password.slice(0, 16) : astroPassword();
 }
 
+const ASTRO_LOGIN_URL = 'https://astro.alkemijana.com';
+
+// Poruka za korisnika (e-mail, SMS, WhatsApp…): privremena lozinka vrijedi do prve prijave, kad korisnik odabire svoju.
+function astroCredentialsText(username, password) {
+  return ['AlkemiJana Astro', 'Prijava: ' + ASTRO_LOGIN_URL, 'Korisničko ime: ' + username, 'Privremena lozinka: ' + password,
+    'Pri prvoj prijavi odaberite svoju lozinku. Korisničko ime ostaje isto.'].join('\n');
+}
+
+async function astroCopy(text, button) {
+  const old = button.textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch {
+    // Starija metoda kad preglednik ne dopušta Clipboard API.
+    try {
+      const area = document.createElement('textarea');
+      area.value = text; area.setAttribute('readonly', ''); area.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(area); area.select();
+      ok = document.execCommand('copy');
+      area.remove();
+    } catch { ok = false; }
+  }
+  button.textContent = ok ? 'Kopirano ✓' : 'Označi i kopiraj ručno';
+  setTimeout(() => { button.textContent = old; }, 2000);
+}
+
 function astroShowSecret(username, password) {
   const root = document.getElementById('astro-admin-secret');
   root.replaceChildren();
-  astroEl('p', 'Lozinka za ' + username + ' — prikazana samo sada. Kopiraj je prije nastavka:', root);
-  const value = astroEl('code', password, root);
-  value.style.userSelect = 'all';
-  astroButton(root, 'Sakrij lozinku', () => root.replaceChildren());
+  astroEl('p', 'Podatci za prijavu za ' + username + ' — privremena lozinka prikazana je samo sada. Kopiraj ih i pošalji korisniku kako želiš:', root);
+  const text = astroCredentialsText(username, password);
+  const value = astroEl('pre', text, root);
+  value.style.cssText = 'user-select:all;white-space:pre-wrap;padding:0.8rem;border:1px solid var(--border);margin:0.6rem 0';
+  const actions = astroEl('div', null, root); actions.className = 'ap-actions';
+  const all = astroButton(actions, 'Kopiraj podatke', () => astroCopy(text, all));
+  const name = astroButton(actions, 'Kopiraj korisničko ime', () => astroCopy(username, name));
+  const pass = astroButton(actions, 'Kopiraj lozinku', () => astroCopy(password, pass));
+  astroButton(actions, 'Sakrij', () => root.replaceChildren());
 }
 
 function astroField(parent, text, type = 'text', value = '') {
@@ -173,7 +204,8 @@ function astroNewUser() {
   const label = astroEl('label', 'Uloga ', roleWrap);
   const role = astroEl('select', null, label);
   for (const value of ['user', 'admin']) astroEl('option', value, role).value = value;
-  const submit = astroEl('button', 'Dodaj i generiraj lozinku', form);
+  astroEl('p', 'Korisničko ime se poslije ne može mijenjati. Program generira privremenu lozinku; korisnik pri prvoj prijavi odabire svoju.', form);
+  const submit = astroEl('button', 'Dodaj i generiraj privremenu lozinku', form);
   submit.type = 'submit'; submit.className = 'ap-btn ap-btn-save';
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -221,6 +253,8 @@ function astroShowUser(username, keepSecret = false) {
   const root = document.getElementById('astro-admin-detail');
   root.replaceChildren();
   astroEl('h3', username, root);
+  astroEl('p', user.mustChangePassword ? 'Korisničko ime se ne može mijenjati. Korisnik još nije odabrao svoju lozinku (prijava privremenom lozinkom).'
+    : 'Korisničko ime se ne može mijenjati.', root);
   const path = 'users/' + username;
   const mutate = (action, body) => astroMutate(path + '/' + action, 'POST', body, username);
   const until = user.license?.until;
@@ -238,7 +272,7 @@ function astroShowUser(username, keepSecret = false) {
     if (confirm('Ukinuti licencu za ' + username + '?')) mutate('license', { until: null });
   });
   astroButton(actions, 'Nova lozinka', () => {
-    if (!confirm('Generirati novu lozinku i odjaviti sve sesije za ' + username + '?')) return;
+    if (!confirm('Generirati novu privremenu lozinku i odjaviti sve sesije za ' + username + '? Korisnik će pri prijavi odabrati svoju.')) return;
     const password = astroPassword();
     astroMutate(path + '/password', 'POST', { password }, username, password);
   });

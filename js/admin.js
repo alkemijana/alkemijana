@@ -251,6 +251,26 @@ function astroShowUser(username, keepSecret = false) {
     const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';
     astroEl('p', (device.name || device.id) + ' · ' + (device.platform || '—'), row);
     astroEl('p', 'ID: ' + device.id + ' · Dodan: ' + (device.added || '—') + ' · Zadnji pristup: ' + (device.lastSeen || '—'), row);
+    if (device.suspect) {
+      const reasons = {
+        multiple_countries: 'javlja se iz više država',
+        ip_changes: 'naizmjenično s različitih mreža'
+      };
+      const reason = (device.suspectReason || '').split(',').map(value => reasons[value.trim()]).filter(Boolean).join('; ');
+      const warning = astroEl('p', 'moguća kopija' + (reason ? ' — ' + reason : ''), row);
+      warning.style.color = '#dc2626';
+      warning.style.fontWeight = 'bold';
+      astroButton(row, 'U redu je', () => mutate('devices/' + device.id + '/clear-suspect'));
+    }
+    const reports = astroEl('details', null, row);
+    astroEl('summary', 'Zadnja javljanja (datum, država)', reports);
+    if (!device.reports?.length) astroEl('p', 'Nema zabilježenih javljanja.', reports);
+    else {
+      const list = astroEl('ul', null, reports);
+      for (const report of device.reports.slice().reverse()) {
+        astroEl('li', (report.t || 'Nepoznat datum') + ' · ' + (report.country || 'Nepoznata država'), list);
+      }
+    }
     astroButton(row, 'Ukloni uređaj', () => {
       if (confirm('Ukloniti uređaj ' + (device.name || device.id) + ' za ' + username + '?')) {
         mutate('remove-device', { deviceId: device.id });

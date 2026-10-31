@@ -50,8 +50,14 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   const panel = ids.get('ap-astroapp');
   for (const [id, el] of ids) if (id !== 'ap-astroapp') panel.appendChild(el);
   const user = { username: 'jana', role: 'user', license: { until: '2027-01-31' }, addons: [],
-    devices: [{ id: 'windows-1', name: '<img src=x onerror=alert(1)>', platform: 'Windows' }] };
+    devices: [{ id: 'Windows_1.2-3', name: '<img src=x onerror=alert(1)>', platform: 'Windows',
+      suspect: true, suspectReason: 'multiple_countries,ip_changes', reports: [
+        { t: '2026-10-30T10:00:00Z', country: 'HR', ip: 'private-hash' },
+        { t: '2026-10-31T11:00:00Z', country: null, ip: 'another-private-hash' },
+        { t: '<img src=x onerror=alert(2)>', country: '<script>bad</script>' }
+      ] }, { id: 'legacy', name: 'Stari uređaj' }] };
   const calls = [];
+  let clearFails = true;
   const ctx = vm.createContext({ crypto, console, document: {
     createElement: tag => new Element(tag), getElementById: id => ids.get(id)
   }, sessionStorage: { getItem: key => { assert.equal(key, 'aj_pass'); return 'admin-pass'; } },
@@ -61,6 +67,11 @@ test('tab workflows send the API contract, hide one-time passwords and render de
     const path = new URL(url, 'https://website.example.test').searchParams.get('path');
     const body = options.body ? JSON.parse(options.body) : undefined;
     calls.push({ path, method: options.method, body });
+    if (path.endsWith('/clear-suspect')) {
+      if (clearFails) return { ok: false, status: 404, json: async () => ({ error: 'not_found' }) };
+      user.devices[0].suspect = false;
+      user.devices[0].suspectReason = null;
+    }
     return { ok: true, json: async () => path === 'users' && options.method === 'GET' ? { users: [user] } : { ok: true } };
   } });
   vm.runInContext(source.slice(source.indexOf('// Astro API data'), source.indexOf('let isAdmin')), ctx);
@@ -78,6 +89,31 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   const allText = el => [el.textContent || '', ...el.children.map(allText)].join(' ');
   assert.match(allText(detail), /<img src=x onerror=alert\(1\)>/);
   assert.equal(detail.querySelectorAll('img').length, 0);
+  assert.match(allText(detail), /moguća kopija — javlja se iz više država; naizmjenično s različitih mreža/);
+  const warning = detail.querySelectorAll('p').find(el => el.textContent.startsWith('moguća kopija'));
+  assert.equal(warning.style.color, '#dc2626');
+  const reports = detail.querySelectorAll('details');
+  assert.equal(reports.length, 2);
+  assert.equal(reports[0].open, undefined); // Native details stays collapsed until its summary is clicked.
+  assert.match(allText(reports[0]), /2026-10-30T10:00:00Z · HR/);
+  assert.match(allText(reports[0]), /2026-10-31T11:00:00Z · Nepoznata država/);
+  assert.match(allText(reports[0]), /<script>bad<\/script>/);
+  assert.equal(detail.querySelectorAll('script').length, 0);
+  assert.doesNotMatch(allText(detail), /private-hash/);
+  assert.match(allText(reports[1]), /Nema zabilježenih javljanja/);
+  assert.equal(detail.querySelectorAll('button').filter(el => el.textContent === 'U redu je').length, 1);
+  await click('U redu je');
+  assert.equal(lastMutation().path, 'users/jana/devices/Windows_1.2-3/clear-suspect');
+  assert.equal(lastMutation().method, 'POST');
+  assert.equal(lastMutation().body, undefined);
+  assert.match(allText(ids.get('astro-admin-message')), /Korisnik ili uređaj više ne postoji/);
+  assert.match(allText(detail), /moguća kopija/);
+  assert.equal(detail.querySelectorAll('button').find(el => el.textContent === 'U redu je').disabled, false);
+  clearFails = false;
+  await click('U redu je');
+  assert.doesNotMatch(allText(detail), /moguća kopija/);
+  assert.equal(detail.querySelectorAll('button').some(el => el.textContent === 'U redu je'), false);
+  assert.match(allText(detail.querySelectorAll('details')[0]), /2026-10-30T10:00:00Z · HR/);
   await click('+1 mj.');
   assert.equal(lastMutation().body.until, '2027-02-28');
   await click('Ukini licencu');
@@ -96,7 +132,8 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   await click('Spremi addon dozvole');
   assert.deepEqual(lastMutation().body, { addons: ['famous-times'] });
   await click('Ukloni uređaj');
-  assert.deepEqual(lastMutation().body, { deviceId: 'windows-1' });
+  assert.equal(lastMutation().path, 'users/jana/remove-device');
+  assert.deepEqual(lastMutation().body, { deviceId: 'Windows_1.2-3' });
   ctx.astroNewUser();
   detail.querySelectorAll('input')[0].value = 'novi';
   detail.querySelectorAll('select')[0].value = 'admin';

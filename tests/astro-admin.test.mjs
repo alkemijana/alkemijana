@@ -26,7 +26,12 @@ test('whitelist rejects unknown routes, methods, traversal and URL injection', a
     ['audit', 'GET'], ['users', 'DELETE'], ['users', 'PUT'], ['users/jana', 'GET'],
     ['users/jana/logout', 'GET'], ['users/jana/devices', 'POST'], ['users/jana/role', 'POST'],
     ['users/../users', 'GET'], ['users/%2e%2e/license', 'POST'], ['users/jana/license/extra', 'POST'],
-    ['//evil.test', 'GET'], ['users?x=1', 'GET'], ['users/', 'GET']
+    ['//evil.test', 'GET'], ['users?x=1', 'GET'], ['users/', 'GET'],
+    ...['GET', 'DELETE', 'PUT'].map(method => ['users/jana/devices/Win-1/clear-suspect', method]),
+    ...['', 'a'.repeat(129), 'a/b', 'a%2Fb', 'č', 'a?x=1', 'a#x', 'a b', 'a\n'].map(id =>
+      ['users/jana/devices/' + id + '/clear-suspect', 'POST']),
+    ['users/jana/devices/Win-1/clear-suspect/extra', 'POST'],
+    ['users/jana/devices/Win-1/unknown', 'POST']
   ]) {
     assert.equal((await onRequest({ request: request(path, method), env })).status, 404, method + ' ' + path);
   }
@@ -35,7 +40,8 @@ test('whitelist rejects unknown routes, methods, traversal and URL injection', a
 test('all allowed route/method pairs forward only the server token and JSON body', async () => {
   for (const [path, method] of [
     ['users', 'GET'], ['users', 'POST'], ['users/jana', 'DELETE'], ['users/jana/devices', 'GET'],
-    ...['password', 'license', 'remove-device', 'logout', 'addons'].map(action => ['users/jana/' + action, 'POST'])
+    ...['password', 'license', 'remove-device', 'logout', 'addons'].map(action => ['users/jana/' + action, 'POST']),
+    ...['A', 'Win_1.2-3', 'a'.repeat(128)].map(id => ['users/jana/devices/' + id + '/clear-suspect', 'POST'])
   ]) {
     const body = method === 'POST' ? { until: '2027-01-31', test: 'čć' } : undefined;
     let calls = 0;

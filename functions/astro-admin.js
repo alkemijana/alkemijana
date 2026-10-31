@@ -2,11 +2,13 @@ import { guardAdmin, passFromHeader, json } from './lib/admin-auth.js';
 
 // A query path keeps this a single Pages Function: /astro-admin?path=users/ime/license.
 const USER = '[a-z0-9._-]{3,32}';
+const DEVICE = '[a-zA-Z0-9._-]{1,128}';
 const ROUTES = [
   ['GET', /^users$/],
   ['POST', /^users$/],
   ['DELETE', new RegExp(`^users/${USER}$`)],
   ['GET', new RegExp(`^users/${USER}/devices$`)],
+  ['POST', new RegExp(`^users/${USER}/devices/${DEVICE}/clear-suspect$`)],
   ['POST', new RegExp(`^users/${USER}/(password|license|remove-device|logout|addons)$`)]
 ];
 

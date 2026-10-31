@@ -211,6 +211,7 @@ let TEXTS = {
   "navBlog": "Blog",
   "navNatal": "Astro alati",
   "navContact": "Kontakt",
+  "navLogin": "Prijava",
   "contactEmailLabel": "Email",
   "contactPhoneLabel": "Telefon",
   "contactLocationLabel": "Lokacija",

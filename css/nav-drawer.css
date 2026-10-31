@@ -332,6 +332,26 @@ html.nd-locked #main-nav { padding-right: calc(3rem + var(--nd-sbw, 0px)); }
   .nd-panel .nav-links { gap: 1.2rem; }
 }
 
+/* ---- Gumb Prijava (AlkemiJana Astro) - uokviren, zadnji u izborniku i traci ---- */
+.nav-links .nav-login a {
+  display: inline-block;
+  padding: 0.55em 1.1em;
+  border: 1px solid var(--lavender);
+  color: var(--text);
+}
+.nav-links .nav-login a::after { display: none; }
+/* U izborniku: posebno, ispod Kontakta - crta i razmak iznad. */
+.nd-panel .nav-links .nav-login {
+  align-self: stretch;
+  text-align: right;
+  margin-top: 0.6rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--border);
+}
+@media (hover: hover) {
+  .nav-links .nav-login a:hover { background: var(--lavender); color: var(--bg-deep); }
+}
+
 /* ---- Pristupačnost ---- */
 
 @media (prefers-reduced-motion: reduce) {

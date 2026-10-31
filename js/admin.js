@@ -2048,7 +2048,8 @@ const TEXT_GROUPS = [
       navAbout:    'O meni',
       navBlog:     'Blog',
       navNatal:    'Astro alati',
-      navContact:  'Kontakt'
+      navContact:  'Kontakt',
+      navLogin:    'Prijava (AlkemiJana Astro)'
     }
   },
   {

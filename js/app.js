@@ -1393,6 +1393,7 @@ function applyTexts() {
   set('t-navBlog',     t.navBlog);
   set('t-navNatal',    t.navNatal);
   set('t-navContact',  t.navContact);
+  set('t-navLogin',    t.navLogin);
 
   // Kontakt - info i forma
   set('t-contactEmailLabel',    t.contactEmailLabel);

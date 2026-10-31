@@ -5,3 +5,4 @@ vizitka-qr/
 tools/_upload.bin
 tools/_*
 logo/
+.wrangler/

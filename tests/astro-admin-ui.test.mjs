@@ -98,8 +98,8 @@ test('tab workflows send the API contract, hide one-time passwords and render de
   assert.match(allText(ids.get('astro-admin-users')), /2\/3 2\/2/);
   assert.match(allText(detail), /Zauzeta mjesta \(2\/2\)/);
   assert.match(allText(detail), /<img src=x onerror=alert\(3\)>/);
-  assert.match(allText(detail), /Od kada \(UTC\): 2026-10-31T09:00:00Z · Zadnje javljanje \(UTC\): 2026-10-31T11:00:00Z/);
-  assert.match(allText(detail), /ID: legacy · Od kada \(UTC\): — · Zadnje javljanje \(UTC\): —/);
+  assert.match(allText(detail), /Od: 31\. 10\. 2026\. \d{1,2}:00 · Zadnje javljanje: 31\. 10\. 2026\. \d{1,2}:00 · ID: Windows_1\.2-3/);
+  assert.match(allText(detail), /Od: — · Zadnje javljanje: — · ID: legacy/);
   assert.match(allText(detail), /Uređaji \(2\/3\)/);
   assert.match(allText(detail), /bez javljanja 30 dana automatski ispadaju/);
   assert.equal(detail.querySelectorAll('button').filter(el => el.textContent === 'Oslobodi mjesto').length, 2);

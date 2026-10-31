@@ -20,6 +20,12 @@ function astroEl(tag, text, parent) {
   return el;
 }
 
+/* Datum i vrijeme u lokalnom zapisu (hr), npr. 31. 10. 2026. 13:40 */
+function astroWhen(iso) {
+  const d = new Date(iso);
+  return iso && !isNaN(d) ? d.toLocaleString('hr-HR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+}
+
 function astroButton(parent, text, action) {
   const button = astroEl('button', text, parent);
   button.type = 'button';
@@ -91,7 +97,7 @@ function loadAstroAdmin() {
     await astroRefresh(view);
     if (view !== astroView) return;
     document.getElementById('astro-admin-detail').replaceChildren();
-    document.getElementById('astro-admin-message').textContent = astroUsers.length + ' korisnika.';
+    document.getElementById('astro-admin-message').textContent = 'Broj korisnika: ' + astroUsers.length;
   });
 }
 
@@ -184,7 +190,7 @@ function astroMutate(path, method, body, username, password) {
     document.getElementById('astro-admin-detail').replaceChildren();
     // Show a generated password even if the following list refresh fails.
     if (password) astroShowSecret(username, password);
-    document.getElementById('astro-admin-message').textContent = 'Uloženo.';
+    document.getElementById('astro-admin-message').textContent = 'Spremljeno.';
     try {
       await astroRefresh(view);
       if (view !== astroView) return;
@@ -251,8 +257,7 @@ function astroShowUser(username, keepSecret = false) {
   for (const seat of seats) {
     const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';
     astroEl('p', (seat.name || seat.deviceId) + ' · ' + (seat.platform || '—'), row);
-    astroEl('p', 'ID: ' + seat.deviceId + ' · Od kada (UTC): ' + (seat.since || '—') +
-      ' · Zadnje javljanje (UTC): ' + (seat.lastBeat || '—'), row);
+    astroEl('p', 'Od: ' + astroWhen(seat.since) + ' · Zadnje javljanje: ' + astroWhen(seat.lastBeat) + ' · ID: ' + seat.deviceId, row);
     astroButton(row, 'Oslobodi mjesto', () => {
       if (confirm('Osloboditi mjesto uređaja ' + (seat.name || seat.deviceId) + ' za ' + username + '?')) {
         mutate('seats/' + seat.deviceId + '/release');
@@ -266,7 +271,7 @@ function astroShowUser(username, keepSecret = false) {
   for (const device of devices) {
     const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';
     astroEl('p', (device.name || device.id) + ' · ' + (device.platform || '—'), row);
-    astroEl('p', 'ID: ' + device.id + ' · Dodan: ' + (device.added || '—') + ' · Zadnji pristup: ' + (device.lastSeen || '—'), row);
+    astroEl('p', 'Dodan: ' + astroWhen(device.added) + ' · Zadnji pristup: ' + astroWhen(device.lastSeen) + ' · ID: ' + device.id, row);
     if (device.suspect) {
       const reasons = {
         multiple_countries: 'javlja se iz više država',

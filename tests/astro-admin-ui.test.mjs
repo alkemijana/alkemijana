@@ -1,0 +1,116 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+
+// Evaluate only the isolated Astro helpers, without booting the site's global UI.
+const source = readFileSync(new URL('../js/admin.js', import.meta.url), 'utf8');
+const context = vm.createContext({ crypto });
+vm.runInContext(source.slice(source.indexOf('// Astro API data'), source.indexOf('let isAdmin')), context);
+
+test('license states respect UTC end-of-day and the 14-day boundary', () => {
+  const state = context.astroLicenseState;
+  assert.equal(state(null), 'Nema licence');
+  assert.equal(state('2026-10-31', Date.parse('2026-10-31T23:59:59Z')), 'Istječe za ≤ 14 dana');
+  assert.equal(state('2026-10-31', Date.parse('2026-11-01T00:00:00Z')), 'Istekla');
+  assert.equal(state('2026-11-14', Date.parse('2026-11-01T00:00:00Z')), 'Istječe za ≤ 14 dana');
+  assert.equal(state('2026-11-15', Date.parse('2026-11-01T00:00:00Z')), 'Vrijedi');
+});
+
+test('extension clamps month ends and leap years and starts expired licenses today', () => {
+  const extend = context.astroExtendedDate;
+  const now = new Date('2026-01-01T12:00:00Z');
+  assert.equal(extend('2026-01-31', 1, now), '2026-02-28');
+  assert.equal(extend('2028-02-29', 12, now), '2029-02-28');
+  assert.equal(extend(null, 1, now), '2026-02-01');
+  assert.equal(extend('2025-12-31', 12, now), '2027-01-01');
+});
+
+test('generated passwords have 16 secure random characters and are not stored', () => {
+  const values = new Set(Array.from({ length: 100 }, () => context.astroPassword()));
+  assert.equal(values.size, 100);
+  for (const value of values) assert.match(value, /^[A-Za-z0-9_-]{16}$/);
+});
+
+class Element {
+  constructor(tag) { this.tag = tag; this.children = []; this.events = {}; this.style = {}; this.value = ''; }
+  appendChild(child) { this.children.push(child); }
+  replaceChildren() { this.children = []; this.textContent = ''; }
+  addEventListener(type, handler) { this.events[type] = handler; }
+  querySelectorAll(selector) {
+    const tags = selector.split(',').map(tag => tag.trim());
+    return this.children.flatMap(child => [...(tags.includes(child.tag) ? [child] : []), ...child.querySelectorAll(selector)]);
+  }
+  checkValidity() { return true; }
+}
+
+test('tab workflows send the API contract, hide one-time passwords and render device text safely', async () => {
+  const ids = new Map(['ap-astroapp', 'astro-admin-secret', 'astro-admin-message', 'astro-admin-users', 'astro-admin-detail']
+    .map(id => [id, new Element('div')]));
+  const panel = ids.get('ap-astroapp');
+  for (const [id, el] of ids) if (id !== 'ap-astroapp') panel.appendChild(el);
+  const user = { username: 'jana', role: 'user', license: { until: '2027-01-31' }, addons: [],
+    devices: [{ id: 'windows-1', name: '<img src=x onerror=alert(1)>', platform: 'Windows' }] };
+  const calls = [];
+  const ctx = vm.createContext({ crypto, console, document: {
+    createElement: tag => new Element(tag), getElementById: id => ids.get(id)
+  }, sessionStorage: { getItem: key => { assert.equal(key, 'aj_pass'); return 'admin-pass'; } },
+  confirm: () => true,
+  fetch: async (url, options) => {
+    assert.equal(options.headers['X-Admin-Pass'], 'admin-pass');
+    const path = new URL(url, 'https://website.example.test').searchParams.get('path');
+    const body = options.body ? JSON.parse(options.body) : undefined;
+    calls.push({ path, method: options.method, body });
+    return { ok: true, json: async () => path === 'users' && options.method === 'GET' ? { users: [user] } : { ok: true } };
+  } });
+  vm.runInContext(source.slice(source.indexOf('// Astro API data'), source.indexOf('let isAdmin')), ctx);
+  const flush = () => new Promise(resolve => setImmediate(resolve));
+  const detail = ids.get('astro-admin-detail');
+  const click = async text => {
+    const button = detail.querySelectorAll('button').find(el => el.textContent === text);
+    assert.ok(button, text);
+    button.events.click();
+    await flush();
+  };
+  const lastMutation = () => calls.filter(call => call.method !== 'GET').at(-1);
+  await ctx.loadAstroAdmin();
+  ctx.astroShowUser('jana');
+  const allText = el => [el.textContent || '', ...el.children.map(allText)].join(' ');
+  assert.match(allText(detail), /<img src=x onerror=alert\(1\)>/);
+  assert.equal(detail.querySelectorAll('img').length, 0);
+  await click('+1 mj.');
+  assert.equal(lastMutation().body.until, '2027-02-28');
+  await click('Ukini licencu');
+  assert.equal(lastMutation().body.until, null);
+  detail.querySelectorAll('input').find(el => el.type === 'date').value = '2028-03-15';
+  await click('Spremi datum');
+  assert.equal(lastMutation().body.until, '2028-03-15');
+  await click('Nova lozinka');
+  assert.equal(lastMutation().path, 'users/jana/password');
+  const password = lastMutation().body.password;
+  assert.match(allText(ids.get('astro-admin-secret')), new RegExp(password));
+  await click('Odjavi sve');
+  assert.equal(lastMutation().path, 'users/jana/logout');
+  assert.equal(allText(ids.get('astro-admin-secret')).trim(), '');
+  detail.querySelectorAll('input').find(el => el.type === 'checkbox').checked = true;
+  await click('Spremi addon dozvole');
+  assert.deepEqual(lastMutation().body, { addons: ['famous-times'] });
+  await click('Ukloni uređaj');
+  assert.deepEqual(lastMutation().body, { deviceId: 'windows-1' });
+  ctx.astroNewUser();
+  detail.querySelectorAll('input')[0].value = 'novi';
+  detail.querySelectorAll('select')[0].value = 'admin';
+  detail.querySelectorAll('form')[0].events.submit({ preventDefault() {} });
+  await flush();
+  assert.equal(lastMutation().path, 'users');
+  assert.equal(lastMutation().body.username, 'novi');
+  assert.equal(lastMutation().body.role, 'admin');
+  assert.equal(lastMutation().body.password.length, 16);
+  ctx.astroShowUser('jana');
+  await click('Obriši korisnika');
+  assert.equal(lastMutation().method, 'DELETE');
+  assert.equal(lastMutation().path, 'users/jana');
+  ctx.astroClearAdmin();
+  assert.equal(allText(ids.get('astro-admin-secret')).trim(), '');
+  assert.equal(allText(detail).trim(), '');
+});

@@ -8,6 +8,262 @@
 const ADMIN_USER  = 'jana';
 const IMGBB_KEY   = '0d1cce4852e17860ddebe0e15f9ac341';
 
+// Astro API data stays separate from site content and downloadSite()/auto-save.
+let astroUsers = [];
+let astroBusy = false;
+let astroView = 0;
+
+function astroEl(tag, text, parent) {
+  const el = document.createElement(tag);
+  if (text != null) el.textContent = text;
+  if (parent) parent.appendChild(el);
+  return el;
+}
+
+function astroButton(parent, text, action) {
+  const button = astroEl('button', text, parent);
+  button.type = 'button';
+  button.className = 'ap-btn';
+  button.addEventListener('click', action);
+  return button;
+}
+
+function astroClearAdmin() {
+  astroView++;
+  astroUsers = [];
+  for (const id of ['secret', 'users', 'detail', 'message']) {
+    document.getElementById('astro-admin-' + id)?.replaceChildren();
+  }
+}
+
+async function astroRequest(path, method = 'GET', body) {
+  const pass = sessionStorage.getItem('aj_pass');
+  if (!pass) throw new Error('Sesija je istekla. Prijavi se ponovo.');
+  const response = await fetch('/astro-admin?path=' + encodeURIComponent(path), {
+    method, cache: 'no-store',
+    headers: { 'X-Admin-Pass': pass, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const errors = {
+      user_exists: 'Korisničko ime već postoji.', bad_request: 'Provjeri unesene podatke.',
+      not_found: 'Korisnik ili uređaj više ne postoji. Osvježi popis.',
+      locked: 'Pristup je privremeno zaključan. Pokušaj kasnije.',
+      invalid: 'Provjeri konfiguraciju admin tokena na serveru.',
+      admin_unavailable: 'Astro admin API nije konfiguriran.'
+    };
+    throw new Error(response.status === 403 ? 'Pogrešna admin lozinka. Prijavi se ponovo.' :
+      errors[data.error] || data.error || 'Zahtjev nije uspio (' + response.status + ').');
+  }
+  return data;
+}
+
+async function astroRun(task) {
+  if (astroBusy) return;
+  astroBusy = true;
+  const view = astroView;
+  const panel = document.getElementById('ap-astroapp');
+  const message = document.getElementById('astro-admin-message');
+  document.getElementById('astro-admin-secret').replaceChildren();
+  message.textContent = 'Učitavam…';
+  panel.querySelectorAll('button, input, select').forEach(el => el.disabled = true);
+  try {
+    await task(view);
+  } catch (error) {
+    if (view === astroView) message.textContent = error.message || 'Astro API nije dostupan.';
+  } finally {
+    astroBusy = false;
+    panel.querySelectorAll('button, input, select').forEach(el => el.disabled = false);
+    if (view !== astroView && isAdmin && document.getElementById('tab-astroapp').classList.contains('active')) loadAstroAdmin();
+  }
+}
+
+async function astroRefresh(view) {
+  const data = await astroRequest('users');
+  if (view !== astroView) return;
+  astroUsers = data.users || [];
+  astroRenderUsers();
+}
+
+function loadAstroAdmin() {
+  return astroRun(async view => {
+    await astroRefresh(view);
+    if (view !== astroView) return;
+    document.getElementById('astro-admin-detail').replaceChildren();
+    document.getElementById('astro-admin-message').textContent = astroUsers.length + ' korisnika.';
+  });
+}
+
+function astroLicenseState(until, now = Date.now()) {
+  if (!until) return 'Nema licence';
+  const end = Date.parse(until + 'T00:00:00Z') + 86400000;
+  if (now >= end) return 'Istekla';
+  return end - now <= 14 * 86400000 ? 'Istječe za ≤ 14 dana' : 'Vrijedi';
+}
+
+function astroRenderUsers() {
+  const root = document.getElementById('astro-admin-users');
+  root.replaceChildren();
+  const table = astroEl('table', null, root);
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const header = astroEl('tr', null, astroEl('thead', null, table));
+  for (const text of ['Ime', 'Uloga', 'Licenca do (UTC)', 'Uređaji', 'Stanje', '']) astroEl('th', text, header);
+  const body = astroEl('tbody', null, table);
+  for (const user of astroUsers) {
+    const row = astroEl('tr', null, body);
+    for (const value of [user.username, user.role, user.license?.until || '—', (user.devices || []).length,
+      astroLicenseState(user.license?.until)]) astroEl('td', value, row);
+    astroButton(astroEl('td', null, row), 'Uredi', () => astroShowUser(user.username));
+  }
+  table.querySelectorAll('th, td').forEach(cell => {
+    cell.style.cssText = 'padding:0.7rem;text-align:left;border-bottom:1px solid var(--border)';
+  });
+  if (!astroUsers.length) astroEl('p', 'Nema korisnika.', root);
+}
+
+function astroPassword() {
+  const bytes = crypto.getRandomValues(new Uint8Array(20));
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789-_';
+  // Rejection sampling avoids modulo bias.
+  let password = '';
+  for (const byte of bytes) if (byte < 256 - 256 % alphabet.length) password += alphabet[byte % alphabet.length];
+  return password.length >= 16 ? password.slice(0, 16) : astroPassword();
+}
+
+function astroShowSecret(username, password) {
+  const root = document.getElementById('astro-admin-secret');
+  root.replaceChildren();
+  astroEl('p', 'Lozinka za ' + username + ' — prikazana samo sada. Kopiraj je prije nastavka:', root);
+  const value = astroEl('code', password, root);
+  value.style.userSelect = 'all';
+  astroButton(root, 'Sakrij lozinku', () => root.replaceChildren());
+}
+
+function astroField(parent, text, type = 'text', value = '') {
+  const wrap = astroEl('div', null, parent); wrap.className = 'af';
+  const label = astroEl('label', text + ' ', wrap);
+  label.style.cssText = 'display:block;margin:0.8rem 0';
+  const input = astroEl('input', null, label);
+  input.type = type;
+  input.value = value;
+  return input;
+}
+
+function astroNewUser() {
+  if (astroBusy) return;
+  document.getElementById('astro-admin-secret').replaceChildren();
+  const root = document.getElementById('astro-admin-detail');
+  root.replaceChildren();
+  astroEl('h3', 'Novi korisnik', root);
+  const form = astroEl('form', null, root);
+  const name = astroField(form, 'Korisničko ime');
+  name.required = true; name.pattern = '[a-z0-9._-]{3,32}'; name.maxLength = 32;
+  name.autocomplete = 'off';
+  astroEl('p', '3–32 znaka: mala slova a–z, brojevi, točka, crtica i donja crta.', form);
+  const roleWrap = astroEl('div', null, form); roleWrap.className = 'af';
+  const label = astroEl('label', 'Uloga ', roleWrap);
+  const role = astroEl('select', null, label);
+  for (const value of ['user', 'admin']) astroEl('option', value, role).value = value;
+  const submit = astroEl('button', 'Dodaj i generiraj lozinku', form);
+  submit.type = 'submit'; submit.className = 'ap-btn ap-btn-save';
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const username = name.value;
+    const password = astroPassword();
+    astroMutate('users', 'POST', { username, password, role: role.value }, username, password);
+  });
+}
+
+function astroMutate(path, method, body, username, password) {
+  return astroRun(async view => {
+    await astroRequest(path, method, body);
+    if (view !== astroView) return;
+    document.getElementById('astro-admin-detail').replaceChildren();
+    // Show a generated password even if the following list refresh fails.
+    if (password) astroShowSecret(username, password);
+    document.getElementById('astro-admin-message').textContent = 'Uloženo.';
+    try {
+      await astroRefresh(view);
+      if (view !== astroView) return;
+      if (astroUsers.some(user => user.username === username)) astroShowUser(username, true);
+    } catch {
+      if (view === astroView) document.getElementById('astro-admin-message').textContent =
+        'Promjena je spremljena, ali popis nije osvježen. Klikni Osvježi.';
+    }
+  });
+}
+
+function astroExtendedDate(until, months, now = new Date()) {
+  const today = now.toISOString().slice(0, 10);
+  const base = new Date((until && until > today ? until : today) + 'T00:00:00Z');
+  const day = base.getUTCDate();
+  base.setUTCDate(1);
+  base.setUTCMonth(base.getUTCMonth() + months);
+  const last = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 0)).getUTCDate();
+  base.setUTCDate(Math.min(day, last));
+  return base.toISOString().slice(0, 10);
+}
+
+function astroShowUser(username, keepSecret = false) {
+  if (astroBusy && !keepSecret) return;
+  if (!keepSecret) document.getElementById('astro-admin-secret').replaceChildren();
+  const user = astroUsers.find(item => item.username === username);
+  if (!user) return;
+  const root = document.getElementById('astro-admin-detail');
+  root.replaceChildren();
+  astroEl('h3', username, root);
+  const path = 'users/' + username;
+  const mutate = (action, body) => astroMutate(path + '/' + action, 'POST', body, username);
+  const until = user.license?.until;
+  const date = astroField(root, 'Licenca do (UTC)', 'date', until || '');
+  const actions = astroEl('div', null, root); actions.className = 'ap-actions';
+  astroButton(actions, 'Spremi datum', () => {
+    if (!date.value) { date.focus(); document.getElementById('astro-admin-message').textContent = 'Odaberi datum licence.'; return; }
+    if (!date.checkValidity()) { date.reportValidity(); return; }
+    mutate('license', { until: date.value });
+  });
+  for (const [label, months] of [['+1 mj.', 1], ['+1 god.', 12]]) {
+    astroButton(actions, label, () => mutate('license', { until: astroExtendedDate(until, months) }));
+  }
+  astroButton(actions, 'Ukini licencu', () => {
+    if (confirm('Ukinuti licencu za ' + username + '?')) mutate('license', { until: null });
+  });
+  astroButton(actions, 'Nova lozinka', () => {
+    if (!confirm('Generirati novu lozinku i odjaviti sve sesije za ' + username + '?')) return;
+    const password = astroPassword();
+    astroMutate(path + '/password', 'POST', { password }, username, password);
+  });
+  astroButton(actions, 'Odjavi sve', () => {
+    if (confirm('Odjaviti sve sesije za ' + username + '?')) mutate('logout', {});
+  });
+  const addonLabel = astroEl('label', null, root);
+  addonLabel.style.cssText = 'display:block;margin:1rem 0';
+  const addon = astroEl('input', null, addonLabel);
+  addon.type = 'checkbox'; addon.checked = (user.addons || []).includes('famous-times');
+  astroEl('span', ' Poznate osobe iz Keplera (famous-times)', addonLabel);
+  astroButton(root, 'Spremi addon dozvole', () => mutate('addons', { addons: addon.checked ? ['famous-times'] : [] }));
+  astroEl('h4', 'Uređaji', root).style.marginTop = '1rem';
+  const devices = user.devices || [];
+  if (!devices.length) astroEl('p', 'Nema registriranih uređaja.', root);
+  for (const device of devices) {
+    const row = astroEl('div', null, root); row.style.margin = '0.8rem 0';
+    astroEl('p', (device.name || device.id) + ' · ' + (device.platform || '—'), row);
+    astroEl('p', 'ID: ' + device.id + ' · Dodan: ' + (device.added || '—') + ' · Zadnji pristup: ' + (device.lastSeen || '—'), row);
+    astroButton(row, 'Ukloni uređaj', () => {
+      if (confirm('Ukloniti uređaj ' + (device.name || device.id) + ' za ' + username + '?')) {
+        mutate('remove-device', { deviceId: device.id });
+      }
+    });
+  }
+  astroButton(root, 'Obriši korisnika', () => {
+    if (confirm('Trajno obrisati korisnika ' + username + ', njegove sesije i addon dozvole?')) {
+      astroMutate(path, 'DELETE', undefined, username);
+    }
+  });
+}
+
 let isAdmin        = false;
 let editingPostId  = null;
 let editingGuideId = null;
@@ -126,6 +382,7 @@ async function hydrateAdminData() {
 }
 
 function adminLogout() {
+  astroClearAdmin();
   isAdmin = false;
   sessionStorage.removeItem('aj_admin');
   sessionStorage.removeItem('aj_pass');
@@ -365,10 +622,12 @@ function openAdmin(tab) {
 }
 
 function closeAdminPanel() {
+  astroClearAdmin();
   document.getElementById('admin-panel-overlay').classList.remove('show');
 }
 
 function switchTab(t) {
+  if (t !== 'astroapp') astroClearAdmin();
   document.querySelectorAll('.ap-tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.ap-tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + t).classList.add('active');
@@ -381,6 +640,7 @@ function switchTab(t) {
   if (t === 'reviews')  renderReviewsAdmin();
   if (t === 'texts')    renderTextsAdmin();
   if (t === 'natallog') loadNatalLog();
+  if (t === 'astroapp') loadAstroAdmin();
   if (t === 'tarot')    renderTarotAdmin();
 }
 

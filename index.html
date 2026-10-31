@@ -1974,6 +1974,7 @@
         <button class="ap-tab-btn"        id="tab-texts"    onclick="switchTab('texts')">Tekstovi</button>
         <button class="ap-tab-btn"        id="tab-stats"    onclick="switchTab('stats')">Statistika</button>
         <button class="ap-tab-btn"        id="tab-natallog" onclick="switchTab('natallog')">Natalne karte</button>
+        <button class="ap-tab-btn"        id="tab-astroapp" onclick="switchTab('astroapp')">Astro aplikacija</button>
         <button class="ap-tab-btn"        id="tab-tarot"    onclick="switchTab('tarot')">Tarot karte</button>
       </div>
       <button class="ap-close" onclick="closeAdminPanel()">×</button>
@@ -2060,6 +2061,22 @@
         </div>
       </div>
 
+      <!-- TAB: Astro aplikacija (privatni admin API preko proxyja) -->
+      <div class="ap-tab-content" id="ap-astroapp">
+        <div class="pricing-admin-wrap">
+          <h3>Astro aplikacija</h3>
+          <p style="color:var(--text-muted);margin-bottom:1rem">Računi, licence i uređaji. Promjene se spremaju odmah. Licenca vrijedi do kraja odabranog dana UTC; već izdana offline potvrda može vrijediti do 14 dana ili do isteka licence.</p>
+          <div class="ap-actions">
+            <button class="ap-btn" onclick="loadAstroAdmin()">↻ Osvježi</button>
+            <button class="ap-btn ap-btn-save" onclick="astroNewUser()">+ Novi korisnik</button>
+          </div>
+          <p id="astro-admin-message" role="status" aria-live="polite" style="margin:1rem 0"></p>
+          <div id="astro-admin-secret" style="margin-bottom:1rem"></div>
+          <div id="astro-admin-users" style="overflow-x:auto"></div>
+          <div id="astro-admin-detail" style="margin-top:1.5rem"></div>
+        </div>
+      </div>
+
       <!-- TAB: Tarot karte (nazivi + značenja uspravno/obrnuto, po špilu) -->
       <div class="ap-tab-content" id="ap-tarot">
         <div class="pricing-admin-wrap">
@@ -2133,7 +2150,7 @@
 <script src="js/nav-moon.js?v=20261022r"></script><!-- mali Mjesec u traci (PROTOTIP) -->
 <script src="js/home-slides.js?v=20261022r"></script><!-- slide deck početne (nakon app.js) -->
 <script src="js/logo.js?v=20261022r"></script><!-- logo: hero, traka, podnožje (koristi js/alkemijana-anim.js) -->
-<script src="js/admin.js?v=20261022r"></script>
+<script src="js/admin.js?v=20261031l3"></script>
 <script src="js/natal-chiron.js?v=20261022r"></script>
 <script src="js/natal-data.js?v=20261022r"></script>
 <script src="js/natal-calc.js?v=20261022r"></script>

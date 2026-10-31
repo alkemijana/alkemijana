@@ -1048,6 +1048,16 @@ CSS/JS, vlastite slike) — za izmjene layouta/logike stola nije potrebno čitat
 10. **↓ Spremi** — automatski commit-a `data.js` na GitHub preko Cloudflare Pages funkcije → auto-deploy na Cloudflareu za ~30 sek
 11. **Arhiviranje** — svaki blog/usluga/cjenik/recenzija ima checkbox "Arhivirano" → skriva od posjetitelja, ali ostaje u adminu da se može vratiti
 
+### Astro aplikacija (L3, grana `astro-licence`)
+Novi admin tab **Astro aplikacija** vodi korisnike, licence do datuma (UTC), uređaje,
+lozinke i addon dozvole; promjene se spremaju odmah, odvojeno od sadržaja stranice.
+Generirana lozinka prikazuje se jednom i briše iz prikaza pri nastavku/zatvaranju taba.
+`/astro-admin?path=users/...` prvo provjerava `X-Admin-Pass` kroz `guardAdmin`, zatim
+propušta samo dopuštene rute/metode. U Pages projektu stranice postaviti serverske
+varijable/tajne **`ASTRO_API_URL`** (izvor API-ja, npr. `https://astro.alkemijana.com`,
+bez putanje) i **`ASTRO_ADMIN_TOKEN`** (isti tajni token kao na Astro serveru).
+Token se nikad ne šalje pregledniku. Lokalni testovi bez mreže: `node --test tests/*.test.mjs`.
+
 ### Brojač natalnih karata (KV) — anonimno
 Pri izradi karte `js/natal.js` računa **SHA-256 hash unosa** (datum, vrijeme, lat/lon, tip čvora — **bez imena**)
 i šalje POST na `/log-natal` samo s tim hashom (fire-and-forget). `functions/log-natal.js` u **Cloudflare KV**

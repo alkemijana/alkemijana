@@ -141,9 +141,12 @@ function astroPassword() {
 
 const ASTRO_LOGIN_URL = 'https://astro.alkemijana.com';
 
+// Izravni link na prijavu s već upisanim korisničkim imenom (stranica prijave čita ?u=).
+function astroLoginLink(username) { return ASTRO_LOGIN_URL + '/?u=' + encodeURIComponent(username); }
+
 // Poruka za korisnika (e-mail, SMS, WhatsApp…): privremena lozinka vrijedi do prve prijave, kad korisnik odabire svoju.
 function astroCredentialsText(username, password) {
-  return ['AlkemiJana Astro', 'Prijava: ' + ASTRO_LOGIN_URL, 'Korisničko ime: ' + username, 'Privremena lozinka: ' + password,
+  return ['AlkemiJana Astro', 'Prijava: ' + astroLoginLink(username), 'Korisničko ime: ' + username, 'Privremena lozinka: ' + password,
     'Pri prvoj prijavi odaberite svoju lozinku. Korisničko ime ostaje isto.'].join('\n');
 }
 
@@ -176,6 +179,9 @@ function astroShowSecret(username, password) {
   const all = astroButton(actions, 'Kopiraj podatke', () => astroCopy(text, all));
   const name = astroButton(actions, 'Kopiraj korisničko ime', () => astroCopy(username, name));
   const pass = astroButton(actions, 'Kopiraj lozinku', () => astroCopy(password, pass));
+  const link = astroButton(actions, 'Kopiraj link za prijavu', () => astroCopy(astroLoginLink(username), link));
+  const open = astroEl('a', 'Otvori stranicu prijave', actions);
+  open.href = astroLoginLink(username); open.target = '_blank'; open.rel = 'noopener'; open.className = 'ap-btn';
   astroButton(actions, 'Sakrij', () => root.replaceChildren());
 }
 
